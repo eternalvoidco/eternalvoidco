@@ -13,3 +13,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | Dátum | Módosítás | Commit | GitHub | Vercel |
 |---|---|---|---|---|
 | 2026-02-21 | PROGRESS.md létrehozása | pending | pending | pending |
+| 2026-02-21 | README.md létrehozása (projekt tulajdonságok, Vercel + Shopify kapcsolat) | pending | pending | pending |
