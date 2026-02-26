@@ -280,13 +280,30 @@
 
         .philosophy-content h2 {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(3.4rem, 9vw, 6rem);
+            font-size: clamp(2.4rem, 6.5vw, 4.2rem);
             font-weight: 600;
-            letter-spacing: 0.11em;
+            letter-spacing: 0.09em;
             margin-bottom: 1.2rem;
-            line-height: 0.95;
-            margin-right: -0.11em;
-            background: linear-gradient(180deg, #fffdfa 0%, #c8b08a 100%);
+            line-height: 1.02;
+            margin-right: -0.09em;
+            background: none;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: currentColor;
+            background-clip: text;
+            color: var(--void-white);
+        }
+
+        .philosophy-content h2 .luxury-word {
+            display: inline-block;
+            background: linear-gradient(180deg, #d6bb89 0%, #b89256 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .philosophy-content h2 .streetwear-word {
+            display: inline-block;
+            background: linear-gradient(180deg, #f2ece0 0%, #cdbfa5 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -749,7 +766,7 @@
     <section class="philosophy" id="philosophy">
         <div class="philosophy-content fade-in-up" style="--delay: 120ms;">
             <span class="section-eyebrow">House Philosophy</span>
-            <h2>Luxury<br/>Streetwear</h2>
+            <h2><span class="luxury-word">Luxury</span><br/><span class="streetwear-word">Streetwear</span></h2>
             <p>VOID exists in the space between presence and absence. Each piece is carefully designed to embody contradiction—bold yet understated, complex yet minimal.</p>
             <p>We create clothing for those who understand that true luxury lies not in excess, but in the intentional void.</p>
         </div>
