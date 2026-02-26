@@ -26,3 +26,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-02-27 | Luxury színe egységesítve Streetwear-rel + 3 szekció egységes sötét pontmintás háttér (referencia screenshot alapján) | pending | pending | pending |
 | 2026-02-27 | 3 szekció full-fill, keret nélküli egységes háttér screenshot alapján + Collection háttér teljes szélességre téve | pending | pending | pending |
 | 2026-02-27 | Háttér teljes egységesítése a newsletter/footer résszel: minden érintett szekció tiszta #000 | pending | pending | pending |
+| 2026-02-27 | Philosophy és Atelier Notes szekciók törölve, csak Hero + Collection maradt | pending | pending | pending |
