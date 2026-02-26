@@ -23,3 +23,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-02-26 | Philosophy háttér ismét a Collection szekció hátterére állítva | pending | pending | pending |
 | 2026-02-27 | Philosophy és Collection háttér 1:1 egyező, tiszta sötét (#000) árnyalat nélkül | pending | pending | pending |
 | 2026-02-27 | "Luxury Streetwear" cím kisebb méret + Luxury szó prémium arany gradientre állítva | pending | pending | pending |
+| 2026-02-27 | Luxury színe egységesítve Streetwear-rel + 3 szekció egységes sötét pontmintás háttér (referencia screenshot alapján) | pending | pending | pending |

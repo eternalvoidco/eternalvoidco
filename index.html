@@ -24,6 +24,9 @@
             --void-accent: #c7a96c;
             --void-border: rgba(199, 169, 108, 0.3);
             --void-section-bg: #000000;
+            --void-section-texture:
+                radial-gradient(circle at 2px 2px, rgba(210, 198, 176, 0.12) 0.9px, transparent 1.1px) 0 0 / 14px 14px,
+                linear-gradient(180deg, #070707 0%, #000000 100%);
         }
 
         html {
@@ -245,7 +248,7 @@
         .philosophy {
             position: relative;
             padding: 8rem 4rem;
-            background: var(--void-section-bg);
+            background: var(--void-section-texture);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -293,14 +296,7 @@
             color: var(--void-white);
         }
 
-        .philosophy-content h2 .luxury-word {
-            display: inline-block;
-            background: linear-gradient(180deg, #d6bb89 0%, #b89256 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
+        .philosophy-content h2 .luxury-word,
         .philosophy-content h2 .streetwear-word {
             display: inline-block;
             background: linear-gradient(180deg, #f2ece0 0%, #cdbfa5 100%);
@@ -325,7 +321,7 @@
         /* Brand Story Section */
         .brand-story {
             padding: 8rem 4rem;
-            background: linear-gradient(180deg, rgba(5, 5, 5, 0.55) 0%, rgba(0, 0, 0, 1) 100%);
+            background: var(--void-section-texture);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -362,7 +358,7 @@
             padding: 8rem 4rem;
             max-width: 1600px;
             margin: 0 auto;
-            background: var(--void-section-bg);
+            background: var(--void-section-texture);
         }
 
         .products-header {
