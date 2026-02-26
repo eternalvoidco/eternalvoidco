@@ -16,3 +16,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-02-21 | README.md létrehozása (projekt tulajdonságok, Vercel + Shopify kapcsolat) | pending | pending | pending |
 | 2026-02-22 | Google indexelés tiltása (meta noindex + robots.txt) | pending | pending | pending |
 | 2026-02-26 | High-fashion vizuális frissítés (tipográfia, prémium paletta, CTA-k, animációk) | pending | pending | pending |
+| 2026-02-26 | 2. szekció videó kivéve, luxus statikus háttér + "Luxury Streetwear" tipográfia finomhangolás | pending | pending | pending |

@@ -241,15 +241,32 @@
         }
 
         /* Philosophy specific */
-        .philosophy-video {
-            opacity: 0.12;
-            z-index: 1;
+        .philosophy {
+            position: relative;
+            padding: 8rem 4rem;
+            background:
+                radial-gradient(circle at 15% 30%, rgba(199, 169, 108, 0.16), transparent 42%),
+                radial-gradient(circle at 90% 10%, rgba(245, 242, 236, 0.08), transparent 38%),
+                linear-gradient(180deg, rgba(8, 8, 8, 0.86) 0%, rgba(3, 3, 3, 1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .philosophy::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 0%, rgba(199, 169, 108, 0.06) 50%, transparent 100%);
+            mix-blend-mode: screen;
+            pointer-events: none;
         }
 
         .philosophy-content {
             position: relative;
             z-index: 10;
-            max-width: 800px;
+            max-width: 860px;
             text-align: center;
             padding: 0 2rem;
         }
@@ -266,19 +283,27 @@
 
         .philosophy-content h2 {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(3rem, 8vw, 5rem);
-            font-weight: 500;
-            letter-spacing: 0.08em;
-            margin-bottom: 1.5rem;
-            line-height: 1.1;
+            font-size: clamp(3.4rem, 9vw, 6rem);
+            font-weight: 600;
+            letter-spacing: 0.11em;
+            margin-bottom: 1.2rem;
+            line-height: 0.95;
+            margin-right: -0.11em;
+            background: linear-gradient(180deg, #fffdfa 0%, #c8b08a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .philosophy-content p {
-            font-size: 1.02rem;
-            line-height: 1.95;
+            font-size: 1.05rem;
+            line-height: 1.9;
             color: rgba(245, 242, 236, 0.86);
             font-weight: 400;
             margin-bottom: 1.5rem;
+            max-width: 760px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Separator - removed */
@@ -615,6 +640,10 @@
                 letter-spacing: 0.26em;
             }
 
+            .philosophy {
+                padding: 5rem 1.5rem;
+            }
+
             .philosophy-content {
                 padding: 0 1.5rem;
             }
@@ -720,11 +749,7 @@
     </section>
 
     <!-- Philosophy Section -->
-    <section class="video-section philosophy" id="philosophy">
-        <video autoplay loop muted playsinline class="philosophy-video" id="philosophyVideo">
-            <source src="background-video.mp4" type="video/mp4">
-            <source src="background-video.mov" type="video/quicktime">
-        </video>
+    <section class="philosophy" id="philosophy">
         <div class="philosophy-content fade-in-up" style="--delay: 120ms;">
             <span class="section-eyebrow">House Philosophy</span>
             <h2>Luxury<br/>Streetwear</h2>
@@ -826,7 +851,6 @@
     <script>
         // Slow down videos
         const heroVideo = document.getElementById('heroVideo');
-        const philosophyVideo = document.getElementById('philosophyVideo');
 
         function setupVideo(videoElement, playbackRate) {
             if (!videoElement) return;
@@ -844,7 +868,6 @@
         }
 
         setupVideo(heroVideo, 0.4);
-        setupVideo(philosophyVideo, 0.5);
 
         // Nav scroll
         window.addEventListener('scroll', () => {
