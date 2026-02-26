@@ -29,3 +29,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-02-27 | Philosophy és Atelier Notes szekciók törölve, csak Hero + Collection maradt | pending | pending | pending |
 | 2026-02-27 | Hero alcím frissítve, footer tagline: FEEL THE, Instagram link: eternalvoid_official | pending | pending | pending |
 | 2026-02-27 | Hero alcím módosítva: Atelier | pending | pending | pending |
+| 2026-02-27 | Footer "FEEL THE" pozíció igazítva a "VOID" felirathoz térben | pending | pending | pending |
