@@ -19,4 +19,3 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-02-26 | 2. szekció videó kivéve, luxus statikus háttér + "Luxury Streetwear" tipográfia finomhangolás | pending | pending | pending |
 | 2026-02-26 | Philosophy háttér egységesítve a Crafted in Silence fekete alapú stílusára | pending | pending | pending |
 | 2026-02-26 | Philosophy háttér pontosan a Collection szekció háttérére állítva | pending | pending | pending |
-| 2026-02-26 | Folyamatos sötétből világosabb háttérátmenet beállítva (Philosophy → Brand Story → Collection) | pending | pending | pending |
