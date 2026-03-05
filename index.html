@@ -763,19 +763,30 @@
         @media (max-width: 480px) {
             .nav {
                 padding: 1rem;
+                grid-template-columns: 1fr auto 1fr;
             }
 
             .nav-left {
-                display: none;
+                display: flex;
+                grid-column: 1;
+                justify-self: start;
+                gap: 0.6rem;
             }
 
             .nav-right {
                 grid-column: 3;
+                display: none;
             }
 
             .logo {
                 grid-column: 2;
                 font-size: 1.3rem;
+                justify-self: center;
+            }
+
+            .nav-left a {
+                font-size: 0.66rem;
+                letter-spacing: 0.12em;
             }
 
             .nav-right a {
