@@ -32,3 +32,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-02-27 | Footer "FEEL THE" pozíció igazítva a "VOID" felirathoz térben | pending | pending | pending |
 | 2026-03-05 | Reszponzív optimalizálás iPhone/Android és MacBook nézetre (hero arányok, nav, termékkártyák, footer) | pending | pending | pending |
 | 2026-03-05 | Mobil nav javítás: Shop/Collection vissza a bal felső sarokba, VOID logó középre igazítva iPhone/Android nézeten | pending | pending | pending |
+| 2026-03-05 | Mobil nav finomítás: Contact visszaállítva a jobb felső sarokba iPhone/Android nézeten | pending | pending | pending |
