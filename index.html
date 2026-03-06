@@ -1499,7 +1499,6 @@
             }
 
             updateCartUI();
-            openCartPopup();
 
             triggerCartFlyEffect(buttonElement);
             triggerButtonAddedState(buttonElement);
@@ -1556,21 +1555,13 @@
         });
 
         cartFab.addEventListener('click', () => {
-            if (cartPopup.classList.contains('open')) {
-                closeCartPopup();
-            } else {
+            if (!cartPopup.classList.contains('open')) {
                 openCartPopup();
             }
         });
 
         cartClose.addEventListener('click', () => {
             closeCartPopup();
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!cartPopup.contains(event.target) && !cartFab.contains(event.target)) {
-                closeCartPopup();
-            }
         });
 
         updateCartUI();
