@@ -36,3 +36,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-06 | Kosár funkció hozzáadva: Add to Cart gombok minden pólónál + jobb alsó lebegő cart popup (darabszám, tételek, összeg) | pending | pending | pending |
 | 2026-03-06 | Add to Cart vizuális effekt hozzáadva: "flying" animáció a kosárba, gomb visszajelzés, badge/cart pulse highlight | pending | pending | pending |
 | 2026-03-06 | Kosár tételcsökkentés hozzáadva: soronkénti "-1" gombbal mennyiség csökkentés / elem törlés 0-nál | pending | pending | pending |
+| 2026-03-06 | Kosár UX finomítás: remove kattintásra popup nyitva marad + prémium nyitás/zárás animáció a cart popuphoz | pending | pending | pending |
