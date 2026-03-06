@@ -466,54 +466,186 @@
             gap: 0.6rem;
         }
 
-        .size-selector-wrap {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            align-items: center;
-            gap: 0.6rem;
-            margin-bottom: 0;
+        .size-chip {
+            width: 100%;
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            background: rgba(10, 10, 10, 0.88);
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            cursor: pointer;
             max-height: 0;
             opacity: 0;
             overflow: hidden;
             pointer-events: none;
-            transform: translateY(-4px);
-            transition: max-height 0.25s ease, opacity 0.25s ease, transform 0.25s ease, margin-bottom 0.25s ease;
+            transform: translateY(-6px);
+            transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease, max-height 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
         }
 
-        .product-card.size-selector-visible .size-selector-wrap {
-            max-height: 60px;
+        .product-card.size-chip-visible .size-chip {
+            min-height: 35px;
+            padding: 0.56rem 0.8rem;
+            border: 1px solid var(--void-border);
+            max-height: 45px;
             opacity: 1;
             pointer-events: auto;
             transform: translateY(0);
-            margin-bottom: 0.1rem;
         }
 
-        .size-label {
+        .product-card.has-size .size-chip {
+            border-color: var(--void-accent);
+            color: #f7efdf;
+        }
+
+        .size-chip:hover {
+            border-color: var(--void-accent);
+            background: rgba(16, 16, 16, 0.94);
+        }
+
+        .size-popup-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 3, 3, 0.72);
+            display: grid;
+            place-items: center;
+            padding: 1.25rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.24s ease;
+            z-index: 1400;
+        }
+
+        .size-popup-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .size-popup {
+            width: min(420px, 100%);
+            border: 1px solid rgba(199, 169, 108, 0.45);
+            background: linear-gradient(145deg, rgba(10, 10, 10, 0.98), rgba(5, 5, 5, 0.97));
+            box-shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
+            transform: translateY(16px) scale(0.98);
+            opacity: 0;
+            transition: transform 0.26s ease, opacity 0.26s ease;
+        }
+
+        .size-popup-backdrop.open .size-popup {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .size-popup-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 1rem 0.6rem;
+        }
+
+        .size-popup-title {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            letter-spacing: 0.08em;
+            color: var(--void-white);
+        }
+
+        .size-popup-subtitle {
+            margin: 0.2rem 0 0;
             font-size: 0.62rem;
-            letter-spacing: 0.16em;
+            letter-spacing: 0.2em;
             text-transform: uppercase;
             color: var(--void-light-grey);
-            font-weight: 600;
         }
 
-        .size-select {
-            width: 100%;
-            min-height: 36px;
-            padding: 0.45rem 0.65rem;
-            border: 1px solid var(--void-border);
-            background: rgba(9, 9, 9, 0.9);
+        .size-popup-close {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(15, 15, 15, 0.8);
             color: var(--void-white);
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            font-size: 0.86rem;
+        }
+
+        .size-popup-body {
+            padding: 0.4rem 1rem 1rem;
+        }
+
+        .size-options {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .size-option {
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            background: rgba(12, 12, 12, 0.92);
+            color: var(--void-white);
+            min-height: 42px;
             font-family: 'Manrope', sans-serif;
             font-size: 0.68rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            outline: none;
-            transition: border-color 0.25s ease, background 0.25s ease;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
         }
 
-        .size-select:focus {
+        .size-option:hover {
+            border-color: rgba(199, 169, 108, 0.8);
+            background: rgba(25, 25, 25, 0.94);
+        }
+
+        .size-option.active {
             border-color: var(--void-accent);
-            background: rgba(12, 12, 12, 0.96);
+            background: rgba(199, 169, 108, 0.2);
+            color: #f7efdf;
+        }
+
+        .size-popup-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .size-popup-btn {
+            min-height: 39px;
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            background: rgba(12, 12, 12, 0.9);
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.64rem;
+            font-weight: 600;
+            letter-spacing: 0.17em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+
+        .size-popup-btn.confirm {
+            border-color: rgba(199, 169, 108, 0.6);
+            background: rgba(199, 169, 108, 0.16);
+            color: #f8edd8;
+        }
+
+        .size-popup-btn.confirm:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .size-popup-btn:hover:not(:disabled) {
+            border-color: var(--void-accent);
+        }
+
+        body.size-popup-open {
+            overflow: hidden;
         }
 
         .add-to-cart-btn {
@@ -1110,19 +1242,9 @@
                 gap: 0.4rem;
             }
 
-            .size-selector-wrap {
-                gap: 0.5rem;
-            }
-
-            .size-label {
+            .size-chip {
                 font-size: 0.58rem;
                 letter-spacing: 0.14em;
-            }
-
-            .size-select {
-                font-size: 0.64rem;
-                letter-spacing: 0.1em;
-                min-height: 34px;
             }
 
             .product-name {
@@ -1142,6 +1264,14 @@
             .cart-fab {
                 right: calc(0.9rem + env(safe-area-inset-right, 0px));
                 bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+            }
+
+            .size-popup {
+                width: min(390px, 100%);
+            }
+
+            .size-options {
+                gap: 0.45rem;
             }
 
             .footer {
@@ -1251,14 +1381,17 @@
                 font-size: 1.15rem;
             }
 
-            .size-selector-wrap {
-                grid-template-columns: 1fr;
-                gap: 0.25rem;
+            .size-options {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
             }
 
-            .size-select {
-                min-height: 32px;
+            .size-option {
+                min-height: 40px;
                 font-size: 0.62rem;
+            }
+
+            .size-popup-actions {
+                grid-template-columns: 1fr;
             }
 
             .footer-content {
@@ -1389,17 +1522,7 @@
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
-                        <div class="size-selector-wrap">
-                            <label class="size-label" for="size-levitate">Size</label>
-                            <select class="size-select" id="size-levitate" data-size-select>
-                                <option value="">Select</option>
-                                <option value="XS">XS</option>
-                                <option value="S">S</option>
-                                <option value="M">M</option>
-                                <option value="L">L</option>
-                                <option value="XL">XL</option>
-                            </select>
-                        </div>
+                        <button type="button" class="size-chip" data-size-chip>Choose Size</button>
                         <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
@@ -1413,17 +1536,7 @@
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
-                        <div class="size-selector-wrap">
-                            <label class="size-label" for="size-endzustand">Size</label>
-                            <select class="size-select" id="size-endzustand" data-size-select>
-                                <option value="">Select</option>
-                                <option value="XS">XS</option>
-                                <option value="S">S</option>
-                                <option value="M">M</option>
-                                <option value="L">L</option>
-                                <option value="XL">XL</option>
-                            </select>
-                        </div>
+                        <button type="button" class="size-chip" data-size-chip>Choose Size</button>
                         <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
@@ -1437,17 +1550,7 @@
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
-                        <div class="size-selector-wrap">
-                            <label class="size-label" for="size-monogram">Size</label>
-                            <select class="size-select" id="size-monogram" data-size-select>
-                                <option value="">Select</option>
-                                <option value="XS">XS</option>
-                                <option value="S">S</option>
-                                <option value="M">M</option>
-                                <option value="L">L</option>
-                                <option value="XL">XL</option>
-                            </select>
-                        </div>
+                        <button type="button" class="size-chip" data-size-chip>Choose Size</button>
                         <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
@@ -1455,6 +1558,31 @@
             </div>
         </div>
     </section>
+
+    <div class="size-popup-backdrop" id="sizePopupBackdrop" aria-hidden="true">
+        <aside class="size-popup" role="dialog" aria-modal="true" aria-labelledby="sizePopupTitle">
+            <div class="size-popup-header">
+                <div>
+                    <h3 class="size-popup-title" id="sizePopupTitle">Select Size</h3>
+                    <p class="size-popup-subtitle" id="sizePopupSubtitle">Choose your fit</p>
+                </div>
+                <button type="button" class="size-popup-close" id="sizePopupClose" aria-label="Close size picker">✕</button>
+            </div>
+            <div class="size-popup-body">
+                <div class="size-options" id="sizeOptions">
+                    <button type="button" class="size-option" data-size-option="XS">XS</button>
+                    <button type="button" class="size-option" data-size-option="S">S</button>
+                    <button type="button" class="size-option" data-size-option="M">M</button>
+                    <button type="button" class="size-option" data-size-option="L">L</button>
+                    <button type="button" class="size-option" data-size-option="XL">XL</button>
+                </div>
+                <div class="size-popup-actions">
+                    <button type="button" class="size-popup-btn" id="sizePopupCancel">Cancel</button>
+                    <button type="button" class="size-popup-btn confirm" id="sizePopupConfirm" disabled>Apply</button>
+                </div>
+            </div>
+        </aside>
+    </div>
 
     <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart">
         <span class="cart-fab-icon" aria-hidden="true">🛍</span>
@@ -1571,8 +1699,19 @@
         const cartItemsElement = document.getElementById('cartItems');
         const cartTotalElement = document.getElementById('cartTotal');
         const cartEmptyElement = document.getElementById('cartEmpty');
+        const sizePopupBackdrop = document.getElementById('sizePopupBackdrop');
+        const sizePopupSubtitle = document.getElementById('sizePopupSubtitle');
+        const sizePopupClose = document.getElementById('sizePopupClose');
+        const sizePopupCancel = document.getElementById('sizePopupCancel');
+        const sizePopupConfirm = document.getElementById('sizePopupConfirm');
+        const sizeOptionButtons = Array.from(document.querySelectorAll('[data-size-option]'));
 
         const cart = [];
+        let sizePopupState = {
+            productCard: null,
+            addButton: null,
+            selectedSize: ''
+        };
 
         function openCartPopup() {
             cartPopup.classList.remove('closing');
@@ -1637,15 +1776,69 @@
             addButtonTimers.set(buttonElement, timerId);
         }
 
-        function revealSizeSelector(productCard) {
+        function setProductCardSize(productCard, size) {
+            if (!productCard || !size) return;
+
+            productCard.dataset.selectedSize = size;
+            productCard.classList.add('size-chip-visible', 'has-size');
+
+            const sizeChip = productCard.querySelector('[data-size-chip]');
+            if (sizeChip) {
+                sizeChip.textContent = `Size: ${size}`;
+                sizeChip.setAttribute('aria-label', `Change size, current ${size}`);
+            }
+        }
+
+        function revealSizeChip(productCard) {
             if (!productCard) return;
 
-            productCard.classList.add('size-selector-visible');
+            productCard.classList.add('size-chip-visible');
+        }
 
-            const sizeSelect = productCard.querySelector('[data-size-select]');
-            if (sizeSelect) {
-                sizeSelect.focus({ preventScroll: true });
-            }
+        function updateSizeOptionsUI(activeSize) {
+            sizeOptionButtons.forEach((optionButton) => {
+                const sizeValue = optionButton.getAttribute('data-size-option') || '';
+                const isActive = sizeValue === activeSize;
+                optionButton.classList.toggle('active', isActive);
+                optionButton.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        }
+
+        function openSizePopup(productCard, addButton) {
+            if (!productCard || !sizePopupBackdrop) return;
+
+            const currentSize = productCard.dataset.selectedSize || '';
+            const productName = productCard.dataset.productName || 'Product';
+
+            sizePopupState = {
+                productCard,
+                addButton,
+                selectedSize: currentSize
+            };
+
+            revealSizeChip(productCard);
+            updateSizeOptionsUI(currentSize);
+            sizePopupConfirm.disabled = !currentSize;
+            sizePopupConfirm.textContent = addButton ? 'Add to Cart' : 'Apply Size';
+            sizePopupSubtitle.textContent = `${productName} · choose your fit`;
+
+            sizePopupBackdrop.classList.add('open');
+            sizePopupBackdrop.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('size-popup-open');
+        }
+
+        function closeSizePopup() {
+            if (!sizePopupBackdrop) return;
+
+            sizePopupBackdrop.classList.remove('open');
+            sizePopupBackdrop.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('size-popup-open');
+
+            sizePopupState = {
+                productCard: null,
+                addButton: null,
+                selectedSize: ''
+            };
         }
 
         function updateCartUI() {
@@ -1761,24 +1954,70 @@
 
                 const name = productCard.dataset.productName || 'Product';
                 const price = Number(productCard.dataset.productPrice || '0');
-                const sizeSelect = productCard.querySelector('[data-size-select]');
-                const size = sizeSelect ? sizeSelect.value : '';
+                const size = productCard.dataset.selectedSize || '';
 
                 if (!size) {
-                    revealSizeSelector(productCard);
+                    openSizePopup(productCard, button);
                     setTemporaryAddButtonState(button, 'Select Size', 'needs-size', 850);
                     return;
                 }
 
                 addToCart(name, price, size, button);
             });
+        });
 
-            const productCard = button.closest('.product-card');
-            const sizeSelect = productCard ? productCard.querySelector('[data-size-select]') : null;
-            if (sizeSelect) {
-                sizeSelect.addEventListener('change', () => {
-                    resetAddButtonState(button);
-                });
+        document.querySelectorAll('[data-size-chip]').forEach((chip) => {
+            chip.addEventListener('click', () => {
+                const productCard = chip.closest('.product-card');
+                if (!productCard) return;
+
+                openSizePopup(productCard, null);
+            });
+        });
+
+        sizeOptionButtons.forEach((optionButton) => {
+            optionButton.addEventListener('click', () => {
+                const sizeValue = optionButton.getAttribute('data-size-option') || '';
+                if (!sizeValue) return;
+
+                sizePopupState.selectedSize = sizeValue;
+                updateSizeOptionsUI(sizeValue);
+                sizePopupConfirm.disabled = false;
+            });
+        });
+
+        sizePopupConfirm.addEventListener('click', () => {
+            const { productCard, addButton, selectedSize } = sizePopupState;
+            if (!productCard || !selectedSize) return;
+
+            setProductCardSize(productCard, selectedSize);
+            closeSizePopup();
+
+            if (addButton) {
+                resetAddButtonState(addButton);
+                const name = productCard.dataset.productName || 'Product';
+                const price = Number(productCard.dataset.productPrice || '0');
+                addToCart(name, price, selectedSize, addButton);
+            }
+        });
+
+        sizePopupClose.addEventListener('click', () => {
+            closeSizePopup();
+        });
+
+        sizePopupCancel.addEventListener('click', () => {
+            closeSizePopup();
+        });
+
+        sizePopupBackdrop.addEventListener('click', (event) => {
+            if (event.target === sizePopupBackdrop) {
+                closeSizePopup();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && sizePopupBackdrop.classList.contains('open')) {
+                closeSizePopup();
             }
         });
 
