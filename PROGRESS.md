@@ -34,3 +34,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-05 | Mobil nav javítás: Shop/Collection vissza a bal felső sarokba, VOID logó középre igazítva iPhone/Android nézeten | pending | pending | pending |
 | 2026-03-05 | Mobil nav finomítás: Contact visszaállítva a jobb felső sarokba iPhone/Android nézeten | pending | pending | pending |
 | 2026-03-06 | Kosár funkció hozzáadva: Add to Cart gombok minden pólónál + jobb alsó lebegő cart popup (darabszám, tételek, összeg) | pending | pending | pending |
+| 2026-03-06 | Add to Cart vizuális effekt hozzáadva: "flying" animáció a kosárba, gomb visszajelzés, badge/cart pulse highlight | pending | pending | pending |

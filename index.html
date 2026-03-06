@@ -487,6 +487,12 @@
             color: #f6efe2;
         }
 
+        .add-to-cart-btn.added {
+            border-color: var(--void-accent);
+            background: rgba(199, 169, 108, 0.2);
+            color: #f7efdf;
+        }
+
         .cart-fab {
             position: fixed;
             right: 1.25rem;
@@ -506,6 +512,10 @@
             backdrop-filter: blur(8px);
         }
 
+        .cart-fab.bump {
+            animation: cartFabPulse 0.45s ease;
+        }
+
         .cart-fab-badge {
             position: absolute;
             top: -5px;
@@ -521,6 +531,10 @@
             align-items: center;
             justify-content: center;
             padding: 0 0.35rem;
+        }
+
+        .cart-fab-badge.bump {
+            animation: cartBadgePop 0.4s ease;
         }
 
         .cart-popup {
@@ -544,6 +558,41 @@
             transform: translateY(0) scale(1);
             opacity: 1;
             pointer-events: auto;
+        }
+
+        .cart-popup.highlight {
+            box-shadow: 0 20px 40px rgba(199, 169, 108, 0.22);
+        }
+
+        .cart-fly-dot {
+            position: fixed;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1300;
+            background: radial-gradient(circle at 30% 30%, #f8e9cb 0%, #c7a96c 65%, #8f6f3d 100%);
+            box-shadow: 0 0 18px rgba(199, 169, 108, 0.5);
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            transition: transform 0.65s cubic-bezier(0.22, 0.84, 0.22, 1), opacity 0.65s ease;
+        }
+
+        .cart-fly-dot.fly {
+            opacity: 0;
+            transform: translate(calc(-50% + var(--fly-x)), calc(-50% + var(--fly-y))) scale(0.24);
+        }
+
+        @keyframes cartFabPulse {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes cartBadgePop {
+            0% { transform: scale(1); }
+            45% { transform: scale(1.28); }
+            100% { transform: scale(1); }
         }
 
         .cart-popup-header {
@@ -1312,7 +1361,50 @@
             cartEmptyElement.style.display = itemCount === 0 ? 'block' : 'none';
         }
 
-        function addToCart(name, price) {
+        function triggerCartFlyEffect(buttonElement) {
+            if (!buttonElement || !cartFab) return;
+
+            const buttonRect = buttonElement.getBoundingClientRect();
+            const cartRect = cartFab.getBoundingClientRect();
+
+            const flyDot = document.createElement('span');
+            flyDot.className = 'cart-fly-dot';
+
+            const startX = buttonRect.left + buttonRect.width / 2;
+            const startY = buttonRect.top + buttonRect.height / 2;
+            const endX = cartRect.left + cartRect.width / 2;
+            const endY = cartRect.top + cartRect.height / 2;
+
+            flyDot.style.left = `${startX}px`;
+            flyDot.style.top = `${startY}px`;
+            flyDot.style.setProperty('--fly-x', `${endX - startX}px`);
+            flyDot.style.setProperty('--fly-y', `${endY - startY}px`);
+
+            document.body.appendChild(flyDot);
+
+            requestAnimationFrame(() => {
+                flyDot.classList.add('fly');
+            });
+
+            setTimeout(() => {
+                flyDot.remove();
+            }, 700);
+        }
+
+        function triggerButtonAddedState(buttonElement) {
+            if (!buttonElement) return;
+
+            const originalLabel = buttonElement.textContent;
+            buttonElement.classList.add('added');
+            buttonElement.textContent = 'Added';
+
+            setTimeout(() => {
+                buttonElement.classList.remove('added');
+                buttonElement.textContent = originalLabel;
+            }, 650);
+        }
+
+        function addToCart(name, price, buttonElement) {
             const existingItem = cart.find((item) => item.name === name);
             if (existingItem) {
                 existingItem.quantity += 1;
@@ -1322,6 +1414,22 @@
 
             updateCartUI();
             cartPopup.classList.add('open');
+
+            triggerCartFlyEffect(buttonElement);
+            triggerButtonAddedState(buttonElement);
+
+            cartFab.classList.remove('bump');
+            cartCount.classList.remove('bump');
+            cartPopup.classList.remove('highlight');
+            void cartFab.offsetWidth;
+
+            cartFab.classList.add('bump');
+            cartCount.classList.add('bump');
+            cartPopup.classList.add('highlight');
+
+            setTimeout(() => {
+                cartPopup.classList.remove('highlight');
+            }, 500);
         }
 
         document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
@@ -1331,7 +1439,7 @@
 
                 const name = productCard.dataset.productName || 'Product';
                 const price = Number(productCard.dataset.productPrice || '0');
-                addToCart(name, price);
+                addToCart(name, price, button);
             });
         });
 
