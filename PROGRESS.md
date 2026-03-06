@@ -42,3 +42,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-06 | Teljes reszponzív optimalizálás iPhone/Android + MacBook nézetekre (safe-area nav/cart, tipó és spacing finomhangolás) | pending | pending | pending |
 | 2026-03-06 | Méretválasztás hozzáadva pólókhoz (XS, S, M, L, XL), kötelező size Add to Cart előtt + kosár tételkezelés név+méret alapján | pending | pending | pending |
 | 2026-03-06 | Size Select border színe egységesítve a View Piece gomb keretszínével | pending | pending | pending |
+| 2026-03-06 | Size selector UX javítás: alapból rejtett, Add to Cart kattintásra jelenik meg; Add to Cart/Added felirat állapotbugok javítva | pending | pending | pending |

@@ -471,6 +471,20 @@
             grid-template-columns: auto 1fr;
             align-items: center;
             gap: 0.6rem;
+            margin-bottom: 0;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+            transform: translateY(-4px);
+            transition: max-height 0.25s ease, opacity 0.25s ease, transform 0.25s ease, margin-bottom 0.25s ease;
+        }
+
+        .product-card.size-selector-visible .size-selector-wrap {
+            max-height: 60px;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
             margin-bottom: 0.1rem;
         }
 
@@ -1585,6 +1599,55 @@
             return `€${value}`;
         }
 
+        const addButtonTimers = new WeakMap();
+
+        function clearAddButtonTimer(buttonElement) {
+            const activeTimer = addButtonTimers.get(buttonElement);
+            if (activeTimer) {
+                clearTimeout(activeTimer);
+            }
+        }
+
+        function resetAddButtonState(buttonElement) {
+            if (!buttonElement) return;
+
+            clearAddButtonTimer(buttonElement);
+            buttonElement.classList.remove('added', 'needs-size');
+            buttonElement.textContent = buttonElement.dataset.defaultLabel || 'Add to Cart';
+        }
+
+        function setTemporaryAddButtonState(buttonElement, label, stateClass, durationMs) {
+            if (!buttonElement) return;
+
+            clearAddButtonTimer(buttonElement);
+            buttonElement.classList.remove('added', 'needs-size');
+
+            if (stateClass) {
+                buttonElement.classList.add(stateClass);
+            }
+
+            buttonElement.textContent = label;
+
+            const timerId = setTimeout(() => {
+                buttonElement.classList.remove('added', 'needs-size');
+                buttonElement.textContent = buttonElement.dataset.defaultLabel || 'Add to Cart';
+                addButtonTimers.delete(buttonElement);
+            }, durationMs);
+
+            addButtonTimers.set(buttonElement, timerId);
+        }
+
+        function revealSizeSelector(productCard) {
+            if (!productCard) return;
+
+            productCard.classList.add('size-selector-visible');
+
+            const sizeSelect = productCard.querySelector('[data-size-select]');
+            if (sizeSelect) {
+                sizeSelect.focus({ preventScroll: true });
+            }
+        }
+
         function updateCartUI() {
             cartItemsElement.innerHTML = '';
 
@@ -1645,14 +1708,7 @@
         function triggerButtonAddedState(buttonElement) {
             if (!buttonElement) return;
 
-            const originalLabel = buttonElement.textContent;
-            buttonElement.classList.add('added');
-            buttonElement.textContent = 'Added';
-
-            setTimeout(() => {
-                buttonElement.classList.remove('added');
-                buttonElement.textContent = originalLabel;
-            }, 650);
+            setTemporaryAddButtonState(buttonElement, 'Added', 'added', 680);
         }
 
         function addToCart(name, price, size, buttonElement) {
@@ -1697,6 +1753,8 @@
         }
 
         document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
+            button.dataset.defaultLabel = button.textContent.trim() || 'Add to Cart';
+
             button.addEventListener('click', () => {
                 const productCard = button.closest('.product-card');
                 if (!productCard) return;
@@ -1707,21 +1765,21 @@
                 const size = sizeSelect ? sizeSelect.value : '';
 
                 if (!size) {
-                    button.classList.remove('needs-size');
-                    void button.offsetWidth;
-                    button.classList.add('needs-size');
-
-                    const originalLabel = button.textContent;
-                    button.textContent = 'Select Size';
-                    setTimeout(() => {
-                        button.classList.remove('needs-size');
-                        button.textContent = originalLabel;
-                    }, 700);
+                    revealSizeSelector(productCard);
+                    setTemporaryAddButtonState(button, 'Select Size', 'needs-size', 850);
                     return;
                 }
 
                 addToCart(name, price, size, button);
             });
+
+            const productCard = button.closest('.product-card');
+            const sizeSelect = productCard ? productCard.querySelector('[data-size-select]') : null;
+            if (sizeSelect) {
+                sizeSelect.addEventListener('change', () => {
+                    resetAddButtonState(button);
+                });
+            }
         });
 
         cartItemsElement.addEventListener('click', (event) => {
