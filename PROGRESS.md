@@ -40,3 +40,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-06 | Kosár működés finomítás: Add to Cart nem nyit popupot; kosár csak gombra nyílik; bezárás csak X gombbal | pending | pending | pending |
 | 2026-03-06 | Kosár ikon viselkedés finomítás: cart gomb ismét toggle (kattintásra nyit és zár is) | pending | pending | pending |
 | 2026-03-06 | Teljes reszponzív optimalizálás iPhone/Android + MacBook nézetekre (safe-area nav/cart, tipó és spacing finomhangolás) | pending | pending | pending |
+| 2026-03-06 | Méretválasztás hozzáadva pólókhoz (XS, S, M, L, XL), kötelező size Add to Cart előtt + kosár tételkezelés név+méret alapján | pending | pending | pending |

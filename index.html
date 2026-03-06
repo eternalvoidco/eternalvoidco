@@ -466,6 +466,42 @@
             gap: 0.6rem;
         }
 
+        .size-selector-wrap {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .size-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--void-light-grey);
+            font-weight: 600;
+        }
+
+        .size-select {
+            width: 100%;
+            min-height: 36px;
+            padding: 0.45rem 0.65rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(9, 9, 9, 0.9);
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            outline: none;
+            transition: border-color 0.25s ease, background 0.25s ease;
+        }
+
+        .size-select:focus {
+            border-color: var(--void-accent);
+            background: rgba(12, 12, 12, 0.96);
+        }
+
         .add-to-cart-btn {
             width: 100%;
             padding: 0.82rem 1rem;
@@ -491,6 +527,12 @@
             border-color: var(--void-accent);
             background: rgba(199, 169, 108, 0.2);
             color: #f7efdf;
+        }
+
+        .add-to-cart-btn.needs-size {
+            border-color: #d59a86;
+            color: #f3c8ba;
+            animation: needsSizePulse 0.38s ease;
         }
 
         .cart-fab {
@@ -636,6 +678,14 @@
                 opacity: 0;
                 transform: translateY(16px) scale(0.94) rotateX(6deg);
             }
+        }
+
+        @keyframes needsSizePulse {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            50% { transform: translateX(2px); }
+            75% { transform: translateX(-1px); }
+            100% { transform: translateX(0); }
         }
 
         .cart-popup-header {
@@ -1046,6 +1096,21 @@
                 gap: 0.4rem;
             }
 
+            .size-selector-wrap {
+                gap: 0.5rem;
+            }
+
+            .size-label {
+                font-size: 0.58rem;
+                letter-spacing: 0.14em;
+            }
+
+            .size-select {
+                font-size: 0.64rem;
+                letter-spacing: 0.1em;
+                min-height: 34px;
+            }
+
             .product-name {
                 font-size: 1.25rem;
             }
@@ -1170,6 +1235,16 @@
 
             .product-name {
                 font-size: 1.15rem;
+            }
+
+            .size-selector-wrap {
+                grid-template-columns: 1fr;
+                gap: 0.25rem;
+            }
+
+            .size-select {
+                min-height: 32px;
+                font-size: 0.62rem;
             }
 
             .footer-content {
@@ -1300,6 +1375,17 @@
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
+                        <div class="size-selector-wrap">
+                            <label class="size-label" for="size-levitate">Size</label>
+                            <select class="size-select" id="size-levitate" data-size-select>
+                                <option value="">Select</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                            </select>
+                        </div>
                         <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
@@ -1313,6 +1399,17 @@
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
+                        <div class="size-selector-wrap">
+                            <label class="size-label" for="size-endzustand">Size</label>
+                            <select class="size-select" id="size-endzustand" data-size-select>
+                                <option value="">Select</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                            </select>
+                        </div>
                         <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
@@ -1326,6 +1423,17 @@
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
+                        <div class="size-selector-wrap">
+                            <label class="size-label" for="size-monogram">Size</label>
+                            <select class="size-select" id="size-monogram" data-size-select>
+                                <option value="">Select</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                            </select>
+                        </div>
                         <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
@@ -1492,9 +1600,9 @@
                 listItem.innerHTML = `
                     <div>
                         <span class="cart-item-name">${item.name}</span>
-                        <span class="cart-item-meta">${item.quantity} x ${formatEuro(item.price)}</span>
+                        <span class="cart-item-meta">${item.size} · ${item.quantity} x ${formatEuro(item.price)}</span>
                     </div>
-                    <button type="button" class="cart-item-remove" data-cart-remove="${item.name}">-1</button>
+                    <button type="button" class="cart-item-remove" data-cart-remove-name="${item.name}" data-cart-remove-size="${item.size}">-1</button>
                 `;
                 cartItemsElement.appendChild(listItem);
             });
@@ -1547,12 +1655,12 @@
             }, 650);
         }
 
-        function addToCart(name, price, buttonElement) {
-            const existingItem = cart.find((item) => item.name === name);
+        function addToCart(name, price, size, buttonElement) {
+            const existingItem = cart.find((item) => item.name === name && item.size === size);
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
-                cart.push({ name, price, quantity: 1 });
+                cart.push({ name, price, size, quantity: 1 });
             }
 
             updateCartUI();
@@ -1574,8 +1682,8 @@
             }, 500);
         }
 
-        function removeOneFromCart(name) {
-            const itemIndex = cart.findIndex((item) => item.name === name);
+        function removeOneFromCart(name, size) {
+            const itemIndex = cart.findIndex((item) => item.name === name && item.size === size);
             if (itemIndex === -1) return;
 
             const item = cart[itemIndex];
@@ -1595,20 +1703,38 @@
 
                 const name = productCard.dataset.productName || 'Product';
                 const price = Number(productCard.dataset.productPrice || '0');
-                addToCart(name, price, button);
+                const sizeSelect = productCard.querySelector('[data-size-select]');
+                const size = sizeSelect ? sizeSelect.value : '';
+
+                if (!size) {
+                    button.classList.remove('needs-size');
+                    void button.offsetWidth;
+                    button.classList.add('needs-size');
+
+                    const originalLabel = button.textContent;
+                    button.textContent = 'Select Size';
+                    setTimeout(() => {
+                        button.classList.remove('needs-size');
+                        button.textContent = originalLabel;
+                    }, 700);
+                    return;
+                }
+
+                addToCart(name, price, size, button);
             });
         });
 
         cartItemsElement.addEventListener('click', (event) => {
-            const removeButton = event.target.closest('[data-cart-remove]');
+            const removeButton = event.target.closest('[data-cart-remove-name]');
             if (!removeButton) return;
 
             event.stopPropagation();
 
-            const itemName = removeButton.getAttribute('data-cart-remove');
-            if (!itemName) return;
+            const itemName = removeButton.getAttribute('data-cart-remove-name');
+            const itemSize = removeButton.getAttribute('data-cart-remove-size');
+            if (!itemName || !itemSize) return;
 
-            removeOneFromCart(itemName);
+            removeOneFromCart(itemName, itemSize);
         });
 
         cartFab.addEventListener('click', () => {
