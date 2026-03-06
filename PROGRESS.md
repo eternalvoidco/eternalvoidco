@@ -33,3 +33,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-05 | Reszponzív optimalizálás iPhone/Android és MacBook nézetre (hero arányok, nav, termékkártyák, footer) | pending | pending | pending |
 | 2026-03-05 | Mobil nav javítás: Shop/Collection vissza a bal felső sarokba, VOID logó középre igazítva iPhone/Android nézeten | pending | pending | pending |
 | 2026-03-05 | Mobil nav finomítás: Contact visszaállítva a jobb felső sarokba iPhone/Android nézeten | pending | pending | pending |
+| 2026-03-06 | Kosár funkció hozzáadva: Add to Cart gombok minden pólónál + jobb alsó lebegő cart popup (darabszám, tételek, összeg) | pending | pending | pending |

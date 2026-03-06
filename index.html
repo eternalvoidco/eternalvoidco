@@ -460,6 +460,199 @@
             border-color: var(--void-accent);
         }
 
+        .product-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.6rem;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 0.82rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: transparent;
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            border-color: var(--void-accent);
+            background: rgba(199, 169, 108, 0.12);
+            color: #f6efe2;
+        }
+
+        .cart-fab {
+            position: fixed;
+            right: 1.25rem;
+            bottom: 1.25rem;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 1px solid var(--void-border);
+            background: rgba(8, 8, 8, 0.92);
+            color: var(--void-white);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1200;
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+        }
+
+        .cart-fab-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: var(--void-accent);
+            color: #0a0a0a;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 0.35rem;
+        }
+
+        .cart-popup {
+            position: fixed;
+            right: 1.25rem;
+            bottom: 5.3rem;
+            width: min(360px, calc(100vw - 2rem));
+            border: 1px solid var(--void-border);
+            background: rgba(6, 6, 6, 0.96);
+            color: var(--void-white);
+            padding: 1rem;
+            z-index: 1200;
+            transform: translateY(12px) scale(0.98);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .cart-popup.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cart-popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            padding-bottom: 0.6rem;
+        }
+
+        .cart-popup-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            letter-spacing: 0.08em;
+        }
+
+        .cart-close {
+            border: none;
+            background: transparent;
+            color: var(--void-light-grey);
+            cursor: pointer;
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+
+        .cart-items {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 0.9rem;
+            padding-right: 0.2rem;
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.55rem;
+        }
+
+        .cart-item-name {
+            font-size: 0.86rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--void-white);
+        }
+
+        .cart-item-meta {
+            font-size: 0.72rem;
+            color: var(--void-light-grey);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .cart-empty {
+            font-size: 0.8rem;
+            color: var(--void-light-grey);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            padding: 0.5rem 0 0.9rem;
+        }
+
+        .cart-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            padding-top: 0.8rem;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.7rem;
+            color: var(--void-light-grey);
+        }
+
+        .cart-total strong {
+            color: var(--void-white);
+            font-size: 0.95rem;
+        }
+
+        .cart-checkout {
+            width: 100%;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            padding: 0.82rem 1rem;
+            background: var(--void-accent);
+            color: #0a0a0a;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            border: 1px solid var(--void-accent);
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        .cart-checkout:hover {
+            background: transparent;
+            color: var(--void-accent);
+        }
+
         /* Footer */
         .footer {
             max-width: 1600px;
@@ -732,6 +925,16 @@
                 letter-spacing: 0.1em;
             }
 
+            .cart-popup {
+                right: 1rem;
+                bottom: 5rem;
+            }
+
+            .cart-fab {
+                right: 1rem;
+                bottom: 1rem;
+            }
+
             .footer {
                 padding: 3rem 0;
                 margin-top: 4rem;
@@ -847,6 +1050,28 @@
             .footer-tagline {
                 letter-spacing: 0.2em;
             }
+
+            .cart-popup {
+                width: calc(100vw - 1.25rem);
+                right: 0.625rem;
+                bottom: 4.7rem;
+                padding: 0.85rem;
+            }
+
+            .cart-fab {
+                width: 54px;
+                height: 54px;
+                right: 0.625rem;
+                bottom: 0.625rem;
+            }
+
+            .cart-popup-title {
+                font-size: 1.05rem;
+            }
+
+            .cart-items {
+                max-height: 180px;
+            }
         }
 
         @media (min-width: 1100px) and (max-width: 1512px) {
@@ -898,7 +1123,7 @@
                 <h2>Collection</h2>
             </div>
             <div class="products-grid">
-                <div class="product-card fade-in-up" style="--delay: 80ms;">
+                <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250">
                     <div class="product-image">
                         <img src="product-shadow.jpg" alt="Levitate Tee">
                     </div>
@@ -906,9 +1131,12 @@
                         <h3 class="product-name">Levitate Tee</h3>
                         <span class="product-price">€250</span>
                     </div>
-                    <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
+                    <div class="product-actions">
+                        <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
+                        <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
+                    </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 140ms;">
+                <div class="product-card fade-in-up" style="--delay: 140ms;" data-product-name="Endzustand Tee" data-product-price="250">
                     <div class="product-image">
                         <img src="product-lunar.jpg" alt="Endzustand Tee">
                     </div>
@@ -916,9 +1144,12 @@
                         <h3 class="product-name">Endzustand Tee</h3>
                         <span class="product-price">€250</span>
                     </div>
-                    <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
+                    <div class="product-actions">
+                        <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
+                        <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
+                    </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 200ms;">
+                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Monogram Tee" data-product-price="250">
                     <div class="product-image">
                         <img src="product-monogram.jpg" alt="Monogram Tee">
                     </div>
@@ -926,11 +1157,35 @@
                         <h3 class="product-name">Monogram Tee</h3>
                         <span class="product-price">€250</span>
                     </div>
-                    <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
+                    <div class="product-actions">
+                        <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
+                        <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart">
+        <span aria-hidden="true">🛍</span>
+        <span class="cart-fab-badge" id="cartCount">0</span>
+    </button>
+
+    <aside class="cart-popup" id="cartPopup" aria-live="polite">
+        <div class="cart-popup-header">
+            <h3 class="cart-popup-title">Your Cart</h3>
+            <button class="cart-close" id="cartClose" type="button" aria-label="Close cart">✕</button>
+        </div>
+        <ul class="cart-items" id="cartItems"></ul>
+        <p class="cart-empty" id="cartEmpty">Your cart is empty.</p>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <strong id="cartTotal">€0</strong>
+            </div>
+            <a href="https://shop.eternalvoid.co" class="cart-checkout" target="_blank" rel="noopener">Checkout</a>
+        </div>
+    </aside>
 
     <!-- Footer -->
     <footer class="footer" id="contact">
@@ -1017,6 +1272,84 @@
         }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
 
         revealItems.forEach((item) => revealObserver.observe(item));
+
+        // Cart logic
+        const cartFab = document.getElementById('cartFab');
+        const cartPopup = document.getElementById('cartPopup');
+        const cartClose = document.getElementById('cartClose');
+        const cartCount = document.getElementById('cartCount');
+        const cartItemsElement = document.getElementById('cartItems');
+        const cartTotalElement = document.getElementById('cartTotal');
+        const cartEmptyElement = document.getElementById('cartEmpty');
+
+        const cart = [];
+
+        function formatEuro(value) {
+            return `€${value}`;
+        }
+
+        function updateCartUI() {
+            cartItemsElement.innerHTML = '';
+
+            let itemCount = 0;
+            let total = 0;
+
+            cart.forEach((item) => {
+                itemCount += item.quantity;
+                total += item.price * item.quantity;
+
+                const listItem = document.createElement('li');
+                listItem.className = 'cart-item';
+                listItem.innerHTML = `
+                    <span class="cart-item-name">${item.name}</span>
+                    <span class="cart-item-meta">${item.quantity} x ${formatEuro(item.price)}</span>
+                `;
+                cartItemsElement.appendChild(listItem);
+            });
+
+            cartCount.textContent = String(itemCount);
+            cartTotalElement.textContent = formatEuro(total);
+            cartEmptyElement.style.display = itemCount === 0 ? 'block' : 'none';
+        }
+
+        function addToCart(name, price) {
+            const existingItem = cart.find((item) => item.name === name);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+
+            updateCartUI();
+            cartPopup.classList.add('open');
+        }
+
+        document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const productCard = button.closest('.product-card');
+                if (!productCard) return;
+
+                const name = productCard.dataset.productName || 'Product';
+                const price = Number(productCard.dataset.productPrice || '0');
+                addToCart(name, price);
+            });
+        });
+
+        cartFab.addEventListener('click', () => {
+            cartPopup.classList.toggle('open');
+        });
+
+        cartClose.addEventListener('click', () => {
+            cartPopup.classList.remove('open');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!cartPopup.contains(event.target) && !cartFab.contains(event.target)) {
+                cartPopup.classList.remove('open');
+            }
+        });
+
+        updateCartUI();
     </script>
 </body>
 </html>
