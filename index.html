@@ -1555,7 +1555,9 @@
         });
 
         cartFab.addEventListener('click', () => {
-            if (!cartPopup.classList.contains('open')) {
+            if (cartPopup.classList.contains('open')) {
+                closeCartPopup();
+            } else {
                 openCartPopup();
             }
         });
