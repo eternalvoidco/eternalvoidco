@@ -46,3 +46,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-06 | Size selector redesign: prémium popup méretválasztó (XS-XL), Add to Cart flow popupra kötve + méretchip visszajelzés | pending | pending | pending |
 | 2026-03-07 | Favicon rendszer optimalizálva minden platformra: desktop (ico/png), iOS apple-touch-icon, Android webmanifest + app ikonok, Windows tile meta | pending | pending | pending |
 | 2026-03-07 | Favicon desktop hotfix: abszolút ikonútvonalak + root /favicon.ico fallback a jobb PC/laptop kompatibilitásért | pending | pending | pending |
+| 2026-03-07 | Favicon asset deploy fix: az összes ikonfájl verziókezelésbe került (assets/icons), így Vercel prodon is kiszolgálja őket | pending | pending | pending |
