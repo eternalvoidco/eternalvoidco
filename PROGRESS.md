@@ -44,3 +44,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-06 | Size Select border színe egységesítve a View Piece gomb keretszínével | pending | pending | pending |
 | 2026-03-06 | Size selector UX javítás: alapból rejtett, Add to Cart kattintásra jelenik meg; Add to Cart/Added felirat állapotbugok javítva | pending | pending | pending |
 | 2026-03-06 | Size selector redesign: prémium popup méretválasztó (XS-XL), Add to Cart flow popupra kötve + méretchip visszajelzés | pending | pending | pending |
+| 2026-03-07 | Favicon rendszer optimalizálva minden platformra: desktop (ico/png), iOS apple-touch-icon, Android webmanifest + app ikonok, Windows tile meta | pending | pending | pending |
