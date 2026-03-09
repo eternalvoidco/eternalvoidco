@@ -48,3 +48,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-07 | Favicon desktop hotfix: abszolút ikonútvonalak + root /favicon.ico fallback a jobb PC/laptop kompatibilitásért | pending | pending | pending |
 | 2026-03-07 | Favicon asset deploy fix: az összes ikonfájl verziókezelésbe került (assets/icons), így Vercel prodon is kiszolgálja őket | pending | pending | pending |
 | 2026-03-09 | Cart ikon méret növelése (desktop/tablet/mobile): nagyobb FAB és nagyobb táska ikon a jobb láthatóságért | pending | pending | pending |
+| 2026-03-10 | Cart ikon további növelése kérés alapján: még nagyobb FAB és ikon desktop + mobil breakpointokon | pending | pending | pending |
