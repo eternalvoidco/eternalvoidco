@@ -56,3 +56,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-10 | Intro gate hozzáadva: teljes képernyős videós belépő réteg `ENTER THE VOID` gombbal; kattintás után az eredeti hero oldal jelenik meg | pending | pending | pending |
 | 2026-03-10 | Intro gate videóforrás frissítve: elsődleges fájl `enter-the-void.mov`, fallback továbbra is `hero-video.mp4` | pending | pending | pending |
 | 2026-03-10 | Intro gate átmenet finomítás: Enter kattintásra gate videó leáll, réteg teljesen eltűnik, hero landing videó explicit újraindul | pending | pending | pending |
+| 2026-03-10 | Intro video pipeline fix: `enter-the-void.mov` konvertálva `enter-the-void.mp4`-re, gate csak ezt játssza; hero tartalom teljesen rejtve Enter előtt | pending | pending | pending |
