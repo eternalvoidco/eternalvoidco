@@ -52,3 +52,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-10 | Landing hero videó cserélve az új MOV fájlra (hero-video-new.mov) | pending | pending | pending |
 | 2026-03-10 | Hero video láthatósági fix: MOV elsődleges forrás + MP4 fallback minden böngészőre, automatikus error fallback logikával | pending | pending | pending |
 | 2026-03-10 | Hero videó véglegesítve kérés alapján: landing source visszaállítva kizárólag `hero-video.mp4` fájlra | pending | pending | pending |
+| 2026-03-10 | Hero videó sebesség fix: lassítás kikapcsolva, playback visszaállítva eredeti 1x sebességre | pending | pending | pending |
