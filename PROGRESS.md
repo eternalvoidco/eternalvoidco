@@ -54,3 +54,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-10 | Hero videó véglegesítve kérés alapján: landing source visszaállítva kizárólag `hero-video.mp4` fájlra | pending | pending | pending |
 | 2026-03-10 | Hero videó sebesség fix: lassítás kikapcsolva, playback visszaállítva eredeti 1x sebességre | pending | pending | pending |
 | 2026-03-10 | Intro gate hozzáadva: teljes képernyős videós belépő réteg `ENTER THE VOID` gombbal; kattintás után az eredeti hero oldal jelenik meg | pending | pending | pending |
+| 2026-03-10 | Intro gate videóforrás frissítve: elsődleges fájl `enter-the-void.mov`, fallback továbbra is `hero-video.mp4` | pending | pending | pending |
