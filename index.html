@@ -1514,6 +1514,7 @@
     <section class="video-section hero">
         <video autoplay loop muted playsinline class="hero-video" id="heroVideo">
             <source src="hero-video-new.mov" type="video/quicktime">
+            <source src="hero-video.mp4" type="video/mp4">
         </video>
         <div class="hero-content fade-in-up" style="--delay: 80ms;">
             <h1 class="hero-title">VOID</h1>
@@ -1660,6 +1661,7 @@
     <script>
         // Slow down videos
         const heroVideo = document.getElementById('heroVideo');
+        let heroVideoFallbackApplied = false;
 
         function setupVideo(videoElement, playbackRate) {
             if (!videoElement) return;
@@ -1677,6 +1679,17 @@
         }
 
         setupVideo(heroVideo, 0.4);
+
+        if (heroVideo) {
+            heroVideo.addEventListener('error', () => {
+                if (heroVideoFallbackApplied) return;
+
+                heroVideoFallbackApplied = true;
+                heroVideo.innerHTML = '<source src="hero-video.mp4" type="video/mp4">';
+                heroVideo.load();
+                setupVideo(heroVideo, 0.4);
+            });
+        }
 
         // Nav scroll
         window.addEventListener('scroll', () => {

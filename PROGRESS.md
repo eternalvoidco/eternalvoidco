@@ -50,3 +50,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-09 | Cart ikon méret növelése (desktop/tablet/mobile): nagyobb FAB és nagyobb táska ikon a jobb láthatóságért | pending | pending | pending |
 | 2026-03-10 | Cart ikon további növelése kérés alapján: még nagyobb FAB és ikon desktop + mobil breakpointokon | pending | pending | pending |
 | 2026-03-10 | Landing hero videó cserélve az új MOV fájlra (hero-video-new.mov) | pending | pending | pending |
+| 2026-03-10 | Hero video láthatósági fix: MOV elsődleges forrás + MP4 fallback minden böngészőre, automatikus error fallback logikával | pending | pending | pending |
