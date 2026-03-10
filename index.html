@@ -137,7 +137,7 @@
             cursor: pointer;
             overflow: hidden;
             box-shadow: 0 0 0 1px rgba(173, 145, 96, 0.24), 0 14px 30px rgba(0, 0, 0, 0.58);
-            animation: enterVoidOuterPulse 2.6s ease-in-out infinite;
+            animation: enterVoidOuterPulse 2.8s ease-in-out infinite, enterVoidDepthPulse 2.8s ease-in-out infinite;
             transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, color 0.25s ease;
         }
 
@@ -150,7 +150,7 @@
             content: '';
             position: absolute;
             inset: 2px;
-            background: rgba(245, 242, 236, 0.018);
+            background: rgba(245, 242, 236, 0.012);
             z-index: 1;
             animation: enterVoidInnerPulse 3.3s ease-in-out infinite;
         }
@@ -159,7 +159,6 @@
             border-color: var(--void-accent);
             background: rgba(130, 105, 62, 0.24);
             color: #f4ecde;
-            transform: translateY(-1px);
         }
 
         @keyframes enterVoidOuterPulse {
@@ -176,13 +175,25 @@
 
         @keyframes enterVoidInnerPulse {
             0% {
-                background: rgba(245, 242, 236, 0.008);
+                background: rgba(245, 242, 236, 0.004);
             }
             50% {
-                background: rgba(245, 242, 236, 0.042);
+                background: rgba(245, 242, 236, 0.022);
             }
             100% {
-                background: rgba(245, 242, 236, 0.008);
+                background: rgba(245, 242, 236, 0.004);
+            }
+        }
+
+        @keyframes enterVoidDepthPulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.03);
+            }
+            100% {
+                transform: scale(1);
             }
         }
 
