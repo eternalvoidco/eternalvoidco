@@ -56,6 +56,10 @@
             position: relative;
         }
 
+        body.gate-open {
+            overflow: hidden;
+        }
+
         body::before {
             content: '';
             position: fixed;
@@ -70,6 +74,64 @@
         body > * {
             position: relative;
             z-index: 1;
+        }
+
+        .entry-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: grid;
+            place-items: center;
+            background: #000;
+            overflow: hidden;
+            transition: opacity 0.7s ease, visibility 0.7s ease;
+        }
+
+        .entry-gate.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .entry-gate-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .entry-gate::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.45) 45%, rgba(0, 0, 0, 0.68));
+            pointer-events: none;
+        }
+
+        .entry-gate-button {
+            position: relative;
+            z-index: 1;
+            min-width: min(92vw, 340px);
+            padding: 1rem 1.5rem;
+            border: 1px solid rgba(199, 169, 108, 0.56);
+            background: rgba(8, 8, 8, 0.56);
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: clamp(0.68rem, 1.8vw, 0.78rem);
+            font-weight: 600;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, color 0.25s ease;
+        }
+
+        .entry-gate-button:hover {
+            border-color: var(--void-accent);
+            background: rgba(199, 169, 108, 0.2);
+            color: #fbf4e8;
+            transform: translateY(-1px);
         }
 
         /* Navigation */
@@ -1497,7 +1559,15 @@
         }
     </style>
 </head>
-<body>
+<body class="gate-open">
+    <div class="entry-gate" id="entryGate" aria-label="Enter site gate">
+        <video autoplay loop muted playsinline class="entry-gate-video" id="entryGateVideo">
+            <source src="entry-video.mp4" type="video/mp4">
+            <source src="hero-video.mp4" type="video/mp4">
+        </video>
+        <button type="button" class="entry-gate-button" id="enterVoidButton">Enter The Void</button>
+    </div>
+
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <ul class="nav-left">
@@ -1660,6 +1730,9 @@
     <script>
         // Video setup
         const heroVideo = document.getElementById('heroVideo');
+        const entryGateVideo = document.getElementById('entryGateVideo');
+        const entryGate = document.getElementById('entryGate');
+        const enterVoidButton = document.getElementById('enterVoidButton');
 
         function setupVideo(videoElement, playbackRate) {
             if (!videoElement) return;
@@ -1677,6 +1750,14 @@
         }
 
         setupVideo(heroVideo, 1);
+        setupVideo(entryGateVideo, 1);
+
+        if (enterVoidButton && entryGate) {
+            enterVoidButton.addEventListener('click', () => {
+                entryGate.classList.add('hidden');
+                document.body.classList.remove('gate-open');
+            });
+        }
 
         // Nav scroll
         window.addEventListener('scroll', () => {
