@@ -64,3 +64,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-10 | Entry gomb mélyítés: inner pulse tovább sötétítve + teljes gomb skálázó „közeledő” pulzus animáció hozzáadva | pending | pending | pending |
 | 2026-03-10 | Entry gomb finomhangolás: teljes effekt lassítva (outer/depth + inner pulse), a meglévő vizuál megtartásával | pending | pending | pending |
 | 2026-03-10 | Entry gate cross-platform optimalizálás: safe-area padding, mobil/tablet méretezés, touch finomítás, reduced-motion fallback animációkezelés | pending | pending | pending |
+| 2026-03-10 | Mobil kosár méret-optimalizálás: cart popup és cart FAB tovább kicsinyítve 480px és 390px breakpointokon | pending | pending | pending |
