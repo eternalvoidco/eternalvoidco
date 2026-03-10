@@ -1754,8 +1754,30 @@
 
         if (enterVoidButton && entryGate) {
             enterVoidButton.addEventListener('click', () => {
+                if (entryGateVideo) {
+                    entryGateVideo.pause();
+                }
+
                 entryGate.classList.add('hidden');
                 document.body.classList.remove('gate-open');
+
+                setTimeout(() => {
+                    entryGate.style.display = 'none';
+                }, 720);
+
+                if (heroVideo) {
+                    heroVideo.muted = true;
+                    heroVideo.defaultMuted = true;
+                    heroVideo.playbackRate = 1;
+                    heroVideo.load();
+
+                    const heroPlayAttempt = heroVideo.play();
+                    if (heroPlayAttempt && typeof heroPlayAttempt.catch === 'function') {
+                        heroPlayAttempt.catch(() => {
+                            // Keep silent; browser may require additional interaction on rare setups.
+                        });
+                    }
+                }
             });
         }
 
