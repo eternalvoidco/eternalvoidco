@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     <meta name="theme-color" content="#080808">
@@ -43,6 +43,8 @@
 
         html {
             background: #000;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         body {
@@ -54,6 +56,29 @@
             font-family: 'Manrope', sans-serif;
             overflow-x: hidden;
             position: relative;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        img,
+        video,
+        svg,
+        canvas {
+            display: block;
+            max-width: 100%;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+            color: inherit;
+        }
+
+        :focus-visible {
+            outline: 1px solid rgba(199, 169, 108, 0.78);
+            outline-offset: 2px;
         }
 
         body.gate-open {
@@ -309,14 +334,27 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
+            html:focus-within {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+
             .entry-gate,
             .entry-gate.hidden {
-                transition: none;
+                transition: none !important;
             }
 
             .entry-gate-button,
             .entry-gate-button::after {
-                animation: none;
+                animation: none !important;
             }
 
             .entry-gate-letter {
