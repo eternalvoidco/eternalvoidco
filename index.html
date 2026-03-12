@@ -134,7 +134,7 @@
             font-family: 'Manrope', sans-serif;
             font-size: clamp(0.68rem, 1.8vw, 0.78rem);
             font-weight: 600;
-            letter-spacing: 0.26em;
+            letter-spacing: 0;
             text-transform: uppercase;
             cursor: pointer;
             overflow: hidden;
@@ -146,9 +146,68 @@
             transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, color 0.25s ease;
         }
 
-        .entry-gate-button > span {
+        .entry-gate-label {
             position: relative;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            letter-spacing: 0;
+            pointer-events: none;
+        }
+
+        .entry-gate-letter {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(9px) scale(0.86) rotateX(34deg);
+            filter: blur(5px);
+            color: rgba(245, 242, 236, 0.92);
+            text-shadow: 0 0 10px rgba(245, 242, 236, 0.08), 0 0 26px rgba(199, 169, 108, 0.09);
+            transition: transform 0.54s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.42s ease, filter 0.5s ease;
+            transition-delay: calc(var(--i, 0) * 36ms);
+        }
+
+        .entry-gate-letter.space {
+            width: 0.45em;
+        }
+
+        .entry-gate-label .entry-gate-letter:not(.space) {
+            margin-right: 0.24em;
+        }
+
+        .entry-gate-sigil {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 72%;
+            height: 1px;
+            transform: translate(-50%, -50%) scale(1);
             z-index: 2;
+            opacity: 0.88;
+            background: linear-gradient(90deg, transparent 0%, rgba(173, 145, 96, 0.2) 18%, rgba(173, 145, 96, 0.54) 50%, rgba(173, 145, 96, 0.2) 82%, transparent 100%);
+            box-shadow: 0 0 12px rgba(173, 145, 96, 0.22);
+            transition: opacity 0.4s ease, transform 0.45s ease, filter 0.45s ease;
+        }
+
+        .entry-gate-sigil::before,
+        .entry-gate-sigil::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            border: 1px solid rgba(173, 145, 96, 0.5);
+            transform: translateY(-50%) rotate(45deg);
+            background: rgba(7, 7, 7, 0.86);
+            box-shadow: 0 0 10px rgba(173, 145, 96, 0.2);
+        }
+
+        .entry-gate-sigil::before {
+            left: 24%;
+        }
+
+        .entry-gate-sigil::after {
+            right: 24%;
         }
 
         .entry-gate-button::after {
@@ -164,6 +223,20 @@
             border-color: var(--void-accent);
             background: rgba(130, 105, 62, 0.24);
             color: #f4ecde;
+        }
+
+        .entry-gate-button:hover .entry-gate-letter,
+        .entry-gate-button:focus-visible .entry-gate-letter {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotateX(0deg);
+            filter: blur(0);
+        }
+
+        .entry-gate-button:hover .entry-gate-sigil,
+        .entry-gate-button:focus-visible .entry-gate-sigil {
+            opacity: 0.04;
+            transform: translate(-50%, -50%) scale(0.93);
+            filter: blur(2px);
         }
 
         @keyframes enterVoidOuterPulse {
@@ -211,6 +284,10 @@
                 letter-spacing: 0.2em;
                 --enter-depth-scale: 1.02;
             }
+
+            .entry-gate-label .entry-gate-letter:not(.space) {
+                margin-right: 0.2em;
+            }
         }
 
         @media (max-width: 480px) {
@@ -220,6 +297,14 @@
                 font-size: 0.62rem;
                 letter-spacing: 0.16em;
                 --enter-depth-scale: 1.015;
+            }
+
+            .entry-gate-label .entry-gate-letter:not(.space) {
+                margin-right: 0.18em;
+            }
+
+            .entry-gate-letter.space {
+                width: 0.36em;
             }
         }
 
@@ -232,6 +317,31 @@
             .entry-gate-button,
             .entry-gate-button::after {
                 animation: none;
+            }
+
+            .entry-gate-letter {
+                opacity: 1;
+                transform: none;
+                filter: none;
+                transition: none;
+            }
+
+            .entry-gate-sigil {
+                opacity: 0;
+                transition: none;
+            }
+        }
+
+        @media (hover: none), (pointer: coarse) {
+            .entry-gate-letter {
+                opacity: 1;
+                transform: none;
+                filter: none;
+                transition: none;
+            }
+
+            .entry-gate-sigil {
+                opacity: 0;
             }
         }
 
@@ -1673,7 +1783,25 @@
         <video autoplay loop muted playsinline class="entry-gate-video" id="entryGateVideo">
             <source src="enter-the-void.mp4" type="video/mp4">
         </video>
-        <button type="button" class="entry-gate-button" id="enterVoidButton"><span>Enter The Void</span></button>
+        <button type="button" class="entry-gate-button" id="enterVoidButton" aria-label="Enter The Void">
+            <span class="entry-gate-label" aria-hidden="true">
+                <span class="entry-gate-letter" style="--i:0;">E</span>
+                <span class="entry-gate-letter" style="--i:1;">N</span>
+                <span class="entry-gate-letter" style="--i:2;">T</span>
+                <span class="entry-gate-letter" style="--i:3;">E</span>
+                <span class="entry-gate-letter" style="--i:4;">R</span>
+                <span class="entry-gate-letter space" style="--i:5;"></span>
+                <span class="entry-gate-letter" style="--i:6;">T</span>
+                <span class="entry-gate-letter" style="--i:7;">H</span>
+                <span class="entry-gate-letter" style="--i:8;">E</span>
+                <span class="entry-gate-letter space" style="--i:9;"></span>
+                <span class="entry-gate-letter" style="--i:10;">V</span>
+                <span class="entry-gate-letter" style="--i:11;">O</span>
+                <span class="entry-gate-letter" style="--i:12;">I</span>
+                <span class="entry-gate-letter" style="--i:13;">D</span>
+            </span>
+            <span class="entry-gate-sigil" aria-hidden="true"></span>
+        </button>
     </div>
 
     <!-- Navigation -->
