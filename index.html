@@ -365,6 +365,39 @@
             }
         }
 
+        @keyframes storyLightFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 0.42;
+            }
+        }
+
+        @keyframes storyLightPulseA {
+            0%,
+            100% {
+                transform: scale(0.9);
+                opacity: 0.2;
+            }
+            50% {
+                transform: scale(1.16);
+                opacity: 0.56;
+            }
+        }
+
+        @keyframes storyLightPulseB {
+            0%,
+            100% {
+                transform: scale(0.88);
+                opacity: 0.16;
+            }
+            50% {
+                transform: scale(1.22);
+                opacity: 0.48;
+            }
+        }
+
         @keyframes enterVoidInnerPulse {
             0% {
                 background: rgba(245, 242, 236, 0.004);
@@ -762,6 +795,33 @@
                 radial-gradient(1.5px 1.5px at 78% 82%, rgba(255, 255, 255, 0.44) 98%, transparent 100%);
             opacity: 0;
             animation: storyStarsFadeIn 3.4s ease forwards, storyStarsTwinkle 7.2s ease-in-out infinite;
+        }
+
+        .story-overlay-light {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: screen;
+            opacity: 0;
+        }
+
+        .story-overlay-light.light-one {
+            width: min(30vw, 300px);
+            height: min(30vw, 300px);
+            left: 12%;
+            top: 24%;
+            background: radial-gradient(circle, rgba(209, 184, 133, 0.38) 0%, rgba(209, 184, 133, 0.12) 38%, rgba(209, 184, 133, 0) 74%);
+            animation: storyLightFadeIn 2.6s ease forwards, storyLightPulseA 8.4s ease-in-out infinite;
+        }
+
+        .story-overlay-light.light-two {
+            width: min(24vw, 240px);
+            height: min(24vw, 240px);
+            right: 16%;
+            top: 56%;
+            background: radial-gradient(circle, rgba(185, 200, 235, 0.28) 0%, rgba(185, 200, 235, 0.08) 42%, rgba(185, 200, 235, 0) 76%);
+            animation: storyLightFadeIn 3.1s ease forwards, storyLightPulseB 9.6s ease-in-out infinite;
         }
 
         .story-overlay-exit {
@@ -2271,6 +2331,8 @@
 
     <div class="story-overlay" id="storyOverlay" aria-hidden="true">
         <div class="story-overlay-stars" aria-hidden="true"></div>
+        <div class="story-overlay-light light-one" aria-hidden="true"></div>
+        <div class="story-overlay-light light-two" aria-hidden="true"></div>
         <button type="button" class="story-overlay-exit" id="exitStoryButton">Return to VOID</button>
         <div class="story-overlay-stage" role="dialog" aria-modal="true" aria-labelledby="storyCrawlTitle">
             <div class="story-crawl">
