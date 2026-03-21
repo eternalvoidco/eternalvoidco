@@ -406,6 +406,27 @@
             .entry-gate-sigil {
                 opacity: 0;
             }
+
+            .product-image {
+                cursor: default;
+            }
+
+            .product-image::before {
+                transform: rotate(10deg) scale(1.08);
+                opacity: 0.72;
+            }
+
+            .product-logo-mark {
+                transform: translateY(-6px) scale(1.04);
+                letter-spacing: 0.26em;
+                color: #f7e8ca;
+            }
+
+            .product-coming-soon {
+                opacity: 1;
+                transform: translate(-50%, 0);
+                border-color: rgba(199, 169, 108, 0.74);
+            }
         }
 
         /* Navigation */
