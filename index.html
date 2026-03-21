@@ -818,16 +818,16 @@
         }
 
         .story-overlay-spark.spark-one {
-            width: min(13vw, 128px);
-            height: min(13vw, 128px);
+            width: min(9.5vw, 96px);
+            height: min(9.5vw, 96px);
             left: 10%;
             top: 28%;
             animation: storySparkFadeIn 2.3s ease forwards, storySparkPulseA 8.4s ease-in-out infinite;
         }
 
         .story-overlay-spark.spark-two {
-            width: min(11.5vw, 116px);
-            height: min(11.5vw, 116px);
+            width: min(8.5vw, 84px);
+            height: min(8.5vw, 84px);
             right: 12%;
             top: 57%;
             animation: storySparkFadeIn 2.9s ease forwards, storySparkPulseB 9.6s ease-in-out infinite;
@@ -837,8 +837,8 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: min(6.6vw, 64px);
-            height: 1.6px;
+            width: min(3.6vw, 34px);
+            height: 1.3px;
             transform-origin: 0 50%;
             background: linear-gradient(90deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.25) 58%, transparent 100%);
             box-shadow: 0 0 8px rgba(245, 226, 192, 0.36);
@@ -851,14 +851,16 @@
             box-shadow: 0 0 8px rgba(196, 218, 255, 0.34);
         }
 
-        .story-overlay-spark .spark-ray:nth-child(1) { transform: translate(-2px, -1px) rotate(4deg); animation-delay: 0s; }
-        .story-overlay-spark .spark-ray:nth-child(2) { transform: translate(-2px, -1px) rotate(44deg); animation-delay: 0.2s; }
-        .story-overlay-spark .spark-ray:nth-child(3) { transform: translate(-2px, -1px) rotate(82deg); animation-delay: 0.35s; }
-        .story-overlay-spark .spark-ray:nth-child(4) { transform: translate(-2px, -1px) rotate(128deg); animation-delay: 0.12s; }
-        .story-overlay-spark .spark-ray:nth-child(5) { transform: translate(-2px, -1px) rotate(170deg); animation-delay: 0.44s; }
-        .story-overlay-spark .spark-ray:nth-child(6) { transform: translate(-2px, -1px) rotate(212deg); animation-delay: 0.08s; }
-        .story-overlay-spark .spark-ray:nth-child(7) { transform: translate(-2px, -1px) rotate(256deg); animation-delay: 0.3s; }
-        .story-overlay-spark .spark-ray:nth-child(8) { transform: translate(-2px, -1px) rotate(300deg); animation-delay: 0.18s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(1) { width: min(4.1vw, 38px); transform: translate(-4px, 2px) rotate(18deg); animation-delay: 0.03s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(2) { width: min(3vw, 29px); transform: translate(-1px, -4px) rotate(73deg); animation-delay: 0.21s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(3) { width: min(3.4vw, 32px); transform: translate(2px, -2px) rotate(146deg); animation-delay: 0.35s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(4) { width: min(2.8vw, 26px); transform: translate(-3px, 3px) rotate(224deg); animation-delay: 0.12s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(5) { width: min(3.7vw, 35px); transform: translate(1px, 1px) rotate(307deg); animation-delay: 0.44s; }
+
+        .story-overlay-spark.spark-two .spark-ray:nth-child(1) { width: min(3.5vw, 32px); transform: translate(-2px, -1px) rotate(29deg); animation-delay: 0.08s; }
+        .story-overlay-spark.spark-two .spark-ray:nth-child(2) { width: min(2.6vw, 24px); transform: translate(1px, -3px) rotate(111deg); animation-delay: 0.31s; }
+        .story-overlay-spark.spark-two .spark-ray:nth-child(3) { width: min(3.2vw, 30px); transform: translate(-3px, 2px) rotate(196deg); animation-delay: 0.17s; }
+        .story-overlay-spark.spark-two .spark-ray:nth-child(4) { width: min(2.7vw, 25px); transform: translate(2px, 0px) rotate(284deg); animation-delay: 0.39s; }
 
         .story-overlay-exit {
             position: absolute;
@@ -2373,15 +2375,8 @@
             <span class="spark-ray"></span>
             <span class="spark-ray"></span>
             <span class="spark-ray"></span>
-            <span class="spark-ray"></span>
-            <span class="spark-ray"></span>
-            <span class="spark-ray"></span>
         </div>
         <div class="story-overlay-spark spark-two" aria-hidden="true">
-            <span class="spark-ray"></span>
-            <span class="spark-ray"></span>
-            <span class="spark-ray"></span>
-            <span class="spark-ray"></span>
             <span class="spark-ray"></span>
             <span class="spark-ray"></span>
             <span class="spark-ray"></span>
