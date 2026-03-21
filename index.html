@@ -365,36 +365,36 @@
             }
         }
 
-        @keyframes storyLightFadeIn {
+        @keyframes storyBeamFadeIn {
             from {
                 opacity: 0;
             }
             to {
-                opacity: 0.42;
+                opacity: 0.8;
             }
         }
 
-        @keyframes storyLightPulseA {
+        @keyframes storyBeamPulseA {
             0%,
             100% {
-                transform: scale(0.9);
-                opacity: 0.2;
+                transform: scaleX(0.72);
+                opacity: 0.22;
             }
             50% {
-                transform: scale(1.16);
-                opacity: 0.56;
+                transform: scaleX(1.14);
+                opacity: 0.92;
             }
         }
 
-        @keyframes storyLightPulseB {
+        @keyframes storyBeamPulseB {
             0%,
             100% {
-                transform: scale(0.88);
-                opacity: 0.16;
+                transform: scaleX(0.68);
+                opacity: 0.18;
             }
             50% {
-                transform: scale(1.22);
-                opacity: 0.48;
+                transform: scaleX(1.2);
+                opacity: 0.84;
             }
         }
 
@@ -797,31 +797,32 @@
             animation: storyStarsFadeIn 3.4s ease forwards, storyStarsTwinkle 7.2s ease-in-out infinite;
         }
 
-        .story-overlay-light {
+        .story-overlay-beam {
             position: absolute;
-            border-radius: 50%;
             pointer-events: none;
             z-index: 1;
             mix-blend-mode: screen;
             opacity: 0;
         }
 
-        .story-overlay-light.light-one {
-            width: min(30vw, 300px);
-            height: min(30vw, 300px);
-            left: 12%;
-            top: 24%;
-            background: radial-gradient(circle, rgba(209, 184, 133, 0.38) 0%, rgba(209, 184, 133, 0.12) 38%, rgba(209, 184, 133, 0) 74%);
-            animation: storyLightFadeIn 2.6s ease forwards, storyLightPulseA 8.4s ease-in-out infinite;
+        .story-overlay-beam.beam-one {
+            width: min(60vw, 620px);
+            height: 2px;
+            left: 10%;
+            top: 30%;
+            background: linear-gradient(90deg, transparent 0%, rgba(217, 193, 146, 0.12) 18%, rgba(217, 193, 146, 0.82) 50%, rgba(217, 193, 146, 0.12) 82%, transparent 100%);
+            box-shadow: 0 0 16px rgba(217, 193, 146, 0.26);
+            animation: storyBeamFadeIn 2.6s ease forwards, storyBeamPulseA 8.4s ease-in-out infinite;
         }
 
-        .story-overlay-light.light-two {
-            width: min(24vw, 240px);
-            height: min(24vw, 240px);
-            right: 16%;
-            top: 56%;
-            background: radial-gradient(circle, rgba(185, 200, 235, 0.28) 0%, rgba(185, 200, 235, 0.08) 42%, rgba(185, 200, 235, 0) 76%);
-            animation: storyLightFadeIn 3.1s ease forwards, storyLightPulseB 9.6s ease-in-out infinite;
+        .story-overlay-beam.beam-two {
+            width: min(46vw, 480px);
+            height: 2px;
+            right: 12%;
+            top: 58%;
+            background: linear-gradient(90deg, transparent 0%, rgba(188, 205, 236, 0.1) 20%, rgba(188, 205, 236, 0.74) 50%, rgba(188, 205, 236, 0.1) 80%, transparent 100%);
+            box-shadow: 0 0 14px rgba(188, 205, 236, 0.24);
+            animation: storyBeamFadeIn 3.1s ease forwards, storyBeamPulseB 9.6s ease-in-out infinite;
         }
 
         .story-overlay-exit {
@@ -2331,8 +2332,8 @@
 
     <div class="story-overlay" id="storyOverlay" aria-hidden="true">
         <div class="story-overlay-stars" aria-hidden="true"></div>
-        <div class="story-overlay-light light-one" aria-hidden="true"></div>
-        <div class="story-overlay-light light-two" aria-hidden="true"></div>
+        <div class="story-overlay-beam beam-one" aria-hidden="true"></div>
+        <div class="story-overlay-beam beam-two" aria-hidden="true"></div>
         <button type="button" class="story-overlay-exit" id="exitStoryButton">Return to VOID</button>
         <div class="story-overlay-stage" role="dialog" aria-modal="true" aria-labelledby="storyCrawlTitle">
             <div class="story-crawl">
