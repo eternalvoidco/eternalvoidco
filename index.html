@@ -2145,8 +2145,11 @@
 
                 window.setTimeout(() => {
                     enterVoidButton.classList.remove('intro-hidden');
-                    enterVoidButton.classList.add('intro-active');
                 }, 980);
+
+                window.setTimeout(() => {
+                    enterVoidButton.classList.add('intro-active');
+                }, 1520);
             }
 
             enterVoidButton.addEventListener('click', () => {
