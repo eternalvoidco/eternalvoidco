@@ -193,7 +193,12 @@
             --enter-depth-scale: 1.03;
             box-shadow: 0 0 0 1px rgba(173, 145, 96, 0.24), 0 14px 30px rgba(0, 0, 0, 0.58);
             animation: enterVoidOuterPulse 3.7s ease-in-out infinite, enterVoidDepthPulse 3.7s ease-in-out infinite;
-            transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, color 0.25s ease;
+            transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, color 0.25s ease, opacity 0.4s ease;
+        }
+
+        .entry-gate-button.intro-hidden {
+            opacity: 0;
+            transform: translateY(14px) scale(0.985);
         }
 
         .entry-gate-label {
@@ -281,6 +286,11 @@
             opacity: 1;
             transform: translateY(0) scale(1) rotateX(0deg);
             filter: blur(0);
+        }
+
+        .entry-gate-button.intro-active .entry-gate-letter {
+            transition-duration: 0.88s;
+            transition-delay: calc(320ms + (var(--i, 0) * 92ms));
         }
 
         .entry-gate-button:hover .entry-gate-sigil,
@@ -2131,9 +2141,12 @@
             const isTouchLikeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
             if (isTouchLikeDevice) {
+                enterVoidButton.classList.add('intro-hidden');
+
                 window.setTimeout(() => {
+                    enterVoidButton.classList.remove('intro-hidden');
                     enterVoidButton.classList.add('intro-active');
-                }, 180);
+                }, 980);
             }
 
             enterVoidButton.addEventListener('click', () => {
