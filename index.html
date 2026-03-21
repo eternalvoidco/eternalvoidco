@@ -317,6 +317,25 @@
             }
         }
 
+        @keyframes storyStarsDrift {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(14px);
+            }
+        }
+
+        @keyframes storyStarsTwinkle {
+            0%,
+            100% {
+                opacity: 0.24;
+            }
+            50% {
+                opacity: 0.46;
+            }
+        }
+
         @keyframes enterVoidInnerPulse {
             0% {
                 background: rgba(245, 242, 236, 0.004);
@@ -631,7 +650,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            border: 1px solid rgba(199, 169, 108, 0.38);
+            border: 1px solid rgba(245, 242, 236, 0.52);
             background: rgba(5, 5, 5, 0.56);
             color: rgba(245, 242, 236, 0.9);
             padding: 0.74rem 1.65rem;
@@ -645,9 +664,9 @@
 
         .story-trigger-button:hover,
         .story-trigger-button:focus-visible {
-            border-color: rgba(199, 169, 108, 0.86);
-            background: rgba(27, 22, 13, 0.78);
-            color: #f5e7cb;
+            border-color: rgba(245, 242, 236, 0.92);
+            background: rgba(24, 24, 24, 0.84);
+            color: #ffffff;
             transform: translateY(-2px);
         }
 
@@ -675,6 +694,46 @@
             pointer-events: none;
         }
 
+        .story-overlay-stars,
+        .story-overlay-stars::before,
+        .story-overlay-stars::after {
+            position: absolute;
+            inset: 0;
+            content: '';
+            pointer-events: none;
+        }
+
+        .story-overlay-stars {
+            background-image:
+                radial-gradient(1px 1px at 8% 16%, rgba(255, 255, 255, 0.78) 98%, transparent 100%),
+                radial-gradient(1px 1px at 22% 66%, rgba(255, 255, 255, 0.64) 98%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 44% 24%, rgba(255, 255, 255, 0.72) 98%, transparent 100%),
+                radial-gradient(1px 1px at 58% 72%, rgba(255, 255, 255, 0.58) 98%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 74% 34%, rgba(255, 255, 255, 0.66) 98%, transparent 100%),
+                radial-gradient(1px 1px at 92% 56%, rgba(255, 255, 255, 0.74) 98%, transparent 100%);
+            opacity: 0.6;
+            animation: storyStarsDrift 34s linear infinite;
+        }
+
+        .story-overlay-stars::before {
+            background-image:
+                radial-gradient(1px 1px at 14% 42%, rgba(255, 255, 255, 0.64) 98%, transparent 100%),
+                radial-gradient(1px 1px at 33% 12%, rgba(255, 255, 255, 0.78) 98%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 65% 58%, rgba(255, 255, 255, 0.6) 98%, transparent 100%),
+                radial-gradient(1px 1px at 84% 22%, rgba(255, 255, 255, 0.74) 98%, transparent 100%);
+            opacity: 0.48;
+            animation: storyStarsDrift 44s linear infinite reverse;
+        }
+
+        .story-overlay-stars::after {
+            background-image:
+                radial-gradient(1.5px 1.5px at 18% 78%, rgba(255, 255, 255, 0.46) 98%, transparent 100%),
+                radial-gradient(1px 1px at 49% 46%, rgba(255, 255, 255, 0.5) 98%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 78% 82%, rgba(255, 255, 255, 0.44) 98%, transparent 100%);
+            opacity: 0.34;
+            animation: storyStarsTwinkle 5.4s ease-in-out infinite;
+        }
+
         .story-overlay-close {
             position: absolute;
             top: calc(1rem + env(safe-area-inset-top, 0px));
@@ -688,6 +747,33 @@
             text-transform: uppercase;
             cursor: pointer;
             z-index: 2;
+        }
+
+        .story-overlay-exit {
+            position: absolute;
+            left: 50%;
+            bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
+            transform: translateX(-50%);
+            z-index: 2;
+            border: 1px solid rgba(199, 169, 108, 0.7);
+            background: rgba(5, 5, 5, 0.82);
+            color: #f3e4c4;
+            padding: 0.72rem 1.4rem;
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.28s ease, border-color 0.28s ease, background 0.28s ease, color 0.28s ease;
+            animation: storyExitPulse 2.6s ease-in-out infinite;
+        }
+
+        .story-overlay-exit:hover,
+        .story-overlay-exit:focus-visible {
+            border-color: rgba(199, 169, 108, 0.98);
+            background: rgba(30, 23, 10, 0.92);
+            color: #f8eacc;
+            transform: translateX(-50%) translateY(-2px);
         }
 
         .story-overlay-stage {
@@ -739,35 +825,6 @@
             letter-spacing: 0.08em;
             margin: 0 auto 1.4rem;
             max-width: 900px;
-        }
-
-        .story-crawl-exit-wrap {
-            display: flex;
-            justify-content: center;
-            margin-top: 2.1rem;
-            margin-bottom: 1rem;
-        }
-
-        .story-crawl-exit {
-            border: 1px solid rgba(199, 169, 108, 0.7);
-            background: rgba(5, 5, 5, 0.78);
-            color: #f3e4c4;
-            padding: 0.72rem 1.4rem;
-            font-size: 0.62rem;
-            font-weight: 600;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: transform 0.28s ease, border-color 0.28s ease, background 0.28s ease, color 0.28s ease;
-            animation: storyExitPulse 2.6s ease-in-out infinite;
-        }
-
-        .story-crawl-exit:hover,
-        .story-crawl-exit:focus-visible {
-            border-color: rgba(199, 169, 108, 0.98);
-            background: rgba(30, 23, 10, 0.92);
-            color: #f8eacc;
-            transform: translateY(-2px);
         }
 
         @keyframes storyExitPulse {
@@ -2006,6 +2063,12 @@
                 padding-bottom: 10svh;
             }
 
+            .story-overlay-exit {
+                width: min(88vw, 270px);
+                padding: 0.68rem 1rem;
+                letter-spacing: 0.16em;
+            }
+
             .story-overlay.animate .story-crawl {
                 animation-duration: 40s;
             }
@@ -2192,7 +2255,9 @@
     </section>
 
     <div class="story-overlay" id="storyOverlay" aria-hidden="true">
+        <div class="story-overlay-stars" aria-hidden="true"></div>
         <button type="button" class="story-overlay-close" id="storyOverlayClose" aria-label="Close story">Close</button>
+        <button type="button" class="story-overlay-exit" id="exitStoryButton">Return to VOID</button>
         <div class="story-overlay-stage" role="dialog" aria-modal="true" aria-labelledby="storyCrawlTitle">
             <div class="story-crawl">
                 <p class="story-crawl-eyebrow">Void Archive</p>
@@ -2201,9 +2266,6 @@
                 <p>Every silhouette is developed as a limited ritual: precise tailoring, elevated fabric weight, and monochrome tension shaped for movement, presence, and permanence.</p>
                 <p>We reject disposable cycles. We build collectible essentials — garments that feel ceremonial in detail yet raw in attitude.</p>
                 <p>VOID is not trend-led. It is a quiet house code for those who wear darkness as architecture and elegance as armor.</p>
-                <div class="story-crawl-exit-wrap">
-                    <button type="button" class="story-crawl-exit" id="exitStoryButton">Return to VOID</button>
-                </div>
             </div>
         </div>
     </div>
