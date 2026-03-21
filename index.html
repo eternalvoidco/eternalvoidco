@@ -410,6 +410,18 @@
             }
         }
 
+        @keyframes storySparkCoreFlicker {
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: translate(-50%, -50%) scale(0.88);
+            }
+            50% {
+                opacity: 0.98;
+                transform: translate(-50%, -50%) scale(1.18);
+            }
+        }
+
         @keyframes enterVoidInnerPulse {
             0% {
                 background: rgba(245, 242, 236, 0.004);
@@ -817,19 +829,33 @@
             opacity: 0;
         }
 
+        .story-overlay-spark::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(255, 248, 232, 0.96) 0%, rgba(255, 248, 232, 0.3) 52%, rgba(255, 248, 232, 0) 100%);
+            box-shadow: 0 0 10px rgba(255, 238, 205, 0.48);
+            animation: storySparkCoreFlicker 2.8s ease-in-out infinite;
+        }
+
         .story-overlay-spark.spark-one {
             width: min(9.5vw, 96px);
             height: min(9.5vw, 96px);
-            left: 10%;
-            top: 28%;
+            left: 11%;
+            top: 31%;
             animation: storySparkFadeIn 2.3s ease forwards, storySparkPulseA 8.4s ease-in-out infinite;
         }
 
         .story-overlay-spark.spark-two {
             width: min(8.5vw, 84px);
             height: min(8.5vw, 84px);
-            right: 12%;
-            top: 57%;
+            right: 14%;
+            top: 54%;
             animation: storySparkFadeIn 2.9s ease forwards, storySparkPulseB 9.6s ease-in-out infinite;
         }
 
@@ -851,16 +877,16 @@
             box-shadow: 0 0 8px rgba(196, 218, 255, 0.34);
         }
 
-        .story-overlay-spark.spark-one .spark-ray:nth-child(1) { width: min(4.1vw, 38px); transform: translate(-4px, 2px) rotate(18deg); animation-delay: 0.03s; }
-        .story-overlay-spark.spark-one .spark-ray:nth-child(2) { width: min(3vw, 29px); transform: translate(-1px, -4px) rotate(73deg); animation-delay: 0.21s; }
-        .story-overlay-spark.spark-one .spark-ray:nth-child(3) { width: min(3.4vw, 32px); transform: translate(2px, -2px) rotate(146deg); animation-delay: 0.35s; }
-        .story-overlay-spark.spark-one .spark-ray:nth-child(4) { width: min(2.8vw, 26px); transform: translate(-3px, 3px) rotate(224deg); animation-delay: 0.12s; }
-        .story-overlay-spark.spark-one .spark-ray:nth-child(5) { width: min(3.7vw, 35px); transform: translate(1px, 1px) rotate(307deg); animation-delay: 0.44s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(1) { width: min(3.4vw, 31px); transform: translate(-5px, 1px) rotate(16deg); animation-delay: 0.03s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(2) { width: min(2.4vw, 23px); transform: translate(-2px, -5px) rotate(78deg); animation-delay: 0.21s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(3) { width: min(3.8vw, 36px); transform: translate(1px, -1px) rotate(154deg); animation-delay: 0.35s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(4) { width: min(2.2vw, 20px); transform: translate(-4px, 4px) rotate(233deg); animation-delay: 0.12s; }
+        .story-overlay-spark.spark-one .spark-ray:nth-child(5) { width: min(3vw, 28px); transform: translate(2px, 2px) rotate(312deg); animation-delay: 0.44s; }
 
-        .story-overlay-spark.spark-two .spark-ray:nth-child(1) { width: min(3.5vw, 32px); transform: translate(-2px, -1px) rotate(29deg); animation-delay: 0.08s; }
-        .story-overlay-spark.spark-two .spark-ray:nth-child(2) { width: min(2.6vw, 24px); transform: translate(1px, -3px) rotate(111deg); animation-delay: 0.31s; }
-        .story-overlay-spark.spark-two .spark-ray:nth-child(3) { width: min(3.2vw, 30px); transform: translate(-3px, 2px) rotate(196deg); animation-delay: 0.17s; }
-        .story-overlay-spark.spark-two .spark-ray:nth-child(4) { width: min(2.7vw, 25px); transform: translate(2px, 0px) rotate(284deg); animation-delay: 0.39s; }
+        .story-overlay-spark.spark-two .spark-ray:nth-child(1) { width: min(2.8vw, 26px); transform: translate(-3px, 0px) rotate(27deg); animation-delay: 0.08s; }
+        .story-overlay-spark.spark-two .spark-ray:nth-child(2) { width: min(2.1vw, 19px); transform: translate(1px, -4px) rotate(108deg); animation-delay: 0.31s; }
+        .story-overlay-spark.spark-two .spark-ray:nth-child(3) { width: min(3.1vw, 29px); transform: translate(-2px, 3px) rotate(201deg); animation-delay: 0.17s; }
+        .story-overlay-spark.spark-two .spark-ray:nth-child(4) { width: min(2.3vw, 22px); transform: translate(3px, 1px) rotate(287deg); animation-delay: 0.39s; }
 
         .story-overlay-exit {
             position: absolute;
