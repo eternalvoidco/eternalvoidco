@@ -276,14 +276,16 @@
         }
 
         .entry-gate-button:hover .entry-gate-letter,
-        .entry-gate-button:focus-visible .entry-gate-letter {
+        .entry-gate-button:focus-visible .entry-gate-letter,
+        .entry-gate-button.intro-active .entry-gate-letter {
             opacity: 1;
             transform: translateY(0) scale(1) rotateX(0deg);
             filter: blur(0);
         }
 
         .entry-gate-button:hover .entry-gate-sigil,
-        .entry-gate-button:focus-visible .entry-gate-sigil {
+        .entry-gate-button:focus-visible .entry-gate-sigil,
+        .entry-gate-button.intro-active .entry-gate-sigil {
             opacity: 0.04;
             transform: translate(-50%, -50%) scale(0.93);
             filter: blur(2px);
@@ -396,15 +398,8 @@
         }
 
         @media (hover: none), (pointer: coarse) {
-            .entry-gate-letter {
-                opacity: 1;
-                transform: none;
-                filter: none;
-                transition: none;
-            }
-
-            .entry-gate-sigil {
-                opacity: 0;
+            .entry-gate-button {
+                --enter-depth-scale: 1.02;
             }
 
             .product-image {
@@ -2133,6 +2128,14 @@
         setupVideo(entryGateVideo, 1);
 
         if (enterVoidButton && entryGate) {
+            const isTouchLikeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+            if (isTouchLikeDevice) {
+                window.setTimeout(() => {
+                    enterVoidButton.classList.add('intro-active');
+                }, 180);
+            }
+
             enterVoidButton.addEventListener('click', () => {
                 if (entryGateVideo) {
                     entryGateVideo.pause();
