@@ -110,6 +110,10 @@
             overflow: hidden;
         }
 
+        body.story-open {
+            overflow: hidden;
+        }
+
         body.gate-open .nav,
         body.gate-open .video-section.hero,
         body.gate-open .products,
@@ -613,6 +617,142 @@
 
         .cta-button:hover::before {
             left: 0;
+        }
+
+        .hero-actions {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .story-trigger-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(199, 169, 108, 0.38);
+            background: rgba(5, 5, 5, 0.56);
+            color: rgba(245, 242, 236, 0.9);
+            padding: 0.74rem 1.65rem;
+            font-size: 0.64rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+        }
+
+        .story-trigger-button:hover,
+        .story-trigger-button:focus-visible {
+            border-color: rgba(199, 169, 108, 0.86);
+            background: rgba(27, 22, 13, 0.78);
+            color: #f5e7cb;
+            transform: translateY(-2px);
+        }
+
+        .story-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1700;
+            background: radial-gradient(circle at 50% 24%, rgba(74, 58, 28, 0.2), rgba(0, 0, 0, 0.94) 50%, #000 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+            overflow: hidden;
+        }
+
+        .story-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .story-overlay::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.98) 18%, rgba(0, 0, 0, 0.34) 52%, rgba(0, 0, 0, 0.92) 100%);
+            pointer-events: none;
+        }
+
+        .story-overlay-close {
+            position: absolute;
+            top: calc(1rem + env(safe-area-inset-top, 0px));
+            right: calc(1rem + env(safe-area-inset-right, 0px));
+            border: 1px solid rgba(199, 169, 108, 0.42);
+            background: rgba(10, 10, 10, 0.84);
+            color: var(--void-white);
+            padding: 0.58rem 0.92rem;
+            font-size: 0.62rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .story-overlay-stage {
+            position: absolute;
+            inset: 0;
+            perspective: 620px;
+            perspective-origin: 50% 74%;
+            display: grid;
+            place-items: end center;
+            padding: 0 1rem 8svh;
+        }
+
+        .story-crawl {
+            width: min(860px, 90vw);
+            transform-origin: 50% 100%;
+            transform: rotateX(23deg) translateY(66%);
+            color: rgba(243, 226, 192, 0.92);
+            text-align: justify;
+            text-wrap: pretty;
+            opacity: 0;
+        }
+
+        .story-overlay.animate .story-crawl {
+            opacity: 1;
+            animation: voidStoryCrawl 36s linear forwards;
+        }
+
+        .story-crawl-eyebrow {
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.96);
+            margin-bottom: 1.1rem;
+        }
+
+        .story-crawl-title {
+            text-align: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 6vw, 3.6rem);
+            letter-spacing: 0.14em;
+            margin-bottom: 1.65rem;
+            text-transform: uppercase;
+        }
+
+        .story-crawl p {
+            font-size: clamp(0.96rem, 2.1vw, 1.22rem);
+            line-height: 1.9;
+            letter-spacing: 0.08em;
+            margin: 0 auto 1.4rem;
+            max-width: 900px;
+        }
+
+        @keyframes voidStoryCrawl {
+            0% {
+                transform: rotateX(23deg) translateY(66%);
+                opacity: 0;
+            }
+            6% {
+                opacity: 1;
+            }
+            100% {
+                transform: rotateX(24deg) translateY(-270%);
+                opacity: 1;
+            }
         }
 
         /* Philosophy specific */
@@ -1649,6 +1789,13 @@
                 letter-spacing: 0.2em;
             }
 
+            .story-trigger-button {
+                width: min(100%, 260px);
+                font-size: 0.58rem;
+                letter-spacing: 0.18em;
+                padding: 0.7rem 1.2rem;
+            }
+
             .products-header {
                 margin-bottom: 3.2rem;
             }
@@ -1811,6 +1958,25 @@
                 padding: 0.78rem 1.2rem;
                 font-size: 0.68rem;
                 letter-spacing: 0.13em;
+            }
+
+            .story-overlay-stage {
+                perspective: 420px;
+                padding-bottom: 10svh;
+            }
+
+            .story-overlay.animate .story-crawl {
+                animation-duration: 40s;
+            }
+
+            .story-crawl {
+                width: min(92vw, 640px);
+            }
+
+            .story-crawl p {
+                font-size: 0.9rem;
+                line-height: 1.75;
+                letter-spacing: 0.06em;
             }
 
             .products {
@@ -1977,9 +2143,26 @@
         <div class="hero-content fade-in-up" style="--delay: 80ms;">
             <h1 class="hero-title">VOID</h1>
             <p class="hero-subtitle">Atelier</p>
-            <a href="https://shop.eternalvoid.co" class="cta-button" target="_blank" rel="noopener">Enter The Boutique</a>
+            <div class="hero-actions">
+                <a href="https://shop.eternalvoid.co" class="cta-button" target="_blank" rel="noopener">Enter The Boutique</a>
+                <button type="button" class="story-trigger-button" id="openStoryButton">Read The Story</button>
+            </div>
         </div>
     </section>
+
+    <div class="story-overlay" id="storyOverlay" aria-hidden="true">
+        <button type="button" class="story-overlay-close" id="storyOverlayClose" aria-label="Close story">Close</button>
+        <div class="story-overlay-stage" role="dialog" aria-modal="true" aria-labelledby="storyCrawlTitle">
+            <div class="story-crawl">
+                <p class="story-crawl-eyebrow">Void Archive</p>
+                <h2 class="story-crawl-title" id="storyCrawlTitle">Story</h2>
+                <p>Born between couture restraint and underground pulse, VOID exists at the collision point of luxury discipline and street instinct.</p>
+                <p>Every silhouette is developed as a limited ritual: precise tailoring, elevated fabric weight, and monochrome tension shaped for movement, presence, and permanence.</p>
+                <p>We reject disposable cycles. We build collectible essentials — garments that feel ceremonial in detail yet raw in attitude.</p>
+                <p>VOID is not trend-led. It is a quiet house code for those who wear darkness as architecture and elegance as armor.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Products Section - BLACK -->
     <section class="products" id="shop">
@@ -2130,6 +2313,9 @@
         const entryGateVideo = document.getElementById('entryGateVideo');
         const entryGate = document.getElementById('entryGate');
         const enterVoidButton = document.getElementById('enterVoidButton');
+        const openStoryButton = document.getElementById('openStoryButton');
+        const storyOverlay = document.getElementById('storyOverlay');
+        const storyOverlayClose = document.getElementById('storyOverlayClose');
 
         function setupVideo(videoElement, playbackRate) {
             if (!videoElement) return;
@@ -2221,6 +2407,41 @@
         }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
 
         revealItems.forEach((item) => revealObserver.observe(item));
+
+        function openStoryOverlay() {
+            if (!storyOverlay) return;
+
+            storyOverlay.classList.add('open');
+            storyOverlay.classList.remove('animate');
+            storyOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('story-open');
+            void storyOverlay.offsetWidth;
+            storyOverlay.classList.add('animate');
+        }
+
+        function closeStoryOverlay() {
+            if (!storyOverlay) return;
+
+            storyOverlay.classList.remove('open', 'animate');
+            storyOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('story-open');
+        }
+
+        if (openStoryButton && storyOverlay && storyOverlayClose) {
+            openStoryButton.addEventListener('click', () => {
+                openStoryOverlay();
+            });
+
+            storyOverlayClose.addEventListener('click', () => {
+                closeStoryOverlay();
+            });
+
+            storyOverlay.addEventListener('click', (event) => {
+                if (event.target === storyOverlay) {
+                    closeStoryOverlay();
+                }
+            });
+        }
 
         // Cart logic
         const cartFab = document.getElementById('cartFab');
@@ -2547,6 +2768,11 @@
         });
 
         document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && storyOverlay && storyOverlay.classList.contains('open')) {
+                closeStoryOverlay();
+                return;
+            }
+
             if (event.key === 'Escape' && sizePopupBackdrop.classList.contains('open')) {
                 closeSizePopup();
             }
