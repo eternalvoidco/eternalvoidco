@@ -16,12 +16,12 @@
     <meta name="msapplication-TileColor" content="#080808">
     <meta name="msapplication-TileImage" content="/assets/icons/android-chrome-192x192.png">
     <title>VOID - Luxury Streetwear</title>
-    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260324">
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260324">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png?v=20260324">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png?v=20260324">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png?v=20260324">
+    <link rel="manifest" href="/assets/icons/site.webmanifest?v=20260324">
     <link rel="canonical" href="https://www.eternalvoid.co/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="VOID - Luxury Streetwear">
@@ -74,8 +74,8 @@
 
         body {
             width: 100%;
-            max-width: 1920px;
-            margin: 0 auto;
+            min-height: 100dvh;
+            margin: 0;
             background: #000;
             color: var(--void-white);
             font-family: 'Manrope', sans-serif;
@@ -746,6 +746,8 @@
             font-weight: 600;
             cursor: pointer;
             transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .story-trigger-button:hover,
@@ -923,16 +925,19 @@
             display: grid;
             place-items: end center;
             padding: 0 1rem 8svh;
+            pointer-events: none;
         }
 
         .story-crawl {
             width: min(860px, 90vw);
             transform-origin: 50% 100%;
-            transform: rotateX(23deg) translateY(66%);
-            color: rgba(243, 226, 192, 0.92);
-            text-align: justify;
-            text-wrap: pretty;
+            transform: rotateX(21deg) translateY(40svh);
             opacity: 0;
+            text-align: justify;
+            color: rgba(244, 225, 182, 0.97);
+            text-shadow: 0 0 7px rgba(234, 198, 132, 0.3);
+            filter: drop-shadow(0 0 16px rgba(234, 198, 132, 0.18));
+            pointer-events: none;
         }
 
         .story-overlay.animate .story-crawl {
@@ -2338,6 +2343,32 @@
                 padding: 0 3rem 3.5rem;
             }
         }
+
+        @media (min-width: 1513px) {
+            .nav,
+            .nav.scrolled {
+                padding-left: min(5.5vw, 6rem);
+                padding-right: min(5.5vw, 6rem);
+            }
+
+            .hero-content {
+                max-width: min(74vw, 1200px);
+            }
+
+            .hero-actions {
+                gap: 1rem;
+            }
+
+            .story-trigger-button {
+                min-width: 220px;
+            }
+
+            .products,
+            .footer-content {
+                padding-left: min(5.5vw, 6rem);
+                padding-right: min(5.5vw, 6rem);
+            }
+        }
     </style>
 </head>
 <body class="gate-open">
@@ -2573,6 +2604,17 @@
         const openStoryButton = document.getElementById('openStoryButton');
         const storyOverlay = document.getElementById('storyOverlay');
         const exitStoryButton = document.getElementById('exitStoryButton');
+        let lastFocusedElement = null;
+
+        function focusElementSafely(element) {
+            if (!element || typeof element.focus !== 'function') return;
+
+            try {
+                element.focus({ preventScroll: true });
+            } catch (error) {
+                element.focus();
+            }
+        }
 
         function setupVideo(videoElement, playbackRate) {
             if (!videoElement) return;
@@ -2638,6 +2680,8 @@
         // Nav scroll
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('nav');
+            if (!nav) return;
+
             nav.classList.toggle('scrolled', window.scrollY > 50);
         });
 
@@ -2654,26 +2698,42 @@
 
         // Subtle reveal animation
         const revealItems = document.querySelectorAll('.fade-in-up');
-        const revealObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
 
-        revealItems.forEach((item) => revealObserver.observe(item));
+        if ('IntersectionObserver' in window) {
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
+
+            revealItems.forEach((item) => revealObserver.observe(item));
+        } else {
+            revealItems.forEach((item) => item.classList.add('visible'));
+        }
 
         function openStoryOverlay() {
             if (!storyOverlay) return;
+            if (storyOverlay.classList.contains('open')) return;
 
+            lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
             storyOverlay.classList.add('open');
             storyOverlay.classList.remove('animate');
             storyOverlay.setAttribute('aria-hidden', 'false');
             document.body.classList.add('story-open');
+            if (openStoryButton) {
+                openStoryButton.setAttribute('aria-expanded', 'true');
+            }
             void storyOverlay.offsetWidth;
             storyOverlay.classList.add('animate');
+
+            if (exitStoryButton) {
+                window.requestAnimationFrame(() => {
+                    focusElementSafely(exitStoryButton);
+                });
+            }
         }
 
         function closeStoryOverlay() {
@@ -2682,9 +2742,15 @@
             storyOverlay.classList.remove('open', 'animate');
             storyOverlay.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('story-open');
+            if (openStoryButton) {
+                openStoryButton.setAttribute('aria-expanded', 'false');
+            }
+
+            focusElementSafely(lastFocusedElement);
         }
 
         if (openStoryButton && storyOverlay) {
+            openStoryButton.setAttribute('aria-expanded', 'false');
             openStoryButton.addEventListener('click', () => {
                 openStoryOverlay();
             });
