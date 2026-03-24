@@ -490,12 +490,7 @@
                 scroll-behavior: auto;
             }
 
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
+            * {
                 scroll-behavior: auto !important;
             }
 
@@ -519,6 +514,42 @@
             .entry-gate-sigil {
                 opacity: 0;
                 transition: none;
+            }
+
+            .story-overlay,
+            .story-overlay::before,
+            .story-overlay-stars,
+            .story-overlay-stars::before,
+            .story-overlay-stars::after,
+            .story-overlay-spark,
+            .story-overlay-spark::before,
+            .story-overlay-spark .spark-ray,
+            .story-overlay-exit {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            .story-overlay-stage {
+                perspective: none;
+                perspective-origin: 50% 50%;
+                place-items: center;
+                padding: 4rem 1rem 6rem;
+                pointer-events: auto;
+            }
+
+            .story-crawl,
+            .story-crawl.is-animating,
+            .story-overlay.animate .story-crawl {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+                filter: none;
+                text-shadow: none;
+                max-height: min(68vh, 560px);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                padding-right: 0.35rem;
+                pointer-events: auto;
             }
         }
 
