@@ -166,6 +166,7 @@
             height: 100%;
             object-fit: cover;
             object-position: center;
+            pointer-events: none;
         }
 
         .entry-gate::before {
@@ -178,7 +179,7 @@
 
         .entry-gate-button {
             position: relative;
-            z-index: 1;
+            z-index: 3;
             width: min(92vw, 360px);
             min-width: min(92vw, 340px);
             padding: 1rem 1.5rem;
@@ -198,6 +199,7 @@
             box-shadow: 0 0 0 1px rgba(173, 145, 96, 0.24), 0 14px 30px rgba(0, 0, 0, 0.58);
             animation: enterVoidOuterPulse 3.7s ease-in-out infinite, enterVoidDepthPulse 3.7s ease-in-out infinite;
             transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, color 0.25s ease, opacity 0.4s ease;
+            isolation: isolate;
         }
 
         .entry-gate-button.intro-hidden {
@@ -246,6 +248,7 @@
             background: linear-gradient(90deg, transparent 0%, rgba(173, 145, 96, 0.2) 18%, rgba(173, 145, 96, 0.54) 50%, rgba(173, 145, 96, 0.2) 82%, transparent 100%);
             box-shadow: 0 0 12px rgba(173, 145, 96, 0.22);
             transition: opacity 0.4s ease, transform 0.45s ease, filter 0.45s ease;
+            pointer-events: none;
         }
 
         .entry-gate-sigil::before,
@@ -276,6 +279,7 @@
             background: rgba(245, 242, 236, 0.012);
             z-index: 1;
             animation: enterVoidInnerPulse 4.4s ease-in-out infinite;
+            pointer-events: none;
         }
 
         .entry-gate-button:hover {
@@ -648,6 +652,7 @@
             height: 100%;
             object-fit: cover;
             object-position: center;
+            pointer-events: none;
         }
 
         .hero-video {
@@ -661,6 +666,7 @@
             text-align: center;
             padding: 0 2rem;
             max-width: 1000px;
+            pointer-events: auto;
         }
 
         .hero-title {
@@ -748,6 +754,8 @@
             transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease, transform 0.3s ease;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            position: relative;
+            z-index: 2;
         }
 
         .story-trigger-button:hover,
