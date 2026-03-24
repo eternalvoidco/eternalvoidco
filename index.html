@@ -941,16 +941,19 @@
         .story-crawl {
             width: min(860px, 90vw);
             transform-origin: 50% 100%;
-            transform: rotateX(21deg) translateY(40svh);
+            transform: rotateX(23deg) translateY(66%);
             opacity: 0;
             text-align: justify;
             color: rgba(244, 225, 182, 0.97);
             text-shadow: 0 0 7px rgba(234, 198, 132, 0.3);
             filter: drop-shadow(0 0 16px rgba(234, 198, 132, 0.18));
             pointer-events: none;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
         }
 
-        .story-overlay.animate .story-crawl {
+        .story-crawl.is-animating {
             opacity: 1;
             animation: voidStoryCrawl 36s linear forwards;
         }
@@ -2223,7 +2226,7 @@
                 letter-spacing: 0.16em;
             }
 
-            .story-overlay.animate .story-crawl {
+            .story-crawl.is-animating {
                 animation-duration: 40s;
             }
 
@@ -2614,6 +2617,7 @@
         const openStoryButton = document.getElementById('openStoryButton');
         const storyOverlay = document.getElementById('storyOverlay');
         const exitStoryButton = document.getElementById('exitStoryButton');
+        const storyCrawl = storyOverlay ? storyOverlay.querySelector('.story-crawl') : null;
         let lastFocusedElement = null;
 
         function focusElementSafely(element) {
@@ -2653,6 +2657,42 @@
             }
         }
 
+        function runEntryIntroAnimation(revealDelay, activateDelay) {
+            if (!enterVoidButton) return;
+
+            enterVoidButton.classList.remove('intro-active');
+            enterVoidButton.classList.add('intro-hidden');
+
+            window.setTimeout(() => {
+                window.requestAnimationFrame(() => {
+                    enterVoidButton.classList.remove('intro-hidden');
+
+                    window.setTimeout(() => {
+                        enterVoidButton.classList.add('intro-active');
+                    }, activateDelay);
+                });
+            }, revealDelay);
+        }
+
+        function resetStoryCrawlAnimation() {
+            if (!storyCrawl) return;
+
+            storyCrawl.classList.remove('is-animating');
+            storyCrawl.style.animation = 'none';
+            void storyCrawl.offsetWidth;
+            storyCrawl.style.animation = '';
+        }
+
+        function startStoryCrawlAnimation() {
+            if (!storyCrawl) return;
+
+            resetStoryCrawlAnimation();
+
+            window.requestAnimationFrame(() => {
+                storyCrawl.classList.add('is-animating');
+            });
+        }
+
         function enterVoid() {
             if (!entryGate || entryGate.classList.contains('hidden')) return;
 
@@ -2685,17 +2725,9 @@
             const isTouchLikeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
             if (isTouchLikeDevice) {
-                enterVoidButton.classList.add('intro-hidden');
-
-                window.setTimeout(() => {
-                    enterVoidButton.classList.remove('intro-hidden');
-                }, 1320);
-
-                window.setTimeout(() => {
-                    enterVoidButton.classList.add('intro-active');
-                }, 2780);
+                runEntryIntroAnimation(1320, 1460);
             } else {
-                enterVoidButton.classList.add('intro-active');
+                runEntryIntroAnimation(140, 220);
             }
 
             enterVoidButton.addEventListener('click', () => {
@@ -2798,6 +2830,7 @@
             if (storyOverlay.classList.contains('open')) return;
 
             lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            resetStoryCrawlAnimation();
             storyOverlay.classList.add('open');
             storyOverlay.classList.remove('animate');
             storyOverlay.setAttribute('aria-hidden', 'false');
@@ -2807,6 +2840,7 @@
             }
             void storyOverlay.offsetWidth;
             storyOverlay.classList.add('animate');
+            startStoryCrawlAnimation();
 
             if (exitStoryButton) {
                 window.requestAnimationFrame(() => {
@@ -2821,6 +2855,7 @@
             storyOverlay.classList.remove('open', 'animate');
             storyOverlay.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('story-open');
+            resetStoryCrawlAnimation();
             if (openStoryButton) {
                 openStoryButton.setAttribute('aria-expanded', 'false');
             }
