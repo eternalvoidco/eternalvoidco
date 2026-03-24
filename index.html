@@ -151,6 +151,7 @@
             overflow: hidden;
             padding: calc(1.2rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) calc(1.2rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
             transition: opacity 0.7s ease, visibility 0.7s ease;
+            cursor: pointer;
         }
 
         .entry-gate.hidden {
@@ -200,6 +201,7 @@
             animation: enterVoidOuterPulse 3.7s ease-in-out infinite, enterVoidDepthPulse 3.7s ease-in-out infinite;
             transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, color 0.25s ease, opacity 0.4s ease;
             isolation: isolate;
+            pointer-events: auto;
         }
 
         .entry-gate-button.intro-hidden {
@@ -2642,6 +2644,43 @@
         setupVideo(heroVideo, 1);
         setupVideo(entryGateVideo, 1);
 
+        function activateWithKeyboard(event, callback) {
+            if (!event || typeof callback !== 'function') return;
+
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                callback();
+            }
+        }
+
+        function enterVoid() {
+            if (!entryGate || entryGate.classList.contains('hidden')) return;
+
+            if (entryGateVideo) {
+                entryGateVideo.pause();
+            }
+
+            entryGate.classList.add('hidden');
+            document.body.classList.remove('gate-open');
+
+            window.setTimeout(() => {
+                entryGate.style.display = 'none';
+            }, 720);
+
+            if (heroVideo) {
+                heroVideo.muted = true;
+                heroVideo.defaultMuted = true;
+                heroVideo.playbackRate = 1;
+
+                const heroPlayAttempt = heroVideo.play();
+                if (heroPlayAttempt && typeof heroPlayAttempt.catch === 'function') {
+                    heroPlayAttempt.catch(() => {
+                        return;
+                    });
+                }
+            }
+        }
+
         if (enterVoidButton && entryGate) {
             const isTouchLikeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
@@ -2655,35 +2694,67 @@
                 window.setTimeout(() => {
                     enterVoidButton.classList.add('intro-active');
                 }, 2780);
+            } else {
+                enterVoidButton.classList.add('intro-active');
             }
 
             enterVoidButton.addEventListener('click', () => {
-                if (entryGateVideo) {
-                    entryGateVideo.pause();
-                }
+                enterVoid();
+            });
 
-                entryGate.classList.add('hidden');
-                document.body.classList.remove('gate-open');
+            enterVoidButton.addEventListener('keydown', (event) => {
+                activateWithKeyboard(event, enterVoid);
+            });
 
-                setTimeout(() => {
-                    entryGate.style.display = 'none';
-                }, 720);
+            entryGate.addEventListener('click', () => {
+                enterVoid();
+            });
 
-                if (heroVideo) {
-                    heroVideo.muted = true;
-                    heroVideo.defaultMuted = true;
-                    heroVideo.playbackRate = 1;
-                    heroVideo.load();
+            entryGate.addEventListener('keydown', (event) => {
+                if (event.target !== entryGate) return;
 
-                    const heroPlayAttempt = heroVideo.play();
-                    if (heroPlayAttempt && typeof heroPlayAttempt.catch === 'function') {
-                        heroPlayAttempt.catch(() => {
-                            // Keep silent; browser may require additional interaction on rare setups.
-                        });
-                    }
-                }
+                activateWithKeyboard(event, enterVoid);
             });
         }
+
+        window.enterVoid = enterVoid;
+
+        function handleStoryTrigger() {
+            if (!storyOverlay) return;
+
+            openStoryOverlay();
+        }
+
+        function handleStoryExit() {
+            if (!storyOverlay) return;
+
+            closeStoryOverlay();
+        }
+
+        document.addEventListener('pointerup', (event) => {
+            const target = event.target instanceof Element ? event.target : null;
+            if (!target) return;
+
+            if (target.closest('#openStoryButton')) {
+                event.preventDefault();
+                handleStoryTrigger();
+                return;
+            }
+
+            if (target.closest('#exitStoryButton')) {
+                event.preventDefault();
+                handleStoryExit();
+                return;
+            }
+
+            if (target.closest('#enterVoidButton')) {
+                event.preventDefault();
+                enterVoid();
+            }
+        }, true);
+
+        window.openStoryOverlay = openStoryOverlay;
+        window.closeStoryOverlay = closeStoryOverlay;
 
         // Nav scroll
         window.addEventListener('scroll', () => {
@@ -2760,18 +2831,26 @@
         if (openStoryButton && storyOverlay) {
             openStoryButton.setAttribute('aria-expanded', 'false');
             openStoryButton.addEventListener('click', () => {
-                openStoryOverlay();
+                handleStoryTrigger();
+            });
+
+            openStoryButton.addEventListener('keydown', (event) => {
+                activateWithKeyboard(event, handleStoryTrigger);
             });
 
             storyOverlay.addEventListener('click', (event) => {
                 if (event.target === storyOverlay) {
-                    closeStoryOverlay();
+                    handleStoryExit();
                 }
             });
 
             if (exitStoryButton) {
                 exitStoryButton.addEventListener('click', () => {
-                    closeStoryOverlay();
+                    handleStoryExit();
+                });
+
+                exitStoryButton.addEventListener('keydown', (event) => {
+                    activateWithKeyboard(event, handleStoryExit);
                 });
             }
         }
