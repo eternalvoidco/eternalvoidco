@@ -67,3 +67,4 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 | 2026-03-10 | Mobil kosár méret-optimalizálás: cart popup és cart FAB tovább kicsinyítve 480px és 390px breakpointokon | pending | pending | pending |
 | 2026-03-12 | Entry gate microinteraction upgrade: hoverre karakterenként felépülő `ENTER THE VOID` lettering, alapállapotban prémium sigil design; hover out-ra visszabomló átmenettel | pending | pending | pending |
 | 2026-03-12 | Platform baseline hardening: `viewport-fit=cover`, text-size-adjust fix, globális focus-visible, media/button reset, full reduced-motion fallback minden platformra | pending | pending | pending |
+| 2026-03-24 | Story overlay desktop stabilizálás + cross-platform finomhangolás + favicon cache-safe linkek (`Read The Story` flow hardening, fókusz/ARIA javítás, nagy desktop spacing tuning) | 441d644 | done | pending |
