@@ -1121,6 +1121,35 @@
             margin-bottom: 6rem;
         }
 
+        .products-header-actions {
+            margin-top: 1.2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .size-guide-trigger {
+            border: 1px solid rgba(199, 169, 108, 0.52);
+            background: rgba(10, 10, 10, 0.88);
+            color: #f6e9cc;
+            min-height: 40px;
+            padding: 0.55rem 1.15rem;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.63rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+        }
+
+        .size-guide-trigger:hover,
+        .size-guide-trigger:focus-visible {
+            border-color: rgba(199, 169, 108, 0.92);
+            background: rgba(27, 21, 12, 0.92);
+            color: #fdf2da;
+            transform: translateY(-2px);
+        }
+
         .products-header h2 {
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(3rem, 6vw, 5rem);
@@ -1395,6 +1424,39 @@
             margin-bottom: 0.85rem;
         }
 
+        .size-popup-fit {
+            margin-bottom: 0.85rem;
+            padding: 0.7rem 0.75rem;
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            background: linear-gradient(165deg, rgba(16, 14, 11, 0.78), rgba(8, 8, 8, 0.9));
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.28s ease, transform 0.28s ease, border-color 0.28s ease;
+        }
+
+        .size-popup-fit.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+            border-color: rgba(199, 169, 108, 0.5);
+        }
+
+        .size-popup-fit-title {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
+            letter-spacing: 0.08em;
+            color: #f5e7c7;
+        }
+
+        .size-popup-fit-note {
+            margin: 0.42rem 0 0;
+            font-size: 0.62rem;
+            letter-spacing: 0.12em;
+            line-height: 1.65;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.78);
+        }
+
         .size-option {
             border: 1px solid rgba(255, 255, 255, 0.26);
             background: rgba(12, 12, 12, 0.92);
@@ -1456,6 +1518,192 @@
 
         body.size-popup-open {
             overflow: hidden;
+        }
+
+        body.size-guide-open {
+            overflow: hidden;
+        }
+
+        body.size-guide-open .nav,
+        body.size-guide-open .video-section,
+        body.size-guide-open .products,
+        body.size-guide-open .footer,
+        body.size-guide-open .cart-fab,
+        body.size-guide-open .cart-popup,
+        body.size-guide-open .size-popup-backdrop,
+        body.size-guide-open .story-overlay {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .size-guide-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2600;
+            display: grid;
+            place-items: center;
+            padding: clamp(0.8rem, 2.4vw, 1.6rem);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 20% 16%, rgba(199, 169, 108, 0.16), transparent 45%),
+                radial-gradient(circle at 78% 84%, rgba(199, 169, 108, 0.12), transparent 48%),
+                rgba(2, 2, 2, 0.96);
+            transition: opacity 0.32s ease, visibility 0.32s ease;
+        }
+
+        .size-guide-overlay.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .size-guide-panel {
+            width: min(980px, 100%);
+            max-height: min(90vh, 900px);
+            overflow: auto;
+            border: 1px solid rgba(199, 169, 108, 0.56);
+            background: linear-gradient(165deg, rgba(12, 12, 12, 0.98), rgba(5, 5, 5, 0.98));
+            box-shadow: 0 28px 64px rgba(0, 0, 0, 0.62);
+            transform: translateY(16px) scale(0.985);
+            opacity: 0;
+            transition: transform 0.32s ease, opacity 0.32s ease;
+        }
+
+        .size-guide-overlay.open .size-guide-panel {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .size-guide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 1rem 0.65rem;
+            border-bottom: 1px solid rgba(199, 169, 108, 0.26);
+        }
+
+        .size-guide-title {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.45rem, 4.5vw, 2.3rem);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--void-white);
+        }
+
+        .size-guide-subtitle {
+            margin: 0.24rem 0 0;
+            font-size: 0.62rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.72);
+        }
+
+        .size-guide-close {
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(12, 12, 12, 0.86);
+            color: var(--void-white);
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: border-color 0.22s ease, background 0.22s ease;
+        }
+
+        .size-guide-close:hover,
+        .size-guide-close:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            background: rgba(22, 17, 9, 0.9);
+        }
+
+        .size-guide-body {
+            padding: 0.95rem 1rem 1.05rem;
+        }
+
+        .size-guide-copy {
+            margin: 0 0 0.95rem;
+            font-size: 0.73rem;
+            letter-spacing: 0.11em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.78);
+            line-height: 1.6;
+        }
+
+        .size-guide-table-wrap {
+            border: 1px solid rgba(199, 169, 108, 0.26);
+            overflow: auto;
+            background: rgba(8, 8, 8, 0.76);
+        }
+
+        .size-guide-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 620px;
+        }
+
+        .size-guide-table th,
+        .size-guide-table td {
+            border-bottom: 1px solid rgba(199, 169, 108, 0.18);
+            padding: 0.72rem 0.75rem;
+            text-align: left;
+            font-size: 0.7rem;
+            letter-spacing: 0.11em;
+            text-transform: uppercase;
+        }
+
+        .size-guide-table th {
+            color: #f4e7ca;
+            background: rgba(16, 13, 8, 0.82);
+            font-weight: 700;
+        }
+
+        .size-guide-table td {
+            color: rgba(245, 242, 236, 0.86);
+        }
+
+        .size-guide-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .size-guide-note {
+            margin: 0.92rem 0 0;
+            font-size: 0.62rem;
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.66);
+            line-height: 1.68;
+        }
+
+        .size-guide-actions {
+            display: flex;
+            justify-content: center;
+            padding: 0 1rem 1.1rem;
+        }
+
+        .size-guide-return {
+            min-height: 40px;
+            border: 1px solid rgba(199, 169, 108, 0.56);
+            background: rgba(14, 12, 8, 0.82);
+            color: #f7ebd2;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.21em;
+            text-transform: uppercase;
+            padding: 0.58rem 1.3rem;
+            cursor: pointer;
+            transition: border-color 0.24s ease, background 0.24s ease, transform 0.24s ease;
+        }
+
+        .size-guide-return:hover,
+        .size-guide-return:focus-visible {
+            border-color: rgba(199, 169, 108, 0.92);
+            background: rgba(24, 19, 10, 0.9);
+            transform: translateY(-2px);
         }
 
         .add-to-cart-btn {
@@ -2063,6 +2311,14 @@
                 gap: 2rem;
             }
 
+            .products-header {
+                margin-bottom: 4.2rem;
+            }
+
+            .products-header-actions {
+                margin-top: 1rem;
+            }
+
             .product-info {
                 flex-direction: column;
                 align-items: flex-start;
@@ -2097,6 +2353,14 @@
 
             .size-popup {
                 width: min(390px, 100%);
+            }
+
+            .size-guide-panel {
+                max-height: min(92vh, 920px);
+            }
+
+            .size-guide-body {
+                padding: 0.85rem 0.85rem 0.95rem;
             }
 
             .size-options {
@@ -2246,6 +2510,30 @@
 
             .size-popup-actions {
                 grid-template-columns: 1fr;
+            }
+
+            .size-guide-trigger {
+                width: min(100%, 260px);
+            }
+
+            .size-guide-header {
+                padding: 0.85rem 0.8rem 0.55rem;
+            }
+
+            .size-guide-body {
+                padding: 0.75rem 0.8rem 0.9rem;
+            }
+
+            .size-guide-actions {
+                padding: 0 0.8rem 0.95rem;
+            }
+
+            .size-guide-table {
+                min-width: 540px;
+            }
+
+            .size-guide-return {
+                width: min(100%, 260px);
             }
 
             .footer-content {
@@ -2454,9 +2742,12 @@
             <div class="products-header fade-in-up" style="--delay: 40ms;">
                 <span class="section-eyebrow">Current Drop</span>
                 <h2>Collection</h2>
+                <div class="products-header-actions">
+                    <button type="button" class="size-guide-trigger" id="sizeGuideTrigger">Size Guide</button>
+                </div>
             </div>
             <div class="products-grid">
-                <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250">
+                <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID styling.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
@@ -2471,7 +2762,7 @@
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 140ms;" data-product-name="Endzustand Tee" data-product-price="250">
+                <div class="product-card fade-in-up" style="--delay: 140ms;" data-product-name="Endzustand Tee" data-product-price="250" data-fit-title="Boxy Oversized Fit" data-fit-note="Structured chest, blunt hem line, and oversized volume with couture-inspired proportions.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
@@ -2486,7 +2777,7 @@
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Monogram Tee" data-product-price="250">
+                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Monogram Tee" data-product-price="250" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
@@ -2522,12 +2813,91 @@
                     <button type="button" class="size-option" data-size-option="L">L</button>
                     <button type="button" class="size-option" data-size-option="XL">XL</button>
                 </div>
+                <div class="size-popup-fit" id="sizePopupFit" aria-live="polite">
+                    <h4 class="size-popup-fit-title" id="sizePopupFitTitle">Oversized Atelier Fit</h4>
+                    <p class="size-popup-fit-note" id="sizePopupFitNote">Select a size to preview the intended silhouette and fit behavior.</p>
+                </div>
                 <div class="size-popup-actions">
                     <button type="button" class="size-popup-btn" id="sizePopupCancel">Cancel</button>
                     <button type="button" class="size-popup-btn confirm" id="sizePopupConfirm" disabled>Apply</button>
                 </div>
             </div>
         </aside>
+    </div>
+
+    <div class="size-guide-overlay" id="sizeGuideOverlay" aria-hidden="true">
+        <section class="size-guide-panel" role="dialog" aria-modal="true" aria-labelledby="sizeGuideTitle">
+            <div class="size-guide-header">
+                <div>
+                    <h3 class="size-guide-title" id="sizeGuideTitle">VOID Size Guide</h3>
+                    <p class="size-guide-subtitle">Measured in centimeters · Oversized baseline fit</p>
+                </div>
+                <button type="button" class="size-guide-close" id="sizeGuideClose" aria-label="Close size guide">✕</button>
+            </div>
+            <div class="size-guide-body">
+                <p class="size-guide-copy">Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.</p>
+                <div class="size-guide-table-wrap">
+                    <table class="size-guide-table" aria-describedby="sizeGuideNote">
+                        <thead>
+                            <tr>
+                                <th scope="col">Size</th>
+                                <th scope="col">Chest Width</th>
+                                <th scope="col">Body Length</th>
+                                <th scope="col">Shoulder Width</th>
+                                <th scope="col">Sleeve Length</th>
+                                <th scope="col">Fit Direction</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>XS</td>
+                                <td>56</td>
+                                <td>69</td>
+                                <td>53</td>
+                                <td>22</td>
+                                <td>Trim Oversized</td>
+                            </tr>
+                            <tr>
+                                <td>S</td>
+                                <td>58</td>
+                                <td>71</td>
+                                <td>55</td>
+                                <td>23</td>
+                                <td>Balanced Oversized</td>
+                            </tr>
+                            <tr>
+                                <td>M</td>
+                                <td>60</td>
+                                <td>73</td>
+                                <td>57</td>
+                                <td>24</td>
+                                <td>Signature Oversized</td>
+                            </tr>
+                            <tr>
+                                <td>L</td>
+                                <td>62</td>
+                                <td>75</td>
+                                <td>59</td>
+                                <td>25</td>
+                                <td>Deep Oversized</td>
+                            </tr>
+                            <tr>
+                                <td>XL</td>
+                                <td>64</td>
+                                <td>77</td>
+                                <td>61</td>
+                                <td>26</td>
+                                <td>Max Oversized</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="size-guide-note" id="sizeGuideNote">All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.</p>
+            </div>
+            <div class="size-guide-actions">
+                <button type="button" class="size-guide-return" id="sizeGuideReturn">Return to VOID</button>
+            </div>
+        </section>
     </div>
 
     <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart">
@@ -2886,6 +3256,13 @@
         const sizePopupClose = document.getElementById('sizePopupClose');
         const sizePopupCancel = document.getElementById('sizePopupCancel');
         const sizePopupConfirm = document.getElementById('sizePopupConfirm');
+        const sizePopupFit = document.getElementById('sizePopupFit');
+        const sizePopupFitTitle = document.getElementById('sizePopupFitTitle');
+        const sizePopupFitNote = document.getElementById('sizePopupFitNote');
+        const sizeGuideTrigger = document.getElementById('sizeGuideTrigger');
+        const sizeGuideOverlay = document.getElementById('sizeGuideOverlay');
+        const sizeGuideClose = document.getElementById('sizeGuideClose');
+        const sizeGuideReturn = document.getElementById('sizeGuideReturn');
         const sizeOptionButtons = Array.from(document.querySelectorAll('[data-size-option]'));
 
         const cart = [];
@@ -2894,6 +3271,7 @@
             addButton: null,
             selectedSize: ''
         };
+        let lastSizeGuideFocus = null;
 
         function openCartPopup() {
             cartPopup.classList.remove('closing');
@@ -2986,6 +3364,61 @@
             });
         }
 
+        function updateSizePopupFit(productCard, selectedSize) {
+            if (!sizePopupFit || !sizePopupFitTitle || !sizePopupFitNote) return;
+
+            const fitTitle = productCard?.dataset.fitTitle || 'Oversized Atelier Fit';
+            const baseFitNote = productCard?.dataset.fitNote || 'Built with VOID oversized proportion and movement-focused drape.';
+            const sizeNote = selectedSize
+                ? `Selected ${selectedSize} keeps the intended VOID oversized silhouette.`
+                : 'Select a size to preview the intended silhouette and fit behavior.';
+
+            sizePopupFit.classList.remove('is-visible');
+            void sizePopupFit.offsetWidth;
+
+            sizePopupFitTitle.textContent = fitTitle;
+            sizePopupFitNote.textContent = `${baseFitNote} ${sizeNote}`;
+
+            window.requestAnimationFrame(() => {
+                sizePopupFit.classList.add('is-visible');
+            });
+        }
+
+        function openSizeGuide() {
+            if (!sizeGuideOverlay) return;
+
+            lastSizeGuideFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+            if (storyOverlay && storyOverlay.classList.contains('open')) {
+                closeStoryOverlay();
+            }
+
+            if (sizePopupBackdrop && sizePopupBackdrop.classList.contains('open')) {
+                closeSizePopup();
+            }
+
+            closeCartPopup();
+
+            sizeGuideOverlay.classList.add('open');
+            sizeGuideOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('size-guide-open');
+
+            if (sizeGuideReturn) {
+                window.requestAnimationFrame(() => {
+                    focusElementSafely(sizeGuideReturn);
+                });
+            }
+        }
+
+        function closeSizeGuide() {
+            if (!sizeGuideOverlay || !sizeGuideOverlay.classList.contains('open')) return;
+
+            sizeGuideOverlay.classList.remove('open');
+            sizeGuideOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('size-guide-open');
+            focusElementSafely(lastSizeGuideFocus);
+        }
+
         function openSizePopup(productCard, addButton) {
             if (!productCard || !sizePopupBackdrop) return;
 
@@ -3000,6 +3433,7 @@
 
             revealSizeChip(productCard);
             updateSizeOptionsUI(currentSize);
+            updateSizePopupFit(productCard, currentSize);
             sizePopupConfirm.disabled = !currentSize;
             sizePopupConfirm.textContent = addButton ? 'Add to Cart' : 'Apply Size';
             sizePopupSubtitle.textContent = `${productName} · choose your fit`;
@@ -3021,6 +3455,10 @@
                 addButton: null,
                 selectedSize: ''
             };
+
+            if (sizePopupFit) {
+                sizePopupFit.classList.remove('is-visible');
+            }
         }
 
         function updateCartUI() {
@@ -3164,9 +3602,36 @@
 
                 sizePopupState.selectedSize = sizeValue;
                 updateSizeOptionsUI(sizeValue);
+                updateSizePopupFit(sizePopupState.productCard, sizeValue);
                 sizePopupConfirm.disabled = false;
             });
         });
+
+        if (sizeGuideTrigger) {
+            sizeGuideTrigger.addEventListener('click', () => {
+                openSizeGuide();
+            });
+        }
+
+        if (sizeGuideClose) {
+            sizeGuideClose.addEventListener('click', () => {
+                closeSizeGuide();
+            });
+        }
+
+        if (sizeGuideReturn) {
+            sizeGuideReturn.addEventListener('click', () => {
+                closeSizeGuide();
+            });
+        }
+
+        if (sizeGuideOverlay) {
+            sizeGuideOverlay.addEventListener('click', (event) => {
+                if (event.target === sizeGuideOverlay) {
+                    closeSizeGuide();
+                }
+            });
+        }
 
         sizePopupConfirm.addEventListener('click', () => {
             const { productCard, addButton, selectedSize } = sizePopupState;
@@ -3198,6 +3663,11 @@
         });
 
         document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && sizeGuideOverlay && sizeGuideOverlay.classList.contains('open')) {
+                closeSizeGuide();
+                return;
+            }
+
             if (event.key === 'Escape' && storyOverlay && storyOverlay.classList.contains('open')) {
                 closeStoryOverlay();
                 return;
