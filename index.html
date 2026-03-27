@@ -3205,6 +3205,9 @@
             void storyOverlay.offsetWidth;
             storyOverlay.classList.add('animate');
             startStoryCrawlAnimation();
+            trackAnalyticsEvent('open_story_overlay', {
+                source: 'hero_read_story_button'
+            });
 
             if (exitStoryButton) {
                 window.requestAnimationFrame(() => {
@@ -3283,6 +3286,12 @@
             selectedSize: ''
         };
         let lastSizeGuideFocus = null;
+
+        function trackAnalyticsEvent(eventName, params = {}) {
+            if (typeof window.gtag !== 'function') return;
+
+            window.gtag('event', eventName, params);
+        }
 
         function openCartPopup() {
             cartPopup.classList.remove('closing');
@@ -3413,6 +3422,9 @@
             sizeGuideOverlay.classList.add('open');
             sizeGuideOverlay.setAttribute('aria-hidden', 'false');
             document.body.classList.add('size-guide-open');
+            trackAnalyticsEvent('open_size_guide', {
+                source: 'collection_size_guide_button'
+            });
 
             if (sizeGuideReturn) {
                 window.requestAnimationFrame(() => {
@@ -3542,6 +3554,13 @@
             } else {
                 cart.push({ name, price, size, quantity: 1 });
             }
+
+            trackAnalyticsEvent('add_to_cart', {
+                currency: 'EUR',
+                value: price,
+                item_name: name,
+                item_size: size
+            });
 
             updateCartUI();
 
