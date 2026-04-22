@@ -3413,7 +3413,7 @@
                 .join(',');
 
             return {
-                url: `${SHOPIFY_CART_BASE_URL}/${encodedLineItems}`,
+                url: `${SHOPIFY_CART_BASE_URL}/${encodedLineItems}?checkout`,
                 missingItems
             };
         }
@@ -3700,7 +3700,7 @@
                 event.preventDefault();
 
                 if (cart.length === 0) {
-                    window.location.href = SHOPIFY_STOREFRONT_URL;
+                    alert('Your cart is empty. Add at least one item before checkout.');
                     return;
                 }
 
@@ -3708,9 +3708,16 @@
 
                 if (missingItems.length > 0) {
                     console.warn('Missing Shopify variant mapping for items:', missingItems);
+                    alert('Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.');
+                    return;
                 }
 
-                const checkoutUrl = url || SHOPIFY_STOREFRONT_URL;
+                if (!url) {
+                    alert('Unable to build Shopify checkout link. Please try again.');
+                    return;
+                }
+
+                const checkoutUrl = url;
                 const cartValue = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 trackAnalyticsEvent('begin_checkout', {
                     currency: 'EUR',
