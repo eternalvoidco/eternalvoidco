@@ -1160,8 +1160,17 @@
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(6, minmax(0, 1fr));
             gap: 4rem;
+        }
+
+        .products-grid .product-card:nth-child(1),
+        .products-grid .product-card:nth-child(2) {
+            grid-column: span 3;
+        }
+
+        .products-grid .product-card:nth-child(n + 3) {
+            grid-column: span 2;
         }
 
         .product-card {
@@ -2215,6 +2224,12 @@
                 gap: 3rem;
             }
 
+            .products-grid .product-card:nth-child(1),
+            .products-grid .product-card:nth-child(2),
+            .products-grid .product-card:nth-child(n + 3) {
+                grid-column: auto;
+            }
+
             .footer-content {
                 grid-template-columns: 1fr 1fr;
                 gap: 3rem;
@@ -2307,8 +2322,14 @@
             }
 
             .products-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2.2rem;
+            }
+
+            .products-grid .product-card:nth-child(1),
+            .products-grid .product-card:nth-child(2),
+            .products-grid .product-card:nth-child(n + 3) {
+                grid-column: auto;
             }
 
             .products-header {
@@ -2713,7 +2734,7 @@
             <h1 class="hero-title">VOID</h1>
             <p class="hero-subtitle">Atelier</p>
             <div class="hero-actions">
-                <a href="https://shop.eternalvoid.co" class="cta-button" target="_blank" rel="noopener">Enter The Boutique</a>
+                <a href="#shop" class="cta-button">Enter The Boutique</a>
                 <button type="button" class="story-trigger-button" id="openStoryButton">Read The Story</button>
             </div>
         </div>
@@ -2751,7 +2772,6 @@
     <section class="products" id="shop">
         <div class="products-inner">
             <div class="products-header fade-in-up" style="--delay: 40ms;">
-                <span class="section-eyebrow">Current Drop</span>
                 <h2>Collection</h2>
                 <div class="products-header-actions">
                     <button type="button" class="size-guide-trigger" id="sizeGuideTrigger">Size Guide</button>
