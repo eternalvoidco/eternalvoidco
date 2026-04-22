@@ -2788,13 +2788,13 @@
                         <a href="https://shop.eternalvoid.co" class="product-cta" target="_blank" rel="noopener">View Piece</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Monogram Tee" data-product-price="250" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Oblique Gold/White Tee" data-product-price="250" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Monogram Tee</h3>
+                        <h3 class="product-name">Oblique Gold/White Tee</h3>
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
@@ -2933,7 +2933,7 @@
                 <span>Total</span>
                 <strong id="cartTotal">€0</strong>
             </div>
-            <a href="https://shop.eternalvoid.co" class="cart-checkout" target="_blank" rel="noopener">Checkout</a>
+            <a href="https://shop.eternalvoid.co" class="cart-checkout" id="cartCheckout" target="_blank" rel="noopener">Checkout</a>
         </div>
     </aside>
 
@@ -3265,6 +3265,7 @@
         const cartItemsElement = document.getElementById('cartItems');
         const cartTotalElement = document.getElementById('cartTotal');
         const cartEmptyElement = document.getElementById('cartEmpty');
+        const cartCheckout = document.getElementById('cartCheckout');
         const sizePopupBackdrop = document.getElementById('sizePopupBackdrop');
         const sizePopupSubtitle = document.getElementById('sizePopupSubtitle');
         const sizePopupClose = document.getElementById('sizePopupClose');
@@ -3278,6 +3279,54 @@
         const sizeGuideClose = document.getElementById('sizeGuideClose');
         const sizeGuideReturn = document.getElementById('sizeGuideReturn');
         const sizeOptionButtons = Array.from(document.querySelectorAll('[data-size-option]'));
+
+        const SHOPIFY_STOREFRONT_URL = 'https://shop.eternalvoid.co';
+        const SHOPIFY_CART_BASE_URL = `${SHOPIFY_STOREFRONT_URL}/cart`;
+        const SHOPIFY_VARIANT_MAP = {
+            'Levitate Tee': {
+                XS: '56666870907260',
+                S: '56666870874492',
+                M: '56666870841724',
+                L: '56666870808956',
+                XL: '56666870776188'
+            },
+            'Endzustand Tee': {
+                XS: '56666846265724',
+                S: '56666846298492',
+                M: '56666846331260',
+                L: '56666846364028',
+                XL: '56666846396796'
+            },
+            'Oblique Gold/White Tee': {
+                XS: '56666871464316',
+                S: '56666871431548',
+                M: '56666871398780',
+                L: '56666871366012',
+                XL: '56666871333244'
+            },
+            'Oblique Gold/Black Tee': {
+                XS: '56666873201020',
+                S: '56666873233788',
+                M: '56666873266556',
+                L: '56666873299324',
+                XL: '56666873332092'
+            },
+            'Oblique Blue/White Tee': {
+                XS: '56666873528700',
+                S: '56666873495932',
+                M: '56666873463164',
+                L: '56666873430396',
+                XL: '56666873397628'
+            }
+        };
+        const SHOPIFY_PRODUCT_ALIASES = {
+            'Oblique Black/Gold Tee': 'Oblique Gold/Black Tee',
+            'Oblique Black/Gold': 'Oblique Gold/Black Tee',
+            'Oblique Gold/White': 'Oblique Gold/White Tee',
+            'Oblique Gold/Black': 'Oblique Gold/Black Tee',
+            'Oblique Blue/White': 'Oblique Blue/White Tee',
+            'Monogram Tee': 'Oblique Gold/White Tee'
+        };
 
         const cart = [];
         let sizePopupState = {
@@ -3316,6 +3365,57 @@
 
         function formatEuro(value) {
             return `€${value}`;
+        }
+
+        function resolveShopifyProductName(productName) {
+            const normalizedName = (productName || '').trim();
+            if (SHOPIFY_VARIANT_MAP[normalizedName]) {
+                return normalizedName;
+            }
+
+            const alias = SHOPIFY_PRODUCT_ALIASES[normalizedName];
+            if (alias && SHOPIFY_VARIANT_MAP[alias]) {
+                return alias;
+            }
+
+            return '';
+        }
+
+        function getShopifyVariantId(productName, size) {
+            const resolvedProduct = resolveShopifyProductName(productName);
+            if (!resolvedProduct || !size) return '';
+
+            const sizeMap = SHOPIFY_VARIANT_MAP[resolvedProduct];
+            return sizeMap?.[size] || '';
+        }
+
+        function buildShopifyCheckoutUrl(cartItems) {
+            const quantityByVariantId = new Map();
+            const missingItems = [];
+
+            cartItems.forEach((item) => {
+                const variantId = getShopifyVariantId(item.name, item.size);
+                if (!variantId) {
+                    missingItems.push(`${item.name} (${item.size})`);
+                    return;
+                }
+
+                const currentQuantity = quantityByVariantId.get(variantId) || 0;
+                quantityByVariantId.set(variantId, currentQuantity + item.quantity);
+            });
+
+            if (quantityByVariantId.size === 0) {
+                return { url: '', missingItems };
+            }
+
+            const encodedLineItems = Array.from(quantityByVariantId.entries())
+                .map(([variantId, quantity]) => `${variantId}:${quantity}`)
+                .join(',');
+
+            return {
+                url: `${SHOPIFY_CART_BASE_URL}/${encodedLineItems}`,
+                missingItems
+            };
         }
 
         const addButtonTimers = new WeakMap();
@@ -3593,6 +3693,31 @@
             }
 
             updateCartUI();
+        }
+
+        if (cartCheckout) {
+            cartCheckout.addEventListener('click', (event) => {
+                event.preventDefault();
+
+                if (cart.length === 0) {
+                    window.location.href = SHOPIFY_STOREFRONT_URL;
+                    return;
+                }
+
+                const { url, missingItems } = buildShopifyCheckoutUrl(cart);
+
+                if (missingItems.length > 0) {
+                    console.warn('Missing Shopify variant mapping for items:', missingItems);
+                }
+
+                const checkoutUrl = url || SHOPIFY_STOREFRONT_URL;
+                const cartValue = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                trackAnalyticsEvent('begin_checkout', {
+                    currency: 'EUR',
+                    value: cartValue
+                });
+                window.location.href = checkoutUrl;
+            });
         }
 
         document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
