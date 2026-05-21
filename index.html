@@ -2366,6 +2366,11 @@
             gap: 0;
         }
 
+        .newsletter-form.loading {
+            pointer-events: none;
+            opacity: 0.72;
+        }
+
         .newsletter-input {
             flex: 1;
             padding: 0.8rem 1rem;
@@ -2404,6 +2409,18 @@
         .newsletter-button:hover {
             background: transparent;
             color: var(--void-accent);
+        }
+
+        .newsletter-response {
+            min-height: 1.25rem;
+            margin-top: 0.75rem;
+            color: rgba(199, 169, 108, 0.9);
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .newsletter-response.error {
+            color: rgba(255, 144, 144, 0.9);
         }
 
         .fade-in-up {
@@ -2968,7 +2985,7 @@
         </ul>
         <div class="logo">VOID</div>
         <ul class="nav-right">
-            <li><a href="mailto:support@eternalvoid.co">Contact</a></li>
+            <li><a href="#newsletter">Contact</a></li>
         </ul>
     </nav>
 
@@ -3293,13 +3310,14 @@
                 <div class="footer-brand">VOID</div>
                 <p class="footer-tagline">FEEL THE</p>
             </div>
-            <div class="footer-section">
+            <div class="footer-section" id="newsletter">
                 <h4>Newsletter</h4>
                 <p class="footer-newsletter-text">Join our community for exclusive drops and updates.</p>
-                <div class="newsletter-form">
-                    <input type="email" placeholder="Enter your email" class="newsletter-input">
-                    <button type="button" class="newsletter-button">Subscribe</button>
-                </div>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Enter your email" class="newsletter-input" id="newsletterEmail" name="email" autocomplete="email" required>
+                    <button type="submit" class="newsletter-button" id="newsletterButton">Subscribe</button>
+                </form>
+                <p class="newsletter-response" id="newsletterResponse" aria-live="polite"></p>
             </div>
             <div class="footer-section">
                 <h4>Shop</h4>
@@ -3337,6 +3355,10 @@
         const preorderForm = document.getElementById('preorderForm');
         const preorderEmail = document.getElementById('preorderEmail');
         const preorderResponse = document.getElementById('preorderResponse');
+        const newsletterForm = document.getElementById('newsletterForm');
+        const newsletterEmail = document.getElementById('newsletterEmail');
+        const newsletterButton = document.getElementById('newsletterButton');
+        const newsletterResponse = document.getElementById('newsletterResponse');
         let lastFocusedElement = null;
 
         function focusElementSafely(element) {
@@ -3491,6 +3513,52 @@
                 closePreorderModal();
             }
         });
+
+        if (newsletterForm) {
+            newsletterForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                if (!newsletterEmail || !newsletterResponse) return;
+
+                newsletterResponse.classList.remove('error');
+                newsletterResponse.textContent = 'Signing you up...';
+                newsletterForm.classList.add('loading');
+
+                if (newsletterButton) {
+                    newsletterButton.disabled = true;
+                }
+
+                try {
+                    const response = await fetch('/api/newsletter', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: newsletterEmail.value.trim()
+                        })
+                    });
+
+                    const result = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Unable to subscribe right now.');
+                    }
+
+                    newsletterResponse.textContent = result.message || 'Thank you for signing up to the VOID newsletter.';
+                    newsletterForm.reset();
+                } catch (error) {
+                    newsletterResponse.classList.add('error');
+                    newsletterResponse.textContent = error.message || 'Unable to subscribe right now.';
+                } finally {
+                    newsletterForm.classList.remove('loading');
+
+                    if (newsletterButton) {
+                        newsletterButton.disabled = false;
+                    }
+                }
+            });
+        }
 
         if (enterVoidButton && entryGate) {
             const isTouchLikeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
