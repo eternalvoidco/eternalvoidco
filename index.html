@@ -821,6 +821,11 @@
             justify-content: flex-end;
         }
 
+        .nav-left li,
+        .nav-right li {
+            white-space: nowrap;
+        }
+
         .logo {
             font-family: 'Cormorant Garamond', serif;
             font-size: 2rem;
@@ -2708,41 +2713,51 @@
         @media (max-width: 480px) {
             .nav {
                 padding: calc(0.8rem + env(safe-area-inset-top, 0px)) calc(0.75rem + env(safe-area-inset-right, 0px)) 0.75rem calc(0.75rem + env(safe-area-inset-left, 0px));
-                grid-template-columns: 1fr auto 1fr;
-                column-gap: 0.45rem;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+                column-gap: 0.65rem;
             }
 
             .nav-left {
                 display: flex;
                 grid-column: 1;
                 justify-self: start;
-                gap: 0.45rem;
+                width: 100%;
+                gap: 0.58rem;
                 align-items: center;
+                overflow: hidden;
+            }
+
+            .nav-style-guide {
+                display: none;
             }
 
             .nav-right {
                 grid-column: 3;
                 display: flex;
                 justify-self: end;
-                gap: 0.7rem;
+                width: 100%;
+                justify-content: flex-end;
+                gap: 0.58rem;
                 align-items: center;
+                overflow: hidden;
             }
 
             .logo {
                 grid-column: 2;
-                font-size: 1.2rem;
+                font-size: 1.12rem;
+                letter-spacing: 0.3em;
                 justify-self: center;
             }
 
             .nav-left a {
-                font-size: 0.6rem;
-                letter-spacing: 0.1em;
+                font-size: 0.58rem;
+                letter-spacing: 0.09em;
             }
 
             .nav-right a,
             .nav-preorder-trigger {
-                font-size: 0.64rem;
-                letter-spacing: 0.1em;
+                font-size: 0.58rem;
+                letter-spacing: 0.09em;
             }
 
             .video-section {
@@ -3011,7 +3026,7 @@
         <ul class="nav-left">
             <li><a href="https://shop.eternalvoid.co">Shop</a></li>
             <li><a href="#shop">Collection</a></li>
-            <li><a href="/seo-hub.html">Style Guide</a></li>
+            <li class="nav-style-guide"><a href="/seo-hub.html">Style Guide</a></li>
         </ul>
         <div class="logo">VOID</div>
         <ul class="nav-right">
