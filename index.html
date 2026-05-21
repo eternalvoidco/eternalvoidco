@@ -352,6 +352,23 @@
             line-height: 1.5;
         }
 
+        .privacy-note {
+            color: rgba(245, 242, 236, 0.48);
+            font-size: 0.72rem;
+            line-height: 1.5;
+            margin-top: 0.65rem;
+        }
+
+        .privacy-note a {
+            color: rgba(199, 169, 108, 0.86);
+            text-decoration: none;
+        }
+
+        .privacy-note a:hover,
+        .privacy-note a:focus-visible {
+            color: var(--void-white);
+        }
+
         @media (max-width: 560px) {
             .preorder-modal-backdrop {
                 align-items: end;
@@ -2477,6 +2494,15 @@
             letter-spacing: 0.1em;
         }
 
+        .footer-bottom a {
+            color: var(--void-light-grey);
+            text-decoration: none;
+        }
+
+        .footer-bottom a:hover {
+            color: var(--void-white);
+        }
+
         /* =================================== */
         /* RESPONSIVE                         */
         /* =================================== */
@@ -3313,6 +3339,7 @@
                     </label>
                     <button type="submit" class="preorder-submit">Join preorder list</button>
                     <p class="preorder-response" id="preorderResponse" aria-live="polite"></p>
+                    <p class="privacy-note">By joining, you agree to receive preorder emails from VOID. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
                 </form>
             </div>
         </section>
@@ -3359,12 +3386,14 @@
                     <button type="submit" class="newsletter-button" id="newsletterButton">Subscribe</button>
                 </form>
                 <p class="newsletter-response" id="newsletterResponse" aria-live="polite"></p>
+                <p class="privacy-note">By subscribing, you agree to receive emails from VOID. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
             </div>
             <div class="footer-section">
                 <h4>Shop</h4>
                 <ul>
                     <li><a href="#shop">Collection</a></li>
                     <li><a href="/seo-hub.html">Style Guides</a></li>
+                    <li><a href="/privacy-policy.html">Privacy Policy</a></li>
                     <li><a href="mailto:support@eternalvoid.co">Contact</a></li>
                 </ul>
             </div>
@@ -3377,7 +3406,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 VOID. All rights reserved.</p>
+            <p>© 2026 VOID. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a></p>
         </div>
     </footer>
 
