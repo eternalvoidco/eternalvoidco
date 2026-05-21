@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribe | VOID</title>
+    <meta name="description" content="Unsubscribe from VOID newsletter and preorder emails.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Manrope:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void-black: #000;
+            --void-white: #f5f2ec;
+            --void-grey: #8f8778;
+            --void-border: rgba(199, 169, 108, 0.34);
+            --void-accent: #c7a96c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--void-black);
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            line-height: 1.8;
+        }
+
+        .page {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 3rem 1.4rem 4rem;
+        }
+
+        .brand {
+            display: inline-block;
+            text-decoration: none;
+            color: var(--void-white);
+            margin-bottom: 4rem;
+        }
+
+        .brand-name {
+            display: block;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.3rem;
+            letter-spacing: 0.34em;
+            line-height: 1;
+        }
+
+        .brand-tagline {
+            display: block;
+            margin-top: 0.5rem;
+            color: var(--void-grey);
+            font-size: 0.72rem;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+        }
+
+        .panel {
+            border-top: 1px solid var(--void-border);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 3rem 0;
+        }
+
+        .kicker {
+            color: var(--void-accent);
+            font-size: 0.76rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3rem, 8vw, 5.4rem);
+            font-weight: 400;
+            line-height: 0.95;
+            margin-bottom: 1.6rem;
+        }
+
+        p {
+            color: #bdb5a8;
+            font-size: 0.96rem;
+            font-weight: 300;
+            max-width: 620px;
+        }
+
+        form {
+            display: flex;
+            gap: 0;
+            margin-top: 2rem;
+            max-width: 620px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 0.9rem 1rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-right: none;
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            outline: none;
+        }
+
+        button {
+            padding: 0.9rem 1.4rem;
+            border: 1px solid var(--void-accent);
+            background: var(--void-accent);
+            color: #090909;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .response {
+            min-height: 1.4rem;
+            margin-top: 1rem;
+            color: rgba(199, 169, 108, 0.92);
+        }
+
+        .response.error {
+            color: rgba(255, 144, 144, 0.92);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2.2rem;
+            color: var(--void-accent);
+            text-decoration: none;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 640px) {
+            .page {
+                padding: 2rem 1.1rem 3rem;
+            }
+
+            form {
+                flex-direction: column;
+            }
+
+            input {
+                border-right: 1px solid rgba(255,255,255,0.18);
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <a href="/" class="brand" aria-label="Back to VOID homepage">
+            <span class="brand-name">VOID</span>
+            <span class="brand-tagline">FEEL THE</span>
+        </a>
+
+        <section class="panel">
+            <p class="kicker">Email Preferences</p>
+            <h1>Unsubscribe</h1>
+            <p>Enter your email address to unsubscribe from VOID newsletter and preorder email communications.</p>
+
+            <form id="unsubscribeForm">
+                <input type="email" id="unsubscribeEmail" name="email" placeholder="Enter your email" autocomplete="email" required>
+                <button type="submit" id="unsubscribeButton">Unsubscribe</button>
+            </form>
+            <p class="response" id="unsubscribeResponse" aria-live="polite"></p>
+        </section>
+
+        <a href="/" class="back-link">Back to VOID</a>
+    </main>
+
+    <script>
+        const form = document.getElementById('unsubscribeForm');
+        const emailInput = document.getElementById('unsubscribeEmail');
+        const button = document.getElementById('unsubscribeButton');
+        const response = document.getElementById('unsubscribeResponse');
+        const queryEmail = new URLSearchParams(window.location.search).get('email');
+
+        if (queryEmail && emailInput) {
+            emailInput.value = queryEmail;
+        }
+
+        if (form) {
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                response.classList.remove('error');
+                response.textContent = 'Processing your request...';
+                button.disabled = true;
+
+                try {
+                    const result = await fetch('/api/unsubscribe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: emailInput.value.trim()
+                        })
+                    });
+
+                    const data = await result.json().catch(() => ({}));
+
+                    if (!result.ok) {
+                        throw new Error(data.message || 'Unable to unsubscribe right now.');
+                    }
+
+                    response.textContent = data.message || 'You have been unsubscribed from VOID emails.';
+                    form.reset();
+                } catch (error) {
+                    response.classList.add('error');
+                    response.textContent = error.message;
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

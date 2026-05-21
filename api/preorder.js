@@ -32,6 +32,8 @@ export default async function handler(request, response) {
         return response.status(500).json({ message: 'Preorder email service is not configured yet.' });
     }
 
+    const unsubscribeUrl = `https://www.eternalvoid.co/unsubscribe.html?email=${encodeURIComponent(email)}`;
+
     const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -42,6 +44,9 @@ export default async function handler(request, response) {
             from: 'VOID <support@eternalvoid.co>',
             to: email,
             subject: 'Welcome to the VOID Private Access Club',
+            headers: {
+                'List-Unsubscribe': `<${unsubscribeUrl}>, <mailto:support@eternalvoid.co?subject=Unsubscribe>`
+            },
             html: `
                 <div style="margin:0;background:#000;color:#f5f2ec;font-family:Arial,Helvetica,sans-serif;padding:28px 16px;line-height:1.7;">
                     <div style="max-width:760px;margin:0 auto;border-top:1px solid rgba(199,169,108,0.58);border-bottom:1px solid rgba(255,255,255,0.08);background:#000;">
@@ -61,6 +66,8 @@ export default async function handler(request, response) {
                                     <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0 16px;"></div>
                                     <p style="color:#8f8778;font-size:11px;margin:0;">Country: ${safeCountry}</p>
                                     <a href="mailto:support@eternalvoid.co" style="color:#8f8778;text-decoration:none;font-size:11px;">support@eternalvoid.co</a>
+                                    <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0 12px;"></div>
+                                    <p style="color:#6f675b;font-size:10px;line-height:1.6;margin:0;">No longer want these emails? <a href="${unsubscribeUrl}" style="color:#8f8778;text-decoration:underline;">Unsubscribe</a>.</p>
                                 </td>
                             </tr>
                         </table>
