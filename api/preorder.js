@@ -48,8 +48,10 @@ export default async function handler(request, response) {
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                             <tr>
                                 <td style="width:34%;padding:34px 26px;vertical-align:top;">
-                                    <div style="color:#fff;font-family:Georgia,serif;font-size:25px;font-weight:400;letter-spacing:0.34em;line-height:1;text-indent:0.34em;">VOID</div>
-                                    <div style="color:rgba(199,169,108,0.58);font-size:7px;letter-spacing:0.32em;text-transform:uppercase;margin-top:12px;">FEEL THE</div>
+                                    <div style="display:inline-block;text-align:center;">
+                                        <div style="color:#fff;font-family:Georgia,serif;font-size:25px;font-weight:400;letter-spacing:0.34em;line-height:1;padding-left:0.34em;">VOID</div>
+                                        <div style="color:rgba(199,169,108,0.58);font-size:7px;letter-spacing:0.32em;text-transform:uppercase;margin-top:12px;padding-left:0.32em;">FEEL THE</div>
+                                    </div>
                                 </td>
                                 <td style="padding:34px 26px 34px 22px;vertical-align:top;">
                                     <div style="color:#f5f2ec;font-family:Georgia,serif;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:16px;">Private Access Club</div>
