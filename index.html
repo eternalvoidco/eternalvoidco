@@ -3385,6 +3385,7 @@
         const preorderOtherCountry = document.getElementById('preorderOtherCountry');
         const preorderResponse = document.getElementById('preorderResponse');
         const preorderTriggers = document.querySelectorAll('[data-preorder-trigger]');
+        const preorderSubmit = preorderForm ? preorderForm.querySelector('.preorder-submit') : null;
         const newsletterForm = document.getElementById('newsletterForm');
         const newsletterEmail = document.getElementById('newsletterEmail');
         const newsletterButton = document.getElementById('newsletterButton');
@@ -3548,11 +3549,58 @@
         }
 
         if (preorderForm) {
-            preorderForm.addEventListener('submit', (event) => {
+            preorderForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
 
+                if (!preorderEmail || !preorderCountry || !preorderResponse) return;
+
+                const selectedCountry = preorderCountry.value === 'Other' && preorderOtherCountry
+                    ? preorderOtherCountry.value.trim()
+                    : preorderCountry.value;
+
+                preorderResponse.classList.remove('error');
+                preorderResponse.textContent = 'Reserving your private preorder access...';
+
+                if (preorderSubmit) {
+                    preorderSubmit.disabled = true;
+                }
+
+                try {
+                    const response = await fetch('/api/preorder', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: preorderEmail.value.trim(),
+                            country: selectedCountry
+                        })
+                    });
+
+                    const result = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Unable to reserve preorder access right now.');
+                    }
+
+                    preorderResponse.textContent = result.message || 'Welcome to the VOID private access club. Please check your email.';
+                    preorderForm.reset();
+
+                    if (preorderOtherCountryField && preorderOtherCountry) {
+                        preorderOtherCountryField.hidden = true;
+                        preorderOtherCountry.required = false;
+                    }
+                } catch (error) {
+                    preorderResponse.classList.add('error');
+                    preorderResponse.textContent = error.message;
+                } finally {
+                    if (preorderSubmit) {
+                        preorderSubmit.disabled = false;
+                    }
+                }
+
                 if (preorderResponse) {
-                    preorderResponse.textContent = 'You are on the preorder list. We will contact you before the drop opens.';
+                    preorderResponse.setAttribute('aria-live', 'polite');
                 }
             });
         }
