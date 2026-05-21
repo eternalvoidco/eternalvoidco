@@ -75,6 +75,8 @@ export default async function handler(request, response) {
                                     <h1 style="color:#f8f1e4;font-family:Georgia,serif;font-size:27px;font-weight:400;line-height:1.18;margin:0 0 16px;">Your request has been received.</h1>
                                     <p style="color:#bdb5a8;font-size:13px;line-height:1.8;margin:0 0 18px;max-width:420px;">We will remove this address from VOID newsletter and preorder email communications.</p>
                                     <a href="mailto:support@eternalvoid.co" style="color:#8f8778;text-decoration:none;font-size:11px;">support@eternalvoid.co</a>
+                                    <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0 12px;"></div>
+                                    <p style="color:#6f675b;font-size:10px;line-height:1.6;margin:0;">Read our <a href="https://www.eternalvoid.co/privacy-policy.html" style="color:#8f8778;text-decoration:underline;">Privacy Policy</a>.</p>
                                 </td>
                             </tr>
                         </table>

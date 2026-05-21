@@ -2259,7 +2259,13 @@
             text-transform: uppercase;
         }
 
-        .cart-item-remove {
+        .cart-item-actions {
+            display: flex;
+            gap: 0.35rem;
+            align-self: start;
+        }
+
+        .cart-item-adjust {
             border: 1px solid rgba(255, 255, 255, 0.2);
             background: transparent;
             color: var(--void-light-grey);
@@ -2268,11 +2274,10 @@
             text-transform: uppercase;
             padding: 0.35rem 0.5rem;
             cursor: pointer;
-            align-self: start;
             transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease;
         }
 
-        .cart-item-remove:hover {
+        .cart-item-adjust:hover {
             border-color: var(--void-accent);
             color: var(--void-accent);
             background: rgba(199, 169, 108, 0.08);
@@ -4218,7 +4223,10 @@
                         <span class="cart-item-name">${item.name}</span>
                         <span class="cart-item-meta">${item.size} · ${item.quantity} x ${formatEuro(item.price)}</span>
                     </div>
-                    <button type="button" class="cart-item-remove" data-cart-remove-name="${item.name}" data-cart-remove-size="${item.size}">-1</button>
+                    <div class="cart-item-actions">
+                        <button type="button" class="cart-item-adjust" data-cart-remove-name="${item.name}" data-cart-remove-size="${item.size}" aria-label="Remove one ${item.name} size ${item.size}">-1</button>
+                        <button type="button" class="cart-item-adjust" data-cart-increase-name="${item.name}" data-cart-increase-size="${item.size}" aria-label="Add one ${item.name} size ${item.size}">+1</button>
+                    </div>
                 `;
                 cartItemsElement.appendChild(listItem);
             });
@@ -4309,6 +4317,14 @@
                 cart.splice(itemIndex, 1);
             }
 
+            updateCartUI();
+        }
+
+        function addOneToCart(name, size) {
+            const item = cart.find((cartItem) => cartItem.name === name && cartItem.size === size);
+            if (!item) return;
+
+            item.quantity += 1;
             updateCartUI();
         }
 
@@ -4458,6 +4474,18 @@
         });
 
         cartItemsElement.addEventListener('click', (event) => {
+            const increaseButton = event.target.closest('[data-cart-increase-name]');
+            if (increaseButton) {
+                event.stopPropagation();
+
+                const itemName = increaseButton.getAttribute('data-cart-increase-name');
+                const itemSize = increaseButton.getAttribute('data-cart-increase-size');
+                if (!itemName || !itemSize) return;
+
+                addOneToCart(itemName, itemSize);
+                return;
+            }
+
             const removeButton = event.target.closest('[data-cart-remove-name]');
             if (!removeButton) return;
 

@@ -67,7 +67,8 @@ export default async function handler(request, response) {
                                     <p style="color:#8f8778;font-size:11px;margin:0;">Country: ${safeCountry}</p>
                                     <a href="mailto:support@eternalvoid.co" style="color:#8f8778;text-decoration:none;font-size:11px;">support@eternalvoid.co</a>
                                     <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0 12px;"></div>
-                                    <p style="color:#6f675b;font-size:10px;line-height:1.6;margin:0;">No longer want these emails? <a href="${unsubscribeUrl}" style="color:#8f8778;text-decoration:underline;">Unsubscribe</a>.</p>
+                                    <p style="color:#8f8778;font-size:11px;line-height:1.6;margin:0 0 8px;"><a href="https://www.eternalvoid.co" style="color:#c7a96c;text-decoration:none;">Return to eternalvoid.co</a></p>
+                                    <p style="color:#6f675b;font-size:10px;line-height:1.6;margin:0;">No longer want these emails? <a href="${unsubscribeUrl}" style="color:#8f8778;text-decoration:underline;">Unsubscribe</a>. Read our <a href="https://www.eternalvoid.co/privacy-policy.html" style="color:#8f8778;text-decoration:underline;">Privacy Policy</a>.</p>
                                 </td>
                             </tr>
                         </table>
