@@ -114,6 +114,10 @@
             overflow: hidden;
         }
 
+        body.preorder-open {
+            overflow: hidden;
+        }
+
         body.gate-open .nav,
         body.gate-open .video-section.hero,
         body.gate-open .products,
@@ -158,6 +162,248 @@
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
+        }
+
+        .preorder-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 1800;
+            display: grid;
+            place-items: center;
+            overflow-y: auto;
+            padding: calc(1.2rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) calc(1.2rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
+            background: radial-gradient(circle at 50% 35%, rgba(199, 169, 108, 0.16), transparent 32%), rgba(0, 0, 0, 0.72);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.38s ease, visibility 0.38s ease;
+            backdrop-filter: blur(14px);
+        }
+
+        .preorder-modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .preorder-modal {
+            position: relative;
+            width: min(94vw, 500px);
+            max-height: calc(100dvh - 2.4rem);
+            overflow: hidden;
+            border: 1px solid rgba(199, 169, 108, 0.42);
+            background: linear-gradient(145deg, rgba(12, 12, 12, 0.96), rgba(0, 0, 0, 0.98));
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(245, 242, 236, 0.04), inset 0 1px 0 rgba(245, 242, 236, 0.08);
+            transform: translateY(18px) scale(0.97);
+            transition: transform 0.42s cubic-bezier(0.18, 0.8, 0.24, 1);
+        }
+
+        .preorder-modal-backdrop.active .preorder-modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .preorder-modal::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.12), transparent);
+            height: 1px;
+            pointer-events: none;
+        }
+
+        .preorder-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2;
+            width: 2.35rem;
+            height: 2.35rem;
+            border: 1px solid rgba(199, 169, 108, 0.32);
+            border-radius: 999px;
+            background: rgba(8, 8, 8, 0.72);
+            color: rgba(245, 242, 236, 0.86);
+            cursor: pointer;
+            transition: border-color 0.22s ease, color 0.22s ease, background 0.22s ease, transform 0.22s ease;
+        }
+
+        .preorder-modal-close:hover {
+            border-color: rgba(199, 169, 108, 0.78);
+            background: rgba(199, 169, 108, 0.12);
+            color: var(--void-white);
+            transform: rotate(90deg);
+        }
+
+        .preorder-modal-content {
+            max-height: calc(100dvh - 2.4rem);
+            overflow-y: auto;
+            padding: clamp(2rem, 6vw, 3rem);
+        }
+
+        .preorder-modal-kicker {
+            margin-bottom: 0.7rem;
+            color: var(--void-accent);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+        }
+
+        .preorder-modal-title {
+            margin-bottom: 0.9rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.4rem, 8vw, 4.2rem);
+            font-weight: 500;
+            line-height: 0.88;
+            letter-spacing: -0.05em;
+            color: var(--void-white);
+        }
+
+        .preorder-modal-copy {
+            max-width: 32rem;
+            margin-bottom: 1.65rem;
+            color: rgba(245, 242, 236, 0.68);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .preorder-form {
+            display: grid;
+            gap: 0.95rem;
+        }
+
+        .preorder-field {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .preorder-label {
+            color: rgba(245, 242, 236, 0.76);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .preorder-input,
+        .preorder-select {
+            width: 100%;
+            border: 1px solid rgba(199, 169, 108, 0.28);
+            border-radius: 0;
+            background: rgba(245, 242, 236, 0.045);
+            color: var(--void-white);
+            font-size: 1rem;
+            padding: 0.95rem 1rem;
+            outline: none;
+            transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .preorder-select {
+            appearance: none;
+            background-image: linear-gradient(45deg, transparent 50%, rgba(199, 169, 108, 0.82) 50%), linear-gradient(135deg, rgba(199, 169, 108, 0.82) 50%, transparent 50%);
+            background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
+            background-size: 6px 6px, 6px 6px;
+            background-repeat: no-repeat;
+        }
+
+        .preorder-select option {
+            background: #080808;
+            color: var(--void-white);
+        }
+
+        .preorder-input:focus,
+        .preorder-select:focus {
+            border-color: rgba(199, 169, 108, 0.76);
+            background: rgba(245, 242, 236, 0.07);
+            box-shadow: 0 0 0 3px rgba(199, 169, 108, 0.1);
+        }
+
+        .preorder-input::placeholder {
+            color: rgba(245, 242, 236, 0.34);
+        }
+
+        .preorder-submit {
+            margin-top: 0.45rem;
+            border: 1px solid rgba(199, 169, 108, 0.64);
+            background: linear-gradient(135deg, rgba(199, 169, 108, 0.98), rgba(126, 98, 48, 0.98));
+            color: #080808;
+            padding: 1rem 1.2rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+        }
+
+        .preorder-submit:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.06);
+            box-shadow: 0 14px 34px rgba(199, 169, 108, 0.18);
+        }
+
+        .preorder-response {
+            min-height: 1.25rem;
+            color: rgba(199, 169, 108, 0.9);
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 560px) {
+            .preorder-modal-backdrop {
+                align-items: end;
+                padding: calc(0.8rem + env(safe-area-inset-top, 0px)) calc(0.72rem + env(safe-area-inset-right, 0px)) calc(0.72rem + env(safe-area-inset-bottom, 0px)) calc(0.72rem + env(safe-area-inset-left, 0px));
+            }
+
+            .preorder-modal {
+                width: 100%;
+                max-height: calc(100dvh - 1.52rem);
+            }
+
+            .preorder-modal-content {
+                max-height: calc(100dvh - 1.52rem);
+                padding: 2.4rem 1.25rem 1.45rem;
+            }
+
+            .preorder-modal-title {
+                font-size: clamp(2.15rem, 12vw, 3rem);
+            }
+
+            .preorder-modal-copy {
+                margin-bottom: 1.15rem;
+                font-size: 0.9rem;
+                line-height: 1.65;
+            }
+
+            .preorder-modal-close {
+                top: 0.72rem;
+                right: 0.72rem;
+            }
+        }
+
+        @media (min-width: 561px) and (max-width: 1024px) {
+            .preorder-modal {
+                width: min(88vw, 520px);
+            }
+        }
+
+        @media (max-height: 680px) {
+            .preorder-modal-content {
+                padding-top: 2rem;
+                padding-bottom: 1.3rem;
+            }
+
+            .preorder-modal-title {
+                font-size: clamp(2rem, 8vh, 3.1rem);
+            }
+
+            .preorder-modal-copy {
+                margin-bottom: 1rem;
+                line-height: 1.55;
+            }
+
+            .preorder-form {
+                gap: 0.72rem;
+            }
         }
 
         .entry-gate-video {
@@ -2962,6 +3208,58 @@
         </section>
     </div>
 
+    <div class="preorder-modal-backdrop" id="preorderModal" aria-hidden="true">
+        <section class="preorder-modal" role="dialog" aria-modal="true" aria-labelledby="preorderModalTitle">
+            <button type="button" class="preorder-modal-close" id="preorderModalClose" aria-label="Close preorder signup">✕</button>
+            <div class="preorder-modal-content">
+                <p class="preorder-modal-kicker">Private Access</p>
+                <h2 class="preorder-modal-title" id="preorderModalTitle">Reserve the next VOID drop.</h2>
+                <p class="preorder-modal-copy">Enter your email and country to receive preorder access, shipping updates, and early release details before the collection opens.</p>
+                <form class="preorder-form" id="preorderForm">
+                    <label class="preorder-field" for="preorderEmail">
+                        <span class="preorder-label">Email</span>
+                        <input class="preorder-input" id="preorderEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+                    </label>
+                    <label class="preorder-field" for="preorderCountry">
+                        <span class="preorder-label">Country</span>
+                        <select class="preorder-select" id="preorderCountry" name="country" autocomplete="country-name" required>
+                            <option value="" selected disabled>Select your country</option>
+                            <option value="Albania">Albania</option>
+                            <option value="Austria">Austria</option>
+                            <option value="Belgium">Belgium</option>
+                            <option value="Bulgaria">Bulgaria</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Croatia">Croatia</option>
+                            <option value="Czech Republic">Czech Republic</option>
+                            <option value="Denmark">Denmark</option>
+                            <option value="Finland">Finland</option>
+                            <option value="France">France</option>
+                            <option value="Germany">Germany</option>
+                            <option value="Greece">Greece</option>
+                            <option value="Hungary">Hungary</option>
+                            <option value="Ireland">Ireland</option>
+                            <option value="Italy">Italy</option>
+                            <option value="Netherlands">Netherlands</option>
+                            <option value="Norway">Norway</option>
+                            <option value="Poland">Poland</option>
+                            <option value="Portugal">Portugal</option>
+                            <option value="Romania">Romania</option>
+                            <option value="Serbia">Serbia</option>
+                            <option value="Spain">Spain</option>
+                            <option value="Sweden">Sweden</option>
+                            <option value="Switzerland">Switzerland</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="United States">United States</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="preorder-submit">Join preorder list</button>
+                    <p class="preorder-response" id="preorderResponse" aria-live="polite"></p>
+                </form>
+            </div>
+        </section>
+    </div>
+
     <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart">
         <span class="cart-fab-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
@@ -3034,6 +3332,11 @@
         const storyOverlay = document.getElementById('storyOverlay');
         const exitStoryButton = document.getElementById('exitStoryButton');
         const storyCrawl = storyOverlay ? storyOverlay.querySelector('.story-crawl') : null;
+        const preorderModal = document.getElementById('preorderModal');
+        const preorderModalClose = document.getElementById('preorderModalClose');
+        const preorderForm = document.getElementById('preorderForm');
+        const preorderEmail = document.getElementById('preorderEmail');
+        const preorderResponse = document.getElementById('preorderResponse');
         let lastFocusedElement = null;
 
         function focusElementSafely(element) {
@@ -3044,6 +3347,26 @@
             } catch (error) {
                 element.focus();
             }
+        }
+
+        function openPreorderModal() {
+            if (!preorderModal || preorderModal.classList.contains('active')) return;
+
+            preorderModal.classList.add('active');
+            preorderModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('preorder-open');
+
+            window.setTimeout(() => {
+                focusElementSafely(preorderEmail);
+            }, 220);
+        }
+
+        function closePreorderModal() {
+            if (!preorderModal) return;
+
+            preorderModal.classList.remove('active');
+            preorderModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('preorder-open');
         }
 
         function setupVideo(videoElement, playbackRate) {
@@ -3123,6 +3446,10 @@
                 entryGate.style.display = 'none';
             }, 720);
 
+            window.setTimeout(() => {
+                openPreorderModal();
+            }, 860);
+
             if (heroVideo) {
                 heroVideo.muted = true;
                 heroVideo.defaultMuted = true;
@@ -3136,6 +3463,34 @@
                 }
             }
         }
+
+        if (preorderModal) {
+            preorderModal.addEventListener('click', (event) => {
+                if (event.target === preorderModal) {
+                    closePreorderModal();
+                }
+            });
+        }
+
+        if (preorderModalClose) {
+            preorderModalClose.addEventListener('click', closePreorderModal);
+        }
+
+        if (preorderForm) {
+            preorderForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                if (preorderResponse) {
+                    preorderResponse.textContent = 'You are on the preorder list. We will contact you before the drop opens.';
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && preorderModal && preorderModal.classList.contains('active')) {
+                closePreorderModal();
+            }
+        });
 
         if (enterVoidButton && entryGate) {
             const isTouchLikeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;

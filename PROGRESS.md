@@ -12,6 +12,7 @@ Ebben a fájlban követjük a projekt módosításait és ellenőrizzük, hogy k
 ## Változásnapló
 | Dátum | Módosítás | Commit | GitHub | Vercel |
 |---|---|---|---|---|
+| 2026-05-21 | Preorder signup popup hozzáadva email + ország mezővel, gold/black dizájn, reszponzív mobil/tablet/laptop optimalizálás | pending | pending | pending |
 | 2026-02-21 | PROGRESS.md létrehozása | pending | pending | pending |
 | 2026-02-21 | README.md létrehozása (projekt tulajdonságok, Vercel + Shopify kapcsolat) | pending | pending | pending |
 | 2026-02-22 | Google indexelés tiltása (meta noindex + robots.txt) | pending | pending | pending |
