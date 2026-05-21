@@ -28,20 +28,24 @@ export default async function handler(request, response) {
             to: email,
             subject: 'Thank you for signing up to VOID',
             html: `
-                <div style="margin:0;background:#050505;color:#f5f2ec;font-family:Arial,Helvetica,sans-serif;padding:36px 18px;line-height:1.7;">
-                    <div style="max-width:590px;margin:0 auto;background:#070707;border:1px solid rgba(199,169,108,0.34);box-shadow:0 26px 70px rgba(0,0,0,0.46);">
-                        <div style="padding:38px 28px 28px;text-align:center;border-bottom:1px solid rgba(199,169,108,0.18);background:radial-gradient(circle at top,rgba(199,169,108,0.18),transparent 42%),linear-gradient(135deg,#060606,#14100a 58%,#070707);">
-                            <div style="display:inline-block;padding:9px;border:1px solid rgba(199,169,108,0.26);">
-                                <div style="border:1px solid rgba(199,169,108,0.72);padding:16px 24px;color:#d9bd78;font-family:Georgia,serif;font-size:30px;font-weight:400;letter-spacing:0.34em;text-indent:0.34em;text-shadow:0 0 22px rgba(199,169,108,0.28);">VOID</div>
-                            </div>
-                            <p style="color:#c7a96c;letter-spacing:0.32em;text-transform:uppercase;font-size:10px;margin:18px 0 0;">Private Newsletter Access</p>
-                        </div>
-                        <div style="padding:34px 30px 36px;">
-                            <h1 style="color:#f8f1e4;font-family:Georgia,serif;font-size:34px;font-weight:400;line-height:1.15;margin:0 0 18px;text-align:center;">Thank you for signing up.</h1>
-                            <p style="color:#cfc7b8;font-size:15px;margin:0 0 20px;text-align:center;">You are now on the VOID newsletter list. We will contact you with exclusive drops, preorder access, and brand updates.</p>
-                            <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(199,169,108,0.55),transparent);margin:28px 0;"></div>
-                            <p style="font-size:13px;margin:0;text-align:center;"><a href="mailto:support@eternalvoid.co" style="color:#c7a96c;text-decoration:none;letter-spacing:0.08em;">support@eternalvoid.co</a></p>
-                        </div>
+                <div style="margin:0;background:#000;color:#f5f2ec;font-family:Arial,Helvetica,sans-serif;padding:28px 16px;line-height:1.7;">
+                    <div style="max-width:760px;margin:0 auto;border-top:1px solid rgba(199,169,108,0.58);border-bottom:1px solid rgba(255,255,255,0.08);background:#000;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                            <tr>
+                                <td style="width:34%;padding:34px 26px;vertical-align:top;">
+                                    <div style="color:#fff;font-family:Georgia,serif;font-size:25px;font-weight:400;letter-spacing:0.34em;line-height:1;text-indent:0.34em;">VOID</div>
+                                    <div style="color:rgba(199,169,108,0.58);font-size:7px;letter-spacing:0.32em;text-transform:uppercase;margin-top:12px;">FEEL THE</div>
+                                </td>
+                                <td style="padding:34px 26px 34px 22px;vertical-align:top;">
+                                    <div style="color:#f5f2ec;font-family:Georgia,serif;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:16px;">Newsletter</div>
+                                    <h1 style="color:#f8f1e4;font-family:Georgia,serif;font-size:27px;font-weight:400;line-height:1.18;margin:0 0 16px;">You are inside the VOID.</h1>
+                                    <p style="color:#bdb5a8;font-size:13px;line-height:1.8;margin:0 0 18px;max-width:420px;">Thank you for signing up. You will receive exclusive drops, preorder access, and quiet updates before the collection opens.</p>
+                                    <div style="display:inline-block;border:1px solid rgba(199,169,108,0.62);color:#c7a96c;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;padding:10px 16px;margin:4px 0 18px;">Access Confirmed</div>
+                                    <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0 16px;"></div>
+                                    <a href="mailto:support@eternalvoid.co" style="color:#8f8778;text-decoration:none;font-size:11px;">support@eternalvoid.co</a>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
             `
