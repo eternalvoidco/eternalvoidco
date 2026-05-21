@@ -321,6 +321,10 @@
             color: rgba(245, 242, 236, 0.34);
         }
 
+        .preorder-other-field[hidden] {
+            display: none;
+        }
+
         .preorder-submit {
             margin-top: 0.45rem;
             border: 1px solid rgba(199, 169, 108, 0.64);
@@ -832,7 +836,8 @@
         }
 
         .nav-left a,
-        .nav-right a {
+        .nav-right a,
+        .nav-preorder-trigger {
             color: var(--void-white);
             text-decoration: none;
             font-size: 0.78rem;
@@ -843,8 +848,16 @@
             position: relative;
         }
 
+        .nav-preorder-trigger {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+        }
+
         .nav-left a::after,
-        .nav-right a::after {
+        .nav-right a::after,
+        .nav-preorder-trigger::after {
             content: '';
             position: absolute;
             bottom: -4px;
@@ -856,7 +869,8 @@
         }
 
         .nav-left a:hover::after,
-        .nav-right a:hover::after {
+        .nav-right a:hover::after,
+        .nav-preorder-trigger:hover::after {
             width: 100%;
         }
 
@@ -1370,10 +1384,13 @@
         .products-header-actions {
             margin-top: 1.2rem;
             display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
             justify-content: center;
         }
 
-        .size-guide-trigger {
+        .size-guide-trigger,
+        .collection-preorder-trigger {
             border: 1px solid rgba(199, 169, 108, 0.52);
             background: rgba(10, 10, 10, 0.88);
             color: #f6e9cc;
@@ -1388,8 +1405,15 @@
             transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease, transform 0.25s ease;
         }
 
+        .collection-preorder-trigger {
+            background: linear-gradient(135deg, rgba(199, 169, 108, 0.98), rgba(126, 98, 48, 0.98));
+            color: #080808;
+        }
+
         .size-guide-trigger:hover,
-        .size-guide-trigger:focus-visible {
+        .size-guide-trigger:focus-visible,
+        .collection-preorder-trigger:hover,
+        .collection-preorder-trigger:focus-visible {
             border-color: rgba(199, 169, 108, 0.92);
             background: rgba(27, 21, 12, 0.92);
             color: #fdf2da;
@@ -2469,7 +2493,8 @@
             }
 
             .nav-left a,
-            .nav-right a {
+            .nav-right a,
+            .nav-preorder-trigger {
                 font-size: 0.74rem;
                 letter-spacing: 0.17em;
             }
@@ -2519,7 +2544,8 @@
             }
 
             .nav-left a,
-            .nav-right a {
+            .nav-right a,
+            .nav-preorder-trigger {
                 font-size: 0.8rem;
             }
 
@@ -2698,6 +2724,7 @@
                 grid-column: 3;
                 display: flex;
                 justify-self: end;
+                gap: 0.7rem;
                 align-items: center;
             }
 
@@ -2712,7 +2739,8 @@
                 letter-spacing: 0.1em;
             }
 
-            .nav-right a {
+            .nav-right a,
+            .nav-preorder-trigger {
                 font-size: 0.64rem;
                 letter-spacing: 0.1em;
             }
@@ -2796,7 +2824,8 @@
                 grid-template-columns: 1fr;
             }
 
-            .size-guide-trigger {
+            .size-guide-trigger,
+            .collection-preorder-trigger {
                 width: min(100%, 260px);
             }
 
@@ -2862,7 +2891,8 @@
             }
 
             .nav-left a,
-            .nav-right a {
+            .nav-right a,
+            .nav-preorder-trigger {
                 font-size: 0.56rem;
                 letter-spacing: 0.08em;
             }
@@ -2986,6 +3016,7 @@
         <div class="logo">VOID</div>
         <ul class="nav-right">
             <li><a href="#newsletter">Contact</a></li>
+            <li><button type="button" class="nav-preorder-trigger" data-preorder-trigger>Pre-order</button></li>
         </ul>
     </nav>
 
@@ -3038,6 +3069,7 @@
             <div class="products-header fade-in-up" style="--delay: 40ms;">
                 <h2>Collection</h2>
                 <div class="products-header-actions">
+                    <button type="button" class="collection-preorder-trigger" data-preorder-trigger>Pre-order Access</button>
                     <button type="button" class="size-guide-trigger" id="sizeGuideTrigger">Size Guide</button>
                 </div>
             </div>
@@ -3241,34 +3273,28 @@
                         <span class="preorder-label">Country</span>
                         <select class="preorder-select" id="preorderCountry" name="country" autocomplete="country-name" required>
                             <option value="" selected disabled>Select your country</option>
-                            <option value="Albania">Albania</option>
                             <option value="Austria">Austria</option>
                             <option value="Belgium">Belgium</option>
-                            <option value="Bulgaria">Bulgaria</option>
                             <option value="Canada">Canada</option>
-                            <option value="Croatia">Croatia</option>
-                            <option value="Czech Republic">Czech Republic</option>
                             <option value="Denmark">Denmark</option>
                             <option value="Finland">Finland</option>
                             <option value="France">France</option>
                             <option value="Germany">Germany</option>
-                            <option value="Greece">Greece</option>
                             <option value="Hungary">Hungary</option>
                             <option value="Ireland">Ireland</option>
                             <option value="Italy">Italy</option>
                             <option value="Netherlands">Netherlands</option>
                             <option value="Norway">Norway</option>
-                            <option value="Poland">Poland</option>
-                            <option value="Portugal">Portugal</option>
-                            <option value="Romania">Romania</option>
-                            <option value="Serbia">Serbia</option>
-                            <option value="Spain">Spain</option>
                             <option value="Sweden">Sweden</option>
                             <option value="Switzerland">Switzerland</option>
                             <option value="United Kingdom">United Kingdom</option>
                             <option value="United States">United States</option>
                             <option value="Other">Other</option>
                         </select>
+                    </label>
+                    <label class="preorder-field preorder-other-field" for="preorderOtherCountry" id="preorderOtherCountryField" hidden>
+                        <span class="preorder-label">Your Country</span>
+                        <input class="preorder-input" id="preorderOtherCountry" name="otherCountry" type="text" placeholder="Type your country">
                     </label>
                     <button type="submit" class="preorder-submit">Join preorder list</button>
                     <p class="preorder-response" id="preorderResponse" aria-live="polite"></p>
@@ -3354,7 +3380,11 @@
         const preorderModalClose = document.getElementById('preorderModalClose');
         const preorderForm = document.getElementById('preorderForm');
         const preorderEmail = document.getElementById('preorderEmail');
+        const preorderCountry = document.getElementById('preorderCountry');
+        const preorderOtherCountryField = document.getElementById('preorderOtherCountryField');
+        const preorderOtherCountry = document.getElementById('preorderOtherCountry');
         const preorderResponse = document.getElementById('preorderResponse');
+        const preorderTriggers = document.querySelectorAll('[data-preorder-trigger]');
         const newsletterForm = document.getElementById('newsletterForm');
         const newsletterEmail = document.getElementById('newsletterEmail');
         const newsletterButton = document.getElementById('newsletterButton');
@@ -3496,6 +3526,25 @@
 
         if (preorderModalClose) {
             preorderModalClose.addEventListener('click', closePreorderModal);
+        }
+
+        preorderTriggers.forEach((trigger) => {
+            trigger.addEventListener('click', openPreorderModal);
+        });
+
+        if (preorderCountry && preorderOtherCountryField && preorderOtherCountry) {
+            preorderCountry.addEventListener('change', () => {
+                const shouldShowOtherCountry = preorderCountry.value === 'Other';
+
+                preorderOtherCountryField.hidden = !shouldShowOtherCountry;
+                preorderOtherCountry.required = shouldShowOtherCountry;
+
+                if (shouldShowOtherCountry) {
+                    focusElementSafely(preorderOtherCountry);
+                } else {
+                    preorderOtherCountry.value = '';
+                }
+            });
         }
 
         if (preorderForm) {
