@@ -54,14 +54,14 @@ export default async function handler(request, response) {
                             <tr>
                                 <td style="width:34%;padding:34px 26px;vertical-align:top;">
                                     <div style="display:inline-block;text-align:left;">
-                                        <div style="color:#fff;font-family:Georgia,serif;font-size:25px;font-weight:400;letter-spacing:0.34em;line-height:1;">VOID©</div>
+                                        <div style="color:#fff;font-family:Georgia,serif;font-size:25px;font-weight:400;letter-spacing:0.34em;line-height:1;">VOID<sup style="display:inline-block;margin-left:0.03em;font-size:0.32em;line-height:0;letter-spacing:0;vertical-align:super;">©</sup></div>
                                         <div style="color:rgba(199,169,108,0.58);font-size:7px;letter-spacing:0.32em;text-transform:uppercase;margin-top:12px;">FEEL THE</div>
                                     </div>
                                 </td>
                                 <td style="padding:34px 26px 34px 22px;vertical-align:top;">
                                     <div style="color:#f5f2ec;font-family:Georgia,serif;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:16px;">Private Access Club</div>
-                                    <h1 style="color:#f8f1e4;font-family:Georgia,serif;font-size:27px;font-weight:400;line-height:1.18;margin:0 0 16px;">Welcome to the VOID© private access club.</h1>
-                                    <p style="color:#bdb5a8;font-size:13px;line-height:1.8;margin:0 0 18px;max-width:430px;">Your pre-order request has been received. You are now on the private list for early access, quiet release notes, and priority updates before the next VOID© drop opens.</p>
+                                    <h1 style="color:#f8f1e4;font-family:Georgia,serif;font-size:27px;font-weight:400;line-height:1.18;margin:0 0 16px;">Welcome to the VOID<sup style="display:inline-block;margin-left:0.06em;font-size:0.38em;line-height:0;letter-spacing:0;vertical-align:super;">©</sup> private access club.</h1>
+                                    <p style="color:#bdb5a8;font-size:13px;line-height:1.8;margin:0 0 18px;max-width:430px;">Your pre-order request has been received. You are now on the private list for early access, quiet release notes, and priority updates before the next VOID<sup style="display:inline-block;margin-left:0.06em;font-size:0.38em;line-height:0;letter-spacing:0;vertical-align:super;">©</sup> drop opens.</p>
                                     <div style="display:inline-block;border:1px solid rgba(199,169,108,0.62);color:#c7a96c;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;padding:10px 16px;margin:4px 0 18px;">Pre-order Access Reserved</div>
                                     <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0 16px;"></div>
                                     <p style="color:#8f8778;font-size:11px;margin:0;">Country: ${safeCountry}</p>

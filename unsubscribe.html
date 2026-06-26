@@ -61,6 +61,22 @@
             text-transform: uppercase;
         }
 
+        .brand-copyright {
+            display: inline-block;
+            margin-left: 0.06em;
+            font-size: 0.38em;
+            line-height: 0;
+            letter-spacing: 0;
+            vertical-align: super;
+            transform: translateY(-0.18em);
+        }
+
+        .brand-name .brand-copyright {
+            margin-left: 0.03em;
+            font-size: 0.32em;
+            transform: translateY(-0.42em);
+        }
+
         .panel {
             border-top: 1px solid var(--void-border);
             border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -161,14 +177,14 @@
 <body>
     <main class="page">
         <a href="/" class="brand" aria-label="Back to VOID© homepage">
-            <span class="brand-name">VOID©</span>
+            <span class="brand-name">VOID<sup class="brand-copyright">©</sup></span>
             <span class="brand-tagline">FEEL THE</span>
         </a>
 
         <section class="panel">
             <p class="kicker">Email Preferences</p>
             <h1>Unsubscribe</h1>
-            <p>Enter your email address to unsubscribe from VOID© newsletter and pre-order email communications.</p>
+            <p>Enter your email address to unsubscribe from VOID<sup class="brand-copyright">©</sup> newsletter and pre-order email communications.</p>
 
             <form id="unsubscribeForm">
                 <input type="email" id="unsubscribeEmail" name="email" placeholder="Enter your email" autocomplete="email" required>
@@ -177,7 +193,7 @@
             <p class="response" id="unsubscribeResponse" aria-live="polite"></p>
         </section>
 
-        <a href="/" class="back-link">Back to VOID©</a>
+        <a href="/" class="back-link">Back to VOID<sup class="brand-copyright">©</sup></a>
     </main>
 
     <script>
@@ -186,6 +202,19 @@
         const button = document.getElementById('unsubscribeButton');
         const response = document.getElementById('unsubscribeResponse');
         const queryEmail = new URLSearchParams(window.location.search).get('email');
+
+        function escapeMarkup(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatBrandMarkup(value) {
+            return escapeMarkup(value).replace(/VOID©/g, 'VOID<sup class="brand-copyright">©</sup>');
+        }
 
         if (queryEmail && emailInput) {
             emailInput.value = queryEmail;
@@ -216,7 +245,7 @@
                         throw new Error(data.message || 'Unable to unsubscribe right now.');
                     }
 
-                    response.textContent = data.message || 'You have been unsubscribed from VOID© emails.';
+                    response.innerHTML = formatBrandMarkup(data.message || 'You have been unsubscribed from VOID© emails.');
                     form.reset();
                 } catch (error) {
                     response.classList.add('error');
