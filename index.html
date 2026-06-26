@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <meta name="description" content="VOID is a luxury streetwear and high-end fashion label blending designer minimalism, premium craftsmanship, limited drops, and elevated urban style.">
+    <meta name="description" content="VOID© is a luxury streetwear and high-end fashion label blending designer minimalism, premium craftsmanship, limited drops, and elevated urban style.">
     <meta name="keywords" content="luxury streetwear, high-end fashion, designer streetwear, premium streetwear brand, exclusive fashion drops, luxury clothing, contemporary luxury style, elevated essentials, artisanal craftsmanship, fashion house, luxury urban wear, minimalist luxury, statement fashion">
     <meta name="theme-color" content="#080808">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="VOID">
-    <meta name="application-name" content="VOID">
+    <meta name="apple-mobile-web-app-title" content="VOID©">
+    <meta name="application-name" content="VOID©">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#080808">
     <meta name="msapplication-TileImage" content="/assets/icons/android-chrome-192x192.png">
-    <title>VOID - Luxury Streetwear</title>
+    <title>VOID© - Luxury Streetwear</title>
     <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260324">
     <link rel="shortcut icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260324">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png?v=20260324">
@@ -24,14 +24,14 @@
     <link rel="manifest" href="/assets/icons/site.webmanifest?v=20260324">
     <link rel="canonical" href="https://www.eternalvoid.co/">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="VOID - Luxury Streetwear">
-    <meta property="og:description" content="Discover VOID luxury streetwear: premium materials, designer silhouettes, limited collections, and elevated fashion aesthetics.">
+    <meta property="og:title" content="VOID© - Luxury Streetwear">
+    <meta property="og:description" content="Discover VOID© luxury streetwear: premium materials, designer silhouettes, limited collections, and elevated fashion aesthetics.">
     <meta property="og:url" content="https://www.eternalvoid.co/">
-    <meta property="og:site_name" content="VOID">
+    <meta property="og:site_name" content="VOID©">
     <meta property="og:image" content="https://www.eternalvoid.co/assets/icons/android-chrome-512x512.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="VOID - Luxury Streetwear">
-    <meta name="twitter:description" content="Premium luxury streetwear and high-end urban fashion by VOID.">
+    <meta name="twitter:title" content="VOID© - Luxury Streetwear">
+    <meta name="twitter:description" content="Premium luxury streetwear and high-end urban fashion by VOID©.">
     <meta name="twitter:image" content="https://www.eternalvoid.co/assets/icons/android-chrome-512x512.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +40,7 @@
         {
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "VOID",
+            "name": "VOID©",
             "url": "https://www.eternalvoid.co/",
             "logo": "https://www.eternalvoid.co/assets/icons/android-chrome-512x512.png",
             "sameAs": [
@@ -68,6 +68,7 @@
 
         html {
             background: #000;
+            scroll-behavior: smooth;
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
@@ -99,6 +100,27 @@
         textarea {
             font: inherit;
             color: inherit;
+        }
+
+        button,
+        a,
+        [role="button"] {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .void-press-fade {
+            animation: voidPressFade 0.42s ease;
+        }
+
+        @keyframes voidPressFade {
+            0% { opacity: 1; filter: brightness(1); }
+            38% { opacity: 0.72; filter: brightness(1.28); }
+            100% { opacity: 1; filter: brightness(1); }
+        }
+
+        @keyframes voidLayerFadeIn {
+            0% { opacity: 0; transform: translateY(12px) scale(0.985); filter: blur(3px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
         :focus-visible {
@@ -210,11 +232,13 @@
             background: linear-gradient(145deg, rgba(12, 12, 12, 0.96), rgba(0, 0, 0, 0.98));
             box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(245, 242, 236, 0.04), inset 0 1px 0 rgba(245, 242, 236, 0.08);
             transform: translateY(18px) scale(0.97);
-            transition: transform 0.42s cubic-bezier(0.18, 0.8, 0.24, 1);
+            opacity: 0;
+            transition: transform 0.42s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.42s ease;
         }
 
         .preorder-modal-backdrop.active .preorder-modal {
             transform: translateY(0) scale(1);
+            opacity: 1;
         }
 
         .preorder-modal::before {
@@ -427,6 +451,7 @@
 
         .country-picker.open .country-picker-list {
             display: grid;
+            animation: voidLayerFadeIn 0.32s cubic-bezier(0.18, 0.8, 0.24, 1);
         }
 
         .country-picker-option {
@@ -1849,7 +1874,7 @@
             padding: 1.25rem;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.24s ease;
+            transition: opacity 0.36s ease;
             z-index: 1400;
         }
 
@@ -1865,7 +1890,7 @@
             box-shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
             transform: translateY(16px) scale(0.98);
             opacity: 0;
-            transition: transform 0.26s ease, opacity 0.26s ease;
+            transition: transform 0.36s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.36s ease;
         }
 
         .size-popup-backdrop.open .size-popup {
@@ -2045,7 +2070,7 @@
                 radial-gradient(circle at 20% 16%, rgba(199, 169, 108, 0.16), transparent 45%),
                 radial-gradient(circle at 78% 84%, rgba(199, 169, 108, 0.12), transparent 48%),
                 rgba(2, 2, 2, 0.96);
-            transition: opacity 0.32s ease, visibility 0.32s ease;
+            transition: opacity 0.42s ease, visibility 0.42s ease;
         }
 
         .size-guide-overlay.open {
@@ -2063,7 +2088,7 @@
             box-shadow: 0 28px 64px rgba(0, 0, 0, 0.62);
             transform: translateY(16px) scale(0.985);
             opacity: 0;
-            transition: transform 0.32s ease, opacity 0.32s ease;
+            transition: transform 0.42s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.42s ease;
         }
 
         .size-guide-overlay.open .size-guide-panel {
@@ -2314,7 +2339,7 @@
             transform-origin: bottom right;
             opacity: 0;
             pointer-events: none;
-            transition: transform 0.25s ease, opacity 0.25s ease;
+            transition: transform 0.36s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.36s ease;
             backdrop-filter: blur(10px);
         }
 
@@ -2322,7 +2347,7 @@
             transform: translateY(0) scale(1) rotateX(0);
             opacity: 1;
             pointer-events: auto;
-            animation: cartPopupIn 0.36s cubic-bezier(0.16, 0.84, 0.26, 1);
+            animation: cartPopupIn 0.42s cubic-bezier(0.16, 0.84, 0.26, 1);
         }
 
         .cart-popup.closing {
@@ -3253,7 +3278,7 @@
             <li><a href="#shop">Collection</a></li>
             <li class="nav-style-guide"><a href="/seo-hub.html">Style Guide</a></li>
         </ul>
-        <div class="logo">VOID</div>
+        <div class="logo">VOID©</div>
         <ul class="nav-right">
             <li><a href="#newsletter">Contact</a></li>
             <li><button type="button" class="nav-preorder-trigger" data-preorder-trigger>Pre-order</button></li>
@@ -3290,15 +3315,15 @@
             <span class="spark-ray"></span>
             <span class="spark-ray"></span>
         </div>
-        <button type="button" class="story-overlay-exit" id="exitStoryButton">Return to VOID</button>
+        <button type="button" class="story-overlay-exit" id="exitStoryButton">Return to VOID©</button>
         <div class="story-overlay-stage" role="dialog" aria-modal="true" aria-labelledby="storyCrawlTitle">
             <div class="story-crawl">
-                <p class="story-crawl-eyebrow">Void Archive</p>
+                <p class="story-crawl-eyebrow">VOID© Archive</p>
                 <h2 class="story-crawl-title" id="storyCrawlTitle">Story</h2>
-                <p>Born between couture restraint and underground pulse, VOID exists at the collision point of luxury discipline and street instinct.</p>
+                <p>Born between couture restraint and underground pulse, VOID© exists at the collision point of luxury discipline and street instinct.</p>
                 <p>Every silhouette is developed as a limited ritual: precise tailoring, elevated fabric weight, and monochrome tension shaped for movement, presence, and permanence.</p>
                 <p>We reject disposable cycles. We build collectible essentials — garments that feel ceremonial in detail yet raw in attitude.</p>
-                <p>VOID is not trend-led. It is a quiet house code for those who wear darkness as architecture and elegance as armor.</p>
+                <p>VOID© is not trend-led. It is a quiet house code for those who wear darkness as architecture and elegance as armor.</p>
             </div>
         </div>
     </div>
@@ -3314,9 +3339,9 @@
                 </div>
             </div>
             <div class="products-grid">
-                <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID styling.">
+                <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID© styling.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID©</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3331,7 +3356,7 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 140ms;" data-product-name="Endzustand Tee" data-product-price="250" data-fit-title="Boxy Oversized Fit" data-fit-note="Structured chest, blunt hem line, and oversized volume with couture-inspired proportions.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID©</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3346,7 +3371,7 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Oblique Gold/White Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID©</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3361,7 +3386,7 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Oblique Gold/Black Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID©</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3376,7 +3401,7 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Oblique Blue/White Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID©</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3426,7 +3451,7 @@
         <section class="size-guide-panel" role="dialog" aria-modal="true" aria-labelledby="sizeGuideTitle">
             <div class="size-guide-header">
                 <div>
-                    <h3 class="size-guide-title" id="sizeGuideTitle">VOID Size Guide</h3>
+                    <h3 class="size-guide-title" id="sizeGuideTitle">VOID© Size Guide</h3>
                     <p class="size-guide-subtitle">Measured in centimeters · Oversized baseline fit</p>
                 </div>
                 <button type="button" class="size-guide-close" id="sizeGuideClose" aria-label="Close size guide">✕</button>
@@ -3492,18 +3517,18 @@
                 <p class="size-guide-note" id="sizeGuideNote">All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.</p>
             </div>
             <div class="size-guide-actions">
-                <button type="button" class="size-guide-return" id="sizeGuideReturn">Return to VOID</button>
+                <button type="button" class="size-guide-return" id="sizeGuideReturn">Return to VOID©</button>
             </div>
         </section>
     </div>
 
     <div class="preorder-modal-backdrop" id="preorderModal" aria-hidden="true">
         <section class="preorder-modal" role="dialog" aria-modal="true" aria-labelledby="preorderModalTitle">
-            <button type="button" class="preorder-modal-close" id="preorderModalClose" aria-label="Close preorder signup">✕</button>
+            <button type="button" class="preorder-modal-close" id="preorderModalClose" aria-label="Close pre-order signup">✕</button>
             <div class="preorder-modal-content">
                 <p class="preorder-modal-kicker">Private Access</p>
-                <h2 class="preorder-modal-title" id="preorderModalTitle">Reserve the next VOID drop.</h2>
-                <p class="preorder-modal-copy">Enter your email and country to receive preorder access, shipping updates, and early release details before the collection opens.</p>
+                <h2 class="preorder-modal-title" id="preorderModalTitle">Reserve the next VOID© drop.</h2>
+                <p class="preorder-modal-copy">Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.</p>
                 <form class="preorder-form" id="preorderForm">
                     <label class="preorder-field" for="preorderEmail">
                         <span class="preorder-label">Email</span>
@@ -3541,9 +3566,9 @@
                         <span class="preorder-label">Your Country</span>
                         <input class="preorder-input" id="preorderOtherCountry" name="otherCountry" type="text" placeholder="Type your country">
                     </label>
-                    <button type="submit" class="preorder-submit">Join preorder list</button>
+                    <button type="submit" class="preorder-submit">Join pre-order list</button>
                     <p class="preorder-response" id="preorderResponse" aria-live="polite"></p>
-                    <p class="privacy-note">By joining, you agree to receive preorder emails from VOID. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+                    <p class="privacy-note">By joining, you agree to receive pre-order emails from VOID©. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
                 </form>
             </div>
         </section>
@@ -3579,7 +3604,7 @@
     <footer class="footer" id="contact">
         <div class="footer-content fade-in-up" style="--delay: 60ms;">
             <div class="footer-main">
-                <div class="footer-brand">VOID</div>
+                <div class="footer-brand">VOID©</div>
                 <p class="footer-tagline">FEEL THE</p>
             </div>
             <div class="footer-section" id="newsletter">
@@ -3590,7 +3615,7 @@
                     <button type="submit" class="newsletter-button" id="newsletterButton">Subscribe</button>
                 </form>
                 <p class="newsletter-response" id="newsletterResponse" aria-live="polite"></p>
-                <p class="privacy-note">By subscribing, you agree to receive emails from VOID. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+                <p class="privacy-note">By subscribing, you agree to receive emails from VOID©. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
             </div>
             <div class="footer-section">
                 <h4>Shop</h4>
@@ -3611,7 +3636,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 VOID. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a></p>
+            <p>© 2026 VOID©. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a></p>
         </div>
     </footer>
 
@@ -3909,7 +3934,7 @@
                     return;
                 }
 
-                preorderResponse.textContent = 'Reserving your private preorder access...';
+                preorderResponse.textContent = 'Reserving your private pre-order access...';
 
                 if (preorderSubmit) {
                     preorderSubmit.disabled = true;
@@ -3930,10 +3955,10 @@
                     const result = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        throw new Error(result.message || 'Unable to reserve preorder access right now.');
+                        throw new Error(result.message || 'Unable to reserve pre-order access right now.');
                     }
 
-                    preorderResponse.textContent = result.message || 'Welcome to the VOID private access club. Please check your email.';
+                    preorderResponse.textContent = result.message || 'Welcome to the VOID© private access club. Please check your email.';
                     preorderForm.reset();
                     resetCountryPicker();
 
@@ -3999,7 +4024,7 @@
                         throw new Error(result.message || 'Unable to subscribe right now.');
                     }
 
-                    newsletterResponse.textContent = result.message || 'Thank you for signing up to the VOID newsletter.';
+                    newsletterResponse.textContent = result.message || 'Thank you for signing up to the VOID© newsletter.';
                     newsletterForm.reset();
                 } catch (error) {
                     newsletterResponse.classList.add('error');
@@ -4081,6 +4106,69 @@
         window.openStoryOverlay = openStoryOverlay;
         window.closeStoryOverlay = closeStoryOverlay;
 
+        function triggerPressFade(element) {
+            if (!element || element.disabled || element.getAttribute('aria-disabled') === 'true') return;
+
+            element.classList.remove('void-press-fade');
+            void element.offsetWidth;
+            element.classList.add('void-press-fade');
+        }
+
+        document.addEventListener('pointerdown', (event) => {
+            const target = event.target instanceof Element ? event.target.closest('button, a, [role="button"]') : null;
+            triggerPressFade(target);
+        }, true);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+
+            const target = event.target instanceof Element ? event.target.closest('button, a, [role="button"]') : null;
+            triggerPressFade(target);
+        }, true);
+
+        function getAnchorTarget(anchor) {
+            const href = anchor.getAttribute('href');
+            if (!href || href === '#' || !href.startsWith('#')) return null;
+
+            try {
+                return document.getElementById(decodeURIComponent(href.slice(1))) || document.querySelector(href);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function smoothScrollToTarget(target) {
+            if (!target) return;
+
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const nav = document.getElementById('nav');
+            const navOffset = nav ? Math.min(nav.offsetHeight + 12, 96) : 0;
+            const startY = window.scrollY;
+            const targetY = Math.max(0, target.getBoundingClientRect().top + window.scrollY - navOffset);
+            const distance = targetY - startY;
+
+            if (prefersReducedMotion || Math.abs(distance) < 2) {
+                window.scrollTo(0, targetY);
+                return;
+            }
+
+            const duration = Math.min(680, Math.max(340, Math.abs(distance) * 0.22));
+            const startTime = performance.now();
+            const easeOutCubic = (progress) => 1 - Math.pow(1 - progress, 3);
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                window.scrollTo(0, startY + distance * easeOutCubic(progress));
+
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            }
+
+            window.requestAnimationFrame(step);
+        }
+
         // Nav scroll
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('nav');
@@ -4092,10 +4180,14 @@
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
+                const target = getAnchorTarget(this);
+                if (!target) return;
+
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                smoothScrollToTarget(target);
+
+                if (history.pushState) {
+                    history.pushState(null, '', this.getAttribute('href'));
                 }
             });
         });
@@ -4417,9 +4509,9 @@
             if (!sizePopupFit || !sizePopupFitTitle || !sizePopupFitNote) return;
 
             const fitTitle = productCard?.dataset.fitTitle || 'Oversized Atelier Fit';
-            const baseFitNote = productCard?.dataset.fitNote || 'Built with VOID oversized proportion and movement-focused drape.';
+            const baseFitNote = productCard?.dataset.fitNote || 'Built with VOID© oversized proportion and movement-focused drape.';
             const sizeNote = selectedSize
-                ? `Selected ${selectedSize} keeps the intended VOID oversized silhouette.`
+                ? `Selected ${selectedSize} keeps the intended VOID© oversized silhouette.`
                 : 'Select a size to preview the intended silhouette and fit behavior.';
 
             sizePopupFit.classList.remove('is-visible');
