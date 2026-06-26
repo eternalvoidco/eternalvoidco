@@ -178,6 +178,21 @@
             pointer-events: none;
             transition: opacity 0.38s ease, visibility 0.38s ease;
             backdrop-filter: blur(14px);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(199, 169, 108, 0.72) rgba(245, 242, 236, 0.06);
+        }
+
+        .preorder-modal-backdrop::-webkit-scrollbar {
+            width: 0.48rem;
+        }
+
+        .preorder-modal-backdrop::-webkit-scrollbar-track {
+            background: rgba(245, 242, 236, 0.06);
+        }
+
+        .preorder-modal-backdrop::-webkit-scrollbar-thumb {
+            border: 1px solid rgba(8, 8, 8, 0.88);
+            background: linear-gradient(180deg, rgba(220, 190, 126, 0.82), rgba(126, 98, 48, 0.82));
         }
 
         .preorder-modal-backdrop.active {
@@ -236,7 +251,23 @@
         .preorder-modal-content {
             max-height: calc(100dvh - 2.4rem);
             overflow-y: auto;
+            overscroll-behavior: contain;
             padding: clamp(2rem, 6vw, 3rem);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(199, 169, 108, 0.72) rgba(245, 242, 236, 0.06);
+        }
+
+        .preorder-modal-content::-webkit-scrollbar {
+            width: 0.48rem;
+        }
+
+        .preorder-modal-content::-webkit-scrollbar-track {
+            background: rgba(245, 242, 236, 0.06);
+        }
+
+        .preorder-modal-content::-webkit-scrollbar-thumb {
+            border: 1px solid rgba(8, 8, 8, 0.88);
+            background: linear-gradient(180deg, rgba(220, 190, 126, 0.82), rgba(126, 98, 48, 0.82));
         }
 
         .preorder-modal-kicker {
