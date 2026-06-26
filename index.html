@@ -367,9 +367,31 @@
             display: none;
             max-height: min(18rem, 44vh);
             overflow: auto;
+            overscroll-behavior: contain;
             border: 1px solid rgba(199, 169, 108, 0.3);
-            background: rgba(8, 8, 8, 0.98);
-            box-shadow: 0 1.2rem 2.5rem rgba(0, 0, 0, 0.42);
+            background: linear-gradient(180deg, rgba(14, 12, 10, 0.99), rgba(3, 3, 3, 0.99));
+            box-shadow: 0 1.2rem 2.5rem rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(199, 169, 108, 0.12);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(199, 169, 108, 0.72) rgba(245, 242, 236, 0.06);
+        }
+
+        .country-picker-list::-webkit-scrollbar {
+            width: 0.48rem;
+        }
+
+        .country-picker-list::-webkit-scrollbar-track {
+            background: rgba(245, 242, 236, 0.06);
+        }
+
+        .country-picker-list::-webkit-scrollbar-thumb {
+            border: 1px solid rgba(8, 8, 8, 0.88);
+            background: linear-gradient(180deg, rgba(220, 190, 126, 0.82), rgba(126, 98, 48, 0.82));
+        }
+
+        .country-picker.drop-up .country-picker-list {
+            top: auto;
+            bottom: calc(100% + 0.38rem);
+            box-shadow: 0 -1.2rem 2.5rem rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(199, 169, 108, 0.12);
         }
 
         .country-picker.open .country-picker-list {
@@ -405,6 +427,16 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.22);
             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+        }
+
+        .country-picker-current .country-flag:not(.flag-empty) {
+            opacity: 0;
+            animation: countryFlagReveal 1.5s ease forwards;
+        }
+
+        @keyframes countryFlagReveal {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .country-flag::before,
@@ -3450,7 +3482,7 @@
                         <div class="country-picker" id="preorderCountryPicker">
                             <input class="country-picker-value" id="preorderCountry" name="country" type="text" autocomplete="country-name" readonly required tabindex="-1">
                             <button class="country-picker-button" id="preorderCountryButton" type="button" aria-haspopup="listbox" aria-expanded="false">
-                                <span class="country-picker-current" id="preorderCountryCurrent"><span class="country-flag flag-empty" aria-hidden="true"></span><span class="country-picker-placeholder">Select your country</span></span>
+                                <span class="country-picker-current" id="preorderCountryCurrent"><span class="country-picker-placeholder">Select your country</span></span>
                             </button>
                             <div class="country-picker-list" id="preorderCountryList" role="listbox" aria-labelledby="preorderCountryButton">
                                 <button type="button" class="country-picker-option" role="option" data-country="Austria" data-flag="flag-at"><span class="country-flag flag-at" aria-hidden="true"></span><span>Austria</span></button>
@@ -3469,7 +3501,7 @@
                                 <button type="button" class="country-picker-option" role="option" data-country="Switzerland" data-flag="flag-ch"><span class="country-flag flag-ch" aria-hidden="true"></span><span>Switzerland</span></button>
                                 <button type="button" class="country-picker-option" role="option" data-country="United Kingdom" data-flag="flag-gb"><span class="country-flag flag-gb" aria-hidden="true"></span><span>United Kingdom</span></button>
                                 <button type="button" class="country-picker-option" role="option" data-country="United States" data-flag="flag-us"><span class="country-flag flag-us" aria-hidden="true"></span><span>United States</span></button>
-                                <button type="button" class="country-picker-option" role="option" data-country="Other" data-flag="flag-empty"><span class="country-flag flag-empty" aria-hidden="true"></span><span>Other</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Other" data-flag="flag-empty"><span>Other</span></button>
                             </div>
                         </div>
                     </label>
@@ -3569,6 +3601,7 @@
         const preorderCountryPicker = document.getElementById('preorderCountryPicker');
         const preorderCountryButton = document.getElementById('preorderCountryButton');
         const preorderCountryCurrent = document.getElementById('preorderCountryCurrent');
+        const preorderCountryList = document.getElementById('preorderCountryList');
         const preorderCountryOptions = document.querySelectorAll('[data-country]');
         const preorderOtherCountryField = document.getElementById('preorderOtherCountryField');
         const preorderOtherCountry = document.getElementById('preorderOtherCountry');
@@ -3722,18 +3755,41 @@
             trigger.addEventListener('click', openPreorderModal);
         });
 
+        function updateCountryPickerPosition() {
+            if (!preorderCountryPicker || !preorderCountryButton || !preorderCountryList) return;
+
+            const viewportPadding = 18;
+            const buttonRect = preorderCountryButton.getBoundingClientRect();
+            const bottomSpace = window.innerHeight - buttonRect.bottom - viewportPadding;
+            const topSpace = buttonRect.top - viewportPadding;
+            const preferredHeight = Math.min(preorderCountryList.scrollHeight, 288);
+            const shouldDropUp = bottomSpace < preferredHeight && topSpace > bottomSpace;
+            const availableSpace = Math.max(144, shouldDropUp ? topSpace : bottomSpace);
+
+            preorderCountryPicker.classList.toggle('drop-up', shouldDropUp);
+            preorderCountryList.style.maxHeight = `${Math.min(288, availableSpace)}px`;
+        }
+
         function closeCountryPicker() {
             if (!preorderCountryPicker || !preorderCountryButton) return;
 
-            preorderCountryPicker.classList.remove('open');
+            preorderCountryPicker.classList.remove('open', 'drop-up');
             preorderCountryButton.setAttribute('aria-expanded', 'false');
+
+            if (preorderCountryList) {
+                preorderCountryList.style.maxHeight = '';
+            }
         }
 
         function setCountryValue(country, flagClass) {
             if (!preorderCountry || !preorderCountryCurrent) return;
 
+            const hasFlag = flagClass && flagClass !== 'flag-empty';
+
             preorderCountry.value = country;
-            preorderCountryCurrent.innerHTML = `<span class="country-flag ${flagClass}" aria-hidden="true"></span><span>${country}</span>`;
+            preorderCountryCurrent.innerHTML = hasFlag
+                ? `<span class="country-flag ${flagClass}" aria-hidden="true"></span><span>${country}</span>`
+                : `<span>${country}</span>`;
 
             preorderCountryOptions.forEach((option) => {
                 option.setAttribute('aria-selected', option.dataset.country === country ? 'true' : 'false');
@@ -3746,7 +3802,7 @@
             if (!preorderCountry || !preorderCountryCurrent) return;
 
             preorderCountry.value = '';
-            preorderCountryCurrent.innerHTML = '<span class="country-flag flag-empty" aria-hidden="true"></span><span class="country-picker-placeholder">Select your country</span>';
+            preorderCountryCurrent.innerHTML = '<span class="country-picker-placeholder">Select your country</span>';
 
             preorderCountryOptions.forEach((option) => {
                 option.setAttribute('aria-selected', 'false');
@@ -3757,8 +3813,20 @@
             preorderCountryButton.addEventListener('click', () => {
                 const isOpen = preorderCountryPicker.classList.toggle('open');
                 preorderCountryButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+                if (isOpen) {
+                    updateCountryPickerPosition();
+                } else {
+                    closeCountryPicker();
+                }
             });
         }
+
+        window.addEventListener('resize', () => {
+            if (preorderCountryPicker && preorderCountryPicker.classList.contains('open')) {
+                updateCountryPickerPosition();
+            }
+        });
 
         preorderCountryOptions.forEach((option) => {
             option.setAttribute('aria-selected', 'false');
