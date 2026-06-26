@@ -285,7 +285,8 @@
         }
 
         .preorder-input,
-        .preorder-select {
+        .preorder-select,
+        .country-picker-button {
             width: 100%;
             border: 1px solid rgba(199, 169, 108, 0.28);
             border-radius: 0;
@@ -310,8 +311,137 @@
             color: var(--void-white);
         }
 
+        .country-picker {
+            position: relative;
+        }
+
+        .country-picker-value {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .country-picker-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            min-height: 3.25rem;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .country-picker-button::after {
+            content: '';
+            width: 0.48rem;
+            height: 0.48rem;
+            border-right: 1px solid rgba(199, 169, 108, 0.82);
+            border-bottom: 1px solid rgba(199, 169, 108, 0.82);
+            transform: rotate(45deg) translateY(-2px);
+            transition: transform 0.22s ease;
+        }
+
+        .country-picker.open .country-picker-button::after {
+            transform: rotate(225deg) translate(-2px, -2px);
+        }
+
+        .country-picker-current,
+        .country-picker-option {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .country-picker-placeholder {
+            color: rgba(245, 242, 236, 0.44);
+        }
+
+        .country-picker-list {
+            position: absolute;
+            z-index: 15;
+            top: calc(100% + 0.38rem);
+            left: 0;
+            right: 0;
+            display: none;
+            max-height: min(18rem, 44vh);
+            overflow: auto;
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            background: rgba(8, 8, 8, 0.98);
+            box-shadow: 0 1.2rem 2.5rem rgba(0, 0, 0, 0.42);
+        }
+
+        .country-picker.open .country-picker-list {
+            display: grid;
+        }
+
+        .country-picker-option {
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid rgba(245, 242, 236, 0.07);
+            background: transparent;
+            color: var(--void-white);
+            padding: 0.82rem 1rem;
+            font: inherit;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+
+        .country-picker-option:hover,
+        .country-picker-option:focus,
+        .country-picker-option[aria-selected="true"] {
+            background: rgba(199, 169, 108, 0.13);
+            color: #fff7e8;
+            outline: none;
+        }
+
+        .country-flag {
+            position: relative;
+            flex: 0 0 auto;
+            width: 1.55rem;
+            height: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+        }
+
+        .country-flag::before,
+        .country-flag::after {
+            content: '';
+            position: absolute;
+        }
+
+        .flag-empty {
+            border-color: rgba(199, 169, 108, 0.28);
+            background: rgba(245, 242, 236, 0.08);
+        }
+
+        .flag-at { background: linear-gradient(#ed2939 0 33.33%, #fff 33.33% 66.66%, #ed2939 66.66%); }
+        .flag-be { background: linear-gradient(90deg, #111 0 33.33%, #ffd90c 33.33% 66.66%, #ef3340 66.66%); }
+        .flag-ca { background: linear-gradient(90deg, #d52b1e 0 25%, #fff 25% 75%, #d52b1e 75%); }
+        .flag-ca::after { inset: 27% 41%; background: #d52b1e; clip-path: polygon(50% 0, 61% 28%, 90% 20%, 69% 46%, 100% 50%, 68% 58%, 76% 88%, 50% 68%, 24% 88%, 32% 58%, 0 50%, 31% 46%, 10% 20%, 39% 28%); }
+        .flag-dk { background: linear-gradient(90deg, transparent 0 30%, #fff 30% 42%, transparent 42%), linear-gradient(transparent 0 40%, #fff 40% 56%, transparent 56%), #c8102e; }
+        .flag-fi { background: linear-gradient(90deg, transparent 0 32%, #002f6c 32% 46%, transparent 46%), linear-gradient(transparent 0 38%, #002f6c 38% 56%, transparent 56%), #fff; }
+        .flag-fr { background: linear-gradient(90deg, #0055a4 0 33.33%, #fff 33.33% 66.66%, #ef4135 66.66%); }
+        .flag-de { background: linear-gradient(#000 0 33.33%, #dd0000 33.33% 66.66%, #ffce00 66.66%); }
+        .flag-hu { background: linear-gradient(#ce2939 0 33.33%, #fff 33.33% 66.66%, #477050 66.66%); }
+        .flag-ie { background: linear-gradient(90deg, #169b62 0 33.33%, #fff 33.33% 66.66%, #ff883e 66.66%); }
+        .flag-it { background: linear-gradient(90deg, #009246 0 33.33%, #fff 33.33% 66.66%, #ce2b37 66.66%); }
+        .flag-nl { background: linear-gradient(#ae1c28 0 33.33%, #fff 33.33% 66.66%, #21468b 66.66%); }
+        .flag-no { background: linear-gradient(90deg, transparent 0 28%, #fff 28% 45%, transparent 45%), linear-gradient(transparent 0 34%, #fff 34% 61%, transparent 61%), linear-gradient(90deg, transparent 0 33%, #00205b 33% 40%, transparent 40%), linear-gradient(transparent 0 43%, #00205b 43% 52%, transparent 52%), #ba0c2f; }
+        .flag-se { background: linear-gradient(90deg, transparent 0 30%, #fecc00 30% 42%, transparent 42%), linear-gradient(transparent 0 40%, #fecc00 40% 56%, transparent 56%), #006aa7; }
+        .flag-ch { background: #d52b1e; }
+        .flag-ch::before { inset: 22% 43%; background: #fff; }
+        .flag-ch::after { inset: 39% 28%; background: #fff; }
+        .flag-gb { background: linear-gradient(32deg, transparent 0 42%, #fff 42% 48%, #c8102e 48% 53%, #fff 53% 59%, transparent 59%), linear-gradient(148deg, transparent 0 42%, #fff 42% 48%, #c8102e 48% 53%, #fff 53% 59%, transparent 59%), linear-gradient(90deg, transparent 0 42%, #fff 42% 58%, transparent 58%), linear-gradient(transparent 0 36%, #fff 36% 64%, transparent 64%), linear-gradient(90deg, transparent 0 46%, #c8102e 46% 54%, transparent 54%), linear-gradient(transparent 0 42%, #c8102e 42% 58%, transparent 58%), #012169; }
+        .flag-us { background: repeating-linear-gradient(#b22234 0 7.69%, #fff 7.69% 15.38%); }
+        .flag-us::before { inset: 0 48% 46% 0; background: #3c3b6e; }
+
         .preorder-input:focus,
-        .preorder-select:focus {
+        .preorder-select:focus,
+        .country-picker-button:focus {
             border-color: rgba(199, 169, 108, 0.76);
             background: rgba(245, 242, 236, 0.07);
             box-shadow: 0 0 0 3px rgba(199, 169, 108, 0.1);
@@ -3315,28 +3445,33 @@
                         <span class="preorder-label">Email</span>
                         <input class="preorder-input" id="preorderEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
                     </label>
-                    <label class="preorder-field" for="preorderCountry">
+                    <label class="preorder-field" for="preorderCountryButton">
                         <span class="preorder-label">Country</span>
-                        <select class="preorder-select" id="preorderCountry" name="country" autocomplete="country-name" required>
-                            <option value="" selected disabled>Select your country</option>
-                            <option value="Austria">🇦🇹 Austria</option>
-                            <option value="Belgium">🇧🇪 Belgium</option>
-                            <option value="Canada">🇨🇦 Canada</option>
-                            <option value="Denmark">🇩🇰 Denmark</option>
-                            <option value="Finland">🇫🇮 Finland</option>
-                            <option value="France">🇫🇷 France</option>
-                            <option value="Germany">🇩🇪 Germany</option>
-                            <option value="Hungary">🇭🇺 Hungary</option>
-                            <option value="Ireland">🇮🇪 Ireland</option>
-                            <option value="Italy">🇮🇹 Italy</option>
-                            <option value="Netherlands">🇳🇱 Netherlands</option>
-                            <option value="Norway">🇳🇴 Norway</option>
-                            <option value="Sweden">🇸🇪 Sweden</option>
-                            <option value="Switzerland">🇨🇭 Switzerland</option>
-                            <option value="United Kingdom">🇬🇧 United Kingdom</option>
-                            <option value="United States">🇺🇸 United States</option>
-                            <option value="Other">Other</option>
-                        </select>
+                        <div class="country-picker" id="preorderCountryPicker">
+                            <input class="country-picker-value" id="preorderCountry" name="country" type="text" autocomplete="country-name" readonly required tabindex="-1">
+                            <button class="country-picker-button" id="preorderCountryButton" type="button" aria-haspopup="listbox" aria-expanded="false">
+                                <span class="country-picker-current" id="preorderCountryCurrent"><span class="country-flag flag-empty" aria-hidden="true"></span><span class="country-picker-placeholder">Select your country</span></span>
+                            </button>
+                            <div class="country-picker-list" id="preorderCountryList" role="listbox" aria-labelledby="preorderCountryButton">
+                                <button type="button" class="country-picker-option" role="option" data-country="Austria" data-flag="flag-at"><span class="country-flag flag-at" aria-hidden="true"></span><span>Austria</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Belgium" data-flag="flag-be"><span class="country-flag flag-be" aria-hidden="true"></span><span>Belgium</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Canada" data-flag="flag-ca"><span class="country-flag flag-ca" aria-hidden="true"></span><span>Canada</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Denmark" data-flag="flag-dk"><span class="country-flag flag-dk" aria-hidden="true"></span><span>Denmark</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Finland" data-flag="flag-fi"><span class="country-flag flag-fi" aria-hidden="true"></span><span>Finland</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="France" data-flag="flag-fr"><span class="country-flag flag-fr" aria-hidden="true"></span><span>France</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Germany" data-flag="flag-de"><span class="country-flag flag-de" aria-hidden="true"></span><span>Germany</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Hungary" data-flag="flag-hu"><span class="country-flag flag-hu" aria-hidden="true"></span><span>Hungary</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Ireland" data-flag="flag-ie"><span class="country-flag flag-ie" aria-hidden="true"></span><span>Ireland</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Italy" data-flag="flag-it"><span class="country-flag flag-it" aria-hidden="true"></span><span>Italy</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Netherlands" data-flag="flag-nl"><span class="country-flag flag-nl" aria-hidden="true"></span><span>Netherlands</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Norway" data-flag="flag-no"><span class="country-flag flag-no" aria-hidden="true"></span><span>Norway</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Sweden" data-flag="flag-se"><span class="country-flag flag-se" aria-hidden="true"></span><span>Sweden</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Switzerland" data-flag="flag-ch"><span class="country-flag flag-ch" aria-hidden="true"></span><span>Switzerland</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="United Kingdom" data-flag="flag-gb"><span class="country-flag flag-gb" aria-hidden="true"></span><span>United Kingdom</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="United States" data-flag="flag-us"><span class="country-flag flag-us" aria-hidden="true"></span><span>United States</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Other" data-flag="flag-empty"><span class="country-flag flag-empty" aria-hidden="true"></span><span>Other</span></button>
+                            </div>
+                        </div>
                     </label>
                     <label class="preorder-field preorder-other-field" for="preorderOtherCountry" id="preorderOtherCountryField" hidden>
                         <span class="preorder-label">Your Country</span>
@@ -3431,6 +3566,10 @@
         const preorderForm = document.getElementById('preorderForm');
         const preorderEmail = document.getElementById('preorderEmail');
         const preorderCountry = document.getElementById('preorderCountry');
+        const preorderCountryPicker = document.getElementById('preorderCountryPicker');
+        const preorderCountryButton = document.getElementById('preorderCountryButton');
+        const preorderCountryCurrent = document.getElementById('preorderCountryCurrent');
+        const preorderCountryOptions = document.querySelectorAll('[data-country]');
         const preorderOtherCountryField = document.getElementById('preorderOtherCountryField');
         const preorderOtherCountry = document.getElementById('preorderOtherCountry');
         const preorderResponse = document.getElementById('preorderResponse');
@@ -3583,6 +3722,59 @@
             trigger.addEventListener('click', openPreorderModal);
         });
 
+        function closeCountryPicker() {
+            if (!preorderCountryPicker || !preorderCountryButton) return;
+
+            preorderCountryPicker.classList.remove('open');
+            preorderCountryButton.setAttribute('aria-expanded', 'false');
+        }
+
+        function setCountryValue(country, flagClass) {
+            if (!preorderCountry || !preorderCountryCurrent) return;
+
+            preorderCountry.value = country;
+            preorderCountryCurrent.innerHTML = `<span class="country-flag ${flagClass}" aria-hidden="true"></span><span>${country}</span>`;
+
+            preorderCountryOptions.forEach((option) => {
+                option.setAttribute('aria-selected', option.dataset.country === country ? 'true' : 'false');
+            });
+
+            preorderCountry.dispatchEvent(new Event('change'));
+        }
+
+        function resetCountryPicker() {
+            if (!preorderCountry || !preorderCountryCurrent) return;
+
+            preorderCountry.value = '';
+            preorderCountryCurrent.innerHTML = '<span class="country-flag flag-empty" aria-hidden="true"></span><span class="country-picker-placeholder">Select your country</span>';
+
+            preorderCountryOptions.forEach((option) => {
+                option.setAttribute('aria-selected', 'false');
+            });
+        }
+
+        if (preorderCountryButton && preorderCountryPicker) {
+            preorderCountryButton.addEventListener('click', () => {
+                const isOpen = preorderCountryPicker.classList.toggle('open');
+                preorderCountryButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+        }
+
+        preorderCountryOptions.forEach((option) => {
+            option.setAttribute('aria-selected', 'false');
+
+            option.addEventListener('click', () => {
+                setCountryValue(option.dataset.country, option.dataset.flag || 'flag-empty');
+                closeCountryPicker();
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!preorderCountryPicker || preorderCountryPicker.contains(event.target)) return;
+
+            closeCountryPicker();
+        });
+
         if (preorderCountry && preorderOtherCountryField && preorderOtherCountry) {
             preorderCountry.addEventListener('change', () => {
                 const shouldShowOtherCountry = preorderCountry.value === 'Other';
@@ -3609,6 +3801,14 @@
                     : preorderCountry.value;
 
                 preorderResponse.classList.remove('error');
+
+                if (!selectedCountry) {
+                    preorderResponse.classList.add('error');
+                    preorderResponse.textContent = preorderCountry.value === 'Other' ? 'Please type your country.' : 'Please select your country.';
+                    focusElementSafely(preorderCountry.value === 'Other' ? preorderOtherCountry : preorderCountryButton);
+                    return;
+                }
+
                 preorderResponse.textContent = 'Reserving your private preorder access...';
 
                 if (preorderSubmit) {
@@ -3635,6 +3835,7 @@
 
                     preorderResponse.textContent = result.message || 'Welcome to the VOID private access club. Please check your email.';
                     preorderForm.reset();
+                    resetCountryPicker();
 
                     if (preorderOtherCountryField && preorderOtherCountry) {
                         preorderOtherCountryField.hidden = true;
@@ -3656,6 +3857,12 @@
         }
 
         document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && preorderCountryPicker && preorderCountryPicker.classList.contains('open')) {
+                closeCountryPicker();
+                focusElementSafely(preorderCountryButton);
+                return;
+            }
+
             if (event.key === 'Escape' && preorderModal && preorderModal.classList.contains('active')) {
                 closePreorderModal();
             }
