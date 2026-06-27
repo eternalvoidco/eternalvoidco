@@ -115,11 +115,11 @@
         .brand-copyright {
             display: inline-block;
             margin-left: 0.06em;
-            font-size: 0.38em;
+            font-size: 0.44em;
             line-height: 0;
             letter-spacing: 0;
             vertical-align: super;
-            transform: translateY(-0.18em);
+            transform: translateY(-0.2em);
             -webkit-text-fill-color: currentColor;
         }
 
@@ -489,11 +489,15 @@
         .country-flag {
             position: relative;
             flex: 0 0 auto;
-            width: 1.55rem;
-            height: 1rem;
+            width: 1.6rem;
+            height: 1.02rem;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 2px;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+            isolation: isolate;
         }
 
         .country-picker-current .country-flag:not(.flag-empty) {
@@ -526,8 +530,8 @@
         .flag-fr { background: linear-gradient(90deg, #0055a4 0 33.33%, #fff 33.33% 66.66%, #ef4135 66.66%); }
         .flag-de { background: linear-gradient(#000 0 33.33%, #dd0000 33.33% 66.66%, #ffce00 66.66%); }
         .flag-hu { background: linear-gradient(#ce2939 0 33.33%, #fff 33.33% 66.66%, #477050 66.66%); }
-        .flag-ie { background: linear-gradient(90deg, #169b62 0 33.33%, #fff 33.33% 66.66%, #ff883e 66.66%); }
-        .flag-it { background: linear-gradient(90deg, #009246 0 33.33%, #fff 33.33% 66.66%, #ce2b37 66.66%); }
+        .flag-ie { background: linear-gradient(90deg, #169b62 0 33.333%, #fff 33.333% 66.666%, #ff883e 66.666% 100%); }
+        .flag-it { background: linear-gradient(90deg, #008c45 0 33.333%, #f4f5f0 33.333% 66.666%, #cd212a 66.666% 100%); }
         .flag-nl { background: linear-gradient(#ae1c28 0 33.33%, #fff 33.33% 66.66%, #21468b 66.66%); }
         .flag-no { background: linear-gradient(90deg, transparent 0 28%, #fff 28% 45%, transparent 45%), linear-gradient(transparent 0 34%, #fff 34% 61%, transparent 61%), linear-gradient(90deg, transparent 0 33%, #00205b 33% 40%, transparent 40%), linear-gradient(transparent 0 43%, #00205b 43% 52%, transparent 52%), #ba0c2f; }
         .flag-se { background: linear-gradient(90deg, transparent 0 30%, #fecc00 30% 42%, transparent 42%), linear-gradient(transparent 0 40%, #fecc00 40% 56%, transparent 56%), #006aa7; }
@@ -1083,10 +1087,9 @@
         }
 
         .logo .brand-copyright,
-        .footer-brand .brand-copyright,
-        .product-logo-mark .brand-copyright {
-            margin-left: 0.03em;
-            font-size: 0.32em;
+        .footer-brand .brand-copyright {
+            margin-left: 0.035em;
+            font-size: 0.36em;
             transform: translateY(-0.42em);
         }
 
@@ -3363,7 +3366,7 @@
             <div class="products-grid">
                 <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID© styling.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID<sup class="brand-copyright">©</sup></div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3378,7 +3381,7 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 140ms;" data-product-name="Endzustand Tee" data-product-price="250" data-fit-title="Boxy Oversized Fit" data-fit-note="Structured chest, blunt hem line, and oversized volume with couture-inspired proportions.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID<sup class="brand-copyright">©</sup></div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3393,7 +3396,7 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Oblique Gold/White Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID<sup class="brand-copyright">©</sup></div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3408,7 +3411,7 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Oblique Gold/Black Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID<sup class="brand-copyright">©</sup></div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
@@ -3423,7 +3426,7 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Oblique Blue/White Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID<sup class="brand-copyright">©</sup></div>
+                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
                     </div>
                     <div class="product-info">
