@@ -1069,6 +1069,7 @@
             gap: 2rem;
             list-style: none;
             justify-content: flex-end;
+            align-items: center;
         }
 
         .nav-left li,
@@ -1116,6 +1117,104 @@
             background: transparent;
             cursor: pointer;
             padding: 0;
+        }
+
+        .language-selector {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .language-selector-button {
+            min-width: 3.35rem;
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            background: rgba(8, 8, 8, 0.5);
+            color: var(--void-white);
+            padding: 0.42rem 0.58rem;
+            font-size: 0.66rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: border-color 0.24s ease, background 0.24s ease, box-shadow 0.24s ease, color 0.24s ease;
+        }
+
+        .language-selector-button:hover,
+        .language-selector-button:focus {
+            border-color: rgba(199, 169, 108, 0.76);
+            background: rgba(245, 242, 236, 0.07);
+            box-shadow: 0 0 0 3px rgba(199, 169, 108, 0.08);
+            color: #fff7e8;
+            outline: none;
+        }
+
+        .language-selector-button::after {
+            content: '';
+            display: inline-block;
+            width: 0.34rem;
+            height: 0.34rem;
+            margin-left: 0.38rem;
+            border-right: 1px solid currentColor;
+            border-bottom: 1px solid currentColor;
+            transform: translateY(-0.12rem) rotate(45deg);
+            transition: transform 0.22s ease;
+        }
+
+        .language-selector.open .language-selector-button::after {
+            transform: translateY(0.08rem) rotate(225deg);
+        }
+
+        .language-selector-list {
+            position: absolute;
+            top: calc(100% + 0.45rem);
+            right: 0;
+            z-index: 1002;
+            display: none;
+            min-width: 8.4rem;
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            background: rgba(8, 8, 8, 0.96);
+            box-shadow: 0 1.2rem 2.5rem rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(199, 169, 108, 0.12);
+            backdrop-filter: blur(18px);
+        }
+
+        .language-selector.open .language-selector-list {
+            display: grid;
+            animation: voidLayerFadeIn 0.32s cubic-bezier(0.18, 0.8, 0.24, 1);
+        }
+
+        .language-option {
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid rgba(245, 242, 236, 0.07);
+            background: transparent;
+            color: var(--void-white);
+            padding: 0.72rem 0.85rem;
+            font: inherit;
+            font-size: 0.66rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+
+        .language-option:last-child {
+            border-bottom: 0;
+        }
+
+        .language-option:hover,
+        .language-option:focus,
+        .language-option[aria-selected="true"] {
+            background: rgba(199, 169, 108, 0.13);
+            color: #fff7e8;
+            outline: none;
+        }
+
+        .language-option-code {
+            display: inline-block;
+            min-width: 2rem;
+            color: #d9bd81;
+            font-weight: 700;
         }
 
         .nav-left a::after,
@@ -2827,6 +2926,13 @@
                 font-size: 0.8rem;
             }
 
+            .language-selector-button {
+                min-width: 3rem;
+                padding: 0.38rem 0.5rem;
+                font-size: 0.62rem;
+                letter-spacing: 0.14em;
+            }
+
             .logo {
                 font-size: 1.5rem;
             }
@@ -3033,6 +3139,22 @@
             .nav-preorder-trigger {
                 font-size: 0.58rem;
                 letter-spacing: 0.09em;
+            }
+
+            .language-selector-button {
+                min-width: 2.55rem;
+                padding: 0.34rem 0.42rem;
+                font-size: 0.54rem;
+                letter-spacing: 0.1em;
+            }
+
+            .language-selector-list {
+                min-width: 7.4rem;
+            }
+
+            .language-option {
+                padding: 0.64rem 0.72rem;
+                font-size: 0.58rem;
             }
 
             .video-section {
@@ -3309,6 +3431,15 @@
         <ul class="nav-right">
             <li><a href="#newsletter">Contact</a></li>
             <li><button type="button" class="nav-preorder-trigger" data-preorder-trigger>Pre-order</button></li>
+            <li class="language-selector" id="languageSelector">
+                <button type="button" class="language-selector-button" id="languageSelectorButton" aria-haspopup="listbox" aria-expanded="false">EN</button>
+                <div class="language-selector-list" id="languageSelectorList" role="listbox" aria-label="Select language">
+                    <button type="button" class="language-option" role="option" data-language="en"><span class="language-option-code">EN</span> English</button>
+                    <button type="button" class="language-option" role="option" data-language="fr"><span class="language-option-code">FR</span> Français</button>
+                    <button type="button" class="language-option" role="option" data-language="it"><span class="language-option-code">IT</span> Italiano</button>
+                    <button type="button" class="language-option" role="option" data-language="de"><span class="language-option-code">DE</span> Deutsch</button>
+                </div>
+            </li>
         </ul>
     </nav>
 
@@ -3696,6 +3827,10 @@
         const newsletterEmail = document.getElementById('newsletterEmail');
         const newsletterButton = document.getElementById('newsletterButton');
         const newsletterResponse = document.getElementById('newsletterResponse');
+        const languageSelector = document.getElementById('languageSelector');
+        const languageSelectorButton = document.getElementById('languageSelectorButton');
+        const languageSelectorList = document.getElementById('languageSelectorList');
+        const languageOptions = document.querySelectorAll('[data-language]');
         let lastFocusedElement = null;
 
         function focusElementSafely(element) {
@@ -3852,6 +3987,57 @@
             trigger.addEventListener('click', openPreorderModal);
         });
 
+        function closeLanguageSelector() {
+            if (!languageSelector || !languageSelectorButton) return;
+
+            languageSelector.classList.remove('open');
+            languageSelectorButton.setAttribute('aria-expanded', 'false');
+        }
+
+        function setLanguageValue(language) {
+            if (!languageSelectorButton) return;
+
+            const supportedLanguage = ['en', 'fr', 'it', 'de'].includes(language) ? language : 'en';
+            languageSelectorButton.textContent = supportedLanguage.toUpperCase();
+            document.documentElement.lang = supportedLanguage;
+
+            languageOptions.forEach((option) => {
+                option.setAttribute('aria-selected', option.dataset.language === supportedLanguage ? 'true' : 'false');
+            });
+        }
+
+        function getPreferredLanguage() {
+            const savedLanguage = window.localStorage.getItem('voidLanguage');
+
+            if (['en', 'fr', 'it', 'de'].includes(savedLanguage)) {
+                return savedLanguage;
+            }
+
+            const browserLanguages = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+            const matchedLanguage = browserLanguages
+                .map((language) => String(language).slice(0, 2).toLowerCase())
+                .find((language) => ['en', 'fr', 'it', 'de'].includes(language));
+
+            return matchedLanguage || 'en';
+        }
+
+        setLanguageValue(getPreferredLanguage());
+
+        if (languageSelectorButton && languageSelector) {
+            languageSelectorButton.addEventListener('click', () => {
+                const isOpen = languageSelector.classList.toggle('open');
+                languageSelectorButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+        }
+
+        languageOptions.forEach((option) => {
+            option.addEventListener('click', () => {
+                setLanguageValue(option.dataset.language);
+                window.localStorage.setItem('voidLanguage', option.dataset.language);
+                closeLanguageSelector();
+            });
+        });
+
         function updateCountryPickerPosition() {
             if (!preorderCountryPicker || !preorderCountryButton || !preorderCountryList) return;
 
@@ -3935,9 +4121,20 @@
         });
 
         document.addEventListener('click', (event) => {
-            if (!preorderCountryPicker || preorderCountryPicker.contains(event.target)) return;
+            if (preorderCountryPicker && !preorderCountryPicker.contains(event.target)) {
+                closeCountryPicker();
+            }
+
+            if (languageSelector && !languageSelector.contains(event.target)) {
+                closeLanguageSelector();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
 
             closeCountryPicker();
+            closeLanguageSelector();
         });
 
         if (preorderCountry && preorderOtherCountryField && preorderOtherCountry) {
