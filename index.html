@@ -3423,17 +3423,17 @@
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <ul class="nav-left">
-            <li><a href="#shop">Shop</a></li>
-            <li><a href="#shop">Collection</a></li>
-            <li class="nav-style-guide"><a href="/seo-hub.html">Style Guide</a></li>
+            <li><a href="#shop" data-i18n="navShop">Shop</a></li>
+            <li><a href="#shop" data-i18n="navCollection">Collection</a></li>
+            <li class="nav-style-guide"><a href="/seo-hub.html" data-i18n="navStyleGuide">Style Guide</a></li>
         </ul>
         <div class="logo">VOID<sup class="brand-copyright">©</sup></div>
         <ul class="nav-right">
-            <li><a href="#newsletter">Contact</a></li>
-            <li><button type="button" class="nav-preorder-trigger" data-preorder-trigger>Pre-order</button></li>
+            <li><a href="#newsletter" data-i18n="navContact">Contact</a></li>
+            <li><button type="button" class="nav-preorder-trigger" data-preorder-trigger data-i18n="navPreorder">Pre-order</button></li>
             <li class="language-selector" id="languageSelector">
                 <button type="button" class="language-selector-button" id="languageSelectorButton" aria-haspopup="listbox" aria-expanded="false">EN</button>
-                <div class="language-selector-list" id="languageSelectorList" role="listbox" aria-label="Select language">
+                <div class="language-selector-list" id="languageSelectorList" role="listbox" aria-label="Select language" data-i18n-aria-label="selectLanguage">
                     <button type="button" class="language-option" role="option" data-language="en"><span class="language-option-code">EN</span> English</button>
                     <button type="button" class="language-option" role="option" data-language="fr"><span class="language-option-code">FR</span> Français</button>
                     <button type="button" class="language-option" role="option" data-language="it"><span class="language-option-code">IT</span> Italiano</button>
@@ -3452,8 +3452,8 @@
             <h1 class="hero-title">VOID</h1>
             <p class="hero-subtitle">Atelier</p>
             <div class="hero-actions">
-                <a href="#shop" class="cta-button">Enter The Boutique</a>
-                <button type="button" class="story-trigger-button" id="openStoryButton">Read The Story</button>
+                <a href="#shop" class="cta-button" data-i18n="heroEnterBoutique">Enter The Boutique</a>
+                <button type="button" class="story-trigger-button" id="openStoryButton" data-i18n="heroReadStory">Read The Story</button>
             </div>
         </div>
     </section>
@@ -3473,15 +3473,15 @@
             <span class="spark-ray"></span>
             <span class="spark-ray"></span>
         </div>
-        <button type="button" class="story-overlay-exit" id="exitStoryButton">Return to VOID<sup class="brand-copyright">©</sup></button>
+        <button type="button" class="story-overlay-exit" id="exitStoryButton" data-i18n-html="storyReturn">Return to VOID<sup class="brand-copyright">©</sup></button>
         <div class="story-overlay-stage" role="dialog" aria-modal="true" aria-labelledby="storyCrawlTitle">
             <div class="story-crawl">
-                <p class="story-crawl-eyebrow">VOID<sup class="brand-copyright">©</sup> Archive</p>
-                <h2 class="story-crawl-title" id="storyCrawlTitle">Story</h2>
-                <p>Born between couture restraint and underground pulse, VOID<sup class="brand-copyright">©</sup> exists at the collision point of luxury discipline and street instinct.</p>
-                <p>Every silhouette is developed as a limited ritual: precise tailoring, elevated fabric weight, and monochrome tension shaped for movement, presence, and permanence.</p>
-                <p>We reject disposable cycles. We build collectible essentials — garments that feel ceremonial in detail yet raw in attitude.</p>
-                <p>VOID<sup class="brand-copyright">©</sup> is not trend-led. It is a quiet house code for those who wear darkness as architecture and elegance as armor.</p>
+                <p class="story-crawl-eyebrow" data-i18n-html="storyArchive">VOID<sup class="brand-copyright">©</sup> Archive</p>
+                <h2 class="story-crawl-title" id="storyCrawlTitle" data-i18n="storyTitle">Story</h2>
+                <p data-i18n-html="storyCopyOne">Born between couture restraint and underground pulse, VOID<sup class="brand-copyright">©</sup> exists at the collision point of luxury discipline and street instinct.</p>
+                <p data-i18n="storyCopyTwo">Every silhouette is developed as a limited ritual: precise tailoring, elevated fabric weight, and monochrome tension shaped for movement, presence, and permanence.</p>
+                <p data-i18n="storyCopyThree">We reject disposable cycles. We build collectible essentials — garments that feel ceremonial in detail yet raw in attitude.</p>
+                <p data-i18n-html="storyCopyFour">VOID<sup class="brand-copyright">©</sup> is not trend-led. It is a quiet house code for those who wear darkness as architecture and elegance as armor.</p>
             </div>
         </div>
     </div>
@@ -3490,86 +3490,86 @@
     <section class="products" id="shop">
         <div class="products-inner">
             <div class="products-header fade-in-up" style="--delay: 40ms;">
-                <h2>Collection</h2>
+                <h2 data-i18n="collectionTitle">Collection</h2>
                 <div class="products-header-actions">
-                    <button type="button" class="collection-preorder-trigger" data-preorder-trigger>Pre-order Access</button>
-                    <button type="button" class="size-guide-trigger" id="sizeGuideTrigger">Size Guide</button>
+                    <button type="button" class="collection-preorder-trigger" data-preorder-trigger data-i18n="preorderAccess">Pre-order Access</button>
+                    <button type="button" class="size-guide-trigger" id="sizeGuideTrigger" data-i18n="sizeGuide">Size Guide</button>
                 </div>
             </div>
             <div class="products-grid">
                 <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID© styling.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
+                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Levitate Tee</h3>
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip>Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
-                        <a href="#shop" class="product-cta" data-gallery-link>Galerie d’Atelier</a>
+                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
+                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
+                        <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Galerie d’Atelier</a>
                     </div>
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 140ms;" data-product-name="Endzustand Tee" data-product-price="250" data-fit-title="Boxy Oversized Fit" data-fit-note="Structured chest, blunt hem line, and oversized volume with couture-inspired proportions.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
+                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Endzustand Tee</h3>
                         <span class="product-price">€250</span>
                     </div>
                     <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip>Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
-                        <a href="#shop" class="product-cta" data-gallery-link>Galerie d’Atelier</a>
+                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
+                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
+                        <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Galerie d’Atelier</a>
                     </div>
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Oblique Gold/White Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
+                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Oblique Gold/White Tee</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip>Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
-                        <a href="#shop" class="product-cta" data-gallery-link>Galerie d’Atelier</a>
+                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
+                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
+                        <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Galerie d’Atelier</a>
                     </div>
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Oblique Gold/Black Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
+                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Oblique Gold/Black Tee</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip>Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
-                        <a href="#shop" class="product-cta" data-gallery-link>Galerie d’Atelier</a>
+                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
+                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
+                        <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Galerie d’Atelier</a>
                     </div>
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Oblique Blue/White Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true">Coming Soon</div>
+                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Oblique Blue/White Tee</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip>Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart>Add to Cart</button>
-                        <a href="#shop" class="product-cta" data-gallery-link>Galerie d’Atelier</a>
+                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
+                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
+                        <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Galerie d’Atelier</a>
                     </div>
                 </div>
             </div>
@@ -3580,10 +3580,10 @@
         <aside class="size-popup" role="dialog" aria-modal="true" aria-labelledby="sizePopupTitle">
             <div class="size-popup-header">
                 <div>
-                    <h3 class="size-popup-title" id="sizePopupTitle">Select Size</h3>
-                    <p class="size-popup-subtitle" id="sizePopupSubtitle">Choose your fit</p>
+                    <h3 class="size-popup-title" id="sizePopupTitle" data-i18n="selectSize">Select Size</h3>
+                    <p class="size-popup-subtitle" id="sizePopupSubtitle" data-i18n="chooseYourFit">Choose your fit</p>
                 </div>
-                <button type="button" class="size-popup-close" id="sizePopupClose" aria-label="Close size picker">✕</button>
+                <button type="button" class="size-popup-close" id="sizePopupClose" aria-label="Close size picker" data-i18n-aria-label="closeSizePicker">✕</button>
             </div>
             <div class="size-popup-body">
                 <div class="size-options" id="sizeOptions">
@@ -3595,11 +3595,11 @@
                 </div>
                 <div class="size-popup-fit" id="sizePopupFit" aria-live="polite">
                     <h4 class="size-popup-fit-title" id="sizePopupFitTitle">Oversized Atelier Fit</h4>
-                    <p class="size-popup-fit-note" id="sizePopupFitNote">Select a size to preview the intended silhouette and fit behavior.</p>
+                    <p class="size-popup-fit-note" id="sizePopupFitNote" data-i18n="sizePreviewDefault">Select a size to preview the intended silhouette and fit behavior.</p>
                 </div>
                 <div class="size-popup-actions">
-                    <button type="button" class="size-popup-btn" id="sizePopupCancel">Cancel</button>
-                    <button type="button" class="size-popup-btn confirm" id="sizePopupConfirm" disabled>Apply</button>
+                    <button type="button" class="size-popup-btn" id="sizePopupCancel" data-i18n="cancel">Cancel</button>
+                    <button type="button" class="size-popup-btn confirm" id="sizePopupConfirm" disabled data-i18n="apply">Apply</button>
                 </div>
             </div>
         </aside>
@@ -3609,23 +3609,23 @@
         <section class="size-guide-panel" role="dialog" aria-modal="true" aria-labelledby="sizeGuideTitle">
             <div class="size-guide-header">
                 <div>
-                    <h3 class="size-guide-title" id="sizeGuideTitle">VOID<sup class="brand-copyright">©</sup> Size Guide</h3>
-                    <p class="size-guide-subtitle">Measured in centimeters · Oversized baseline fit</p>
+                    <h3 class="size-guide-title" id="sizeGuideTitle" data-i18n-html="sizeGuideTitle">VOID<sup class="brand-copyright">©</sup> Size Guide</h3>
+                    <p class="size-guide-subtitle" data-i18n="sizeGuideSubtitle">Measured in centimeters · Oversized baseline fit</p>
                 </div>
-                <button type="button" class="size-guide-close" id="sizeGuideClose" aria-label="Close size guide">✕</button>
+                <button type="button" class="size-guide-close" id="sizeGuideClose" aria-label="Close size guide" data-i18n-aria-label="closeSizeGuide">✕</button>
             </div>
             <div class="size-guide-body">
-                <p class="size-guide-copy">Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.</p>
+                <p class="size-guide-copy" data-i18n="sizeGuideCopy">Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.</p>
                 <div class="size-guide-table-wrap">
                     <table class="size-guide-table" aria-describedby="sizeGuideNote">
                         <thead>
                             <tr>
-                                <th scope="col">Size</th>
-                                <th scope="col">Chest Width</th>
-                                <th scope="col">Body Length</th>
-                                <th scope="col">Shoulder Width</th>
-                                <th scope="col">Sleeve Length</th>
-                                <th scope="col">Fit Direction</th>
+                                <th scope="col" data-i18n="tableSize">Size</th>
+                                <th scope="col" data-i18n="tableChestWidth">Chest Width</th>
+                                <th scope="col" data-i18n="tableBodyLength">Body Length</th>
+                                <th scope="col" data-i18n="tableShoulderWidth">Shoulder Width</th>
+                                <th scope="col" data-i18n="tableSleeveLength">Sleeve Length</th>
+                                <th scope="col" data-i18n="tableFitDirection">Fit Direction</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -3635,7 +3635,7 @@
                                 <td>69</td>
                                 <td>53</td>
                                 <td>22</td>
-                                <td>Trim Oversized</td>
+                                <td data-i18n="fitTrimOversized">Trim Oversized</td>
                             </tr>
                             <tr>
                                 <td>S</td>
@@ -3643,7 +3643,7 @@
                                 <td>71</td>
                                 <td>55</td>
                                 <td>23</td>
-                                <td>Balanced Oversized</td>
+                                <td data-i18n="fitBalancedOversized">Balanced Oversized</td>
                             </tr>
                             <tr>
                                 <td>M</td>
@@ -3651,7 +3651,7 @@
                                 <td>73</td>
                                 <td>57</td>
                                 <td>24</td>
-                                <td>Signature Oversized</td>
+                                <td data-i18n="fitSignatureOversized">Signature Oversized</td>
                             </tr>
                             <tr>
                                 <td>L</td>
@@ -3659,7 +3659,7 @@
                                 <td>75</td>
                                 <td>59</td>
                                 <td>25</td>
-                                <td>Deep Oversized</td>
+                                <td data-i18n="fitDeepOversized">Deep Oversized</td>
                             </tr>
                             <tr>
                                 <td>XL</td>
@@ -3667,37 +3667,37 @@
                                 <td>77</td>
                                 <td>61</td>
                                 <td>26</td>
-                                <td>Max Oversized</td>
+                                <td data-i18n="fitMaxOversized">Max Oversized</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <p class="size-guide-note" id="sizeGuideNote">All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.</p>
+                <p class="size-guide-note" id="sizeGuideNote" data-i18n="sizeGuideNote">All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.</p>
             </div>
             <div class="size-guide-actions">
-                <button type="button" class="size-guide-return" id="sizeGuideReturn">Return to VOID<sup class="brand-copyright">©</sup></button>
+                <button type="button" class="size-guide-return" id="sizeGuideReturn" data-i18n-html="sizeGuideReturn">Return to VOID<sup class="brand-copyright">©</sup></button>
             </div>
         </section>
     </div>
 
     <div class="preorder-modal-backdrop" id="preorderModal" aria-hidden="true">
         <section class="preorder-modal" role="dialog" aria-modal="true" aria-labelledby="preorderModalTitle">
-            <button type="button" class="preorder-modal-close" id="preorderModalClose" aria-label="Close pre-order signup">✕</button>
+            <button type="button" class="preorder-modal-close" id="preorderModalClose" aria-label="Close pre-order signup" data-i18n-aria-label="closePreorderSignup">✕</button>
             <div class="preorder-modal-content">
-                <p class="preorder-modal-kicker">Private Access</p>
-                <h2 class="preorder-modal-title" id="preorderModalTitle">Reserve the next VOID<sup class="brand-copyright">©</sup> drop.</h2>
-                <p class="preorder-modal-copy">Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.</p>
+                <p class="preorder-modal-kicker" data-i18n="privateAccess">Private Access</p>
+                <h2 class="preorder-modal-title" id="preorderModalTitle" data-i18n-html="preorderTitle">Reserve the next VOID<sup class="brand-copyright">©</sup> drop.</h2>
+                <p class="preorder-modal-copy" data-i18n="preorderCopy">Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.</p>
                 <form class="preorder-form" id="preorderForm">
                     <label class="preorder-field" for="preorderEmail">
-                        <span class="preorder-label">Email</span>
+                        <span class="preorder-label" data-i18n="email">Email</span>
                         <input class="preorder-input" id="preorderEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
                     </label>
                     <label class="preorder-field" for="preorderCountryButton">
-                        <span class="preorder-label">Country</span>
+                        <span class="preorder-label" data-i18n="country">Country</span>
                         <div class="country-picker" id="preorderCountryPicker">
                             <input class="country-picker-value" id="preorderCountry" name="country" type="text" autocomplete="country-name" readonly required tabindex="-1">
                             <button class="country-picker-button" id="preorderCountryButton" type="button" aria-haspopup="listbox" aria-expanded="false">
-                                <span class="country-picker-current" id="preorderCountryCurrent"><span class="country-picker-placeholder">Select your country</span></span>
+                                <span class="country-picker-current" id="preorderCountryCurrent"><span class="country-picker-placeholder" data-i18n="selectYourCountry">Select your country</span></span>
                             </button>
                             <div class="country-picker-list" id="preorderCountryList" role="listbox" aria-labelledby="preorderCountryButton">
                                 <button type="button" class="country-picker-option" role="option" data-country="Austria" data-flag="flag-at"><span class="country-flag flag-at" aria-hidden="true"></span><span>Austria</span></button>
@@ -3716,23 +3716,23 @@
                                 <button type="button" class="country-picker-option" role="option" data-country="Switzerland" data-flag="flag-ch"><span class="country-flag flag-ch" aria-hidden="true"></span><span>Switzerland</span></button>
                                 <button type="button" class="country-picker-option" role="option" data-country="United Kingdom" data-flag="flag-gb"><span class="country-flag flag-gb" aria-hidden="true"></span><span>United Kingdom</span></button>
                                 <button type="button" class="country-picker-option" role="option" data-country="United States" data-flag="flag-us"><span class="country-flag flag-us" aria-hidden="true"></span><span>United States</span></button>
-                                <button type="button" class="country-picker-option" role="option" data-country="Other" data-flag="flag-empty"><span>Other</span></button>
+                                <button type="button" class="country-picker-option" role="option" data-country="Other" data-flag="flag-empty"><span data-i18n="countryOther">Other</span></button>
                             </div>
                         </div>
                     </label>
                     <label class="preorder-field preorder-other-field" for="preorderOtherCountry" id="preorderOtherCountryField" hidden>
-                        <span class="preorder-label">Your Country</span>
-                        <input class="preorder-input" id="preorderOtherCountry" name="otherCountry" type="text" placeholder="Type your country">
+                        <span class="preorder-label" data-i18n="yourCountry">Your Country</span>
+                        <input class="preorder-input" id="preorderOtherCountry" name="otherCountry" type="text" placeholder="Type your country" data-i18n-placeholder="typeYourCountry">
                     </label>
-                    <button type="submit" class="preorder-submit">Join pre-order list</button>
+                    <button type="submit" class="preorder-submit" data-i18n="joinPreorderList">Join pre-order list</button>
                     <p class="preorder-response" id="preorderResponse" aria-live="polite"></p>
-                    <p class="privacy-note">By joining, you agree to receive pre-order emails from VOID<sup class="brand-copyright">©</sup>. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+                    <p class="privacy-note" data-i18n-html="preorderPrivacyNote">By joining, you agree to receive pre-order emails from VOID<sup class="brand-copyright">©</sup>. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
                 </form>
             </div>
         </section>
     </div>
 
-    <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart">
+    <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart" data-i18n-aria-label="openCart">
         <span class="cart-fab-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
                 <path d="M7.5 9V7.75C7.5 5.4 9.4 3.5 11.75 3.5C14.1 3.5 16 5.4 16 7.75V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -3744,17 +3744,17 @@
 
     <aside class="cart-popup" id="cartPopup" aria-live="polite">
         <div class="cart-popup-header">
-            <h3 class="cart-popup-title">Your Cart</h3>
-            <button class="cart-close" id="cartClose" type="button" aria-label="Close cart">✕</button>
+            <h3 class="cart-popup-title" data-i18n="yourCart">Your Cart</h3>
+            <button class="cart-close" id="cartClose" type="button" aria-label="Close cart" data-i18n-aria-label="closeCart">✕</button>
         </div>
         <ul class="cart-items" id="cartItems"></ul>
-        <p class="cart-empty" id="cartEmpty">Your cart is empty.</p>
+        <p class="cart-empty" id="cartEmpty" data-i18n="cartEmpty">Your cart is empty.</p>
         <div class="cart-footer">
             <div class="cart-total">
-                <span>Total</span>
+                <span data-i18n="total">Total</span>
                 <strong id="cartTotal">€0</strong>
             </div>
-            <a href="https://shop.eternalvoid.co" class="cart-checkout" id="cartCheckout" target="_blank" rel="noopener">Checkout</a>
+            <a href="https://shop.eternalvoid.co" class="cart-checkout" id="cartCheckout" target="_blank" rel="noopener" data-i18n="checkout">Checkout</a>
         </div>
     </aside>
 
@@ -3766,27 +3766,27 @@
                 <p class="footer-tagline">FEEL THE</p>
             </div>
             <div class="footer-section" id="newsletter">
-                <h4>Newsletter</h4>
-                <p class="footer-newsletter-text">Join our community for exclusive drops and updates.</p>
+                <h4 data-i18n="newsletter">Newsletter</h4>
+                <p class="footer-newsletter-text" data-i18n="newsletterCopy">Join our community for exclusive drops and updates.</p>
                 <form class="newsletter-form" id="newsletterForm">
-                    <input type="email" placeholder="Enter your email" class="newsletter-input" id="newsletterEmail" name="email" autocomplete="email" required>
-                    <button type="submit" class="newsletter-button" id="newsletterButton">Subscribe</button>
+                    <input type="email" placeholder="Enter your email" class="newsletter-input" id="newsletterEmail" name="email" autocomplete="email" required data-i18n-placeholder="enterYourEmail">
+                    <button type="submit" class="newsletter-button" id="newsletterButton" data-i18n="subscribe">Subscribe</button>
                 </form>
                 <p class="newsletter-response" id="newsletterResponse" aria-live="polite"></p>
-                <p class="privacy-note">By subscribing, you agree to receive emails from VOID<sup class="brand-copyright">©</sup>. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+                <p class="privacy-note" data-i18n-html="newsletterPrivacyNote">By subscribing, you agree to receive emails from VOID<sup class="brand-copyright">©</sup>. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
             </div>
             <div class="footer-section">
-                <h4>Shop</h4>
+                <h4 data-i18n="footerShop">Shop</h4>
                 <ul>
-                    <li><a href="#shop">Collection</a></li>
-                    <li><a href="/seo-hub.html">Style Guides</a></li>
-                    <li><a href="/privacy-policy.html">Privacy Policy</a></li>
-                    <li><a href="/unsubscribe.html">Unsubscribe</a></li>
-                    <li><a href="mailto:support@eternalvoid.co">Contact</a></li>
+                    <li><a href="#shop" data-i18n="navCollection">Collection</a></li>
+                    <li><a href="/seo-hub.html" data-i18n="navStyleGuidePlural">Style Guides</a></li>
+                    <li><a href="/privacy-policy.html" data-i18n="privacyPolicy">Privacy Policy</a></li>
+                    <li><a href="/unsubscribe.html" data-i18n="unsubscribe">Unsubscribe</a></li>
+                    <li><a href="mailto:support@eternalvoid.co" data-i18n="navContact">Contact</a></li>
                 </ul>
             </div>
             <div class="footer-section">
-                <h4>Connect</h4>
+                <h4 data-i18n="connect">Connect</h4>
                 <ul>
                     <li><a href="https://www.instagram.com/eternalvoid_official" target="_blank" rel="noopener">Instagram</a></li>
                     <li><a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a></li>
@@ -3794,7 +3794,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 VOID<sup class="brand-copyright">©</sup>. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a></p>
+            <p data-i18n-html="footerRights">© 2026 VOID<sup class="brand-copyright">©</sup>. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a></p>
         </div>
     </footer>
 
@@ -3854,6 +3854,66 @@
 
         function formatBrandMarkup(value) {
             return escapeMarkup(value).replace(/VOID©/g, 'VOID<sup class="brand-copyright">©</sup>');
+        }
+
+        const brandMarkup = 'VOID<sup class="brand-copyright">©</sup>';
+        const supportedLanguages = ['en', 'fr', 'it', 'de'];
+        let currentLanguage = 'en';
+        let refreshCartTranslations = () => {};
+        const translations = {
+            en: {
+                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'Story', storyCopyOne: `Born between couture restraint and underground pulse, ${brandMarkup} exists at the collision point of luxury discipline and street instinct.`, storyCopyTwo: 'Every silhouette is developed as a limited ritual: precise tailoring, elevated fabric weight, and monochrome tension shaped for movement, presence, and permanence.', storyCopyThree: 'We reject disposable cycles. We build collectible essentials — garments that feel ceremonial in detail yet raw in attitude.', storyCopyFour: `${brandMarkup} is not trend-led. It is a quiet house code for those who wear darkness as architecture and elegance as armor.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Galerie d’Atelier', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}'
+            },
+            fr: {
+                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Histoire', storyCopyOne: `Né entre retenue couture et pulsation underground, ${brandMarkup} existe au point de collision entre discipline du luxe et instinct street.`, storyCopyTwo: 'Chaque silhouette est développée comme un rituel limité : coupe précise, poids de matière élevé et tension monochrome façonnés pour le mouvement, la présence et la permanence.', storyCopyThree: 'Nous rejetons les cycles jetables. Nous créons des essentiels de collection — des pièces cérémonielles dans le détail et brutes dans l’attitude.', storyCopyFour: `${brandMarkup} ne suit pas les tendances. C’est un code de maison discret pour ceux qui portent l’obscurité comme architecture et l’élégance comme armure.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Galerie d’Atelier', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}'
+            },
+            it: {
+                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Storia', storyCopyOne: `Nato tra rigore couture e impulso underground, ${brandMarkup} vive nel punto d’incontro tra disciplina del lusso e istinto street.`, storyCopyTwo: 'Ogni silhouette è sviluppata come un rituale limitato: sartoria precisa, peso elevato del tessuto e tensione monocromatica modellati per movimento, presenza e permanenza.', storyCopyThree: 'Rifiutiamo i cicli usa e getta. Costruiamo essenziali da collezione — capi cerimoniali nei dettagli e grezzi nell’attitudine.', storyCopyFour: `${brandMarkup} non segue le tendenze. È un codice di maison silenzioso per chi indossa l’oscurità come architettura e l’eleganza come armatura.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Galerie d’Atelier', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}'
+            },
+            de: {
+                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Story', storyCopyOne: `Geboren zwischen Couture-Zurückhaltung und Underground-Puls existiert ${brandMarkup} am Schnittpunkt von Luxusdisziplin und Street-Instinkt.`, storyCopyTwo: 'Jede Silhouette wird als limitiertes Ritual entwickelt: präzise Schneiderkunst, erhöhtes Stoffgewicht und monochrome Spannung, geformt für Bewegung, Präsenz und Beständigkeit.', storyCopyThree: 'Wir lehnen Wegwerfzyklen ab. Wir schaffen sammelbare Essentials — Kleidungsstücke, die im Detail zeremoniell und in der Haltung roh wirken.', storyCopyFour: `${brandMarkup} folgt keinem Trend. Es ist ein stiller House-Code für alle, die Dunkelheit als Architektur und Eleganz als Rüstung tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Galerie d’Atelier', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen'
+            }
+        };
+
+        Object.assign(translations.en, { selectLanguage: 'Select language', countryOther: 'Other' });
+        Object.assign(translations.fr, { selectLanguage: 'Sélectionner la langue', countryOther: 'Autre' });
+        Object.assign(translations.it, { selectLanguage: 'Seleziona lingua', countryOther: 'Altro' });
+        Object.assign(translations.de, { selectLanguage: 'Sprache auswählen', countryOther: 'Andere' });
+
+        function t(key, replacements = {}) {
+            const dictionary = translations[currentLanguage] || translations.en;
+            const value = dictionary[key] || translations.en[key] || key;
+
+            return Object.entries(replacements).reduce((text, [name, replacement]) => text.replaceAll(`{${name}}`, replacement), value);
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach((element) => {
+                element.textContent = t(element.dataset.i18n);
+            });
+
+            document.querySelectorAll('[data-i18n-html]').forEach((element) => {
+                element.innerHTML = t(element.dataset.i18nHtml);
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+                element.setAttribute('placeholder', t(element.dataset.i18nPlaceholder));
+            });
+
+            document.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
+                element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel));
+            });
+
+            document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
+                button.dataset.defaultLabel = t('addToCart');
+                if (!button.classList.contains('added') && !button.classList.contains('needs-size')) {
+                    button.textContent = t('addToCart');
+                }
+            });
+
+            document.querySelectorAll('.product-card[data-selected-size]').forEach((productCard) => {
+                setProductCardSize(productCard, productCard.dataset.selectedSize);
+            });
         }
 
         function openPreorderModal() {
@@ -3997,26 +4057,30 @@
         function setLanguageValue(language) {
             if (!languageSelectorButton) return;
 
-            const supportedLanguage = ['en', 'fr', 'it', 'de'].includes(language) ? language : 'en';
+            const supportedLanguage = supportedLanguages.includes(language) ? language : 'en';
+            currentLanguage = supportedLanguage;
             languageSelectorButton.textContent = supportedLanguage.toUpperCase();
             document.documentElement.lang = supportedLanguage;
 
             languageOptions.forEach((option) => {
                 option.setAttribute('aria-selected', option.dataset.language === supportedLanguage ? 'true' : 'false');
             });
+
+            applyTranslations();
+            refreshCartTranslations();
         }
 
         function getPreferredLanguage() {
             const savedLanguage = window.localStorage.getItem('voidLanguage');
 
-            if (['en', 'fr', 'it', 'de'].includes(savedLanguage)) {
+            if (supportedLanguages.includes(savedLanguage)) {
                 return savedLanguage;
             }
 
             const browserLanguages = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
             const matchedLanguage = browserLanguages
                 .map((language) => String(language).slice(0, 2).toLowerCase())
-                .find((language) => ['en', 'fr', 'it', 'de'].includes(language));
+                .find((language) => supportedLanguages.includes(language));
 
             return matchedLanguage || 'en';
         }
@@ -4069,10 +4133,12 @@
 
             const hasFlag = flagClass && flagClass !== 'flag-empty';
 
+            const countryLabel = country === 'Other' ? t('countryOther') : country;
+
             preorderCountry.value = country;
             preorderCountryCurrent.innerHTML = hasFlag
-                ? `<span class="country-flag ${flagClass}" aria-hidden="true"></span><span>${country}</span>`
-                : `<span>${country}</span>`;
+                ? `<span class="country-flag ${flagClass}" aria-hidden="true"></span><span>${countryLabel}</span>`
+                : `<span>${countryLabel}</span>`;
 
             preorderCountryOptions.forEach((option) => {
                 option.setAttribute('aria-selected', option.dataset.country === country ? 'true' : 'false');
@@ -4085,7 +4151,7 @@
             if (!preorderCountry || !preorderCountryCurrent) return;
 
             preorderCountry.value = '';
-            preorderCountryCurrent.innerHTML = '<span class="country-picker-placeholder">Select your country</span>';
+            preorderCountryCurrent.innerHTML = `<span class="country-picker-placeholder" data-i18n="selectYourCountry">${t('selectYourCountry')}</span>`;
 
             preorderCountryOptions.forEach((option) => {
                 option.setAttribute('aria-selected', 'false');
@@ -4166,12 +4232,12 @@
 
                 if (!selectedCountry) {
                     preorderResponse.classList.add('error');
-                    preorderResponse.textContent = preorderCountry.value === 'Other' ? 'Please type your country.' : 'Please select your country.';
+                    preorderResponse.textContent = preorderCountry.value === 'Other' ? t('pleaseTypeCountry') : t('pleaseSelectCountry');
                     focusElementSafely(preorderCountry.value === 'Other' ? preorderOtherCountry : preorderCountryButton);
                     return;
                 }
 
-                preorderResponse.textContent = 'Reserving your private pre-order access...';
+                preorderResponse.textContent = t('reservingPreorder');
 
                 if (preorderSubmit) {
                     preorderSubmit.disabled = true;
@@ -4192,10 +4258,10 @@
                     const result = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        throw new Error(result.message || 'Unable to reserve pre-order access right now.');
+                        throw new Error(result.message || t('preorderError'));
                     }
 
-                    preorderResponse.innerHTML = formatBrandMarkup(result.message || 'Welcome to the VOID© private access club. Please check your email.');
+                    preorderResponse.innerHTML = result.message ? formatBrandMarkup(result.message) : t('preorderSuccess');
                     preorderForm.reset();
                     resetCountryPicker();
 
@@ -4237,7 +4303,7 @@
                 if (!newsletterEmail || !newsletterResponse) return;
 
                 newsletterResponse.classList.remove('error');
-                newsletterResponse.textContent = 'Signing you up...';
+                newsletterResponse.textContent = t('signingUp');
                 newsletterForm.classList.add('loading');
 
                 if (newsletterButton) {
@@ -4258,14 +4324,14 @@
                     const result = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        throw new Error(result.message || 'Unable to subscribe right now.');
+                        throw new Error(result.message || t('subscribeError'));
                     }
 
-                    newsletterResponse.innerHTML = formatBrandMarkup(result.message || 'Thank you for signing up to the VOID© newsletter.');
+                    newsletterResponse.innerHTML = result.message ? formatBrandMarkup(result.message) : t('subscribeSuccess');
                     newsletterForm.reset();
                 } catch (error) {
                     newsletterResponse.classList.add('error');
-                    newsletterResponse.textContent = error.message || 'Unable to subscribe right now.';
+                    newsletterResponse.textContent = error.message || t('subscribeError');
                 } finally {
                     newsletterForm.classList.remove('loading');
 
@@ -4690,7 +4756,7 @@
 
             clearAddButtonTimer(buttonElement);
             buttonElement.classList.remove('added', 'needs-size');
-            buttonElement.textContent = buttonElement.dataset.defaultLabel || 'Add to Cart';
+            buttonElement.textContent = buttonElement.dataset.defaultLabel || t('addToCart');
         }
 
         function setTemporaryAddButtonState(buttonElement, label, stateClass, durationMs) {
@@ -4707,7 +4773,7 @@
 
             const timerId = setTimeout(() => {
                 buttonElement.classList.remove('added', 'needs-size');
-                buttonElement.textContent = buttonElement.dataset.defaultLabel || 'Add to Cart';
+                buttonElement.textContent = buttonElement.dataset.defaultLabel || t('addToCart');
                 addButtonTimers.delete(buttonElement);
             }, durationMs);
 
@@ -4722,8 +4788,8 @@
 
             const sizeChip = productCard.querySelector('[data-size-chip]');
             if (sizeChip) {
-                sizeChip.textContent = `Size: ${size}`;
-                sizeChip.setAttribute('aria-label', `Change size, current ${size}`);
+                sizeChip.textContent = t('sizeLabel', { size });
+                sizeChip.setAttribute('aria-label', t('changeSizeCurrent', { size }));
             }
         }
 
@@ -4745,17 +4811,17 @@
         function updateSizePopupFit(productCard, selectedSize) {
             if (!sizePopupFit || !sizePopupFitTitle || !sizePopupFitNote) return;
 
-            const fitTitle = productCard?.dataset.fitTitle || 'Oversized Atelier Fit';
-            const baseFitNote = productCard?.dataset.fitNote || 'Built with VOID© oversized proportion and movement-focused drape.';
+            const fitTitle = productCard?.dataset.fitTitle || t('defaultFitTitle');
+            const baseFitNote = productCard?.dataset.fitNote ? formatBrandMarkup(productCard.dataset.fitNote) : t('defaultFitNote');
             const sizeNote = selectedSize
-                ? `Selected ${selectedSize} keeps the intended VOID© oversized silhouette.`
-                : 'Select a size to preview the intended silhouette and fit behavior.';
+                ? t('selectedSizeNote', { size: selectedSize })
+                : t('sizePreviewDefault');
 
             sizePopupFit.classList.remove('is-visible');
             void sizePopupFit.offsetWidth;
 
             sizePopupFitTitle.textContent = fitTitle;
-            sizePopupFitNote.innerHTML = formatBrandMarkup(`${baseFitNote} ${sizeNote}`);
+            sizePopupFitNote.innerHTML = `${baseFitNote} ${sizeNote}`;
 
             window.requestAnimationFrame(() => {
                 sizePopupFit.classList.add('is-visible');
@@ -4816,8 +4882,8 @@
             updateSizeOptionsUI(currentSize);
             updateSizePopupFit(productCard, currentSize);
             sizePopupConfirm.disabled = !currentSize;
-            sizePopupConfirm.textContent = addButton ? 'Add to Cart' : 'Apply Size';
-            sizePopupSubtitle.textContent = `${productName} · choose your fit`;
+            sizePopupConfirm.textContent = addButton ? t('addToCart') : t('applySize');
+            sizePopupSubtitle.textContent = t('productChooseFit', { product: productName });
 
             sizePopupBackdrop.classList.add('open');
             sizePopupBackdrop.setAttribute('aria-hidden', 'false');
@@ -4860,8 +4926,8 @@
                         <span class="cart-item-meta">${item.size} · ${item.quantity} x ${formatEuro(item.price)}</span>
                     </div>
                     <div class="cart-item-actions">
-                        <button type="button" class="cart-item-adjust" data-cart-remove-name="${item.name}" data-cart-remove-size="${item.size}" aria-label="Remove one ${item.name} size ${item.size}">-1</button>
-                        <button type="button" class="cart-item-adjust" data-cart-increase-name="${item.name}" data-cart-increase-size="${item.size}" aria-label="Add one ${item.name} size ${item.size}">+1</button>
+                        <button type="button" class="cart-item-adjust" data-cart-remove-name="${item.name}" data-cart-remove-size="${item.size}" aria-label="${t('removeOneLabel', { name: item.name, size: item.size })}">-1</button>
+                        <button type="button" class="cart-item-adjust" data-cart-increase-name="${item.name}" data-cart-increase-size="${item.size}" aria-label="${t('addOneLabel', { name: item.name, size: item.size })}">+1</button>
                     </div>
                 `;
                 cartItemsElement.appendChild(listItem);
@@ -4871,6 +4937,8 @@
             cartTotalElement.textContent = formatEuro(total);
             cartEmptyElement.style.display = itemCount === 0 ? 'block' : 'none';
         }
+
+        refreshCartTranslations = updateCartUI;
 
         function triggerCartFlyEffect(buttonElement) {
             if (!buttonElement || !cartFab) return;
@@ -4905,7 +4973,7 @@
         function triggerButtonAddedState(buttonElement) {
             if (!buttonElement) return;
 
-            setTemporaryAddButtonState(buttonElement, 'Added', 'added', 680);
+            setTemporaryAddButtonState(buttonElement, t('added'), 'added', 680);
         }
 
         function addToCart(name, price, size, buttonElement) {
@@ -4969,7 +5037,7 @@
                 event.preventDefault();
 
                 if (cart.length === 0) {
-                    alert('Your cart is empty. Add at least one item before checkout.');
+                    alert(t('checkoutEmptyAlert'));
                     return;
                 }
 
@@ -4977,12 +5045,12 @@
 
                 if (missingItems.length > 0) {
                     console.warn('Missing Shopify variant mapping for items:', missingItems);
-                    alert('Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.');
+                    alert(t('checkoutMissingAlert'));
                     return;
                 }
 
                 if (!url) {
-                    alert('Unable to build Shopify checkout link. Please try again.');
+                    alert(t('checkoutBuildAlert'));
                     return;
                 }
 
@@ -4997,7 +5065,7 @@
         }
 
         document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
-            button.dataset.defaultLabel = button.textContent.trim() || 'Add to Cart';
+            button.dataset.defaultLabel = t('addToCart');
 
             button.addEventListener('click', () => {
                 const productCard = button.closest('.product-card');
@@ -5009,7 +5077,7 @@
 
                 if (!size) {
                     openSizePopup(productCard, button);
-                    setTemporaryAddButtonState(button, 'Select Size', 'needs-size', 850);
+                    setTemporaryAddButtonState(button, t('selectSizeButton'), 'needs-size', 850);
                     return;
                 }
 
@@ -5146,6 +5214,7 @@
             closeCartPopup();
         });
 
+        applyTranslations();
         updateCartUI();
     </script>
 </body>
