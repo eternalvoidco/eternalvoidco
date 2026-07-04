@@ -134,6 +134,41 @@
             100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
+        .scroll-transit-veil {
+            position: fixed;
+            inset: 0;
+            z-index: 1550;
+            pointer-events: none;
+            opacity: 0;
+            background: radial-gradient(circle at 50% 42%, transparent 38%, rgba(0, 0, 0, 0.5) 100%);
+            transition: opacity 0.5s ease;
+        }
+
+        .scroll-transit-veil.active {
+            opacity: 1;
+        }
+
+        @keyframes voidArrivalGlow {
+            0% { box-shadow: 0 0 0 0 rgba(199, 169, 108, 0); }
+            35% { box-shadow: 0 0 70px 6px rgba(199, 169, 108, 0.22), inset 0 0 90px rgba(199, 169, 108, 0.08); }
+            100% { box-shadow: 0 0 0 0 rgba(199, 169, 108, 0); }
+        }
+
+        .scroll-arrival-glow {
+            animation: voidArrivalGlow 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-transit-veil {
+                transition: none !important;
+                display: none !important;
+            }
+
+            .scroll-arrival-glow {
+                animation: none !important;
+            }
+        }
+
         :focus-visible {
             outline: 1px solid rgba(199, 169, 108, 0.78);
             outline-offset: 2px;
@@ -3407,6 +3442,8 @@
         </button>
     </div>
 
+    <div class="scroll-transit-veil" id="scrollTransitVeil" aria-hidden="true"></div>
+
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <ul class="nav-left">
@@ -4416,6 +4453,28 @@
             }
         }
 
+        const scrollTransitVeil = document.getElementById('scrollTransitVeil');
+        let arrivalGlowTimer = null;
+
+        function easeInOutCubic(progress) {
+            return progress < 0.5
+                ? 4 * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        }
+
+        function triggerArrivalGlow(target) {
+            if (!target) return;
+
+            clearTimeout(arrivalGlowTimer);
+            target.classList.remove('scroll-arrival-glow');
+            void target.offsetWidth;
+            target.classList.add('scroll-arrival-glow');
+
+            arrivalGlowTimer = window.setTimeout(() => {
+                target.classList.remove('scroll-arrival-glow');
+            }, 1300);
+        }
+
         function smoothScrollToTarget(target) {
             if (!target) return;
 
@@ -4428,21 +4487,32 @@
 
             if (prefersReducedMotion || Math.abs(distance) < 2) {
                 window.scrollTo(0, targetY);
+                triggerArrivalGlow(target);
                 return;
             }
 
-            const duration = Math.min(680, Math.max(340, Math.abs(distance) * 0.22));
+            const duration = Math.min(1500, Math.max(420, Math.abs(distance) * 0.55));
             const startTime = performance.now();
-            const easeOutCubic = (progress) => 1 - Math.pow(1 - progress, 3);
+
+            if (scrollTransitVeil) {
+                scrollTransitVeil.classList.add('active');
+            }
 
             function step(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                window.scrollTo(0, startY + distance * easeOutCubic(progress));
+                window.scrollTo(0, startY + distance * easeInOutCubic(progress));
 
                 if (progress < 1) {
                     window.requestAnimationFrame(step);
+                    return;
                 }
+
+                if (scrollTransitVeil) {
+                    scrollTransitVeil.classList.remove('active');
+                }
+
+                triggerArrivalGlow(target);
             }
 
             window.requestAnimationFrame(step);
