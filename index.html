@@ -140,26 +140,83 @@
             z-index: 1550;
             pointer-events: none;
             opacity: 0;
-            background: radial-gradient(circle at 50% 42%, transparent 38%, rgba(0, 0, 0, 0.5) 100%);
-            transition: opacity 0.5s ease;
+            background: radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.3) 30%, rgba(0, 0, 0, 0.78) 100%);
+            backdrop-filter: blur(0px) brightness(1);
+            -webkit-backdrop-filter: blur(0px) brightness(1);
+            transition: opacity 0.7s ease, backdrop-filter 0.7s ease, -webkit-backdrop-filter 0.7s ease;
         }
 
         .scroll-transit-veil.active {
             opacity: 1;
+            backdrop-filter: blur(7px) brightness(0.82);
+            -webkit-backdrop-filter: blur(7px) brightness(0.82);
+        }
+
+        .scroll-letterbox {
+            position: fixed;
+            left: 0;
+            right: 0;
+            z-index: 1560;
+            height: 0;
+            background: #000;
+            pointer-events: none;
+            transition: height 0.6s cubic-bezier(0.83, 0, 0.17, 1);
+        }
+
+        .scroll-letterbox.top {
+            top: 0;
+        }
+
+        .scroll-letterbox.bottom {
+            bottom: 0;
+        }
+
+        .scroll-letterbox::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.6), transparent);
+            opacity: 0;
+            transition: opacity 0.5s ease 0.15s;
+        }
+
+        .scroll-letterbox.top::after {
+            bottom: 0;
+        }
+
+        .scroll-letterbox.bottom::after {
+            top: 0;
+        }
+
+        .scroll-letterbox.active {
+            height: clamp(52px, 10vh, 150px);
+        }
+
+        .scroll-letterbox.active::after {
+            opacity: 1;
+        }
+
+        @media (max-width: 640px) {
+            .scroll-letterbox.active {
+                height: clamp(38px, 13vh, 120px);
+            }
         }
 
         @keyframes voidArrivalGlow {
             0% { box-shadow: 0 0 0 0 rgba(199, 169, 108, 0); }
-            35% { box-shadow: 0 0 70px 6px rgba(199, 169, 108, 0.22), inset 0 0 90px rgba(199, 169, 108, 0.08); }
+            32% { box-shadow: 0 0 90px 10px rgba(199, 169, 108, 0.26), inset 0 0 110px rgba(199, 169, 108, 0.1); }
             100% { box-shadow: 0 0 0 0 rgba(199, 169, 108, 0); }
         }
 
         .scroll-arrival-glow {
-            animation: voidArrivalGlow 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: voidArrivalGlow 1.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .scroll-transit-veil {
+            .scroll-transit-veil,
+            .scroll-letterbox {
                 transition: none !important;
                 display: none !important;
             }
@@ -3443,6 +3500,8 @@
     </div>
 
     <div class="scroll-transit-veil" id="scrollTransitVeil" aria-hidden="true"></div>
+    <div class="scroll-letterbox top" id="scrollLetterboxTop" aria-hidden="true"></div>
+    <div class="scroll-letterbox bottom" id="scrollLetterboxBottom" aria-hidden="true"></div>
 
     <!-- Navigation -->
     <nav class="nav" id="nav">
@@ -4454,7 +4513,11 @@
         }
 
         const scrollTransitVeil = document.getElementById('scrollTransitVeil');
+        const scrollLetterboxTop = document.getElementById('scrollLetterboxTop');
+        const scrollLetterboxBottom = document.getElementById('scrollLetterboxBottom');
+        const scrollLetterboxBars = [scrollLetterboxTop, scrollLetterboxBottom].filter(Boolean);
         let arrivalGlowTimer = null;
+        let scrollTransitToken = 0;
 
         function easeInOutCubic(progress) {
             return progress < 0.5
@@ -4472,7 +4535,19 @@
 
             arrivalGlowTimer = window.setTimeout(() => {
                 target.classList.remove('scroll-arrival-glow');
-            }, 1300);
+            }, 1600);
+        }
+
+        function setLetterboxTransitionMs(ms) {
+            scrollLetterboxBars.forEach((bar) => {
+                bar.style.transitionDuration = `${ms}ms`;
+            });
+        }
+
+        function setLetterboxOpen(isOpen) {
+            scrollLetterboxBars.forEach((bar) => {
+                bar.classList.toggle('active', !isOpen);
+            });
         }
 
         function smoothScrollToTarget(target) {
@@ -4491,22 +4566,42 @@
                 return;
             }
 
-            const duration = Math.min(1500, Math.max(420, Math.abs(distance) * 0.55));
+            const thisTransit = ++scrollTransitToken;
+            const duration = Math.min(2600, Math.max(1200, Math.abs(distance) * 0.85));
+            const barTransitionMs = Math.max(340, duration * 0.32);
             const startTime = performance.now();
+            let barsHaveOpened = false;
+
+            setLetterboxTransitionMs(barTransitionMs);
+            setLetterboxOpen(false);
 
             if (scrollTransitVeil) {
                 scrollTransitVeil.classList.add('active');
             }
 
+            function openBarsOnce() {
+                if (barsHaveOpened) return;
+                barsHaveOpened = true;
+                setLetterboxOpen(true);
+            }
+
             function step(currentTime) {
+                if (thisTransit !== scrollTransitToken) return;
+
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+
+                if (progress >= 0.7) {
+                    openBarsOnce();
+                }
 
                 if (progress < 1) {
                     window.requestAnimationFrame(step);
                     return;
                 }
+
+                openBarsOnce();
 
                 if (scrollTransitVeil) {
                     scrollTransitVeil.classList.remove('active');
