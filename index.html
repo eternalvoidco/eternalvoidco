@@ -2845,44 +2845,22 @@
             transform: translate(calc(-50% + var(--fly-x)), calc(-50% + var(--fly-y))) scale(0.24);
         }
 
-        .void-edge-flake {
+        .edge-ambience-canvas {
             position: fixed;
-            left: 0;
-            top: 0;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff6df 0%, #d9b869 55%, rgba(217, 184, 105, 0) 100%);
-            box-shadow: 0 0 9px rgba(217, 184, 105, 0.75);
+            inset: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
             z-index: 2700;
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.5);
-            animation: voidFlakeDissolve var(--flake-duration, 1.5s) cubic-bezier(0.2, 0.6, 0.35, 1) forwards;
-            animation-delay: var(--flake-delay, 0s);
+            display: none;
         }
 
-        @keyframes voidFlakeDissolve {
-            0% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.6);
-            }
-            12% {
-                opacity: 1;
-                transform: translate(calc(-50% + var(--flake-dx, 0px) * 0.12), calc(-50% + var(--flake-dy, -60px) * 0.12)) scale(1);
-            }
-            55% {
-                opacity: 0.9;
-                transform: translate(calc(-50% + var(--flake-dx, 0px) * 0.55), calc(-50% + var(--flake-dy, -60px) * 0.55)) scale(0.8);
-            }
-            100% {
-                opacity: 0;
-                transform: translate(calc(-50% + var(--flake-dx, 0px)), calc(-50% + var(--flake-dy, -60px))) scale(0.15);
-            }
+        .edge-ambience-canvas.active {
+            display: block;
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .void-edge-flake {
+            .edge-ambience-canvas {
                 display: none !important;
             }
         }
@@ -3789,6 +3767,7 @@
         </button>
     </div>
 
+    <canvas class="edge-ambience-canvas" id="edgeAmbienceCanvas" aria-hidden="true"></canvas>
     <div class="scroll-transit-veil" id="scrollTransitVeil" aria-hidden="true"></div>
     <div class="scroll-letterbox top" id="scrollLetterboxTop" aria-hidden="true"></div>
     <div class="scroll-letterbox bottom" id="scrollLetterboxBottom" aria-hidden="true"></div>
@@ -4317,9 +4296,7 @@
                 focusElementSafely(preorderEmail);
             }, 220);
 
-            window.setTimeout(() => {
-                spawnEdgeFlakes(preorderModal.querySelector('.preorder-modal'));
-            }, 620);
+            startEdgeAmbience(preorderModal.querySelector('.preorder-modal'));
         }
 
         function closePreorderModal() {
@@ -4328,6 +4305,7 @@
             preorderModal.classList.remove('active');
             preorderModal.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('preorder-open');
+            stopEdgeAmbience();
         }
 
         function setupVideo(videoElement, playbackRate) {
@@ -5072,9 +5050,7 @@
             galleryPreviewBackdrop.setAttribute('aria-hidden', 'false');
             document.body.classList.add('gallery-preview-open');
 
-            window.setTimeout(() => {
-                spawnEdgeFlakes(galleryPreviewBackdrop.querySelector('.gallery-preview-panel'));
-            }, 620);
+            startEdgeAmbience(galleryPreviewBackdrop.querySelector('.gallery-preview-panel'));
 
             if (galleryPreviewClose) {
                 window.requestAnimationFrame(() => {
@@ -5089,6 +5065,7 @@
             galleryPreviewBackdrop.classList.remove('open');
             galleryPreviewBackdrop.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('gallery-preview-open');
+            stopEdgeAmbience();
             focusElementSafely(lastGalleryPreviewFocus);
         }
 
@@ -5211,10 +5188,7 @@
             cartPopup.classList.remove('closing');
             cartPopup.classList.add('open');
             cartFab.classList.add('opened');
-
-            window.setTimeout(() => {
-                spawnEdgeFlakes(cartPopup);
-            }, 560);
+            startEdgeAmbience(cartPopup);
         }
 
         function closeCartPopup() {
@@ -5226,6 +5200,7 @@
             cartPopup.classList.remove('open');
             cartPopup.classList.add('closing');
             cartFab.classList.remove('opened');
+            stopEdgeAmbience();
 
             setTimeout(() => {
                 cartPopup.classList.remove('closing');
@@ -5395,9 +5370,7 @@
                 source: 'collection_size_guide_button'
             });
 
-            window.setTimeout(() => {
-                spawnEdgeFlakes(sizeGuideOverlay.querySelector('.size-guide-panel'));
-            }, 700);
+            startEdgeAmbience(sizeGuideOverlay.querySelector('.size-guide-panel'));
 
             if (sizeGuideReturn) {
                 window.requestAnimationFrame(() => {
@@ -5412,6 +5385,7 @@
             sizeGuideOverlay.classList.remove('open');
             sizeGuideOverlay.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('size-guide-open');
+            stopEdgeAmbience();
             focusElementSafely(lastSizeGuideFocus);
         }
 
@@ -5438,9 +5412,7 @@
             sizePopupBackdrop.setAttribute('aria-hidden', 'false');
             document.body.classList.add('size-popup-open');
 
-            window.setTimeout(() => {
-                spawnEdgeFlakes(sizePopupBackdrop.querySelector('.size-popup'));
-            }, 580);
+            startEdgeAmbience(sizePopupBackdrop.querySelector('.size-popup'));
         }
 
         function closeSizePopup() {
@@ -5449,6 +5421,7 @@
             sizePopupBackdrop.classList.remove('open');
             sizePopupBackdrop.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('size-popup-open');
+            stopEdgeAmbience();
 
             sizePopupState = {
                 productCard: null,
@@ -5496,48 +5469,160 @@
 
         refreshCartTranslations = updateCartUI;
 
-        function spawnEdgeFlakes(panelElement, count = 16) {
-            if (!panelElement) return;
+        // Ambient gold dust field around open popup edges (continuous, canvas-based).
+        const edgeAmbienceCanvas = document.getElementById('edgeAmbienceCanvas');
+        const edgeAmbienceCtx = edgeAmbienceCanvas ? edgeAmbienceCanvas.getContext('2d') : null;
+        let ambiencePanel = null;
+        let ambienceParticles = [];
+        let ambienceRafId = null;
+        let ambienceFadingOut = false;
+
+        function resizeAmbienceCanvas() {
+            if (!edgeAmbienceCanvas) return;
+
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            edgeAmbienceCanvas.width = Math.floor(window.innerWidth * dpr);
+            edgeAmbienceCanvas.height = Math.floor(window.innerHeight * dpr);
+
+            if (edgeAmbienceCtx) {
+                edgeAmbienceCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+        }
+
+        window.addEventListener('resize', resizeAmbienceCanvas);
+
+        function spawnAmbienceParticle(rect) {
+            // Position in a band hugging the panel edge: mostly just outside, some inside.
+            const edge = Math.floor(Math.random() * 4);
+            const along = Math.random();
+            const band = 26;
+            const offset = (Math.random() - 0.35) * band;
+            let x;
+            let y;
+
+            if (edge === 0) {
+                x = rect.left + along * rect.width;
+                y = rect.top - offset;
+            } else if (edge === 1) {
+                x = rect.right + offset;
+                y = rect.top + along * rect.height;
+            } else if (edge === 2) {
+                x = rect.left + along * rect.width;
+                y = rect.bottom + offset;
+            } else {
+                x = rect.left - offset;
+                y = rect.top + along * rect.height;
+            }
+
+            const maxLife = 2.2 + Math.random() * 2.8;
+
+            return {
+                x,
+                y,
+                vx: (Math.random() - 0.5) * 9,
+                vy: -3 - Math.random() * 9,
+                radius: 0.5 + Math.random() * 1.7,
+                life: 0,
+                maxLife,
+                twinkleSpeed: 2.5 + Math.random() * 6,
+                twinklePhase: Math.random() * Math.PI * 2,
+                bright: Math.random() < 0.22
+            };
+        }
+
+        function ambienceFrame(now) {
+            if (!edgeAmbienceCtx || !edgeAmbienceCanvas) return;
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            edgeAmbienceCtx.clearRect(0, 0, width, height);
+
+            const rect = ambiencePanel && !ambienceFadingOut ? ambiencePanel.getBoundingClientRect() : null;
+
+            if (rect && rect.width > 0 && ambienceParticles.length < 110) {
+                const spawnCount = ambienceParticles.length < 40 ? 4 : 2;
+                for (let i = 0; i < spawnCount; i += 1) {
+                    ambienceParticles.push(spawnAmbienceParticle(rect));
+                }
+            }
+
+            const dt = 1 / 60;
+            const seconds = now / 1000;
+
+            ambienceParticles = ambienceParticles.filter((p) => {
+                p.life += dt;
+                if (p.life >= p.maxLife) return false;
+
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+
+                // Fade in fast, fade out (gold -> black/nothing) over the rest of life.
+                const lifeRatio = p.life / p.maxLife;
+                const fade = lifeRatio < 0.15 ? lifeRatio / 0.15 : 1 - (lifeRatio - 0.15) / 0.85;
+                const twinkle = 0.55 + 0.45 * Math.sin(seconds * p.twinkleSpeed + p.twinklePhase);
+                const alpha = Math.max(0, fade * twinkle);
+
+                if (alpha <= 0.01) return true;
+
+                const glow = p.bright ? p.radius * 5 : p.radius * 3;
+                const gradient = edgeAmbienceCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
+                gradient.addColorStop(0, `rgba(255, 244, 214, ${alpha})`);
+                gradient.addColorStop(0.35, `rgba(217, 184, 105, ${alpha * 0.75})`);
+                gradient.addColorStop(1, 'rgba(120, 92, 40, 0)');
+
+                edgeAmbienceCtx.fillStyle = gradient;
+                edgeAmbienceCtx.beginPath();
+                edgeAmbienceCtx.arc(p.x, p.y, glow, 0, Math.PI * 2);
+                edgeAmbienceCtx.fill();
+
+                return true;
+            });
+
+            if (ambienceFadingOut && ambienceParticles.length === 0) {
+                stopEdgeAmbience(true);
+                return;
+            }
+
+            ambienceRafId = window.requestAnimationFrame(ambienceFrame);
+        }
+
+        function startEdgeAmbience(panelElement) {
+            if (!panelElement || !edgeAmbienceCanvas || !edgeAmbienceCtx) return;
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-            const rect = panelElement.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) return;
+            ambiencePanel = panelElement;
+            ambienceFadingOut = false;
 
-            for (let i = 0; i < count; i += 1) {
-                const edge = i % 4;
-                const alongEdge = Math.random();
-                let x;
-                let y;
+            if (ambienceRafId === null) {
+                resizeAmbienceCanvas();
+                edgeAmbienceCanvas.classList.add('active');
+                ambienceRafId = window.requestAnimationFrame(ambienceFrame);
+            }
+        }
 
-                if (edge === 0) {
-                    x = rect.left + alongEdge * rect.width;
-                    y = rect.top;
-                } else if (edge === 1) {
-                    x = rect.right;
-                    y = rect.top + alongEdge * rect.height;
-                } else if (edge === 2) {
-                    x = rect.left + alongEdge * rect.width;
-                    y = rect.bottom;
-                } else {
-                    x = rect.left;
-                    y = rect.top + alongEdge * rect.height;
+        function stopEdgeAmbience(immediate = false) {
+            if (immediate) {
+                if (ambienceRafId !== null) {
+                    window.cancelAnimationFrame(ambienceRafId);
+                    ambienceRafId = null;
                 }
 
-                const flake = document.createElement('span');
-                flake.className = 'void-edge-flake';
-                flake.style.left = `${x}px`;
-                flake.style.top = `${y}px`;
-                flake.style.setProperty('--flake-dx', `${(Math.random() - 0.5) * 70}px`);
-                flake.style.setProperty('--flake-dy', `${-45 - Math.random() * 70}px`);
-                flake.style.setProperty('--flake-duration', `${1.3 + Math.random() * 0.7}s`);
-                flake.style.setProperty('--flake-delay', `${(i % 6) * 0.04}s`);
+                ambienceParticles = [];
+                ambiencePanel = null;
+                ambienceFadingOut = false;
 
-                document.body.appendChild(flake);
+                if (edgeAmbienceCanvas) {
+                    edgeAmbienceCanvas.classList.remove('active');
 
-                window.setTimeout(() => {
-                    flake.remove();
-                }, 2500);
+                    if (edgeAmbienceCtx) {
+                        edgeAmbienceCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+                    }
+                }
+                return;
             }
+
+            // Let existing particles finish dying naturally; just stop spawning.
+            ambienceFadingOut = true;
         }
 
         function triggerCartFlyEffect(buttonElement) {
