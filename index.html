@@ -134,6 +134,41 @@
             100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
+        @property --void-border-alpha {
+            syntax: '<number>';
+            inherits: false;
+            initial-value: 0.42;
+        }
+
+        @property --void-glow-alpha {
+            syntax: '<number>';
+            inherits: false;
+            initial-value: 0.14;
+        }
+
+        @keyframes voidEdgePulse {
+            0%, 100% { --void-border-alpha: 0.4; --void-glow-alpha: 0.12; }
+            50% { --void-border-alpha: 0.95; --void-glow-alpha: 0.5; }
+        }
+
+        .preorder-modal-backdrop.active .preorder-modal,
+        .size-popup-backdrop.open .size-popup,
+        .size-guide-overlay.open .size-guide-panel,
+        .gallery-preview-backdrop.open .gallery-preview-panel,
+        .cart-popup.open {
+            animation: voidEdgePulse 3.4s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .preorder-modal-backdrop.active .preorder-modal,
+            .size-popup-backdrop.open .size-popup,
+            .size-guide-overlay.open .size-guide-panel,
+            .gallery-preview-backdrop.open .gallery-preview-panel,
+            .cart-popup.open {
+                animation: none !important;
+            }
+        }
+
         .scroll-transit-veil {
             position: fixed;
             inset: 0;
@@ -331,9 +366,9 @@
             width: min(94vw, 500px);
             max-height: calc(100dvh - 2.4rem);
             overflow: hidden;
-            border: 1px solid rgba(199, 169, 108, 0.42);
+            border: 1px solid rgba(199, 169, 108, var(--void-border-alpha, 0.42));
             background: linear-gradient(145deg, rgba(12, 12, 12, 0.96), rgba(0, 0, 0, 0.98));
-            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(245, 242, 236, 0.04), inset 0 1px 0 rgba(245, 242, 236, 0.08);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(245, 242, 236, 0.04), inset 0 1px 0 rgba(245, 242, 236, 0.08), 0 0 46px 4px rgba(199, 169, 108, var(--void-glow-alpha, 0.14));
             transform: translateY(18px) scale(0.97);
             opacity: 0;
             transition: transform 0.42s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.42s ease;
@@ -2108,9 +2143,9 @@
 
         .size-popup {
             width: min(420px, 100%);
-            border: 1px solid rgba(199, 169, 108, 0.45);
+            border: 1px solid rgba(199, 169, 108, var(--void-border-alpha, 0.42));
             background: linear-gradient(145deg, rgba(10, 10, 10, 0.98), rgba(5, 5, 5, 0.97));
-            box-shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
+            box-shadow: 0 24px 56px rgba(0, 0, 0, 0.55), 0 0 40px 3px rgba(199, 169, 108, var(--void-glow-alpha, 0.14));
             transform: translateY(16px) scale(0.98);
             opacity: 0;
             transition: transform 0.36s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.36s ease;
@@ -2306,9 +2341,9 @@
             width: min(980px, 100%);
             max-height: min(90vh, 900px);
             overflow: auto;
-            border: 1px solid rgba(199, 169, 108, 0.56);
+            border: 1px solid rgba(199, 169, 108, var(--void-border-alpha, 0.42));
             background: linear-gradient(165deg, rgba(12, 12, 12, 0.98), rgba(5, 5, 5, 0.98));
-            box-shadow: 0 28px 64px rgba(0, 0, 0, 0.62);
+            box-shadow: 0 28px 64px rgba(0, 0, 0, 0.62), 0 0 48px 4px rgba(199, 169, 108, var(--void-glow-alpha, 0.14));
             transform: translateY(16px) scale(0.985);
             opacity: 0;
             transition: transform 0.42s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.42s ease;
@@ -2475,9 +2510,9 @@
         .gallery-preview-panel {
             position: relative;
             width: min(420px, 100%);
-            border: 1px solid rgba(199, 169, 108, 0.42);
+            border: 1px solid rgba(199, 169, 108, var(--void-border-alpha, 0.42));
             background: linear-gradient(150deg, rgba(12, 12, 12, 0.98), rgba(3, 3, 3, 0.98));
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 46px 4px rgba(199, 169, 108, var(--void-glow-alpha, 0.14));
             transform: translateY(18px) scale(0.97);
             opacity: 0;
             transition: transform 0.42s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.42s ease;
@@ -2693,10 +2728,11 @@
             right: 1.25rem;
             bottom: 5.3rem;
             width: min(360px, calc(100vw - 2rem));
-            border: 1px solid var(--void-border);
+            border: 1px solid rgba(199, 169, 108, var(--void-border-alpha, 0.42));
             background: rgba(6, 6, 6, 0.96);
             color: var(--void-white);
             padding: 1rem;
+            box-shadow: 0 0 40px 3px rgba(199, 169, 108, var(--void-glow-alpha, 0.14));
             z-index: 1200;
             transform: translateY(18px) scale(0.92) rotateX(8deg);
             transform-origin: bottom right;
