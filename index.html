@@ -2319,9 +2319,17 @@
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(168px, 216px));
+            grid-template-columns: repeat(auto-fit, minmax(168px, 216px));
             justify-content: center;
             gap: 2.75rem 1.6rem;
+        }
+
+        /* Wide screens fit all five pieces on one row — distribute them evenly,
+           equidistant from each other and from both edges. */
+        @media (min-width: 1280px) {
+            .products-grid {
+                justify-content: space-evenly;
+            }
         }
 
         .product-card {
@@ -3634,7 +3642,7 @@
             }
 
             .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 200px));
+                grid-template-columns: repeat(auto-fit, minmax(150px, 200px));
                 gap: 2rem 1.2rem;
             }
 
