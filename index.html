@@ -64,6 +64,35 @@
             --void-border: rgba(199, 169, 108, 0.3);
             --void-section-bg: #000000;
             --void-section-texture: #000000;
+
+            /* ── Extended luxury system (additive; legacy tokens above stay intact) ── */
+            --void-obsidian: #050505;
+            --void-charcoal: #0c0c0d;
+            --void-graphite: #141416;
+            --void-slate: #1c1c1f;
+
+            --void-gold: #c7a96c;
+            --void-gold-soft: #d8c08a;
+            --void-gold-bright: #f2e2bd;
+            --void-gold-deep: #8f6f3d;
+            --void-gold-line: rgba(199, 169, 108, 0.32);
+            --void-gold-sheen: linear-gradient(115deg, transparent 0%, rgba(245, 232, 202, 0.06) 42%, rgba(248, 238, 212, 0.5) 50%, rgba(245, 232, 202, 0.06) 58%, transparent 100%);
+            --void-gold-gradient: linear-gradient(135deg, #e7d4a6 0%, #c7a96c 46%, #9c7c46 100%);
+            --void-platinum: #d7d9dc;
+            --void-silver-line: rgba(214, 217, 222, 0.16);
+            --void-blue-energy: rgba(120, 168, 214, 0.55);
+            --void-violet: rgba(150, 130, 190, 0.42);
+
+            --void-text: #f5f2ec;
+            --void-text-soft: rgba(245, 242, 236, 0.7);
+            --void-text-muted: rgba(245, 242, 236, 0.46);
+
+            --void-panel: linear-gradient(155deg, rgba(20, 20, 22, 0.96), rgba(6, 6, 7, 0.98));
+            --void-panel-shadow: 0 40px 120px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(245, 242, 236, 0.04), inset 0 1px 0 rgba(245, 242, 236, 0.07);
+
+            --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
         }
 
         html {
@@ -71,6 +100,33 @@
             scroll-behavior: smooth;
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(199, 169, 108, 0.5) #060606;
+        }
+
+        /* Gold selection + custom scrollbar to match the house palette */
+        ::selection {
+            background: rgba(199, 169, 108, 0.28);
+            color: #fff7e8;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #060606;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(199, 169, 108, 0.62), rgba(126, 98, 48, 0.62));
+            border: 2px solid #060606;
+            border-radius: 999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, rgba(216, 192, 138, 0.85), rgba(150, 120, 60, 0.85));
         }
 
         body {
@@ -83,7 +139,20 @@
             overflow-x: hidden;
             position: relative;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
+            font-optical-sizing: auto;
+            font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+        }
+
+        .hero-title,
+        .products-header h2,
+        .philosophy-content h2,
+        .preorder-modal-title,
+        .gallery-preview-title,
+        .story-crawl-title,
+        .story-title {
+            text-wrap: balance;
         }
 
         img,
@@ -172,12 +241,7 @@
             .size-popup,
             .size-guide-panel,
             .gallery-preview-panel,
-            .cart-popup,
-            .preorder-modal::after,
-            .size-popup::after,
-            .size-guide-panel::after,
-            .gallery-preview-panel::after,
-            .cart-popup::after {
+            .cart-popup {
                 transition: none !important;
             }
         }
@@ -402,52 +466,159 @@
             pointer-events: none;
         }
 
-        .preorder-modal::after,
-        .size-popup::after,
-        .size-guide-panel::after,
-        .gallery-preview-panel::after,
-        .cart-popup::after {
+        /* Baroque self-drawing gold frame on popup panels */
+        .void-frame {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+        }
+
+        .void-frame svg {
+            position: absolute;
+            width: clamp(58px, 24%, 96px);
+            height: auto;
+            filter: drop-shadow(0 0 4px rgba(212, 182, 120, 0.42));
+        }
+
+        .void-frame .vf-tl { top: 3px; left: 3px; }
+        .void-frame .vf-tr { top: 3px; right: 3px; transform: scaleX(-1); }
+        .void-frame .vf-br { bottom: 3px; right: 3px; transform: scale(-1, -1); }
+        .void-frame .vf-bl { bottom: 3px; left: 3px; transform: scaleY(-1); }
+
+        .void-frame .vf-draw {
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+            animation: voidFrameDraw 1s cubic-bezier(0.3, 0.6, 0.3, 1) forwards;
+        }
+
+        .void-frame .vf-rail { animation-delay: 0.12s; }
+        .void-frame .vf-curl { animation-delay: 0.5s; animation-duration: 0.85s; }
+
+        .void-frame .vf-dot {
+            opacity: 0;
+            animation: voidFrameDotIn 0.5s ease forwards;
+            animation-delay: 1.05s;
+        }
+
+        @keyframes voidFrameDraw {
+            to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes voidFrameDotIn {
+            0% { opacity: 0; }
+            60% { opacity: 1; }
+            100% { opacity: 0.92; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .void-frame .vf-draw {
+                animation: none !important;
+                stroke-dashoffset: 0;
+            }
+
+            .void-frame .vf-dot {
+                animation: none !important;
+                opacity: 0.92;
+            }
+        }
+
+        /* =================================================== */
+        /* LIVING HUD FRAME — corner brackets + traveling light */
+        /* Applied to premium panels via <span class="panel-frame"> */
+        /* =================================================== */
+        @property --void-frame-angle {
+            syntax: '<angle>';
+            inherits: false;
+            initial-value: 0deg;
+        }
+
+        .panel-frame {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.6s ease 0.18s;
+        }
+
+        /* Traveling metallic light sweeping around the border ring */
+        .panel-frame::before {
             content: '';
             position: absolute;
             inset: 0;
-            z-index: 5;
-            pointer-events: none;
-            --void-corner-size: 20px;
-            --void-corner-thick: 2px;
-            --void-corner-color: rgba(212, 182, 120, 0.92);
-            background-image:
-                linear-gradient(var(--void-corner-color), var(--void-corner-color)),
-                linear-gradient(var(--void-corner-color), var(--void-corner-color)),
-                linear-gradient(var(--void-corner-color), var(--void-corner-color)),
-                linear-gradient(var(--void-corner-color), var(--void-corner-color)),
-                linear-gradient(var(--void-corner-color), var(--void-corner-color)),
-                linear-gradient(var(--void-corner-color), var(--void-corner-color)),
-                linear-gradient(var(--void-corner-color), var(--void-corner-color)),
-                linear-gradient(var(--void-corner-color), var(--void-corner-color));
-            background-repeat: no-repeat;
-            background-size:
-                var(--void-corner-thick) var(--void-corner-size), var(--void-corner-size) var(--void-corner-thick),
-                var(--void-corner-thick) var(--void-corner-size), var(--void-corner-size) var(--void-corner-thick),
-                var(--void-corner-thick) var(--void-corner-size), var(--void-corner-size) var(--void-corner-thick),
-                var(--void-corner-thick) var(--void-corner-size), var(--void-corner-size) var(--void-corner-thick);
-            background-position:
-                top left, top left,
-                top right, top right,
-                bottom left, bottom left,
-                bottom right, bottom right;
-            opacity: 0;
-            transform: scale(0.8);
-            transition: opacity 0.28s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 1.4px;
+            border-radius: inherit;
+            background: conic-gradient(from var(--void-frame-angle),
+                transparent 0deg,
+                transparent 62deg,
+                rgba(248, 238, 212, 0) 76deg,
+                rgba(249, 240, 216, 0.92) 90deg,
+                rgba(248, 238, 212, 0) 104deg,
+                transparent 118deg,
+                transparent 242deg,
+                rgba(230, 214, 176, 0) 256deg,
+                rgba(232, 216, 178, 0.5) 270deg,
+                rgba(230, 214, 176, 0) 284deg,
+                transparent 298deg,
+                transparent 360deg);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
         }
 
-        .preorder-modal-backdrop.active .preorder-modal::after,
-        .size-popup-backdrop.open .size-popup::after,
-        .size-guide-overlay.open .size-guide-panel::after,
-        .gallery-preview-backdrop.open .gallery-preview-panel::after,
-        .cart-popup.open::after {
+        /* Four HUD corner brackets */
+        .panel-frame::after {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            --vf-t: 1px;   /* bracket line thickness */
+            --vf-l: 20px;  /* bracket arm length */
+            background:
+                linear-gradient(var(--void-gold-soft), var(--void-gold-soft)) top left / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft), var(--void-gold-soft)) top left / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft), var(--void-gold-soft)) top right / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft), var(--void-gold-soft)) top right / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft), var(--void-gold-soft)) bottom left / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft), var(--void-gold-soft)) bottom left / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft), var(--void-gold-soft)) bottom right / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft), var(--void-gold-soft)) bottom right / var(--vf-t) var(--vf-l) no-repeat;
+            filter: drop-shadow(0 0 3px rgba(199, 169, 108, 0.5));
+            opacity: 0.92;
+        }
+
+        /* Reveal + orbit only while the owning panel is open */
+        .preorder-modal-backdrop.active .preorder-modal .panel-frame,
+        .size-popup-backdrop.open .size-popup .panel-frame,
+        .size-guide-overlay.open .size-guide-panel .panel-frame,
+        .gallery-preview-backdrop.open .gallery-preview-panel .panel-frame,
+        .cart-popup.open .panel-frame {
             opacity: 1;
-            transform: scale(1);
-            transition-delay: 0.1s, 0.1s;
+        }
+
+        .preorder-modal-backdrop.active .preorder-modal .panel-frame::before,
+        .size-popup-backdrop.open .size-popup .panel-frame::before,
+        .size-guide-overlay.open .size-guide-panel .panel-frame::before,
+        .gallery-preview-backdrop.open .gallery-preview-panel .panel-frame::before,
+        .cart-popup.open .panel-frame::before {
+            animation: voidFrameOrbit 5.5s linear infinite;
+        }
+
+        @keyframes voidFrameOrbit {
+            to { --void-frame-angle: 360deg; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .panel-frame {
+                transition: none !important;
+            }
+
+            .panel-frame::before {
+                animation: none !important;
+                opacity: 0.4;
+            }
         }
 
         .preorder-modal-close {
@@ -748,9 +919,12 @@
         }
 
         .preorder-submit {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
             margin-top: 0.45rem;
             border: 1px solid rgba(199, 169, 108, 0.64);
-            background: linear-gradient(135deg, rgba(199, 169, 108, 0.98), rgba(126, 98, 48, 0.98));
+            background: var(--void-gold-gradient);
             color: #080808;
             padding: 1rem 1.2rem;
             font-size: 0.78rem;
@@ -758,13 +932,30 @@
             letter-spacing: 0.18em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+            box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.4);
+            transition: transform 0.3s var(--ease-lux), box-shadow 0.3s var(--ease-lux), filter 0.3s var(--ease-lux);
+        }
+
+        .preorder-submit::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            z-index: -1;
+            background: var(--void-gold-sheen);
+            transform: translateX(-130%) skewX(-12deg);
+            transition: transform 0.9s var(--ease-lux);
+            pointer-events: none;
+        }
+
+        .preorder-submit:hover::after,
+        .preorder-submit:focus-visible::after {
+            transform: translateX(130%) skewX(-12deg);
         }
 
         .preorder-submit:hover {
             transform: translateY(-2px);
-            filter: brightness(1.06);
-            box-shadow: 0 14px 34px rgba(199, 169, 108, 0.18);
+            filter: brightness(1.05);
+            box-shadow: 0 16px 38px rgba(199, 169, 108, 0.22);
         }
 
         .preorder-response {
@@ -1257,8 +1448,10 @@
         .nav.scrolled {
             background: rgba(5, 5, 5, 0.94);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             padding: 1.5rem 4rem;
             border-bottom-color: var(--void-border);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(199, 169, 108, 0.08);
         }
 
         .nav-left {
@@ -1300,7 +1493,7 @@
         }
 
         .logo:hover {
-            text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            text-shadow: 0 0 24px rgba(245, 232, 202, 0.42), 0 0 46px rgba(199, 169, 108, 0.24);
         }
 
         .nav-left a,
@@ -1430,8 +1623,15 @@
             left: 0;
             width: 0;
             height: 1px;
-            background: var(--void-white);
-            transition: width 0.3s ease;
+            background: linear-gradient(90deg, var(--void-gold), var(--void-gold-soft));
+            box-shadow: 0 0 8px rgba(199, 169, 108, 0.45);
+            transition: width 0.42s var(--ease-lux);
+        }
+
+        .nav-left a:hover,
+        .nav-right a:hover,
+        .nav-preorder-trigger:hover {
+            color: #fdf3df;
         }
 
         .nav-left a:hover::after,
@@ -1516,28 +1716,56 @@
             letter-spacing: 0.28em;
             text-transform: uppercase;
             font-weight: 600;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: color 0.45s var(--ease-lux), border-color 0.45s var(--ease-lux), transform 0.55s var(--ease-lux), box-shadow 0.55s var(--ease-lux);
             position: relative;
             overflow: hidden;
+            isolation: isolate;
         }
 
         .cta-button::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: var(--void-accent);
+            background: var(--void-gold-gradient);
             opacity: 0;
             transition: opacity 0.4s ease;
             z-index: -1;
         }
 
-        .cta-button:hover {
-            color: #090909;
-            border-color: var(--void-accent);
+        /* Diagonal light sweep on hover */
+        .cta-button::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            z-index: -1;
+            background: var(--void-gold-sheen);
+            transform: translateX(-130%) skewX(-12deg);
+            opacity: 0;
+            transition: transform 0.9s var(--ease-lux), opacity 0.3s ease;
+            pointer-events: none;
         }
 
-        .cta-button:hover::before {
+        .cta-button:hover,
+        .cta-button:focus-visible {
+            color: #090909;
+            border-color: var(--void-gold-soft);
+            transform: translateY(-2px);
+            box-shadow: 0 16px 42px rgba(199, 169, 108, 0.22), 0 0 0 1px rgba(199, 169, 108, 0.35);
+        }
+
+        .cta-button:hover::before,
+        .cta-button:focus-visible::before {
             opacity: 1;
+        }
+
+        .cta-button:hover::after,
+        .cta-button:focus-visible::after {
+            transform: translateX(130%) skewX(-12deg);
+            opacity: 1;
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
         }
 
         .hero-actions {
@@ -1545,6 +1773,46 @@
             flex-direction: column;
             align-items: center;
             gap: 0.68rem;
+        }
+
+        /* ── Cinematic hero reveal after passing the entry gate ── */
+        body.void-entered .hero-title {
+            animation: voidHeroRise 1.2s var(--ease-lux) both;
+            animation-delay: 0.14s;
+        }
+
+        body.void-entered .hero-subtitle {
+            animation: voidHeroRise 1.2s var(--ease-lux) both;
+            animation-delay: 0.36s;
+        }
+
+        body.void-entered .hero-actions {
+            animation: voidHeroRise 1.2s var(--ease-lux) both;
+            animation-delay: 0.56s;
+        }
+
+        @keyframes voidHeroRise {
+            0% {
+                opacity: 0;
+                transform: translateY(28px) scale(0.986);
+                filter: blur(7px);
+            }
+            60% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body.void-entered .hero-title,
+            body.void-entered .hero-subtitle,
+            body.void-entered .hero-actions {
+                animation: none !important;
+            }
         }
 
         .story-trigger-button {
@@ -1846,13 +2114,27 @@
         }
 
         .section-eyebrow {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.85rem;
             margin-bottom: 1.25rem;
             font-size: 0.72rem;
             letter-spacing: 0.28em;
             text-transform: uppercase;
             color: var(--void-accent);
             font-weight: 600;
+        }
+
+        .section-eyebrow::before,
+        .section-eyebrow::after {
+            content: '';
+            width: clamp(1.4rem, 4vw, 2.6rem);
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.7));
+        }
+
+        .section-eyebrow::after {
+            background: linear-gradient(90deg, rgba(199, 169, 108, 0.7), transparent);
         }
 
         .philosophy-content h2 {
@@ -1929,6 +2211,7 @@
         /* PRODUCTS - BLACK BACKGROUND        */
         /* =================================== */
         .products {
+            position: relative;
             padding: 8rem 4rem;
             width: 100%;
             max-width: none;
@@ -1936,7 +2219,19 @@
             background: #000;
         }
 
+        /* Faint ambient halo behind the collection header — barely-there depth */
+        .products::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(90% 42% at 50% 0%, rgba(199, 169, 108, 0.05), transparent 62%);
+        }
+
         .products-inner {
+            position: relative;
+            z-index: 1;
             max-width: 1600px;
             margin: 0 auto;
         }
@@ -1956,6 +2251,9 @@
 
         .size-guide-trigger,
         .collection-preorder-trigger {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
             border: 1px solid rgba(199, 169, 108, 0.52);
             background: rgba(10, 10, 10, 0.88);
             color: #f6e9cc;
@@ -1967,22 +2265,48 @@
             letter-spacing: 0.2em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+            transition: border-color 0.28s var(--ease-lux), background 0.28s var(--ease-lux), color 0.28s var(--ease-lux), transform 0.4s var(--ease-lux), box-shadow 0.4s var(--ease-lux);
         }
 
         .collection-preorder-trigger {
-            background: linear-gradient(135deg, rgba(199, 169, 108, 0.98), rgba(126, 98, 48, 0.98));
+            background: var(--void-gold-gradient);
             color: #080808;
+            box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.35);
+        }
+
+        /* Light sweep for the primary gold trigger */
+        .collection-preorder-trigger::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            z-index: -1;
+            background: var(--void-gold-sheen);
+            transform: translateX(-130%) skewX(-12deg);
+            transition: transform 0.9s var(--ease-lux);
+            pointer-events: none;
+        }
+
+        .collection-preorder-trigger:hover::after,
+        .collection-preorder-trigger:focus-visible::after {
+            transform: translateX(130%) skewX(-12deg);
         }
 
         .size-guide-trigger:hover,
-        .size-guide-trigger:focus-visible,
-        .collection-preorder-trigger:hover,
-        .collection-preorder-trigger:focus-visible {
+        .size-guide-trigger:focus-visible {
             border-color: rgba(199, 169, 108, 0.92);
             background: rgba(27, 21, 12, 0.92);
             color: #fdf2da;
             transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .collection-preorder-trigger:hover,
+        .collection-preorder-trigger:focus-visible {
+            border-color: var(--void-gold-soft);
+            color: #080808;
+            transform: translateY(-2px);
+            box-shadow: 0 14px 34px rgba(199, 169, 108, 0.28);
+            filter: brightness(1.04);
         }
 
         .products-header h2 {
@@ -2004,13 +2328,35 @@
             position: relative;
             padding: 0.7rem;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            background: linear-gradient(180deg, rgba(18, 18, 18, 0.82), rgba(8, 8, 8, 0.95));
-            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s ease;
+            background: linear-gradient(180deg, rgba(20, 20, 22, 0.85), rgba(8, 8, 8, 0.96));
+            box-shadow: inset 0 1px 0 rgba(245, 242, 236, 0.03), 0 10px 28px rgba(0, 0, 0, 0.32);
+            transition: transform 0.6s var(--ease-lux), border-color 0.6s var(--ease-lux), box-shadow 0.6s var(--ease-lux);
+        }
+
+        /* Gold hairline that ignites along the top edge on hover */
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 12%;
+            right: 12%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(216, 192, 138, 0.85), transparent);
+            opacity: 0;
+            transition: opacity 0.5s var(--ease-lux), left 0.6s var(--ease-lux), right 0.6s var(--ease-lux);
+            pointer-events: none;
         }
 
         .product-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--void-border);
+            transform: translateY(-6px);
+            border-color: rgba(199, 169, 108, 0.42);
+            box-shadow: inset 0 1px 0 rgba(245, 242, 236, 0.05), 0 26px 56px rgba(0, 0, 0, 0.55), 0 0 34px rgba(199, 169, 108, 0.08);
+        }
+
+        .product-card:hover::before {
+            opacity: 1;
+            left: 0;
+            right: 0;
         }
 
         .product-image {
@@ -2023,7 +2369,13 @@
             overflow: hidden;
             cursor: pointer;
             border: 1px solid rgba(199, 169, 108, 0.2);
+            box-shadow: inset 0 0 58px rgba(0, 0, 0, 0.62), inset 0 0 0 1px rgba(199, 169, 108, 0.08);
             isolation: isolate;
+            transition: box-shadow 0.6s var(--ease-lux);
+        }
+
+        .product-card:hover .product-image {
+            box-shadow: inset 0 0 52px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(199, 169, 108, 0.24);
         }
 
         .product-image::before {
@@ -2035,6 +2387,22 @@
             transform: scale(0.94);
             transition: transform 0.7s ease, opacity 0.7s ease;
             z-index: 0;
+        }
+
+        /* Diagonal light sweep across the product frame on hover */
+        .product-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            background: linear-gradient(115deg, transparent 42%, rgba(245, 232, 202, 0.16) 50%, transparent 58%);
+            transform: translateX(-110%);
+            transition: transform 1s var(--ease-lux);
+            pointer-events: none;
+        }
+
+        .product-card:hover .product-image::after {
+            transform: translateX(110%);
         }
 
         .product-logo-mark {
@@ -2732,15 +3100,22 @@
             height: 82px;
             border-radius: 50%;
             border: 1px solid var(--void-border);
-            background: rgba(8, 8, 8, 0.92);
+            background: radial-gradient(circle at 50% 32%, rgba(26, 24, 20, 0.96), rgba(6, 6, 6, 0.95));
             color: var(--void-white);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 1200;
-            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(245, 242, 236, 0.05);
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: border-color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux);
+        }
+
+        .cart-fab:hover {
+            border-color: rgba(199, 169, 108, 0.6);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 0 26px rgba(199, 169, 108, 0.18), inset 0 1px 0 rgba(245, 242, 236, 0.07);
         }
 
         .cart-fab.opened {
@@ -3027,19 +3402,22 @@
             text-align: center;
             text-decoration: none;
             padding: 0.82rem 1rem;
-            background: var(--void-accent);
+            background: var(--void-gold-gradient);
             color: #0a0a0a;
             font-size: 0.72rem;
             font-weight: 700;
             letter-spacing: 0.16em;
             text-transform: uppercase;
             border: 1px solid var(--void-accent);
-            transition: background 0.25s ease, color 0.25s ease;
+            box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.35);
+            transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
         }
 
         .cart-checkout:hover {
             background: transparent;
-            color: var(--void-accent);
+            color: var(--void-gold-soft);
+            box-shadow: 0 0 22px rgba(199, 169, 108, 0.18);
+            filter: brightness(1.02);
         }
 
         /* Footer */
@@ -3154,7 +3532,7 @@
 
         .newsletter-button {
             padding: 0.8rem 1.5rem;
-            background: var(--void-accent);
+            background: var(--void-gold-gradient);
             border: 1px solid var(--void-accent);
             color: #090909;
             font-family: 'Manrope', sans-serif;
@@ -3163,12 +3541,15 @@
             letter-spacing: 0.14em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.3s ease;
+            box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.35);
+            transition: background 0.35s var(--ease-lux), color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), filter 0.35s var(--ease-lux);
         }
 
         .newsletter-button:hover {
             background: transparent;
-            color: var(--void-accent);
+            color: var(--void-gold-soft);
+            box-shadow: 0 0 20px rgba(199, 169, 108, 0.16);
+            filter: brightness(1.02);
         }
 
         .newsletter-response {
@@ -3767,6 +4148,15 @@
         </button>
     </div>
 
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <defs>
+            <linearGradient id="voidGoldGradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f4e3b8"/>
+                <stop offset="0.5" stop-color="#d4b678"/>
+                <stop offset="1" stop-color="#9a7b42"/>
+            </linearGradient>
+        </defs>
+    </svg>
     <canvas class="edge-ambience-canvas" id="edgeAmbienceCanvas" aria-hidden="true"></canvas>
     <div class="scroll-transit-veil" id="scrollTransitVeil" aria-hidden="true"></div>
     <div class="scroll-letterbox top" id="scrollLetterboxTop" aria-hidden="true"></div>
@@ -3931,6 +4321,7 @@
 
     <div class="size-popup-backdrop" id="sizePopupBackdrop" aria-hidden="true">
         <aside class="size-popup" role="dialog" aria-modal="true" aria-labelledby="sizePopupTitle">
+            <span class="panel-frame" aria-hidden="true"></span>
             <div class="size-popup-header">
                 <div>
                     <h3 class="size-popup-title" id="sizePopupTitle" data-i18n="selectSize">Select Size</h3>
@@ -3960,6 +4351,7 @@
 
     <div class="size-guide-overlay" id="sizeGuideOverlay" aria-hidden="true">
         <section class="size-guide-panel" role="dialog" aria-modal="true" aria-labelledby="sizeGuideTitle">
+            <span class="panel-frame" aria-hidden="true"></span>
             <div class="size-guide-header">
                 <div>
                     <h3 class="size-guide-title" id="sizeGuideTitle" data-i18n-html="sizeGuideTitle">VOID<sup class="brand-copyright">©</sup> Size Guide</h3>
@@ -4035,6 +4427,7 @@
 
     <div class="gallery-preview-backdrop" id="galleryPreviewBackdrop" aria-hidden="true">
         <section class="gallery-preview-panel" role="dialog" aria-modal="true" aria-labelledby="galleryPreviewTitle">
+            <span class="panel-frame" aria-hidden="true"></span>
             <button type="button" class="preorder-modal-close" id="galleryPreviewClose" aria-label="Close gallery preview" data-i18n-aria-label="closeGalleryPreview">✕</button>
             <div class="gallery-preview-stage">
                 <span class="gallery-preview-glow" aria-hidden="true"></span>
@@ -4051,6 +4444,7 @@
 
     <div class="preorder-modal-backdrop" id="preorderModal" aria-hidden="true">
         <section class="preorder-modal" role="dialog" aria-modal="true" aria-labelledby="preorderModalTitle">
+            <span class="panel-frame" aria-hidden="true"></span>
             <button type="button" class="preorder-modal-close" id="preorderModalClose" aria-label="Close pre-order signup" data-i18n-aria-label="closePreorderSignup">✕</button>
             <div class="preorder-modal-content">
                 <p class="preorder-modal-kicker" data-i18n="privateAccess">Private Access</p>
@@ -4112,6 +4506,7 @@
     </button>
 
     <aside class="cart-popup" id="cartPopup" aria-live="polite">
+        <span class="panel-frame" aria-hidden="true"></span>
         <div class="cart-popup-header">
             <h3 class="cart-popup-title" data-i18n="yourCart">Your Cart</h3>
             <button class="cart-close" id="cartClose" type="button" aria-label="Close cart" data-i18n-aria-label="closeCart">✕</button>
@@ -4379,6 +4774,7 @@
 
             entryGate.classList.add('hidden');
             document.body.classList.remove('gate-open');
+            document.body.classList.add('void-entered');
 
             window.setTimeout(() => {
                 entryGate.style.display = 'none';
@@ -5623,6 +6019,39 @@
 
             // Let existing particles finish dying naturally; just stop spawning.
             ambienceFadingOut = true;
+        }
+
+        // Baroque self-drawing gold frame: ornamental corner flourishes whose
+        // strokes draw themselves in on every popup open.
+        const VOID_FRAME_CORNER_SVG = `
+            <g fill="none" stroke="url(#voidGoldGradient)" stroke-width="2" stroke-linecap="round">
+                <path class="vf-draw vf-rail" pathLength="1" d="M8 8 C 34 8 56 8 76 8 C 93 8 100 14 100 22 C 100 29.5 93.5 32.5 89.5 29.5 C 86 26.8 87.5 20.5 92.5 21"/>
+                <path class="vf-draw vf-rail" pathLength="1" d="M8 8 C 8 34 8 56 8 76 C 8 93 14 100 22 100 C 29.5 100 32.5 93.5 29.5 89.5 C 26.8 86 20.5 87.5 21 92.5"/>
+                <path class="vf-draw vf-curl" pathLength="1" d="M13 13 C 29 17 41 25 47 41 C 50 49 46 54 41 52 C 37 50.3 38 44 43 44.6"/>
+                <path class="vf-draw vf-curl" pathLength="1" d="M13 13 C 17 29 25 41 41 47 C 49 50 54 46 52 41 C 50.3 37 44 38 44.6 43"/>
+            </g>
+            <g fill="url(#voidGoldGradient)">
+                <circle class="vf-dot" cx="58" cy="16" r="1.8"/>
+                <circle class="vf-dot" cx="16" cy="58" r="1.8"/>
+                <circle class="vf-dot" cx="56" cy="56" r="2.4"/>
+            </g>`;
+
+        function renderBaroqueFrame(panelElement) {
+            if (!panelElement) return;
+
+            const existingFrame = panelElement.querySelector(':scope > .void-frame');
+            if (existingFrame) {
+                existingFrame.remove();
+            }
+
+            const frame = document.createElement('div');
+            frame.className = 'void-frame';
+            frame.setAttribute('aria-hidden', 'true');
+            frame.innerHTML = ['vf-tl', 'vf-tr', 'vf-br', 'vf-bl']
+                .map((cornerClass) => `<svg class="${cornerClass}" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">${VOID_FRAME_CORNER_SVG}</svg>`)
+                .join('');
+
+            panelElement.appendChild(frame);
         }
 
         function triggerCartFlyEffect(buttonElement) {
