@@ -2476,25 +2476,89 @@
             bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
             transform: translateX(-50%);
             z-index: 2;
-            border: 1px solid rgba(199, 169, 108, 0.7);
-            background: rgba(5, 5, 5, 0.82);
+            isolation: isolate;
+            overflow: hidden;
+            border-radius: 3px;
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            background: linear-gradient(180deg, rgba(30, 24, 12, 0.55), rgba(6, 6, 6, 0.84));
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
             color: #f3e4c4;
-            padding: 0.72rem 1.4rem;
+            padding: 0.78rem 1.5rem;
+            font-family: 'Manrope', sans-serif;
             font-size: 0.62rem;
             font-weight: 600;
-            letter-spacing: 0.22em;
+            letter-spacing: 0.24em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: transform 0.28s ease, border-color 0.28s ease, background 0.28s ease, color 0.28s ease;
-            animation: storyExitPulse 2.6s ease-in-out infinite;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), 0 0 30px rgba(199, 169, 108, 0.16), inset 0 1px 0 rgba(245, 242, 236, 0.12);
+            transition: transform 0.4s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)), border-color 0.3s ease, background 0.3s ease, color 0.3s ease, box-shadow 0.4s ease;
         }
 
         .story-overlay-exit:hover,
         .story-overlay-exit:focus-visible {
-            border-color: rgba(199, 169, 108, 0.98);
-            background: rgba(30, 23, 10, 0.92);
-            color: #f8eacc;
-            transform: translateX(-50%) translateY(-2px);
+            border-color: rgba(226, 199, 138, 0.9);
+            background: linear-gradient(180deg, rgba(58, 48, 26, 0.7), rgba(10, 9, 6, 0.86));
+            color: #fbf1d9;
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 20px 46px rgba(0, 0, 0, 0.6), 0 0 54px rgba(199, 169, 108, 0.32), inset 0 1px 0 rgba(245, 242, 236, 0.2);
+        }
+
+        .story-overlay-exit:active {
+            transform: translateX(-50%) translateY(-1px) scale(0.986);
+        }
+
+        /* Travelling gold light ("lightning") ring around the button. */
+        .story-overlay-exit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1.4px;
+            z-index: 2;
+            pointer-events: none;
+            background: conic-gradient(from var(--void-frame-angle),
+                transparent 0deg,
+                transparent 68deg,
+                rgba(249, 240, 216, 0) 80deg,
+                rgba(253, 245, 224, 0.96) 95deg,
+                rgba(249, 240, 216, 0) 110deg,
+                transparent 122deg,
+                transparent 360deg);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+        }
+
+        .story-overlay.open .story-overlay-exit::after {
+            animation: voidFrameOrbit 4.2s linear infinite;
+        }
+
+        /* HUD corner brackets — the "cool frame". */
+        .story-overlay-exit::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            z-index: 2;
+            pointer-events: none;
+            --vf-t: 1px;
+            --vf-l: 13px;
+            background:
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top left / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top left / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top right / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top right / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom left / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom left / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom right / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom right / var(--vf-t) var(--vf-l) no-repeat;
+            opacity: 0.82;
+            filter: drop-shadow(0 0 3px rgba(199, 169, 108, 0.5));
+        }
+
+        html.reduce-motion .story-overlay-exit::after {
+            animation: none !important;
         }
 
         .story-overlay-stage {
