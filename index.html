@@ -1809,46 +1809,166 @@
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 0.2rem;
+            gap: 0.6rem;
             margin: 0;
             padding: 0;
         }
 
+        /* Framed menu buttons that each carry a travelling gold light ring. */
+        .mobile-menu-links a,
+        .mobile-menu-preorder {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            border-radius: 3px;
+        }
+
         .mobile-menu-links a {
             display: block;
-            padding: 0.85rem 0;
+            padding: 0.82rem 1.05rem;
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
-            letter-spacing: 0.12em;
+            font-size: 1.32rem;
+            letter-spacing: 0.14em;
             color: var(--void-white, #f5f2ec);
             text-decoration: none;
-            border-bottom: 1px solid rgba(199, 169, 108, 0.12);
-            transition: color 0.3s ease, padding-left 0.3s ease;
+            border: 1px solid rgba(199, 169, 108, 0.2);
+            background: linear-gradient(180deg, rgba(199, 169, 108, 0.05), rgba(255, 255, 255, 0.012));
+            transition: color 0.3s ease, background 0.3s ease, transform 0.3s var(--ease-lux, ease), border-color 0.3s ease;
         }
 
         .mobile-menu-links a:hover,
         .mobile-menu-links a:focus-visible {
             color: var(--void-gold-soft, #d4b678);
-            padding-left: 0.35rem;
+            border-color: rgba(199, 169, 108, 0.45);
+            background: linear-gradient(180deg, rgba(199, 169, 108, 0.12), rgba(199, 169, 108, 0.03));
+            transform: translateX(4px);
         }
 
-        .mobile-menu-preorder {
-            margin-top: 0.4rem;
-            padding: 0.9rem 1rem;
-            background: linear-gradient(145deg, rgba(199, 169, 108, 0.16), rgba(199, 169, 108, 0.06));
-            border: 1px solid rgba(199, 169, 108, 0.42);
-            color: var(--void-white, #f5f2ec);
-            font-size: 0.72rem;
-            letter-spacing: 0.22em;
+        /* Travelling gold "lightning" sweeping around each button's border. */
+        .mobile-menu-links a::after,
+        .mobile-menu-preorder::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1.4px;
+            z-index: 2;
+            pointer-events: none;
+            background: conic-gradient(from var(--void-frame-angle),
+                transparent 0deg,
+                transparent 70deg,
+                rgba(249, 240, 216, 0) 82deg,
+                rgba(253, 245, 224, 0.96) 97deg,
+                rgba(249, 240, 216, 0) 112deg,
+                transparent 124deg,
+                transparent 360deg);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.45s ease;
+        }
+
+        body.mobile-menu-open .mobile-menu-links a::after,
+        body.mobile-menu-open .mobile-menu-preorder::after {
+            opacity: 1;
+            animation: voidFrameOrbit 4.4s linear infinite;
+        }
+
+        /* Offset each button's light so it ripples around the stack. */
+        body.mobile-menu-open .mobile-menu-links li:nth-child(2) a::after { animation-delay: -0.9s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(3) a::after { animation-delay: -1.8s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(4) a::after { animation-delay: -2.7s; }
+        body.mobile-menu-open .mobile-menu-preorder::after { animation-delay: -3.4s; }
+
+        /* Premium framed pre-order CTA — sits apart from the links by design.
+           Scoped under .mobile-menu to win over the .nav-preorder-trigger reset. */
+        .mobile-menu .mobile-menu-preorder {
+            margin-top: 1.15rem;
+            padding: 1.05rem 1.1rem;
+            background: linear-gradient(145deg, rgba(199, 169, 108, 0.22), rgba(199, 169, 108, 0.05));
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            color: #f7efe0;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.74rem;
+            font-weight: 600;
+            letter-spacing: 0.26em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.3s ease, border-color 0.3s ease;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 30px rgba(199, 169, 108, 0.14), inset 0 1px 0 rgba(245, 242, 236, 0.14);
+            transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s var(--ease-lux, ease), box-shadow 0.3s ease;
         }
 
-        .mobile-menu-preorder:hover,
-        .mobile-menu-preorder:focus-visible {
-            background: linear-gradient(145deg, rgba(199, 169, 108, 0.28), rgba(199, 169, 108, 0.12));
-            border-color: rgba(199, 169, 108, 0.7);
+        .mobile-menu .mobile-menu-preorder:hover,
+        .mobile-menu .mobile-menu-preorder:focus-visible {
+            background: linear-gradient(145deg, rgba(199, 169, 108, 0.34), rgba(199, 169, 108, 0.1));
+            border-color: rgba(226, 199, 138, 0.85);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55), 0 0 48px rgba(199, 169, 108, 0.3), inset 0 1px 0 rgba(245, 242, 236, 0.2);
+        }
+
+        /* HUD corner brackets — the "cool frame" on the pre-order button. */
+        .mobile-menu-preorder::before {
+            content: '';
+            position: absolute;
+            inset: 5px;
+            z-index: 2;
+            pointer-events: none;
+            --vf-t: 1px;
+            --vf-l: 15px;
+            background:
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top left / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top left / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top right / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top right / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom left / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom left / var(--vf-t) var(--vf-l) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom right / var(--vf-l) var(--vf-t) no-repeat,
+                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom right / var(--vf-t) var(--vf-l) no-repeat;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 3px rgba(199, 169, 108, 0.5));
+        }
+
+        /* Staggered reveal as the drawer slides in. */
+        @keyframes mobileMenuItemIn {
+            from { opacity: 0; transform: translateX(22px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes mobileMenuFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        body.mobile-menu-open .mobile-menu-links li {
+            animation: mobileMenuItemIn 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        body.mobile-menu-open .mobile-menu-links li:nth-child(1) { animation-delay: 0.1s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(2) { animation-delay: 0.17s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(3) { animation-delay: 0.24s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(4) { animation-delay: 0.31s; }
+
+        body.mobile-menu-open .mobile-menu-langs {
+            animation: mobileMenuItemIn 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.46s both;
+        }
+
+        /* Opacity-only so the hover lift on the CTA stays intact. */
+        body.mobile-menu-open .mobile-menu-preorder {
+            animation: mobileMenuFadeIn 0.5s ease 0.4s both;
+        }
+
+        html.reduce-motion .mobile-menu-links a::after,
+        html.reduce-motion .mobile-menu-preorder::after {
+            animation: none !important;
+            opacity: 0 !important;
+        }
+
+        html.reduce-motion .mobile-menu-links li,
+        html.reduce-motion .mobile-menu-langs,
+        html.reduce-motion .mobile-menu-preorder {
+            animation: none !important;
         }
 
         .mobile-menu-langs {
