@@ -209,23 +209,13 @@
             initial-value: 0.42;
         }
 
+        /* Glow halo disabled — kept at 0 so the outer-glow box-shadow terms
+           resolve to fully transparent. The traveling-light edge frame
+           (.panel-frame) and static gold border are preserved. */
         @property --void-glow-alpha {
             syntax: '<number>';
             inherits: false;
-            initial-value: 0.14;
-        }
-
-        @keyframes voidEdgePulse {
-            0%, 100% { --void-border-alpha: 0.4; --void-glow-alpha: 0.12; }
-            50% { --void-border-alpha: 0.95; --void-glow-alpha: 0.5; }
-        }
-
-        .preorder-modal-backdrop.active .preorder-modal,
-        .size-popup-backdrop.open .size-popup,
-        .size-guide-overlay.open .size-guide-panel,
-        .gallery-preview-backdrop.open .gallery-preview-panel,
-        .cart-popup.open {
-            animation: voidEdgePulse 3.4s ease-in-out infinite;
+            initial-value: 0;
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -5217,6 +5207,20 @@
                 : 1 - Math.pow(-2 * progress + 2, 3) / 2;
         }
 
+        // Cinematic camera easing: gentle in, a touch of acceleration mid-pan,
+        // then a long elegant deceleration into the destination.
+        function easeCinematic(progress) {
+            return progress < 0.5
+                ? 8 * progress * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 4) / 2;
+        }
+
+        // Keys that signal the user wants to take over scrolling.
+        const MANUAL_SCROLL_KEYS = new Set([
+            ' ', 'Spacebar', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+            'PageUp', 'PageDown', 'Home', 'End'
+        ]);
+
         function triggerArrivalGlow(target) {
             if (!target) return;
 
@@ -5242,6 +5246,9 @@
             });
         }
 
+        // Removes the listeners of whichever transit is currently in flight.
+        let cancelActiveTransitListeners = null;
+
         function smoothScrollToTarget(target) {
             if (!target) return;
 
@@ -5258,11 +5265,25 @@
                 return;
             }
 
+            // Take over from any transit already running (stop its listeners;
+            // its animation frame stops on the token check below).
+            if (cancelActiveTransitListeners) {
+                cancelActiveTransitListeners();
+                cancelActiveTransitListeners = null;
+            }
+
             const thisTransit = ++scrollTransitToken;
-            const duration = Math.min(2600, Math.max(1200, Math.abs(distance) * 0.85));
-            const barTransitionMs = Math.max(340, duration * 0.32);
+            // Slower, cinematic pacing that scales gracefully with distance.
+            const duration = Math.min(2700, Math.max(1400, Math.abs(distance) * 0.95));
+            const barTransitionMs = Math.max(360, duration * 0.3);
             const startTime = performance.now();
             let barsHaveOpened = false;
+            let ended = false;
+
+            // Neutralise CSS `scroll-behavior: smooth` so the browser doesn't
+            // fight our per-frame positioning (which would cause lag/jitter).
+            const rootEl = document.documentElement;
+            rootEl.style.scrollBehavior = 'auto';
 
             setLetterboxTransitionMs(barTransitionMs);
             setLetterboxOpen(false);
@@ -5277,12 +5298,59 @@
                 setLetterboxOpen(true);
             }
 
+            function onManualScroll() {
+                finish(true);
+            }
+
+            function onManualKey(event) {
+                if (MANUAL_SCROLL_KEYS.has(event.key)) {
+                    finish(true);
+                }
+            }
+
+            function addManualListeners() {
+                window.addEventListener('wheel', onManualScroll, { passive: true });
+                window.addEventListener('touchmove', onManualScroll, { passive: true });
+                window.addEventListener('keydown', onManualKey);
+            }
+
+            function removeManualListeners() {
+                window.removeEventListener('wheel', onManualScroll);
+                window.removeEventListener('touchmove', onManualScroll);
+                window.removeEventListener('keydown', onManualKey);
+            }
+
+            addManualListeners();
+            cancelActiveTransitListeners = removeManualListeners;
+
+            // Ends the transit. `interrupted` = the user took over scrolling.
+            function finish(interrupted) {
+                if (ended) return;
+                ended = true;
+                scrollTransitToken++; // invalidate the running step()
+                removeManualListeners();
+                if (cancelActiveTransitListeners === removeManualListeners) {
+                    cancelActiveTransitListeners = null;
+                }
+                // Restore CSS-driven smooth behaviour for everything else.
+                rootEl.style.scrollBehavior = '';
+                openBarsOnce();
+
+                if (scrollTransitVeil) {
+                    scrollTransitVeil.classList.remove('active');
+                }
+
+                if (!interrupted) {
+                    triggerArrivalGlow(target);
+                }
+            }
+
             function step(currentTime) {
-                if (thisTransit !== scrollTransitToken) return;
+                if (thisTransit !== scrollTransitToken || ended) return;
 
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+                window.scrollTo(0, startY + distance * easeCinematic(progress));
 
                 if (progress >= 0.7) {
                     openBarsOnce();
@@ -5293,13 +5361,7 @@
                     return;
                 }
 
-                openBarsOnce();
-
-                if (scrollTransitVeil) {
-                    scrollTransitVeil.classList.remove('active');
-                }
-
-                triggerArrivalGlow(target);
+                finish(false);
             }
 
             window.requestAnimationFrame(step);
