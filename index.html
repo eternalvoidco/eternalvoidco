@@ -123,6 +123,9 @@
             text-size-adjust: 100%;
             scrollbar-width: thin;
             scrollbar-color: rgba(199, 169, 108, 0.5) #060606;
+            /* Reserve the scrollbar gutter so locking body scroll for modals
+               never shifts the page sideways (seamless open/close). */
+            scrollbar-gutter: stable;
         }
 
         /* Gold selection + custom scrollbar to match the house palette */
@@ -462,6 +465,31 @@
         .preorder-modal-backdrop.active .preorder-modal {
             transform: scaleY(1) scaleX(1) translateY(0);
             opacity: 1;
+        }
+
+        /* Cinematic success dismissal: the panel dissolves upward with a soft
+           bloom + blur while the backdrop clears, then the visitor is returned
+           to their exact prior scroll position. */
+        .preorder-modal-backdrop.active.success-dismiss {
+            opacity: 0;
+            backdrop-filter: blur(1px);
+            -webkit-backdrop-filter: blur(1px);
+            transition: opacity 0.72s ease, visibility 0.72s ease,
+                        backdrop-filter 0.72s ease, -webkit-backdrop-filter 0.72s ease;
+        }
+
+        .preorder-modal-backdrop.active.success-dismiss .preorder-modal {
+            opacity: 0;
+            transform: scale(1.05) translateY(-12px);
+            filter: blur(9px);
+            transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.56s ease, filter 0.72s ease;
+        }
+
+        html.reduce-motion .preorder-modal-backdrop.active.success-dismiss,
+        html.reduce-motion .preorder-modal-backdrop.active.success-dismiss .preorder-modal {
+            transition-duration: 0.24s !important;
+            filter: none !important;
         }
 
         .preorder-modal::before {
@@ -1059,19 +1087,129 @@
             inset: 0;
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.45) 45%, rgba(0, 0, 0, 0.68));
             pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ===== Cinematic "enter another world" transition ===== */
+        /* GPU-friendly: only transform / opacity / filter animate. */
+        .entry-gate-video {
+            transform-origin: center;
+            transition: transform 1.15s cubic-bezier(0.5, 0, 0.15, 1),
+                        filter 1.15s ease, opacity 0.9s ease;
+        }
+
+        /* Radial light portal + spark burst that blooms from the button. */
+        .entry-gate-portal {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 46vmax;
+            height: 46vmax;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0.2);
+            background: radial-gradient(circle,
+                rgba(255, 249, 233, 0.95) 0%,
+                rgba(226, 198, 138, 0.55) 20%,
+                rgba(199, 169, 108, 0.16) 44%,
+                transparent 66%);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+            filter: blur(6px);
+            mix-blend-mode: screen;
+        }
+
+        .entry-gate-portal::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background:
+                radial-gradient(2px 2px at 30% 38%, rgba(255, 244, 214, 0.95), transparent 60%),
+                radial-gradient(2px 2px at 70% 30%, rgba(255, 244, 214, 0.85), transparent 60%),
+                radial-gradient(1.5px 1.5px at 56% 66%, rgba(255, 244, 214, 0.9), transparent 60%),
+                radial-gradient(2px 2px at 40% 72%, rgba(255, 244, 214, 0.8), transparent 60%),
+                radial-gradient(1.5px 1.5px at 64% 54%, rgba(255, 244, 214, 0.85), transparent 60%),
+                radial-gradient(1.5px 1.5px at 48% 46%, rgba(255, 244, 214, 0.8), transparent 60%);
+            opacity: 0;
+        }
+
+        .entry-gate.entering {
+            cursor: default;
+        }
+
+        .entry-gate.entering .entry-gate-video {
+            transform: scale(1.32);
+            filter: brightness(1.28) blur(3px);
+        }
+
+        .entry-gate.entering .entry-gate-portal {
+            animation: voidPortalBloom 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .entry-gate.entering .entry-gate-portal::after {
+            animation: voidPortalSparks 1.15s ease-out forwards;
+        }
+
+        .entry-gate.entering .entry-gate-button {
+            opacity: 0;
+            transform: scale(1.55) translateY(-4px);
+            filter: blur(5px);
+            pointer-events: none;
+            transition: opacity 0.52s ease, transform 0.62s cubic-bezier(0.5, 0, 0.2, 1),
+                        filter 0.52s ease;
+            animation: none;
+        }
+
+        @keyframes voidPortalBloom {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+            30% { opacity: 1; }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(2.7); }
+        }
+
+        @keyframes voidPortalSparks {
+            0% { opacity: 0; transform: scale(0.45); }
+            28% { opacity: 1; }
+            100% { opacity: 0; transform: scale(1.9); }
+        }
+
+        /* Hero emerges with a slow parallax settle-zoom behind the fading gate. */
+        .hero-video {
+            transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body.gate-open .hero-video {
+            transform: scale(1.12);
+        }
+
+        body.void-entered .hero-video {
+            transform: scale(1);
+        }
+
+        html.reduce-motion .entry-gate.entering .entry-gate-video,
+        html.reduce-motion .entry-gate.entering .entry-gate-button,
+        html.reduce-motion .entry-gate.entering .entry-gate-portal,
+        html.reduce-motion .hero-video {
+            animation: none !important;
+            transition: opacity 0.3s ease !important;
+            transform: none !important;
+            filter: none !important;
         }
 
         .entry-gate-button {
             position: relative;
             z-index: 3;
-            width: min(92vw, 360px);
+            width: min(92vw, 372px);
             min-width: min(92vw, 340px);
-            padding: 1rem 1.5rem;
-            border: 1px solid rgba(173, 145, 96, 0.62);
-            background: rgba(7, 7, 7, 0.78);
+            padding: 1.15rem 1.6rem;
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            border-radius: 2px;
+            background:
+                linear-gradient(180deg, rgba(24, 21, 14, 0.42), rgba(6, 6, 6, 0.72)),
+                rgba(7, 7, 7, 0.4);
             color: var(--void-white);
             font-family: 'Manrope', sans-serif;
-            font-size: clamp(0.68rem, 1.8vw, 0.78rem);
+            font-size: clamp(0.72rem, 1.9vw, 0.84rem);
             font-weight: 600;
             letter-spacing: 0;
             text-transform: uppercase;
@@ -1079,12 +1217,21 @@
             overflow: hidden;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            --enter-depth-scale: 1.03;
-            box-shadow: 0 0 0 1px rgba(173, 145, 96, 0.24), 0 14px 30px rgba(0, 0, 0, 0.58);
-            animation: enterVoidOuterPulse 3.7s ease-in-out infinite, enterVoidDepthPulse 3.7s ease-in-out infinite;
-            transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, color 0.25s ease, opacity 0.4s ease;
+            -webkit-backdrop-filter: blur(3px);
+            backdrop-filter: blur(3px);
+            box-shadow:
+                0 0 0 1px rgba(199, 169, 108, 0.18),
+                0 20px 46px rgba(0, 0, 0, 0.66),
+                0 0 44px rgba(199, 169, 108, 0.14),
+                inset 0 1px 0 rgba(245, 242, 236, 0.12),
+                inset 0 0 34px rgba(199, 169, 108, 0.06);
+            animation: enterVoidGlowBreath 4.6s ease-in-out infinite;
+            transition: border-color 0.35s var(--ease-lux, ease), background 0.35s ease,
+                        transform 0.5s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)),
+                        color 0.35s ease, opacity 0.4s ease, box-shadow 0.5s ease, filter 0.5s ease;
             isolation: isolate;
             pointer-events: auto;
+            will-change: transform;
         }
 
         .entry-gate-button.intro-hidden {
@@ -1157,20 +1304,43 @@
             right: 24%;
         }
 
+        /* Slow diagonal light sheen sweeping across the button. */
         .entry-gate-button::after {
             content: '';
             position: absolute;
-            inset: 2px;
-            background: rgba(245, 242, 236, 0.012);
+            inset: 0;
             z-index: 1;
-            animation: enterVoidInnerPulse 4.4s ease-in-out infinite;
+            background: linear-gradient(115deg,
+                transparent 32%,
+                rgba(245, 240, 224, 0.08) 46%,
+                rgba(255, 250, 235, 0.20) 50%,
+                rgba(245, 240, 224, 0.08) 54%,
+                transparent 68%);
+            transform: translateX(-130%);
+            animation: enterVoidSheen 6.5s ease-in-out 1.6s infinite;
             pointer-events: none;
         }
 
-        .entry-gate-button:hover {
-            border-color: var(--void-accent);
-            background: rgba(130, 105, 62, 0.24);
-            color: #f4ecde;
+        .entry-gate-button:hover,
+        .entry-gate-button:focus-visible {
+            border-color: rgba(226, 199, 138, 0.9);
+            background:
+                linear-gradient(180deg, rgba(58, 48, 28, 0.5), rgba(10, 9, 6, 0.7)),
+                rgba(120, 96, 54, 0.22);
+            color: #f7efe0;
+            /* Freeze the idle glow-breath so this stronger glow can take over. */
+            animation: none;
+            transform: translateY(-2px) scale(1.022);
+            box-shadow:
+                0 0 0 1px rgba(226, 199, 138, 0.4),
+                0 26px 60px rgba(0, 0, 0, 0.7),
+                0 0 72px rgba(199, 169, 108, 0.32),
+                inset 0 1px 0 rgba(245, 242, 236, 0.18),
+                inset 0 0 46px rgba(199, 169, 108, 0.12);
+        }
+
+        .entry-gate-button:active {
+            transform: translateY(0) scale(0.992);
         }
 
         .entry-gate-button:hover .entry-gate-letter,
@@ -1204,6 +1374,33 @@
             100% {
                 box-shadow: 0 0 0 0 rgba(173, 145, 96, 0), 0 14px 30px rgba(0, 0, 0, 0.58);
             }
+        }
+
+        /* Gentle breathing of the button's gold aura + depth (keeps all shadow
+           layers so the glass/inset highlights never disappear). */
+        @keyframes enterVoidGlowBreath {
+            0%, 100% {
+                box-shadow:
+                    0 0 0 1px rgba(199, 169, 108, 0.18),
+                    0 20px 46px rgba(0, 0, 0, 0.66),
+                    0 0 40px rgba(199, 169, 108, 0.12),
+                    inset 0 1px 0 rgba(245, 242, 236, 0.12),
+                    inset 0 0 34px rgba(199, 169, 108, 0.06);
+            }
+            50% {
+                box-shadow:
+                    0 0 0 1px rgba(199, 169, 108, 0.3),
+                    0 22px 50px rgba(0, 0, 0, 0.68),
+                    0 0 64px rgba(199, 169, 108, 0.26),
+                    inset 0 1px 0 rgba(245, 242, 236, 0.16),
+                    inset 0 0 42px rgba(199, 169, 108, 0.1);
+            }
+        }
+
+        /* Diagonal light sheen travelling across the button face. */
+        @keyframes enterVoidSheen {
+            0% { transform: translateX(-130%); }
+            24%, 100% { transform: translateX(130%); }
         }
 
         @keyframes storyStarsDrift {
@@ -4311,6 +4508,7 @@
         <video autoplay loop muted playsinline class="entry-gate-video" id="entryGateVideo">
             <source src="enter-the-void.mp4" type="video/mp4">
         </video>
+        <div class="entry-gate-portal" aria-hidden="true"></div>
         <button type="button" class="entry-gate-button" id="enterVoidButton" aria-label="Enter The Void">
             <span class="entry-gate-label" aria-hidden="true">
                 <span class="entry-gate-letter" style="--i:0;">E</span>
@@ -4794,6 +4992,10 @@
         const preorderResponse = document.getElementById('preorderResponse');
         const preorderTriggers = document.querySelectorAll('[data-preorder-trigger]');
         const preorderSubmit = preorderForm ? preorderForm.querySelector('.preorder-submit') : null;
+        // Remembers exactly where the visitor was before the preorder modal
+        // opened, so a successful join returns them there seamlessly.
+        let preorderReturnScrollY = 0;
+        let preorderSuccessTimer = null;
         const newsletterForm = document.getElementById('newsletterForm');
         const newsletterEmail = document.getElementById('newsletterEmail');
         const newsletterButton = document.getElementById('newsletterButton');
@@ -4890,6 +5092,10 @@
         function openPreorderModal() {
             if (!preorderModal || preorderModal.classList.contains('active')) return;
 
+            // Snapshot the current scroll position to restore on close.
+            preorderReturnScrollY = window.scrollY || window.pageYOffset || 0;
+
+            preorderModal.classList.remove('success-dismiss');
             preorderModal.classList.add('active');
             preorderModal.setAttribute('aria-hidden', 'false');
             document.body.classList.add('preorder-open');
@@ -4904,10 +5110,31 @@
         function closePreorderModal() {
             if (!preorderModal) return;
 
-            preorderModal.classList.remove('active');
+            if (preorderSuccessTimer) {
+                window.clearTimeout(preorderSuccessTimer);
+                preorderSuccessTimer = null;
+            }
+
+            preorderModal.classList.remove('active', 'success-dismiss');
             preorderModal.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('preorder-open');
             stopEdgeAmbience();
+
+            // Body scroll was locked while open; snap back to the exact prior
+            // position so the visitor continues right where they left off.
+            window.scrollTo(0, preorderReturnScrollY);
+        }
+
+        // Plays the cinematic dissolve, then closes + restores context.
+        function dismissPreorderModalCinematic() {
+            if (!preorderModal || !preorderModal.classList.contains('active')) return;
+            if (preorderModal.classList.contains('success-dismiss')) return;
+
+            stopEdgeAmbience();
+            preorderModal.classList.add('success-dismiss');
+
+            const reduceMotion = document.documentElement.classList.contains('reduce-motion');
+            window.setTimeout(closePreorderModal, reduceMotion ? 240 : 720);
         }
 
         function setupVideo(videoElement, playbackRate) {
@@ -4973,25 +5200,41 @@
         }
 
         function enterVoid() {
-            if (!entryGate || entryGate.classList.contains('hidden')) return;
+            if (!entryGate || entryGate.classList.contains('hidden') || entryGate.classList.contains('entering')) return;
 
-            if (entryGateVideo) {
-                entryGateVideo.pause();
-            }
+            const reduceMotion = document.documentElement.classList.contains('reduce-motion');
 
-            entryGate.classList.add('hidden');
+            // Reveal the landing world behind the gate so it can settle-zoom in
+            // as the gate dissolves — a seamless hand-off, not a page swap.
             document.body.classList.remove('gate-open');
             document.body.classList.add('void-entered');
-
-            window.setTimeout(() => {
-                entryGate.style.display = 'none';
-            }, 720);
-
-            window.setTimeout(() => {
-                openPreorderModal();
-            }, 860);
-
             setupVideo(heroVideo, 1);
+
+            // Begin the cinematic zoom + light bloom + button dissolve.
+            entryGate.classList.add('entering');
+
+            if (reduceMotion) {
+                entryGate.classList.add('hidden');
+                if (entryGateVideo) entryGateVideo.pause();
+                window.setTimeout(() => { entryGate.style.display = 'none'; }, 320);
+                window.setTimeout(openPreorderModal, 420);
+                return;
+            }
+
+            // Fade the gate out mid-zoom so the two layers cross-dissolve.
+            window.setTimeout(() => {
+                entryGate.classList.add('hidden');
+            }, 470);
+
+            // Remove the gate from the layout once the transition has fully played.
+            window.setTimeout(() => {
+                if (entryGateVideo) entryGateVideo.pause();
+                entryGate.style.display = 'none';
+            }, 1320);
+
+            // Let the visitor arrive and take in the landing page before the
+            // pre-order invitation gracefully appears.
+            window.setTimeout(openPreorderModal, 1480);
         }
 
         if (preorderModal) {
@@ -5232,6 +5475,13 @@
                         preorderOtherCountryField.hidden = true;
                         preorderOtherCountry.required = false;
                     }
+
+                    // Let the success message land for 2s, then dissolve away
+                    // and return the visitor to exactly where they were.
+                    if (preorderSuccessTimer) {
+                        window.clearTimeout(preorderSuccessTimer);
+                    }
+                    preorderSuccessTimer = window.setTimeout(dismissPreorderModalCinematic, 2000);
                 } catch (error) {
                     preorderResponse.classList.add('error');
                     preorderResponse.textContent = error.message;
