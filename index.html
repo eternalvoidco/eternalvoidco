@@ -328,14 +328,34 @@
             }
         }
 
+        /* Arrival cue: a soft, edgeless gold bloom that washes over the
+           destination as light — never a lit rectangle / visible box. */
         @keyframes voidArrivalGlow {
-            0% { box-shadow: 0 0 0 0 rgba(199, 169, 108, 0); }
-            32% { box-shadow: 0 0 90px 10px rgba(199, 169, 108, 0.26), inset 0 0 110px rgba(199, 169, 108, 0.1); }
-            100% { box-shadow: 0 0 0 0 rgba(199, 169, 108, 0); }
+            0% { opacity: 0; transform: scale(0.94); }
+            26% { opacity: 1; }
+            100% { opacity: 0; transform: scale(1.06); }
         }
 
         .scroll-arrival-glow {
-            animation: voidArrivalGlow 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .scroll-arrival-glow::after {
+            content: '';
+            position: absolute;
+            inset: -32% -14%;
+            z-index: 3;
+            pointer-events: none;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center,
+                rgba(212, 182, 120, 0.16) 0%,
+                rgba(199, 169, 108, 0.07) 38%,
+                transparent 70%);
+            mix-blend-mode: screen;
+            filter: blur(22px);
+            opacity: 0;
+            transform: scale(0.94);
+            animation: voidArrivalGlow 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         html.reduce-motion .scroll-transit-veil,
@@ -344,8 +364,9 @@
             display: none !important;
         }
 
-        html.reduce-motion .scroll-arrival-glow {
+        html.reduce-motion .scroll-arrival-glow::after {
             animation: none !important;
+            opacity: 0 !important;
         }
 
         :focus-visible {
