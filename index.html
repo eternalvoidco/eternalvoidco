@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        /* The cinematic experience (letterbox scroll, edge frames, gold-dust
+           ambience, hero reveal) is core to the VOID brand and is shown on
+           every platform by default. Windows commonly reports the OS
+           "reduce motion" setting as ON, which previously blanked ALL of these
+           effects on desktop while phones showed them. So we no longer treat
+           the OS signal as an automatic kill switch — visitors who genuinely
+           want calm can opt in with ?calm in the URL, which we remember. */
+        (function () {
+            try {
+                var params = new URLSearchParams(location.search);
+                if (params.has('calm')) {
+                    localStorage.setItem('void-reduce-motion', params.get('calm') === '0' ? '0' : '1');
+                }
+                var calm = localStorage.getItem('void-reduce-motion') === '1';
+                if (calm && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    document.documentElement.classList.add('reduce-motion');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -218,22 +239,20 @@
             initial-value: 0;
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .preorder-modal-backdrop.active .preorder-modal,
-            .size-popup-backdrop.open .size-popup,
-            .size-guide-overlay.open .size-guide-panel,
-            .gallery-preview-backdrop.open .gallery-preview-panel,
-            .cart-popup.open {
-                animation: none !important;
-            }
+        html.reduce-motion .preorder-modal-backdrop.active .preorder-modal,
+        html.reduce-motion .size-popup-backdrop.open .size-popup,
+        html.reduce-motion .size-guide-overlay.open .size-guide-panel,
+        html.reduce-motion .gallery-preview-backdrop.open .gallery-preview-panel,
+        html.reduce-motion .cart-popup.open {
+            animation: none !important;
+        }
 
-            .preorder-modal,
-            .size-popup,
-            .size-guide-panel,
-            .gallery-preview-panel,
-            .cart-popup {
-                transition: none !important;
-            }
+        html.reduce-motion .preorder-modal,
+        html.reduce-motion .size-popup,
+        html.reduce-motion .size-guide-panel,
+        html.reduce-motion .gallery-preview-panel,
+        html.reduce-motion .cart-popup {
+            transition: none !important;
         }
 
         .scroll-transit-veil {
@@ -316,16 +335,14 @@
             animation: voidArrivalGlow 1.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .scroll-transit-veil,
-            .scroll-letterbox {
-                transition: none !important;
-                display: none !important;
-            }
+        html.reduce-motion .scroll-transit-veil,
+        html.reduce-motion .scroll-letterbox {
+            transition: none !important;
+            display: none !important;
+        }
 
-            .scroll-arrival-glow {
-                animation: none !important;
-            }
+        html.reduce-motion .scroll-arrival-glow {
+            animation: none !important;
         }
 
         :focus-visible {
@@ -501,16 +518,14 @@
             100% { opacity: 0.92; }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .void-frame .vf-draw {
-                animation: none !important;
-                stroke-dashoffset: 0;
-            }
+        html.reduce-motion .void-frame .vf-draw {
+            animation: none !important;
+            stroke-dashoffset: 0;
+        }
 
-            .void-frame .vf-dot {
-                animation: none !important;
-                opacity: 0.92;
-            }
+        html.reduce-motion .void-frame .vf-dot {
+            animation: none !important;
+            opacity: 0.92;
         }
 
         /* =================================================== */
@@ -600,15 +615,13 @@
             to { --void-frame-angle: 360deg; }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .panel-frame {
-                transition: none !important;
-            }
+        html.reduce-motion .panel-frame {
+            transition: none !important;
+        }
 
-            .panel-frame::before {
-                animation: none !important;
-                opacity: 0.4;
-            }
+        html.reduce-motion .panel-frame::before {
+            animation: none !important;
+            opacity: 0.4;
         }
 
         .preorder-modal-close {
@@ -1355,24 +1368,22 @@
             }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            html:focus-within {
-                scroll-behavior: auto;
-            }
+        html.reduce-motion:focus-within {
+            scroll-behavior: auto;
+        }
 
-            * {
-                scroll-behavior: auto !important;
-            }
+        html.reduce-motion * {
+            scroll-behavior: auto !important;
+        }
 
-            .entry-gate,
-            .entry-gate.hidden {
-                transition: none !important;
-            }
+        html.reduce-motion .entry-gate,
+        html.reduce-motion .entry-gate.hidden {
+            transition: none !important;
+        }
 
-            .entry-gate-button,
-            .entry-gate-button::after {
-                animation: none !important;
-            }
+        html.reduce-motion .entry-gate-button,
+        html.reduce-motion .entry-gate-button::after {
+            animation: none !important;
         }
 
         @media (hover: none), (pointer: coarse) {
@@ -1797,12 +1808,10 @@
             }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            body.void-entered .hero-title,
-            body.void-entered .hero-subtitle,
-            body.void-entered .hero-actions {
-                animation: none !important;
-            }
+        html.reduce-motion body.void-entered .hero-title,
+        html.reduce-motion body.void-entered .hero-subtitle,
+        html.reduce-motion body.void-entered .hero-actions {
+            animation: none !important;
         }
 
         .story-trigger-button {
@@ -3049,12 +3058,10 @@
             color: rgba(245, 242, 236, 0.68);
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .gallery-preview-glow,
-            .gallery-preview-mark,
-            .gallery-preview-badge {
-                animation: none !important;
-            }
+        html.reduce-motion .gallery-preview-glow,
+        html.reduce-motion .gallery-preview-mark,
+        html.reduce-motion .gallery-preview-badge {
+            animation: none !important;
         }
 
         .add-to-cart-btn {
@@ -3232,10 +3239,8 @@
             display: block;
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .edge-ambience-canvas {
-                display: none !important;
-            }
+        html.reduce-motion .edge-ambience-canvas {
+            display: none !important;
         }
 
         @keyframes cartFabPulse {
@@ -5252,7 +5257,7 @@
         function smoothScrollToTarget(target) {
             if (!target) return;
 
-            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const prefersReducedMotion = document.documentElement.classList.contains('reduce-motion');
             const nav = document.getElementById('nav');
             const navOffset = nav ? Math.min(nav.offsetHeight + 12, 96) : 0;
             const startY = window.scrollY;
@@ -6054,7 +6059,7 @@
 
         function startEdgeAmbience(panelElement) {
             if (!panelElement || !edgeAmbienceCanvas || !edgeAmbienceCtx) return;
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            if (document.documentElement.classList.contains('reduce-motion')) return;
 
             ambiencePanel = panelElement;
             ambienceFadingOut = false;
