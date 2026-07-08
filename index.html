@@ -6058,6 +6058,11 @@
         }
 
         function startEdgeAmbience(panelElement) {
+            // Gold-dust "bubble" particle field disabled by request — the
+            // traveling-light edge frame (.panel-frame) is kept and is fully
+            // independent of this canvas. Left in place so it can be re-enabled.
+            return;
+
             if (!panelElement || !edgeAmbienceCanvas || !edgeAmbienceCtx) return;
             if (document.documentElement.classList.contains('reduce-motion')) return;
 
