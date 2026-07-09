@@ -5469,10 +5469,26 @@
             });
         }
 
+        // The pre-order invite shouldn't greet the visitor on every entry.
+        // Surface it on the first visit, then stay quiet until five more
+        // entries/refreshes have passed (counter persisted across reloads).
+        function shouldOfferPreorderOnEntry() {
+            const KEY = 'voidPreorderEntryCount';
+            try {
+                let n = parseInt(localStorage.getItem(KEY) || '0', 10);
+                if (!Number.isInteger(n) || n < 0) n = 0;
+                localStorage.setItem(KEY, String(n + 1));
+                return n % 5 === 0;
+            } catch (e) {
+                return true;
+            }
+        }
+
         function enterVoid() {
             if (!entryGate || entryGate.classList.contains('hidden') || entryGate.classList.contains('entering')) return;
 
             const reduceMotion = document.documentElement.classList.contains('reduce-motion');
+            const offerPreorder = shouldOfferPreorderOnEntry();
 
             // Reveal the landing world behind the gate so it can settle-zoom in
             // as the gate dissolves — a seamless hand-off, not a page swap.
@@ -5491,7 +5507,9 @@
                 entryGate.classList.add('hidden');
                 if (entryGateVideo) entryGateVideo.pause();
                 window.setTimeout(() => { entryGate.style.display = 'none'; }, 320);
-                window.setTimeout(openPreorderModal, 420);
+                if (offerPreorder) {
+                    window.setTimeout(openPreorderModal, 1200);
+                }
                 return;
             }
 
@@ -5506,9 +5524,11 @@
                 entryGate.style.display = 'none';
             }, 1320);
 
-            // Let the visitor arrive and take in the landing page before the
-            // pre-order invitation gracefully appears.
-            window.setTimeout(openPreorderModal, 1480);
+            // Let the visitor arrive and take in the landing page first; only
+            // offer the pre-order occasionally (see shouldOfferPreorderOnEntry).
+            if (offerPreorder) {
+                window.setTimeout(openPreorderModal, 3200);
+            }
         }
 
         if (preorderModal) {
