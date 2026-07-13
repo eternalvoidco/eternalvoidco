@@ -2,19 +2,16 @@
   <defs>
     <linearGradient id="voidGold" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#f2e2bd"/>
-      <stop offset="0.46" stop-color="#c7a96c"/>
-      <stop offset="1" stop-color="#8f6f3d"/>
+      <stop offset="0.5" stop-color="#d8c08a"/>
+      <stop offset="1" stop-color="#c7a96c"/>
     </linearGradient>
   </defs>
-  <!-- Plaque -->
-  <rect x="1" y="1" width="30" height="30" rx="6" fill="#080808"/>
-  <rect x="1.7" y="1.7" width="28.6" height="28.6" rx="5.3" fill="none" stroke="url(#voidGold)" stroke-width="1.1" opacity="0.85"/>
-  <!-- Serif "V" monogram (all vector paths) -->
+  <!-- Serif "V" monogram, transparent background, all vector -->
   <g fill="url(#voidGold)">
-    <!-- top serifs -->
-    <rect x="3.6" y="7.7" width="8.8" height="1.7" rx="0.4"/>
-    <rect x="19.6" y="7.7" width="8.8" height="1.7" rx="0.4"/>
+    <!-- bracketed top serifs -->
+    <rect x="2.0" y="5.7" width="6.2" height="1.5" rx="0.4"/>
+    <rect x="23.8" y="5.7" width="6.2" height="1.5" rx="0.4"/>
     <!-- the V strokes -->
-    <path d="M5.2 8.6 L11.0 8.6 L16 18.5 L21.0 8.6 L26.8 8.6 L16 24.2 Z"/>
+    <path d="M3.6 6.8 L6.6 6.8 L16 21.8 L25.4 6.8 L28.4 6.8 L16 27.2 Z"/>
   </g>
 </svg>
