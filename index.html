@@ -397,6 +397,7 @@
         body.gate-open .products,
         body.gate-open .cart-fab,
         body.gate-open .cart-popup,
+        body.gate-open .theme-switch,
         body.gate-open .footer {
             visibility: hidden;
             opacity: 0;
@@ -1021,17 +1022,21 @@
             filter: saturate(0.85) brightness(0.9) blur(1px);
         }
 
-        body.has-country-theme .products .collection-flag-bg {
+        /* Collection flag shows only in "full" mode */
+        body.mode-full .products .collection-flag-bg {
             opacity: 0.1;
         }
 
-        /* Cart: same recessed flag but alive — gentle wind, a passing glint, faint lightning */
+        /* Cart: fade the flag well inside the panel so the frame effects (corner
+           brackets + traveling light) stay visible; alive with wind, glint, lightning */
         .cart-flag-bg {
-            -webkit-mask-image: radial-gradient(130% 100% at 50% 30%, #000 20%, transparent 82%);
-            mask-image: radial-gradient(130% 100% at 50% 30%, #000 20%, transparent 82%);
+            -webkit-mask-image: radial-gradient(118% 90% at 50% 46%, #000 8%, transparent 70%);
+            mask-image: radial-gradient(118% 90% at 50% 46%, #000 8%, transparent 70%);
         }
 
-        body.has-country-theme .cart-popup .cart-flag-bg {
+        /* Cart flag shows in both "full" and "cart only" modes */
+        body.mode-full .cart-popup .cart-flag-bg,
+        body.mode-cart .cart-popup .cart-flag-bg {
             opacity: 0.16;
         }
 
@@ -1097,6 +1102,135 @@
         .cart-popup > *:not(.cart-flag-bg) {
             position: relative;
             z-index: 1;
+        }
+
+        /* ── Floating country-theme switch (appears only after a country is joined) ── */
+        .theme-switch {
+            position: fixed;
+            left: 1.25rem;
+            bottom: 1.25rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+
+        .theme-switch[hidden] {
+            display: none;
+        }
+
+        .theme-switch-toggle {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            border: 1px solid var(--void-border);
+            background: radial-gradient(circle at 50% 32%, rgba(26, 24, 20, 0.96), rgba(6, 6, 6, 0.95));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(245, 242, 236, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: border-color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), transform 0.35s var(--ease-lux);
+        }
+
+        .theme-switch-toggle:hover,
+        .theme-switch.open .theme-switch-toggle {
+            border-color: rgba(199, 169, 108, 0.6);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(199, 169, 108, 0.18), inset 0 1px 0 rgba(245, 242, 236, 0.07);
+            transform: translateY(-1px);
+        }
+
+        .theme-switch-toggle .country-flag {
+            width: 1.7rem;
+            height: 1.08rem;
+        }
+
+        .theme-switch-menu {
+            display: none;
+            flex-direction: column;
+            gap: 0.12rem;
+            min-width: 200px;
+            padding: 0.55rem;
+            border: 1px solid rgba(199, 169, 108, 0.32);
+            background: linear-gradient(155deg, rgba(20, 20, 22, 0.98), rgba(6, 6, 7, 0.99));
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transform-origin: bottom left;
+        }
+
+        .theme-switch.open .theme-switch-menu {
+            display: flex;
+            animation: voidLayerFadeIn 0.28s cubic-bezier(0.18, 0.8, 0.24, 1);
+        }
+
+        .theme-switch-title {
+            margin: 0 0 0.35rem;
+            padding: 0 0.4rem;
+            font-size: 0.58rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--void-text-muted);
+        }
+
+        .theme-switch-option {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.6rem 0.55rem;
+            border: 0;
+            background: transparent;
+            color: var(--void-white);
+            font: inherit;
+            font-size: 0.82rem;
+            letter-spacing: 0.03em;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+
+        .theme-switch-option:hover,
+        .theme-switch-option:focus-visible {
+            background: rgba(199, 169, 108, 0.13);
+            color: #fff7e8;
+            outline: none;
+        }
+
+        .theme-switch-option[aria-checked="true"] {
+            background: rgba(199, 169, 108, 0.16);
+            color: #fff7e8;
+        }
+
+        .theme-switch-option[aria-checked="true"]::after {
+            content: '✓';
+            margin-left: auto;
+            color: var(--void-gold);
+            font-size: 0.82rem;
+        }
+
+        .theme-switch-option .country-flag {
+            width: 1.5rem;
+            height: 0.96rem;
+        }
+
+        .theme-switch-swatch {
+            width: 1.5rem;
+            height: 0.96rem;
+            flex: 0 0 auto;
+            border: 1px solid rgba(245, 242, 236, 0.22);
+            border-radius: 2px;
+        }
+
+        .theme-switch-swatch.is-original {
+            background: repeating-linear-gradient(135deg, #0a0a0a 0 5px, #161616 5px 10px);
+        }
+
+        .theme-switch-swatch.is-cart {
+            background: radial-gradient(circle at 50% 40%, rgba(199, 169, 108, 0.55), rgba(8, 8, 8, 0.9) 70%);
         }
 
         .preorder-input:focus,
@@ -5392,6 +5526,27 @@
         <span class="cart-fab-badge" id="cartCount">0</span>
     </button>
 
+    <div class="theme-switch" id="themeSwitch" hidden>
+        <div class="theme-switch-menu" id="themeSwitchMenu" role="menu" aria-label="Country theme">
+            <p class="theme-switch-title" data-i18n="countryTheme">Country theme</p>
+            <button type="button" class="theme-switch-option" role="menuitemradio" data-theme-mode="full" aria-checked="false">
+                <span class="theme-switch-flag country-flag" id="themeSwitchMenuFlag" aria-hidden="true"></span>
+                <span class="theme-switch-option-label" id="themeSwitchCountryName">Country</span>
+            </button>
+            <button type="button" class="theme-switch-option" role="menuitemradio" data-theme-mode="cart" aria-checked="false">
+                <span class="theme-switch-swatch is-cart" aria-hidden="true"></span>
+                <span class="theme-switch-option-label" data-i18n="themeCartOnly">Cart only</span>
+            </button>
+            <button type="button" class="theme-switch-option" role="menuitemradio" data-theme-mode="original" aria-checked="false">
+                <span class="theme-switch-swatch is-original" aria-hidden="true"></span>
+                <span class="theme-switch-option-label" data-i18n="themeOriginal">Original</span>
+            </button>
+        </div>
+        <button type="button" class="theme-switch-toggle" id="themeSwitchToggle" aria-haspopup="true" aria-expanded="false" aria-label="Switch country theme" data-i18n-aria-label="switchCountryTheme">
+            <span class="theme-switch-flag country-flag" id="themeSwitchToggleFlag" aria-hidden="true"></span>
+        </button>
+    </div>
+
     <aside class="cart-popup" id="cartPopup" aria-live="polite">
         <span class="panel-frame" aria-hidden="true"></span>
         <div class="cart-popup-header">
@@ -5531,10 +5686,10 @@
             }
         };
 
-        Object.assign(translations.en, { selectLanguage: 'Select language', countryOther: 'Other' });
-        Object.assign(translations.fr, { selectLanguage: 'Sélectionner la langue', countryOther: 'Autre' });
-        Object.assign(translations.it, { selectLanguage: 'Seleziona lingua', countryOther: 'Altro' });
-        Object.assign(translations.de, { selectLanguage: 'Sprache auswählen', countryOther: 'Andere' });
+        Object.assign(translations.en, { selectLanguage: 'Select language', countryOther: 'Other', countryTheme: 'Country theme', themeCartOnly: 'Cart only', themeOriginal: 'Original', switchCountryTheme: 'Switch country theme' });
+        Object.assign(translations.fr, { selectLanguage: 'Sélectionner la langue', countryOther: 'Autre', countryTheme: 'Thème pays', themeCartOnly: 'Panier uniquement', themeOriginal: 'Original', switchCountryTheme: 'Changer le thème pays' });
+        Object.assign(translations.it, { selectLanguage: 'Seleziona lingua', countryOther: 'Altro', countryTheme: 'Tema paese', themeCartOnly: 'Solo carrello', themeOriginal: 'Originale', switchCountryTheme: 'Cambia tema paese' });
+        Object.assign(translations.de, { selectLanguage: 'Sprache auswählen', countryOther: 'Andere', countryTheme: 'Länder-Theme', themeCartOnly: 'Nur Warenkorb', themeOriginal: 'Original', switchCountryTheme: 'Länder-Theme wechseln' });
 
         function t(key, replacements = {}) {
             const dictionary = translations[currentLanguage] || translations.en;
@@ -5951,6 +6106,40 @@
             return { layer, flag };
         }
 
+        // Floating theme-switch control
+        const themeSwitch = document.getElementById('themeSwitch');
+        const themeSwitchToggle = document.getElementById('themeSwitchToggle');
+        const themeSwitchMenu = document.getElementById('themeSwitchMenu');
+        const themeSwitchToggleFlag = document.getElementById('themeSwitchToggleFlag');
+        const themeSwitchMenuFlag = document.getElementById('themeSwitchMenuFlag');
+        const themeSwitchCountryName = document.getElementById('themeSwitchCountryName');
+        const themeSwitchOptions = themeSwitchMenu ? themeSwitchMenu.querySelectorAll('[data-theme-mode]') : [];
+        const THEME_MODES = ['full', 'cart', 'original'];
+
+        function getThemeMode() {
+            let m = null;
+            try { m = localStorage.getItem('void-country-mode'); } catch (e) {}
+            return THEME_MODES.indexOf(m) !== -1 ? m : 'full';
+        }
+
+        function setThemeMode(mode, persist) {
+            if (THEME_MODES.indexOf(mode) === -1) mode = 'full';
+            document.body.classList.remove('mode-full', 'mode-cart', 'mode-original');
+            document.body.classList.add('mode-' + mode);
+            themeSwitchOptions.forEach((option) => {
+                option.setAttribute('aria-checked', option.dataset.themeMode === mode ? 'true' : 'false');
+            });
+            if (persist) {
+                try { localStorage.setItem('void-country-mode', mode); } catch (e) {}
+            }
+        }
+
+        function closeThemeSwitch() {
+            if (!themeSwitch) return;
+            themeSwitch.classList.remove('open');
+            if (themeSwitchToggle) themeSwitchToggle.setAttribute('aria-expanded', 'false');
+        }
+
         function applyCountryTheme(country, flagClass, persist) {
             if (!flagClass || !KNOWN_FLAG.test(flagClass)) return;
 
@@ -5974,12 +6163,44 @@
 
             document.body.classList.add('has-country-theme');
 
+            // Populate + reveal the floating switch, then apply the saved display mode
+            if (themeSwitchToggleFlag) themeSwitchToggleFlag.className = 'theme-switch-flag country-flag ' + flagClass;
+            if (themeSwitchMenuFlag) themeSwitchMenuFlag.className = 'theme-switch-flag country-flag ' + flagClass;
+            if (themeSwitchCountryName && country) themeSwitchCountryName.textContent = country;
+            if (themeSwitch) themeSwitch.hidden = false;
+            setThemeMode(getThemeMode(), false);
+
             if (persist) {
                 try {
                     localStorage.setItem('void-country', JSON.stringify({ country: country, flag: flagClass }));
                 } catch (e) {}
             }
         }
+
+        if (themeSwitchToggle && themeSwitch) {
+            themeSwitchToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const open = themeSwitch.classList.toggle('open');
+                themeSwitchToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        }
+
+        themeSwitchOptions.forEach((option) => {
+            option.addEventListener('click', () => {
+                setThemeMode(option.dataset.themeMode, true);
+                closeThemeSwitch();
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            if (themeSwitch && !themeSwitch.contains(event.target)) {
+                closeThemeSwitch();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeThemeSwitch();
+        });
 
         // Restore a country the visitor joined with in a previous visit.
         (function restoreCountryTheme() {
