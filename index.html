@@ -1001,43 +1001,39 @@
         .collection-flag-bg .country-flag,
         .cart-flag-bg .country-flag {
             position: absolute;
-            width: 140%;
-            height: 140%;
-            left: -20%;
-            top: -20%;
+            left: 50%;
+            top: 50%;
+            height: auto;
+            aspect-ratio: 1.6 / 1.02;
+            transform: translate(-50%, -50%);
             border: 0;
-            border-radius: 0;
+            border-radius: 2px;
             box-shadow: none;
-            overflow: visible;
+            overflow: hidden;
+            /* Even black-to-flag fade on every side so the frame reveals all the flag's colours */
+            -webkit-mask-image: radial-gradient(farthest-side at 50% 50%, #000 58%, rgba(0, 0, 0, 0.4) 82%, transparent 100%);
+            mask-image: radial-gradient(farthest-side at 50% 50%, #000 58%, rgba(0, 0, 0, 0.4) 82%, transparent 100%);
         }
 
-        /* Collection: recessed and radially faded so the flag reads as built into the black */
-        .products .collection-flag-bg {
-            -webkit-mask-image: radial-gradient(120% 78% at 50% 42%, #000 12%, transparent 78%);
-            mask-image: radial-gradient(120% 78% at 50% 42%, #000 12%, transparent 78%);
-        }
-
+        /* Collection: a centred flag framed by the black fade, colours kept readable */
         .products .collection-flag-bg .country-flag {
-            filter: saturate(0.85) brightness(0.9) blur(1px);
+            width: min(78%, 60vh);
+            filter: saturate(1.15) brightness(0.9);
         }
 
         body.has-country-theme .products .collection-flag-bg {
-            opacity: 0.1;
+            opacity: 0.34;
         }
 
-        /* Cart: same recessed flag but alive — gentle wind, a passing glint, faint lightning */
-        .cart-flag-bg {
-            -webkit-mask-image: radial-gradient(130% 100% at 50% 30%, #000 20%, transparent 82%);
-            mask-image: radial-gradient(130% 100% at 50% 30%, #000 20%, transparent 82%);
-        }
-
+        /* Cart: same centred, framed flag but alive — gentle wind, a passing glint, faint lightning */
         body.has-country-theme .cart-popup .cart-flag-bg {
-            opacity: 0.16;
+            opacity: 0.46;
         }
 
         .cart-flag-bg .country-flag {
-            transform-origin: 50% 0%;
-            filter: saturate(0.9) brightness(0.95);
+            width: 86%;
+            transform-origin: 50% 50%;
+            filter: saturate(1.15) brightness(0.95);
             animation: flagWind 7s ease-in-out infinite;
         }
 
@@ -1065,11 +1061,11 @@
         }
 
         @keyframes flagWind {
-            0%   { transform: skewX(0deg) scale(1) translateX(0); }
-            25%  { transform: skewX(2.2deg) scale(1.015) translateX(-1.2%); }
-            50%  { transform: skewX(0deg) scale(1) translateX(0); }
-            75%  { transform: skewX(-2.2deg) scale(1.015) translateX(1.2%); }
-            100% { transform: skewX(0deg) scale(1) translateX(0); }
+            0%   { transform: translate(-50%, -50%) skewX(0deg) scale(1); }
+            25%  { transform: translate(-50%, -50%) skewX(2deg) scale(1.012); }
+            50%  { transform: translate(-50%, -50%) skewX(0deg) scale(1); }
+            75%  { transform: translate(-50%, -50%) skewX(-2deg) scale(1.012); }
+            100% { transform: translate(-50%, -50%) skewX(0deg) scale(1); }
         }
 
         @keyframes flagGlint {
