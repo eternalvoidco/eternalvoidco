@@ -1098,8 +1098,10 @@
             animation: none;
         }
 
-        /* Keep cart content above its flag layer */
-        .cart-popup > *:not(.cart-flag-bg) {
+        /* Keep cart content above its flag layer — but NOT the panel frame, which
+           must keep its absolute full-panel overlay so the traveling-light ring +
+           corner brackets wrap the edges (they already sit at z-index 1 above the flag). */
+        .cart-popup > *:not(.cart-flag-bg):not(.panel-frame) {
             position: relative;
             z-index: 1;
         }
