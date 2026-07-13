@@ -6126,6 +6126,67 @@
             return { layer, flag };
         }
 
+        // Resolve any country name (including free-typed "Other" entries) to an ISO
+        // alpha-2 code, so every customer's flag can be welcomed — not just the ones
+        // in the dropdown. Dropdown countries keep their crafted CSS flag; everything
+        // else falls back to a CDN flag image.
+        const ISO_REGIONS = ['ad','ae','af','ag','ai','al','am','ao','ar','as','at','au','aw','ax','az','ba','bb','bd','be','bf','bg','bh','bi','bj','bl','bm','bn','bo','bq','br','bs','bt','bw','by','bz','ca','cc','cd','cf','cg','ch','ci','ck','cl','cm','cn','co','cr','cu','cv','cw','cx','cy','cz','de','dj','dk','dm','do','dz','ec','ee','eg','eh','er','es','et','fi','fj','fk','fm','fo','fr','ga','gb','gd','ge','gf','gg','gh','gi','gl','gm','gn','gp','gq','gr','gt','gu','gw','gy','hk','hn','hr','ht','hu','id','ie','il','im','in','io','iq','ir','is','it','je','jm','jo','jp','ke','kg','kh','ki','km','kn','kp','kr','kw','ky','kz','la','lb','lc','li','lk','lr','ls','lt','lu','lv','ly','ma','mc','md','me','mf','mg','mh','mk','ml','mm','mn','mo','mp','mq','mr','ms','mt','mu','mv','mw','mx','my','mz','na','nc','ne','nf','ng','ni','nl','no','np','nr','nu','nz','om','pa','pe','pf','pg','ph','pk','pl','pm','pn','pr','ps','pt','pw','py','qa','re','ro','rs','ru','rw','sa','sb','sc','sd','se','sg','sh','si','sk','sl','sm','sn','so','sr','ss','st','sv','sx','sy','sz','tc','td','tg','th','tj','tk','tl','tm','tn','to','tr','tt','tv','tw','tz','ua','ug','us','uy','uz','va','vc','ve','vg','vi','vn','vu','wf','ws','ye','yt','za','zm','zw'];
+
+        const countryNameToCode = (function () {
+            const map = {};
+            function addFromLocale(locale) {
+                let dn;
+                try { dn = new Intl.DisplayNames([locale], { type: 'region' }); } catch (e) { return; }
+                ISO_REGIONS.forEach((code) => {
+                    let name;
+                    try { name = dn.of(code.toUpperCase()); } catch (e) { return; }
+                    if (name && name.toLowerCase() !== code) map[name.toLowerCase()] = code;
+                });
+            }
+            addFromLocale('en');
+            try { if (typeof currentLanguage === 'string') addFromLocale(currentLanguage); } catch (e) {}
+            Object.assign(map, {
+                'usa': 'us', 'u.s.a.': 'us', 'u.s.': 'us', 'america': 'us', 'united states of america': 'us',
+                'uk': 'gb', 'u.k.': 'gb', 'britain': 'gb', 'great britain': 'gb', 'england': 'gb', 'scotland': 'gb', 'wales': 'gb', 'northern ireland': 'gb',
+                'uae': 'ae', 'emirates': 'ae', 'korea': 'kr', 'south korea': 'kr', 'north korea': 'kp',
+                'russia': 'ru', 'czechia': 'cz', 'czech republic': 'cz', 'holland': 'nl', 'the netherlands': 'nl',
+                'ivory coast': 'ci', 'cape verde': 'cv', 'east timor': 'tl', 'vietnam': 'vn', 'laos': 'la',
+                'syria': 'sy', 'iran': 'ir', 'moldova': 'md', 'brunei': 'bn', 'bolivia': 'bo', 'venezuela': 've', 'tanzania': 'tz'
+            });
+            return function (input) {
+                if (!input) return '';
+                const key = String(input).trim().toLowerCase();
+                return key ? (map[key] || '') : '';
+            };
+        })();
+
+        const IMG_FLAG = /^img:[a-z]{2}$/;
+
+        function isValidFlagToken(token) {
+            return !!token && (KNOWN_FLAG.test(token) || IMG_FLAG.test(token));
+        }
+
+        // Apply a flag token to an element: 'flag-xx' uses the crafted CSS flag,
+        // 'img:xx' paints a CDN flag image for any country in the world.
+        function applyFlagToElement(el, token, extraClass) {
+            if (!el) return;
+            const base = (extraClass ? extraClass + ' ' : '') + 'country-flag ';
+            if (IMG_FLAG.test(token)) {
+                el.className = base + 'flag-img';
+                el.style.backgroundImage = "url('https://flagcdn.com/" + token.slice(4) + ".svg')";
+            } else {
+                el.className = base + token;
+                el.style.backgroundImage = '';
+            }
+        }
+
+        function resolveFlagToken(country) {
+            const opt = Array.from(preorderCountryOptions).find((o) => o.dataset.country === country);
+            if (opt && KNOWN_FLAG.test(opt.dataset.flag || '')) return opt.dataset.flag;
+            const code = countryNameToCode(country);
+            return code ? 'img:' + code : '';
+        }
+
         // Floating theme-switch control
         const themeSwitch = document.getElementById('themeSwitch');
         const themeSwitchToggle = document.getElementById('themeSwitchToggle');
@@ -6160,8 +6221,8 @@
             if (themeSwitchToggle) themeSwitchToggle.setAttribute('aria-expanded', 'false');
         }
 
-        function applyCountryTheme(country, flagClass, persist) {
-            if (!flagClass || !KNOWN_FLAG.test(flagClass)) return;
+        function applyCountryTheme(country, flagToken, persist) {
+            if (!isValidFlagToken(flagToken)) return;
 
             if (collectionSection) {
                 if (!collectionFlagEl) {
@@ -6169,7 +6230,7 @@
                     collectionFlagEl = built.flag;
                     collectionSection.appendChild(built.layer);
                 }
-                collectionFlagEl.className = 'country-flag ' + flagClass;
+                applyFlagToElement(collectionFlagEl, flagToken);
             }
 
             if (cartPopupThemeEl) {
@@ -6178,21 +6239,21 @@
                     cartFlagEl = built.flag;
                     cartPopupThemeEl.insertBefore(built.layer, cartPopupThemeEl.firstChild);
                 }
-                cartFlagEl.className = 'country-flag ' + flagClass;
+                applyFlagToElement(cartFlagEl, flagToken);
             }
 
             document.body.classList.add('has-country-theme');
 
             // Populate + reveal the floating switch, then apply the saved display mode
-            if (themeSwitchToggleFlag) themeSwitchToggleFlag.className = 'theme-switch-flag country-flag ' + flagClass;
-            if (themeSwitchMenuFlag) themeSwitchMenuFlag.className = 'theme-switch-flag country-flag ' + flagClass;
+            applyFlagToElement(themeSwitchToggleFlag, flagToken, 'theme-switch-flag');
+            applyFlagToElement(themeSwitchMenuFlag, flagToken, 'theme-switch-flag');
             if (themeSwitchCountryName && country) themeSwitchCountryName.textContent = country;
             if (themeSwitch) themeSwitch.hidden = false;
             setThemeMode(getThemeMode(), false);
 
             if (persist) {
                 try {
-                    localStorage.setItem('void-country', JSON.stringify({ country: country, flag: flagClass }));
+                    localStorage.setItem('void-country', JSON.stringify({ country: country, flag: flagToken }));
                 } catch (e) {}
             }
         }
@@ -6226,7 +6287,7 @@
         (function restoreCountryTheme() {
             let saved = null;
             try { saved = JSON.parse(localStorage.getItem('void-country') || 'null'); } catch (e) {}
-            if (saved && saved.flag && KNOWN_FLAG.test(saved.flag)) {
+            if (saved && isValidFlagToken(saved.flag)) {
                 applyCountryTheme(saved.country, saved.flag, false);
             }
         })();
@@ -6276,9 +6337,11 @@
 
                     preorderResponse.innerHTML = result.message ? formatBrandMarkup(result.message) : t('preorderSuccess');
 
-                    // Only now — after a successful join — light up the chosen country's flag.
-                    if (selectedFlagClass) {
-                        applyCountryTheme(selectedCountry, selectedFlagClass, true);
+                    // Only now — after a successful join — light up the chosen country's
+                    // flag. Works for dropdown countries and free-typed "Other" entries.
+                    const joinedFlag = resolveFlagToken(selectedCountry);
+                    if (joinedFlag) {
+                        applyCountryTheme(selectedCountry, joinedFlag, true);
                     }
 
                     preorderForm.reset();
