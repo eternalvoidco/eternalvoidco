@@ -4357,6 +4357,110 @@
             border-color: rgba(199, 169, 108, 0.95);
         }
 
+        /* In-panel "added to bag" confirmation (a cart cue that fits the detail page) */
+        .pd-added {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 0 0 1.5rem;
+            padding: 0.8rem 0.9rem;
+            border: 1px solid rgba(199, 169, 108, 0.45);
+            background: linear-gradient(120deg, rgba(28, 22, 10, 0.92), rgba(12, 10, 6, 0.94));
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42);
+            animation: pdAddedIn 0.5s var(--ease-lux) both;
+        }
+
+        .pd-added[hidden] {
+            display: none;
+        }
+
+        @keyframes pdAddedIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        html.reduce-motion .pd-added {
+            animation: none;
+        }
+
+        .pd-added-mark {
+            flex: 0 0 auto;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--void-gold-gradient);
+            color: #120d05;
+        }
+
+        .pd-added-mark svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        .pd-added-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .pd-added-title {
+            font-size: 0.58rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--void-gold-soft);
+        }
+
+        .pd-added-item {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: var(--void-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pd-added-view {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(199, 169, 108, 0.6);
+            background: rgba(14, 12, 8, 0.7);
+            color: #f7ebd2;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.58rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            padding: 0.55rem 0.8rem;
+            cursor: pointer;
+            transition: border-color 0.24s ease, background 0.24s ease, transform 0.24s ease;
+        }
+
+        .pd-added-view:hover,
+        .pd-added-view:focus-visible {
+            border-color: rgba(199, 169, 108, 0.95);
+            background: rgba(24, 19, 10, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .pd-added-count {
+            display: inline-grid;
+            place-items: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 9px;
+            background: var(--void-gold-gradient);
+            color: #120d05;
+            font-size: 0.58rem;
+            font-weight: 700;
+        }
+
         .pd-desc-wrap {
             margin-bottom: 0.4rem;
         }
@@ -6291,6 +6395,16 @@
                     </div>
 
                     <button type="button" class="pd-add" id="pdAdd" data-i18n="pdAddToBag">Add to shopping bag</button>
+                    <div class="pd-added" id="pdAdded" role="status" aria-live="polite" hidden>
+                        <span class="pd-added-mark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false"><path d="M5 12.5l4.2 4.2L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="pd-added-copy">
+                            <span class="pd-added-title" data-i18n="pdAddedTitle">Added to your bag</span>
+                            <span class="pd-added-item" id="pdAddedItem"></span>
+                        </span>
+                        <button type="button" class="pd-added-view" id="pdAddedView"><span data-i18n="pdViewBag">View bag</span><span class="pd-added-count" id="pdAddedCount">0</span></button>
+                    </div>
                     <button type="button" class="pd-advisor" id="pdAdvisor" data-i18n="pdContactAdvisor">Contact an Advisor</button>
 
                     <div class="pd-desc-wrap">
@@ -6680,6 +6794,8 @@
             pdSelectSize: 'Select your size',
             pdSizeChart: 'Size chart',
             pdAddToBag: 'Add to shopping bag',
+            pdAddedTitle: 'Added to your bag',
+            pdViewBag: 'View bag',
             pdContactAdvisor: 'Contact an Advisor',
             pdSeeMore: 'See More',
             pdSeeLess: 'See Less',
@@ -8844,8 +8960,27 @@
         const pdAdvisor = document.getElementById('pdAdvisor');
         const pdDesc = document.getElementById('pdDesc');
         const pdSeeMore = document.getElementById('pdSeeMore');
+        const pdAdded = document.getElementById('pdAdded');
+        const pdAddedItem = document.getElementById('pdAddedItem');
+        const pdAddedCount = document.getElementById('pdAddedCount');
+        const pdAddedView = document.getElementById('pdAddedView');
         let pdState = { card: null, name: '', price: 0, size: '' };
+        let pdBagTouched = false;
         let lastProductDetailFocus = null;
+
+        function cartQuantity() {
+            return cart.reduce((total, item) => total + item.quantity, 0);
+        }
+
+        function showPdAdded(name, size) {
+            if (!pdAdded) return;
+            if (pdAddedItem) pdAddedItem.textContent = size ? `${name} · ${size}` : name;
+            if (pdAddedCount) pdAddedCount.textContent = String(cartQuantity());
+            pdAdded.hidden = false;
+            pdAdded.style.animation = 'none';
+            void pdAdded.offsetWidth;
+            pdAdded.style.animation = '';
+        }
 
         const PRODUCT_META = {
             'Levitate Tee': { code: 'EV·S1·LVT', description: 'A weightless ritual tee in heavyweight cotton. Dropped shoulder, wide silhouette and a dense hand-feel engineered for layered VOID© styling. Cut with an intentional oversized architecture that drapes rather than clings.' },
@@ -8889,6 +9024,8 @@
                 pdAdd.dataset.defaultLabel = t('pdAddToBag');
                 resetAddButtonState(pdAdd);
             }
+            pdBagTouched = false;
+            if (pdAdded) pdAdded.hidden = true;
             updatePdSizes(pdState.size);
 
             productDetailOverlay.querySelectorAll('[data-accordion]').forEach((acc) => acc.classList.remove('open'));
@@ -8914,6 +9051,13 @@
             document.body.classList.remove('product-detail-open');
             stopEdgeAmbience();
             focusElementSafely(lastProductDetailFocus);
+
+            // If the visitor added anything while browsing this piece, reveal the
+            // full cart as the detail page dissolves away.
+            if (pdBagTouched && cart.length > 0) {
+                pdBagTouched = false;
+                window.setTimeout(openCartPopup, 220);
+            }
         }
 
         if (pdSizes) {
@@ -8944,6 +9088,15 @@
                 if (pdState.card) setProductCardSize(pdState.card, pdState.size);
                 resetAddButtonState(pdAdd);
                 addToCart(pdState.name, pdState.price, pdState.size, pdAdd);
+                pdBagTouched = true;
+                showPdAdded(pdState.name, pdState.size);
+            });
+        }
+
+        // "View bag" closes the detail page, which then reveals the full cart
+        if (pdAddedView) {
+            pdAddedView.addEventListener('click', () => {
+                closeProductDetail();
             });
         }
 
