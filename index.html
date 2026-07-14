@@ -3931,6 +3931,40 @@
             transform: scaleX(1);
         }
 
+        /* Cards hidden by the active category filter */
+        .product-card.is-filtered-out {
+            display: none;
+        }
+
+        /* Gentle re-entrance when a card becomes visible after a filter change */
+        @keyframes collectionFilterIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .product-card.is-filtered-in {
+            animation: collectionFilterIn 0.5s var(--ease-lux) both;
+        }
+
+        html.reduce-motion .product-card.is-filtered-in {
+            animation: none;
+        }
+
+        /* Empty state when a category has no pieces yet */
+        .collection-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2.4rem 1rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            letter-spacing: 0.08em;
+            color: rgba(245, 242, 236, 0.6);
+        }
+
+        .collection-empty:not(.is-visible) {
+            display: none;
+        }
+
         /* ===== Shared overlay scaffold: product detail + style guide ===== */
         body.product-detail-open,
         body.style-guide-open {
@@ -6543,6 +6577,7 @@
         Object.assign(translations.en, {
             catViewAll: 'View All',
             catTshirts: 'T-Shirts',
+            collectionEmpty: 'No pieces in this category yet.',
             pdClose: 'Close product',
             pdBack: 'Back to collection',
             pdSelectSize: 'Select your size',
@@ -8725,11 +8760,56 @@
             });
         });
 
-        // Category tabs (View All / T-Shirts) — active state only for now
-        document.querySelectorAll('.collection-nav-tab').forEach((tab) => {
+        // Category tabs (View All / T-Shirts …) — real filtering by product category.
+        // Every card defaults to the "tshirts" category; future products just set their
+        // own data-category and a matching tab, and this filter picks them up.
+        const collectionGrid = document.querySelector('.products-grid');
+        const collectionTabs = document.querySelectorAll('.collection-nav-tab');
+        const collectionCards = document.querySelectorAll('.product-card');
+
+        collectionCards.forEach((card) => {
+            if (!card.dataset.category) card.dataset.category = 'tshirts';
+        });
+
+        let collectionEmpty = null;
+        if (collectionGrid) {
+            collectionEmpty = document.createElement('p');
+            collectionEmpty.className = 'collection-empty';
+            collectionEmpty.setAttribute('role', 'status');
+            collectionEmpty.textContent = t('collectionEmpty');
+            collectionGrid.appendChild(collectionEmpty);
+        }
+
+        function applyCollectionFilter(filter) {
+            let visibleCount = 0;
+            collectionCards.forEach((card) => {
+                const category = card.dataset.category || 'tshirts';
+                const show = filter === 'all' || category === filter;
+                const wasHidden = card.classList.contains('is-filtered-out');
+                card.classList.toggle('is-filtered-out', !show);
+                if (show) {
+                    visibleCount += 1;
+                    if (wasHidden) {
+                        card.classList.remove('is-filtered-in');
+                        void card.offsetWidth;
+                        card.classList.add('is-filtered-in');
+                    }
+                }
+            });
+            if (collectionEmpty) {
+                collectionEmpty.classList.toggle('is-visible', visibleCount === 0);
+            }
+        }
+
+        collectionTabs.forEach((tab) => {
             tab.addEventListener('click', () => {
-                document.querySelectorAll('.collection-nav-tab').forEach((other) => other.classList.remove('active'));
+                collectionTabs.forEach((other) => {
+                    other.classList.remove('active');
+                    other.setAttribute('aria-selected', 'false');
+                });
                 tab.classList.add('active');
+                tab.setAttribute('aria-selected', 'true');
+                applyCollectionFilter(tab.dataset.collectionFilter || 'all');
             });
         });
 
