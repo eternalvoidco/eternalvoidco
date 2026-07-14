@@ -656,6 +656,8 @@
         .size-popup-backdrop.open .size-popup .panel-frame,
         .size-guide-overlay.open .size-guide-panel .panel-frame,
         .gallery-preview-backdrop.open .gallery-preview-panel .panel-frame,
+        .product-detail-overlay.open .product-detail-panel .panel-frame,
+        .style-guide-overlay.open .style-guide-panel .panel-frame,
         .cart-popup.open .panel-frame {
             opacity: 1;
         }
@@ -664,6 +666,8 @@
         .size-popup-backdrop.open .size-popup .panel-frame::before,
         .size-guide-overlay.open .size-guide-panel .panel-frame::before,
         .gallery-preview-backdrop.open .gallery-preview-panel .panel-frame::before,
+        .product-detail-overlay.open .product-detail-panel .panel-frame::before,
+        .style-guide-overlay.open .style-guide-panel .panel-frame::before,
         .cart-popup.open .panel-frame::before {
             animation: voidFrameOrbit 5.5s linear infinite;
         }
@@ -3243,9 +3247,9 @@
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(168px, 216px));
+            grid-template-columns: repeat(auto-fit, minmax(232px, 296px));
             justify-content: center;
-            gap: 2.75rem 1.6rem;
+            gap: 3.6rem 2.1rem;
         }
 
         /* Wide screens fit all five pieces on one row — distribute them evenly,
@@ -3873,6 +3877,635 @@
             border-color: rgba(199, 169, 108, 0.92);
             background: rgba(24, 19, 10, 0.9);
             transform: translateY(-2px);
+        }
+
+        /* ===== Collection category menu (View All / T-Shirts) ===== */
+        .collection-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: clamp(1.4rem, 3.4vw, 2.8rem);
+            margin: 0.2rem auto 2.6rem;
+            padding-bottom: 0.9rem;
+            border-bottom: 1px solid rgba(199, 169, 108, 0.16);
+        }
+
+        .collection-nav-tab {
+            position: relative;
+            background: none;
+            border: 0;
+            color: rgba(245, 242, 236, 0.58);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.64rem;
+            font-weight: 600;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 0.25rem 0.15rem 0.55rem;
+            transition: color 0.45s var(--ease-lux);
+        }
+
+        .collection-nav-tab::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -0.9rem;
+            height: 1px;
+            background: var(--void-gold-gradient);
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 0.55s var(--ease-lux);
+        }
+
+        .collection-nav-tab:hover,
+        .collection-nav-tab:focus-visible {
+            color: rgba(245, 242, 236, 0.92);
+        }
+
+        .collection-nav-tab.active {
+            color: var(--void-gold-bright);
+        }
+
+        .collection-nav-tab.active::after {
+            transform: scaleX(1);
+        }
+
+        /* ===== Shared overlay scaffold: product detail + style guide ===== */
+        body.product-detail-open,
+        body.style-guide-open {
+            overflow: hidden;
+        }
+
+        body.product-detail-open .nav,
+        body.product-detail-open .video-section,
+        body.product-detail-open .products,
+        body.product-detail-open .footer,
+        body.product-detail-open .cart-fab,
+        body.product-detail-open .cart-popup,
+        body.product-detail-open .theme-switch,
+        body.style-guide-open .nav,
+        body.style-guide-open .video-section,
+        body.style-guide-open .products,
+        body.style-guide-open .footer,
+        body.style-guide-open .cart-fab,
+        body.style-guide-open .cart-popup,
+        body.style-guide-open .theme-switch {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .product-detail-overlay,
+        .style-guide-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2500;
+            display: grid;
+            place-items: center;
+            padding: clamp(0.7rem, 2.2vw, 1.4rem);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 18% 14%, rgba(199, 169, 108, 0.16), transparent 46%),
+                radial-gradient(circle at 82% 86%, rgba(199, 169, 108, 0.12), transparent 48%),
+                rgba(2, 2, 2, 0.96);
+            transition: opacity 0.42s ease, visibility 0.42s ease;
+        }
+
+        .product-detail-overlay.open,
+        .style-guide-overlay.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .product-detail-panel,
+        .style-guide-panel {
+            position: relative;
+            border: 1px solid rgba(199, 169, 108, var(--void-border-alpha, 0.42));
+            background: linear-gradient(165deg, rgba(12, 12, 12, 0.98), rgba(5, 5, 5, 0.98));
+            box-shadow: 0 28px 64px rgba(0, 0, 0, 0.62), 0 0 48px 4px rgba(199, 169, 108, var(--void-glow-alpha, 0.14));
+            transform: scaleY(0.05) scaleX(0.92) translateY(10px);
+            transform-origin: center;
+            opacity: 0;
+            transition: transform 0.66s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.36s ease;
+        }
+
+        .product-detail-panel {
+            width: min(1180px, 100%);
+            max-height: min(92vh, 940px);
+            overflow: hidden;
+        }
+
+        .style-guide-panel {
+            width: min(880px, 100%);
+            max-height: min(90vh, 900px);
+            overflow: hidden;
+        }
+
+        .product-detail-overlay.open .product-detail-panel,
+        .style-guide-overlay.open .style-guide-panel {
+            overflow: auto;
+            transform: scaleY(1) scaleX(1) translateY(0);
+            opacity: 1;
+        }
+
+        /* ---- Product detail layout ---- */
+        .pd-close {
+            position: absolute;
+            top: 0.85rem;
+            right: 0.85rem;
+            z-index: 5;
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(10, 10, 10, 0.7);
+            color: var(--void-white);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: border-color 0.22s ease, background 0.22s ease;
+        }
+
+        .pd-close:hover,
+        .pd-close:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            background: rgba(22, 17, 9, 0.9);
+        }
+
+        .pd-layout {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+        }
+
+        .pd-media {
+            position: relative;
+            background:
+                radial-gradient(circle at 22% 18%, rgba(199, 169, 108, 0.16), rgba(9, 9, 9, 0.94) 52%),
+                linear-gradient(180deg, rgba(24, 24, 24, 0.9), rgba(4, 4, 4, 0.98));
+            border-right: 1px solid rgba(199, 169, 108, 0.16);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .pd-media-stage {
+            position: relative;
+            flex: 1;
+            aspect-ratio: 4/5;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .pd-media .product-logo-mark {
+            position: absolute;
+        }
+
+        .pd-back {
+            position: absolute;
+            top: 0.85rem;
+            left: 0.85rem;
+            z-index: 4;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            background: rgba(10, 10, 10, 0.68);
+            color: var(--void-gold-soft);
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: border-color 0.24s ease, transform 0.24s ease;
+        }
+
+        .pd-back:hover,
+        .pd-back:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            transform: translateX(-3px);
+        }
+
+        .pd-thumbs {
+            display: flex;
+            gap: 0.55rem;
+            padding: 0.85rem;
+            justify-content: center;
+        }
+
+        .pd-thumb {
+            width: 46px;
+            height: 58px;
+            border: 1px solid rgba(199, 169, 108, 0.2);
+            background: linear-gradient(180deg, rgba(24, 24, 24, 0.9), rgba(6, 6, 6, 0.98));
+        }
+
+        .pd-thumb.active {
+            border-color: rgba(199, 169, 108, 0.7);
+        }
+
+        .pd-info {
+            padding: clamp(1.4rem, 3vw, 2.6rem);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pd-code {
+            margin: 0 0 0.5rem;
+            font-size: 0.58rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.5);
+        }
+
+        .pd-name {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.7rem, 4.4vw, 2.5rem);
+            letter-spacing: 0.04em;
+            color: var(--void-white);
+        }
+
+        .pd-price {
+            margin: 0.55rem 0 1.6rem;
+            font-size: 0.98rem;
+            letter-spacing: 0.08em;
+            color: var(--void-gold-soft);
+        }
+
+        .pd-size-block {
+            margin-bottom: 1.4rem;
+        }
+
+        .pd-size-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.7rem;
+        }
+
+        .pd-size-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.72);
+        }
+
+        .pd-size-chart {
+            background: none;
+            border: 0;
+            border-bottom: 1px solid rgba(199, 169, 108, 0.5);
+            color: var(--void-gold-soft);
+            font-size: 0.58rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            padding: 0 0 2px;
+            cursor: pointer;
+            transition: color 0.24s ease, border-color 0.24s ease;
+        }
+
+        .pd-size-chart:hover,
+        .pd-size-chart:focus-visible {
+            color: var(--void-gold-bright);
+            border-color: rgba(199, 169, 108, 0.95);
+        }
+
+        .pd-sizes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .pd-sizes.nudge {
+            animation: pdNudge 0.42s ease;
+        }
+
+        @keyframes pdNudge {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .pd-size {
+            min-width: 48px;
+            padding: 0.6rem 0.5rem;
+            border: 1px solid rgba(199, 169, 108, 0.28);
+            background: rgba(12, 12, 12, 0.7);
+            color: rgba(245, 242, 236, 0.86);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: border-color 0.24s ease, background 0.24s ease, color 0.24s ease;
+        }
+
+        .pd-size:hover,
+        .pd-size:focus-visible {
+            border-color: rgba(199, 169, 108, 0.7);
+        }
+
+        .pd-size.active {
+            border-color: var(--void-gold);
+            background: var(--void-gold-gradient);
+            color: #120d05;
+            font-weight: 700;
+        }
+
+        .pd-add {
+            width: 100%;
+            min-height: 54px;
+            margin-bottom: 0.8rem;
+            border: 1px solid rgba(199, 169, 108, 0.6);
+            border-radius: 40px;
+            background: var(--void-gold-gradient);
+            color: #120d05;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.24s ease, box-shadow 0.24s ease, filter 0.24s ease;
+        }
+
+        .pd-add:hover,
+        .pd-add:focus-visible {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(199, 169, 108, 0.24);
+            filter: brightness(1.05);
+        }
+
+        .pd-add.added {
+            filter: none;
+            background: rgba(20, 32, 18, 0.95);
+            color: #d6f5c8;
+            border-color: rgba(120, 190, 110, 0.6);
+        }
+
+        .pd-advisor {
+            align-self: center;
+            background: none;
+            border: 0;
+            border-bottom: 1px solid rgba(199, 169, 108, 0.45);
+            color: var(--void-gold-soft);
+            font-size: 0.6rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            padding: 0 0 3px;
+            margin-bottom: 1.6rem;
+            cursor: pointer;
+            transition: color 0.24s ease, border-color 0.24s ease;
+        }
+
+        .pd-advisor:hover,
+        .pd-advisor:focus-visible {
+            color: var(--void-gold-bright);
+            border-color: rgba(199, 169, 108, 0.95);
+        }
+
+        .pd-desc-wrap {
+            margin-bottom: 0.4rem;
+        }
+
+        .pd-desc {
+            margin: 0;
+            font-size: 0.82rem;
+            line-height: 1.75;
+            color: rgba(245, 242, 236, 0.78);
+        }
+
+        .pd-desc.collapsed {
+            max-height: 4.6em;
+            overflow: hidden;
+            -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+            mask-image: linear-gradient(180deg, #000 55%, transparent);
+        }
+
+        .pd-see-more {
+            margin-top: 0.5rem;
+            background: none;
+            border: 0;
+            color: var(--void-gold-soft);
+            font-size: 0.58rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(199, 169, 108, 0.5);
+            padding: 0 0 2px;
+            cursor: pointer;
+        }
+
+        .pd-see-more:hover,
+        .pd-see-more:focus-visible {
+            color: var(--void-gold-bright);
+        }
+
+        .pd-accordions {
+            margin-top: 1.5rem;
+        }
+
+        /* ---- Shared accordion (product detail + style guide) ---- */
+        .pd-accordion,
+        .sg-guide {
+            border-top: 1px solid rgba(199, 169, 108, 0.18);
+        }
+
+        .pd-accordions .pd-accordion:last-child {
+            border-bottom: 1px solid rgba(199, 169, 108, 0.18);
+        }
+
+        .pd-accordion-trigger {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            background: none;
+            border: 0;
+            padding: 1.05rem 0;
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .pd-accordion-icon {
+            position: relative;
+            flex: 0 0 auto;
+            width: 14px;
+            height: 14px;
+        }
+
+        .pd-accordion-icon::before,
+        .pd-accordion-icon::after {
+            content: '';
+            position: absolute;
+            background: var(--void-gold-soft);
+            transition: transform 0.4s var(--ease-lux), opacity 0.4s var(--ease-lux);
+        }
+
+        .pd-accordion-icon::before {
+            top: 6px;
+            left: 0;
+            width: 14px;
+            height: 1.5px;
+        }
+
+        .pd-accordion-icon::after {
+            top: 0;
+            left: 6px;
+            width: 1.5px;
+            height: 14px;
+        }
+
+        .pd-accordion.open .pd-accordion-icon::after,
+        .sg-guide.open .pd-accordion-icon::after {
+            transform: scaleY(0);
+            opacity: 0;
+        }
+
+        .pd-accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.55s var(--ease-lux);
+        }
+
+        .pd-accordion.open .pd-accordion-body,
+        .sg-guide.open .pd-accordion-body {
+            max-height: 560px;
+        }
+
+        .pd-accordion-inner {
+            padding: 0 0 1.1rem;
+            font-size: 0.76rem;
+            line-height: 1.7;
+            color: rgba(245, 242, 236, 0.74);
+        }
+
+        .pd-accordion-inner ul {
+            margin: 0.4rem 0 0;
+            padding-left: 1.1rem;
+        }
+
+        .pd-accordion-inner li {
+            margin-bottom: 0.3rem;
+        }
+
+        .pd-accordion-inner h4 {
+            margin: 0.9rem 0 0.2rem;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.66rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--void-gold-soft);
+        }
+
+        .pd-accordion-inner h4:first-child {
+            margin-top: 0;
+        }
+
+        .pd-accordion-inner p {
+            margin: 0.2rem 0;
+        }
+
+        /* ---- Style guide overlay ---- */
+        .sg-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.4rem 1.6rem 1rem;
+            border-bottom: 1px solid rgba(199, 169, 108, 0.24);
+        }
+
+        .sg-kicker {
+            margin: 0 0 0.35rem;
+            font-size: 0.58rem;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: var(--void-gold-soft);
+        }
+
+        .sg-title {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.5rem, 4.4vw, 2.4rem);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--void-white);
+        }
+
+        .sg-close {
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(12, 12, 12, 0.86);
+            color: var(--void-white);
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            flex: 0 0 auto;
+            transition: border-color 0.22s ease, background 0.22s ease;
+        }
+
+        .sg-close:hover,
+        .sg-close:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            background: rgba(22, 17, 9, 0.9);
+        }
+
+        .sg-body {
+            padding: 1.3rem 1.6rem 0.4rem;
+        }
+
+        .sg-intro {
+            margin: 0 0 1.2rem;
+            font-size: 0.8rem;
+            line-height: 1.75;
+            color: rgba(245, 242, 236, 0.76);
+        }
+
+        .sg-guide-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            letter-spacing: 0.05em;
+            text-transform: none;
+        }
+
+        .sg-actions {
+            display: flex;
+            justify-content: center;
+            padding: 1.1rem 1.6rem 1.4rem;
+        }
+
+        @media (max-width: 860px) {
+            .pd-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .pd-media {
+                border-right: 0;
+                border-bottom: 1px solid rgba(199, 169, 108, 0.16);
+            }
+
+            .pd-media-stage {
+                aspect-ratio: 3/4;
+                max-height: 52vh;
+            }
+        }
+
+        /* Respect the site's reduced-motion switch */
+        html.reduce-motion .product-detail-panel,
+        html.reduce-motion .style-guide-panel {
+            transition: opacity 0.2s ease;
+            transform: none;
+        }
+
+        html.reduce-motion .collection-nav-tab::after,
+        html.reduce-motion .pd-accordion-body,
+        html.reduce-motion .sg-guide .pd-accordion-body {
+            transition: none;
         }
 
         body.gallery-preview-open {
@@ -5206,7 +5839,7 @@
     <nav class="nav" id="nav">
         <ul class="nav-left">
             <li><a href="#shop" data-i18n="navCollection">Collection</a></li>
-            <li class="nav-style-guide"><a href="/seo-hub.html" data-i18n="navStyleGuide">Style Guide</a></li>
+            <li class="nav-style-guide"><a href="#" data-style-guide-trigger data-i18n="navStyleGuide">Style Guide</a></li>
         </ul>
         <div class="logo">VOID<sup class="brand-copyright">©</sup></div>
         <ul class="nav-right">
@@ -5234,7 +5867,7 @@
     <aside class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Menu" aria-hidden="true">
         <ul class="mobile-menu-links">
             <li><a href="#shop" data-i18n="navCollection">Collection</a></li>
-            <li><a href="/seo-hub.html" data-i18n="navStyleGuide">Style Guide</a></li>
+            <li><a href="#" data-style-guide-trigger data-i18n="navStyleGuide">Style Guide</a></li>
             <li><a href="#newsletter" data-i18n="navContact">Contact</a></li>
         </ul>
         <button type="button" class="mobile-menu-preorder nav-preorder-trigger" data-preorder-trigger data-i18n="navPreorder">Pre-order</button>
@@ -5303,6 +5936,10 @@
                     <button type="button" class="size-guide-trigger" id="sizeGuideTrigger" data-i18n="sizeGuide">Size Guide</button>
                 </div>
             </div>
+            <nav class="collection-nav fade-in-up" style="--delay: 60ms;" aria-label="Product categories">
+                <button type="button" class="collection-nav-tab active" data-collection-filter="all" data-i18n="catViewAll">View All</button>
+                <button type="button" class="collection-nav-tab" data-collection-filter="tshirts" data-i18n="catTshirts">T-Shirts</button>
+            </nav>
             <div class="products-grid">
                 <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID© styling.">
                     <div class="product-image">
@@ -5489,6 +6126,161 @@
         </section>
     </div>
 
+    <!-- Product detail overlay (PDP) -->
+    <div class="product-detail-overlay" id="productDetailOverlay" aria-hidden="true">
+        <section class="product-detail-panel" role="dialog" aria-modal="true" aria-labelledby="pdName">
+            <span class="panel-frame" aria-hidden="true"></span>
+            <button type="button" class="pd-close" id="pdClose" aria-label="Close product" data-i18n-aria-label="pdClose">✕</button>
+            <div class="pd-layout">
+                <div class="pd-media">
+                    <button type="button" class="pd-back" id="pdBack" aria-label="Back to collection" data-i18n-aria-label="pdBack">‹</button>
+                    <div class="pd-media-stage">
+                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
+                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
+                    </div>
+                    <div class="pd-thumbs" aria-hidden="true">
+                        <span class="pd-thumb active"></span>
+                        <span class="pd-thumb"></span>
+                        <span class="pd-thumb"></span>
+                    </div>
+                </div>
+                <div class="pd-info">
+                    <p class="pd-code" id="pdCode">EV-ATELIER</p>
+                    <h2 class="pd-name" id="pdName">Product</h2>
+                    <p class="pd-price" id="pdPrice">€0</p>
+
+                    <div class="pd-size-block">
+                        <div class="pd-size-head">
+                            <span class="pd-size-label" data-i18n="pdSelectSize">Select your size</span>
+                            <button type="button" class="pd-size-chart" id="pdSizeChart" data-i18n="pdSizeChart">Size chart</button>
+                        </div>
+                        <div class="pd-sizes" id="pdSizes" role="group" aria-label="Select your size" data-i18n-aria-label="pdSelectSize">
+                            <button type="button" class="pd-size" data-pd-size="XS" aria-pressed="false">XS</button>
+                            <button type="button" class="pd-size" data-pd-size="S" aria-pressed="false">S</button>
+                            <button type="button" class="pd-size" data-pd-size="M" aria-pressed="false">M</button>
+                            <button type="button" class="pd-size" data-pd-size="L" aria-pressed="false">L</button>
+                            <button type="button" class="pd-size" data-pd-size="XL" aria-pressed="false">XL</button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="pd-add" id="pdAdd" data-i18n="pdAddToBag">Add to shopping bag</button>
+                    <button type="button" class="pd-advisor" id="pdAdvisor" data-i18n="pdContactAdvisor">Contact an Advisor</button>
+
+                    <div class="pd-desc-wrap">
+                        <p class="pd-desc collapsed" id="pdDesc"></p>
+                        <button type="button" class="pd-see-more" id="pdSeeMore" data-i18n="pdSeeMore">See More</button>
+                    </div>
+
+                    <div class="pd-accordions">
+                        <div class="pd-accordion" data-accordion>
+                            <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
+                                <span data-i18n="pdProductCare">Product care</span>
+                                <span class="pd-accordion-icon" aria-hidden="true"></span>
+                            </button>
+                            <div class="pd-accordion-body">
+                                <div class="pd-accordion-inner">
+                                    <p data-i18n="pdCareIntro">To preserve the quality of this garment, we recommend you respect the following care instructions:</p>
+                                    <ul>
+                                        <li data-i18n="pdCare1">Machine wash cold at a maximum of 30°C, gentle cycle</li>
+                                        <li data-i18n="pdCare2">Wash inside out with similar colours</li>
+                                        <li data-i18n="pdCare3">Do not bleach and do not tumble dry</li>
+                                        <li data-i18n="pdCare4">Iron inside out at a maximum sole-plate temperature of 110°C</li>
+                                        <li data-i18n="pdCare5">Do not dry clean · dry flat in shade</li>
+                                        <li data-i18n="pdCare6">Do not rub the print</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pd-accordion" data-accordion>
+                            <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
+                                <span data-i18n="pdDelivery">Delivery &amp; Returns</span>
+                                <span class="pd-accordion-icon" aria-hidden="true"></span>
+                            </button>
+                            <div class="pd-accordion-body">
+                                <div class="pd-accordion-inner">
+                                    <h4 data-i18n="pdSecurePayment">Secure Payment</h4>
+                                    <p data-i18n="pdSecurePaymentCopy">Credit card, debit card, PayPal and Apple Pay. All transactions are encrypted end to end.</p>
+                                    <h4 data-i18n="pdFastDelivery">Fast &amp; Tracked Delivery</h4>
+                                    <p data-i18n="pdFastDeliveryCopy">Safe, tracked home delivery worldwide once your pre-order ships.</p>
+                                    <h4 data-i18n="pdReturns">Returns &amp; Exchanges</h4>
+                                    <p data-i18n="pdReturnsCopy">Free returns and exchanges within 14 days on all orders, excluding personalised items.</p>
+                                    <h4 data-i18n="pdPackaging">Packaging</h4>
+                                    <p data-i18n-html="pdPackagingCopy">Signature VOID<sup class="brand-copyright">©</sup> wrapping, considered for the ritual of the unboxing.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Style guide overlay -->
+    <div class="style-guide-overlay" id="styleGuideOverlay" aria-hidden="true">
+        <section class="style-guide-panel" role="dialog" aria-modal="true" aria-labelledby="styleGuideTitle">
+            <span class="panel-frame" aria-hidden="true"></span>
+            <div class="sg-header">
+                <div>
+                    <p class="sg-kicker" data-i18n="sgKicker">The Atelier Codex</p>
+                    <h3 class="sg-title" id="styleGuideTitle" data-i18n-html="sgTitle">VOID<sup class="brand-copyright">©</sup> Style Guide</h3>
+                </div>
+                <button type="button" class="sg-close" id="styleGuideClose" aria-label="Close style guide" data-i18n-aria-label="sgClose">✕</button>
+            </div>
+            <div class="sg-body">
+                <p class="sg-intro" data-i18n="sgIntro">Field notes from the atelier — how to wear the darkness. Four studies in silhouette, restraint and contrast to help you build the fit before the drop.</p>
+                <div class="sg-guides">
+                    <article class="sg-guide" data-accordion>
+                        <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
+                            <span class="sg-guide-title" data-i18n="sgGuide1Title">Luxury Streetwear Guide</span>
+                            <span class="pd-accordion-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="pd-accordion-body">
+                            <div class="pd-accordion-inner">
+                                <p data-i18n="sgGuide1Body">Luxury streetwear lives in the tension between discipline and ease. Lead with heavyweight fabric, precise shoulders and a monochrome base, then let one elevated piece carry the look. Quality of cloth and cleanliness of silhouette matter more than logos.</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="sg-guide" data-accordion>
+                        <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
+                            <span class="sg-guide-title" data-i18n="sgGuide2Title">Designer Aesthetic Guide</span>
+                            <span class="pd-accordion-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="pd-accordion-body">
+                            <div class="pd-accordion-inner">
+                                <p data-i18n="sgGuide2Body">A designer aesthetic is a point of view, not a price tag. Choose a restrained palette, commit to proportion, and repeat two or three signatures until they read as yours. Consistency is what turns clothing into a code.</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="sg-guide" data-accordion>
+                        <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
+                            <span class="sg-guide-title" data-i18n="sgGuide3Title">Oversized Tee Fit Guide</span>
+                            <span class="pd-accordion-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="pd-accordion-body">
+                            <div class="pd-accordion-inner">
+                                <p data-i18n="sgGuide3Body">The oversized tee should drape, not drown. Aim for a dropped shoulder that lands mid-upper-arm and a hem that breaks at mid-hip. Size to your chest, then trust the cut — when in doubt, size down for a cleaner line. See the Size Guide for exact measurements.</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="sg-guide" data-accordion>
+                        <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
+                            <span class="sg-guide-title" data-i18n="sgGuide4Title">Monochrome Streetwear Guide</span>
+                            <span class="pd-accordion-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="pd-accordion-body">
+                            <div class="pd-accordion-inner">
+                                <p data-i18n="sgGuide4Body">All-black is built from texture and tone, not a single flat colour. Layer matte against sheen, heavy knit against fine jersey, and let depth do the work light usually would. Contrast in material is what keeps monochrome from going quiet.</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="sg-actions">
+                <button type="button" class="size-guide-return" id="styleGuideReturn" data-i18n-html="sizeGuideReturn">Return to VOID<sup class="brand-copyright">©</sup></button>
+            </div>
+        </section>
+    </div>
+
     <div class="gallery-preview-backdrop" id="galleryPreviewBackdrop" aria-hidden="true">
         <section class="gallery-preview-panel" role="dialog" aria-modal="true" aria-labelledby="galleryPreviewTitle">
             <span class="panel-frame" aria-hidden="true"></span>
@@ -5640,7 +6432,7 @@
                 <h4 data-i18n="footerShop">Shop</h4>
                 <ul>
                     <li><a href="#shop" data-i18n="navCollection">Collection</a></li>
-                    <li><a href="/seo-hub.html" data-i18n="navStyleGuidePlural">Style Guides</a></li>
+                    <li><a href="#" data-style-guide-trigger data-i18n="navStyleGuidePlural">Style Guides</a></li>
                     <li><a href="/privacy-policy.html" data-i18n="privacyPolicy">Privacy Policy</a></li>
                     <li><a href="/unsubscribe.html" data-i18n="unsubscribe">Unsubscribe</a></li>
                     <li><a href="mailto:support@eternalvoid.co" data-i18n="navContact">Contact</a></li>
@@ -5745,6 +6537,50 @@
         Object.assign(translations.fr, { selectLanguage: 'Sélectionner la langue', countryOther: 'Autre', countryTheme: 'Thème pays', themeCartOnly: 'Panier uniquement', themeOriginal: 'Original', switchCountryTheme: 'Changer le thème pays' });
         Object.assign(translations.it, { selectLanguage: 'Seleziona lingua', countryOther: 'Altro', countryTheme: 'Tema paese', themeCartOnly: 'Solo carrello', themeOriginal: 'Originale', switchCountryTheme: 'Cambia tema paese' });
         Object.assign(translations.de, { selectLanguage: 'Sprache auswählen', countryOther: 'Andere', countryTheme: 'Länder-Theme', themeCartOnly: 'Nur Warenkorb', themeOriginal: 'Original', switchCountryTheme: 'Länder-Theme wechseln' });
+
+        // New UI strings (product detail + style guide + category menu). English is the
+        // source; other languages fall back to English via t() until translated.
+        Object.assign(translations.en, {
+            catViewAll: 'View All',
+            catTshirts: 'T-Shirts',
+            pdClose: 'Close product',
+            pdBack: 'Back to collection',
+            pdSelectSize: 'Select your size',
+            pdSizeChart: 'Size chart',
+            pdAddToBag: 'Add to shopping bag',
+            pdContactAdvisor: 'Contact an Advisor',
+            pdSeeMore: 'See More',
+            pdSeeLess: 'See Less',
+            pdProductCare: 'Product care',
+            pdCareIntro: 'To preserve the quality of this garment, we recommend you respect the following care instructions:',
+            pdCare1: 'Machine wash cold at a maximum of 30°C, gentle cycle',
+            pdCare2: 'Wash inside out with similar colours',
+            pdCare3: 'Do not bleach and do not tumble dry',
+            pdCare4: 'Iron inside out at a maximum sole-plate temperature of 110°C',
+            pdCare5: 'Do not dry clean · dry flat in shade',
+            pdCare6: 'Do not rub the print',
+            pdDelivery: 'Delivery & Returns',
+            pdSecurePayment: 'Secure Payment',
+            pdSecurePaymentCopy: 'Credit card, debit card, PayPal and Apple Pay. All transactions are encrypted end to end.',
+            pdFastDelivery: 'Fast & Tracked Delivery',
+            pdFastDeliveryCopy: 'Safe, tracked home delivery worldwide once your pre-order ships.',
+            pdReturns: 'Returns & Exchanges',
+            pdReturnsCopy: 'Free returns and exchanges within 14 days on all orders, excluding personalised items.',
+            pdPackaging: 'Packaging',
+            pdPackagingCopy: `Signature ${brandMarkup} wrapping, considered for the ritual of the unboxing.`,
+            sgKicker: 'The Atelier Codex',
+            sgTitle: `${brandMarkup} Style Guide`,
+            sgClose: 'Close style guide',
+            sgIntro: 'Field notes from the atelier — how to wear the darkness. Four studies in silhouette, restraint and contrast to help you build the fit before the drop.',
+            sgGuide1Title: 'Luxury Streetwear Guide',
+            sgGuide1Body: 'Luxury streetwear lives in the tension between discipline and ease. Lead with heavyweight fabric, precise shoulders and a monochrome base, then let one elevated piece carry the look. Quality of cloth and cleanliness of silhouette matter more than logos.',
+            sgGuide2Title: 'Designer Aesthetic Guide',
+            sgGuide2Body: 'A designer aesthetic is a point of view, not a price tag. Choose a restrained palette, commit to proportion, and repeat two or three signatures until they read as yours. Consistency is what turns clothing into a code.',
+            sgGuide3Title: 'Oversized Tee Fit Guide',
+            sgGuide3Body: 'The oversized tee should drape, not drown. Aim for a dropped shoulder that lands mid-upper-arm and a hem that breaks at mid-hip. Size to your chest, then trust the cut — when in doubt, size down for a cleaner line. See the Size Guide for exact measurements.',
+            sgGuide4Title: 'Monochrome Streetwear Guide',
+            sgGuide4Body: 'All-black is built from texture and tone, not a single flat colour. Layer matte against sheen, heavy knit against fine jersey, and let depth do the work light usually would. Contrast in material is what keeps monochrome from going quiet.'
+        });
 
         function t(key, replacements = {}) {
             const dictionary = translations[currentLanguage] || translations.en;
@@ -7726,6 +8562,235 @@
                 }
             });
         }
+
+        // ===== Product detail (PDP) + Style guide overlays =====
+        const productDetailOverlay = document.getElementById('productDetailOverlay');
+        const pdClose = document.getElementById('pdClose');
+        const pdBack = document.getElementById('pdBack');
+        const pdCode = document.getElementById('pdCode');
+        const pdNameEl = document.getElementById('pdName');
+        const pdPriceEl = document.getElementById('pdPrice');
+        const pdSizes = document.getElementById('pdSizes');
+        const pdSizeChart = document.getElementById('pdSizeChart');
+        const pdAdd = document.getElementById('pdAdd');
+        const pdAdvisor = document.getElementById('pdAdvisor');
+        const pdDesc = document.getElementById('pdDesc');
+        const pdSeeMore = document.getElementById('pdSeeMore');
+        let pdState = { card: null, name: '', price: 0, size: '' };
+        let lastProductDetailFocus = null;
+
+        const PRODUCT_META = {
+            'Levitate Tee': { code: 'EV·S1·LVT', description: 'A weightless ritual tee in heavyweight cotton. Dropped shoulder, wide silhouette and a dense hand-feel engineered for layered VOID© styling. Cut with an intentional oversized architecture that drapes rather than clings.' },
+            'Endzustand Tee': { code: 'EV·S1·END', description: 'Boxy oversized volume with a structured chest and a blunt hem line. Couture-inspired proportions in a substantial jersey that holds its shape through movement — a quiet statement in monochrome tension.' },
+            'Oblique Gold/White Tee': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-white oblique signature, printed and finished for depth and permanence.' },
+            'Oblique Gold/Black Tee': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
+            'Oblique Blue/White Tee': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-white oblique signature — a cooler register in the season one lineup.' }
+        };
+
+        function updatePdSizes(activeSize) {
+            if (!pdSizes) return;
+            pdSizes.querySelectorAll('[data-pd-size]').forEach((button) => {
+                const isActive = button.dataset.pdSize === activeSize;
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        }
+
+        function openProductDetail(productCard) {
+            if (!productCard || !productDetailOverlay) return;
+
+            lastProductDetailFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            closeCartPopup();
+
+            const name = productCard.dataset.productName || 'Product';
+            const price = Number(productCard.dataset.productPrice || '0');
+            const meta = PRODUCT_META[name] || {};
+
+            pdState = { card: productCard, name, price, size: productCard.dataset.selectedSize || '' };
+
+            if (pdCode) pdCode.textContent = meta.code || 'EV·ATELIER';
+            if (pdNameEl) pdNameEl.textContent = name;
+            if (pdPriceEl) pdPriceEl.textContent = '€' + price;
+            if (pdDesc) {
+                const copy = meta.description || productCard.dataset.fitNote || '';
+                pdDesc.innerHTML = formatBrandMarkup(copy);
+                pdDesc.classList.add('collapsed');
+            }
+            if (pdSeeMore) pdSeeMore.textContent = t('pdSeeMore');
+            if (pdAdd) {
+                pdAdd.dataset.defaultLabel = t('pdAddToBag');
+                resetAddButtonState(pdAdd);
+            }
+            updatePdSizes(pdState.size);
+
+            productDetailOverlay.querySelectorAll('[data-accordion]').forEach((acc) => acc.classList.remove('open'));
+            productDetailOverlay.querySelectorAll('[data-accordion-trigger]').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
+
+            productDetailOverlay.classList.add('open');
+            productDetailOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('product-detail-open');
+            trackAnalyticsEvent('open_product_detail', { item_name: name });
+            startEdgeAmbience(productDetailOverlay.querySelector('.product-detail-panel'));
+
+            window.requestAnimationFrame(() => {
+                focusElementSafely(pdClose);
+            });
+        }
+
+        function closeProductDetail() {
+            if (!productDetailOverlay || !productDetailOverlay.classList.contains('open')) return;
+
+            productDetailOverlay.classList.remove('open');
+            productDetailOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('product-detail-open');
+            stopEdgeAmbience();
+            focusElementSafely(lastProductDetailFocus);
+        }
+
+        if (pdSizes) {
+            pdSizes.querySelectorAll('[data-pd-size]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    pdState.size = button.dataset.pdSize || '';
+                    updatePdSizes(pdState.size);
+                });
+            });
+        }
+
+        if (pdSizeChart) {
+            pdSizeChart.addEventListener('click', () => {
+                openSizeGuide();
+            });
+        }
+
+        if (pdAdd) {
+            pdAdd.addEventListener('click', () => {
+                if (!pdState.size) {
+                    if (pdSizes) {
+                        pdSizes.classList.remove('nudge');
+                        void pdSizes.offsetWidth;
+                        pdSizes.classList.add('nudge');
+                    }
+                    return;
+                }
+                if (pdState.card) setProductCardSize(pdState.card, pdState.size);
+                resetAddButtonState(pdAdd);
+                addToCart(pdState.name, pdState.price, pdState.size, pdAdd);
+            });
+        }
+
+        if (pdAdvisor) {
+            pdAdvisor.addEventListener('click', () => {
+                closeProductDetail();
+                window.location.hash = '#newsletter';
+            });
+        }
+
+        if (pdSeeMore && pdDesc) {
+            pdSeeMore.addEventListener('click', () => {
+                const collapsed = pdDesc.classList.toggle('collapsed');
+                pdSeeMore.textContent = collapsed ? t('pdSeeMore') : t('pdSeeLess');
+            });
+        }
+
+        if (pdClose) pdClose.addEventListener('click', closeProductDetail);
+        if (pdBack) pdBack.addEventListener('click', closeProductDetail);
+        if (productDetailOverlay) {
+            productDetailOverlay.addEventListener('click', (event) => {
+                if (event.target === productDetailOverlay) closeProductDetail();
+            });
+        }
+
+        // Clicking a product image opens the detail overlay
+        document.querySelectorAll('.product-card .product-image').forEach((image) => {
+            image.setAttribute('role', 'button');
+            image.setAttribute('tabindex', '0');
+            image.addEventListener('click', () => {
+                openProductDetail(image.closest('.product-card'));
+            });
+            image.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openProductDetail(image.closest('.product-card'));
+                }
+            });
+        });
+
+        // Shared accordions (product detail + style guide)
+        document.querySelectorAll('[data-accordion-trigger]').forEach((trigger) => {
+            trigger.addEventListener('click', () => {
+                const accordion = trigger.closest('[data-accordion]');
+                if (!accordion) return;
+                const isOpen = accordion.classList.toggle('open');
+                trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+        });
+
+        // Category tabs (View All / T-Shirts) — active state only for now
+        document.querySelectorAll('.collection-nav-tab').forEach((tab) => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.collection-nav-tab').forEach((other) => other.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+
+        // ---- Style guide overlay ----
+        const styleGuideOverlay = document.getElementById('styleGuideOverlay');
+        const styleGuideClose = document.getElementById('styleGuideClose');
+        const styleGuideReturn = document.getElementById('styleGuideReturn');
+        let lastStyleGuideFocus = null;
+
+        function openStyleGuide() {
+            if (!styleGuideOverlay) return;
+
+            lastStyleGuideFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            closeCartPopup();
+            if (typeof closeMobileMenu === 'function') closeMobileMenu();
+
+            styleGuideOverlay.classList.add('open');
+            styleGuideOverlay.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('style-guide-open');
+            trackAnalyticsEvent('open_style_guide', {});
+            startEdgeAmbience(styleGuideOverlay.querySelector('.style-guide-panel'));
+
+            window.requestAnimationFrame(() => {
+                focusElementSafely(styleGuideClose);
+            });
+        }
+
+        function closeStyleGuide() {
+            if (!styleGuideOverlay || !styleGuideOverlay.classList.contains('open')) return;
+
+            styleGuideOverlay.classList.remove('open');
+            styleGuideOverlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('style-guide-open');
+            stopEdgeAmbience();
+            focusElementSafely(lastStyleGuideFocus);
+        }
+
+        document.querySelectorAll('[data-style-guide-trigger]').forEach((trigger) => {
+            trigger.addEventListener('click', (event) => {
+                event.preventDefault();
+                openStyleGuide();
+            });
+        });
+
+        if (styleGuideClose) styleGuideClose.addEventListener('click', closeStyleGuide);
+        if (styleGuideReturn) styleGuideReturn.addEventListener('click', closeStyleGuide);
+        if (styleGuideOverlay) {
+            styleGuideOverlay.addEventListener('click', (event) => {
+                if (event.target === styleGuideOverlay) closeStyleGuide();
+            });
+        }
+
+        // Escape closes the product detail / style guide overlays
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            if (productDetailOverlay && productDetailOverlay.classList.contains('open')) {
+                closeProductDetail();
+            } else if (styleGuideOverlay && styleGuideOverlay.classList.contains('open')) {
+                closeStyleGuide();
+            }
+        });
 
         if (sizePopupConfirm) {
             sizePopupConfirm.addEventListener('click', () => {
