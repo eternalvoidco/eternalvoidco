@@ -2571,26 +2571,10 @@
             width: clamp(6rem, 14vw, 9.5rem);
             height: auto;
             margin: 0 auto;
+            /* Optical centering: the solid E is heavier than the open V, so a small
+               nudge right makes the mark read as centered over the button. */
+            transform: translateX(5%);
             filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.65));
-            animation: emblemPulse 3.6s ease-in-out infinite;
-        }
-
-        /* Subtle living pulse on the hero emblem */
-        @keyframes emblemPulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 0.9;
-                filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.65));
-            }
-            50% {
-                transform: scale(1.035);
-                opacity: 1;
-                filter: drop-shadow(0 8px 34px rgba(199, 169, 108, 0.4));
-            }
-        }
-
-        html.reduce-motion .hero-title-img {
-            animation: none;
         }
 
         .hero-subtitle {
