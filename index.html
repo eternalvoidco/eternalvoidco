@@ -4575,6 +4575,32 @@
         }
 
         @media (max-width: 860px) {
+            /* On phones, scroll the whole overlay as a full-screen sheet instead of a
+               vh-capped inner panel (which clipped and scrolled poorly on mobile). */
+            .product-detail-overlay,
+            .style-guide-overlay {
+                display: block;
+                padding: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+
+            .product-detail-panel,
+            .style-guide-panel {
+                width: 100%;
+                max-width: 100%;
+                max-height: none;
+                min-height: 100%;
+                border-left: 0;
+                border-right: 0;
+            }
+
+            .product-detail-overlay.open .product-detail-panel,
+            .style-guide-overlay.open .style-guide-panel {
+                overflow: visible;
+            }
+
             .pd-layout {
                 grid-template-columns: 1fr;
             }
@@ -4585,8 +4611,12 @@
             }
 
             .pd-media-stage {
-                aspect-ratio: 3/4;
-                max-height: 52vh;
+                aspect-ratio: 4/5;
+                max-height: 48vh;
+            }
+
+            .pd-info {
+                padding: 1.5rem 1.25rem 2rem;
             }
         }
 
@@ -8865,6 +8895,7 @@
             productDetailOverlay.querySelectorAll('[data-accordion-trigger]').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
 
             productDetailOverlay.classList.add('open');
+            productDetailOverlay.scrollTop = 0;
             productDetailOverlay.setAttribute('aria-hidden', 'false');
             document.body.classList.add('product-detail-open');
             trackAnalyticsEvent('open_product_detail', { item_name: name });
@@ -9030,6 +9061,7 @@
             if (typeof closeMobileMenu === 'function') closeMobileMenu();
 
             styleGuideOverlay.classList.add('open');
+            styleGuideOverlay.scrollTop = 0;
             styleGuideOverlay.setAttribute('aria-hidden', 'false');
             document.body.classList.add('style-guide-open');
             trackAnalyticsEvent('open_style_guide', {});
