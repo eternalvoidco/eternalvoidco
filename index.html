@@ -441,6 +441,12 @@
             pointer-events: none;
         }
 
+        /* Returning within the same session skips the intro gate entirely
+           (the class is set by the inline script at the top of <body>). */
+        body.void-returning .entry-gate {
+            display: none;
+        }
+
         .preorder-modal-backdrop {
             position: fixed;
             inset: 0;
@@ -6607,6 +6613,26 @@
     </script>
 </head>
 <body class="gate-open">
+    <script>
+        /* If the visitor has already entered the VOID this session (e.g. they
+           opened the Privacy Policy and clicked "Back to VOID"), skip the
+           cinematic entry gate and restore where they were — don't replay the
+           intro or drop them at the top. Runs before the gate paints. */
+        (function () {
+            try {
+                if (sessionStorage.getItem('void-entered') === '1') {
+                    document.body.classList.remove('gate-open');
+                    document.body.classList.add('void-entered', 'void-returning');
+                    var y = parseInt(sessionStorage.getItem('void-scroll') || '0', 10);
+                    if (y > 0) {
+                        var restore = function () { window.scrollTo(0, y); };
+                        document.addEventListener('DOMContentLoaded', restore);
+                        window.addEventListener('load', restore);
+                    }
+                }
+            } catch (e) {}
+        })();
+    </script>
     <div class="entry-gate" id="entryGate" aria-label="Enter site gate">
         <video autoplay loop muted playsinline class="entry-gate-video" id="entryGateVideo">
             <source src="enter-the-void.mp4" type="video/mp4">
@@ -7633,6 +7659,9 @@
             // as the gate dissolves — a seamless hand-off, not a page swap.
             document.body.classList.remove('gate-open');
             document.body.classList.add('void-entered');
+            // Remember for this session so returning from other pages (e.g. the
+            // Privacy Policy) doesn't replay the gate.
+            try { sessionStorage.setItem('void-entered', '1'); } catch (e) {}
             // Always land at the very top. While the gate was up the body was
             // locked (overflow:hidden), so any restored/hash scroll position sat
             // underneath and would otherwise be revealed at a random offset.
@@ -8348,6 +8377,16 @@
         }
 
         window.enterVoid = enterVoid;
+
+        // Persist the current scroll position (once past the gate) so a return
+        // visit within the session lands exactly where the visitor left off.
+        window.addEventListener('pagehide', () => {
+            try {
+                if (!document.body.classList.contains('gate-open')) {
+                    sessionStorage.setItem('void-scroll', String(Math.round(window.scrollY || window.pageYOffset || 0)));
+                }
+            } catch (e) {}
+        });
 
         function handleStoryTrigger() {
             if (!storyOverlay) return;
