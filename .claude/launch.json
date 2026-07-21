@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "C:\\Users\\szede\\AppData\\Local\\Temp\\claude\\C--Eternalvoidco-Eternalvoidco\\b26ae839-2b11-41d6-9fe0-e80068ff5aa9\\scratchpad\\static-server.ps1",
+        "-Port",
+        "8137"
+      ],
+      "port": 8137
+    }
+  ]
+}

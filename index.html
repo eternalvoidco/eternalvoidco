@@ -5265,6 +5265,225 @@
         .vc-send:hover { filter: brightness(1.06); transform: translateY(-1px); }
         .vc-send svg { width: 18px; height: 18px; }
 
+        /* ---- Lobby atmosphere: silver energy, depth & particles (behind content) ---- */
+        /* Content sits above the ambient layers; the frame ring sits just above content
+           at the panel's edge (never over text — the body has padding). */
+        .vc-panel > .vc-head,
+        .vc-panel > .vc-body,
+        .vc-panel > .vc-quick,
+        .vc-panel > .vc-input { position: relative; z-index: 1; }
+
+        @property --vc-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+        /* Layered dark depth: portal texture, drifting mist/shadow, dust, scan pass, vignette. */
+        .vc-atmos {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: inherit;
+        }
+
+        .vc-atmos > span { position: absolute; display: block; }
+
+        /* Barely-visible original arcane geometry: faint spokes + concentric rings. */
+        .vc-atmos-portal {
+            left: 50%;
+            top: 44%;
+            width: 165%;
+            aspect-ratio: 1 / 1;
+            transform: translate(-50%, -50%);
+            opacity: 0.45;
+            background:
+                repeating-conic-gradient(from 0deg, rgba(235, 232, 224, 0.028) 0 0.6deg, transparent 0.6deg 30deg),
+                repeating-radial-gradient(circle at 50% 50%, transparent 0 34px, rgba(235, 232, 224, 0.02) 34px 35px, transparent 35px 70px);
+            -webkit-mask: radial-gradient(circle at 50% 50%, #000 0 40%, transparent 68%);
+            mask: radial-gradient(circle at 50% 50%, #000 0 40%, transparent 68%);
+            animation: vcPortalSpin 120s linear infinite;
+        }
+
+        @keyframes vcPortalSpin { to { transform: translate(-50%, -50%) rotate(1turn); } }
+
+        /* Slow smoke / soft animated shadow movement. */
+        .vc-atmos-mist {
+            inset: -30%;
+            filter: blur(7px);
+            background:
+                radial-gradient(38% 48% at 30% 22%, rgba(255, 255, 255, 0.03), transparent 60%),
+                radial-gradient(46% 56% at 76% 82%, rgba(0, 0, 0, 0.4), transparent 66%),
+                radial-gradient(34% 40% at 62% 42%, rgba(235, 232, 224, 0.02), transparent 62%);
+            animation: vcMist 28s ease-in-out infinite alternate;
+        }
+
+        @keyframes vcMist {
+            0% { transform: translate3d(-2%, -1%, 0) scale(1.05); }
+            100% { transform: translate3d(3%, 2%, 0) scale(1.12); }
+        }
+
+        /* Sparse drifting micro-particles / dust points. */
+        .vc-atmos-particles {
+            inset: 0;
+            opacity: 0.35;
+            background-image:
+                radial-gradient(1px 1px at 20% 30%, rgba(235, 232, 224, 0.5), transparent),
+                radial-gradient(1px 1px at 70% 62%, rgba(235, 232, 224, 0.32), transparent),
+                radial-gradient(1px 1px at 41% 82%, rgba(255, 255, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 85% 26%, rgba(235, 232, 224, 0.3), transparent),
+                radial-gradient(1px 1px at 55% 14%, rgba(235, 232, 224, 0.28), transparent),
+                radial-gradient(1px 1px at 12% 66%, rgba(235, 232, 224, 0.24), transparent);
+            animation: vcDrift 34s linear infinite;
+        }
+
+        @keyframes vcDrift {
+            0% { transform: translateY(6px); opacity: 0.12; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-44px); opacity: 0.12; }
+        }
+
+        /* Subtle light/scan pass across the background (~16s cycle). */
+        .vc-atmos-scan {
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 42%;
+            opacity: 0;
+            background: linear-gradient(180deg, transparent, rgba(235, 232, 224, 0.05), transparent);
+            animation: vcScan 16s ease-in-out infinite;
+        }
+
+        @keyframes vcScan {
+            0%, 80% { opacity: 0; transform: translateY(-70%); }
+            85% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(320%); }
+        }
+
+        /* Depth vignette — keeps text well above the ambient wash. */
+        .vc-atmos::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(125% 100% at 50% 8%, transparent 42%, rgba(0, 0, 0, 0.55) 100%);
+        }
+
+        /* Refined metallic frame + slow silver energy trace + rare corner spark. */
+        .vc-frame {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            border-radius: inherit;
+            opacity: 0.85;
+            box-shadow: inset 0 0 0 1px rgba(235, 232, 224, 0.06);
+            transition: opacity 0.6s var(--ease-lux);
+        }
+
+        .vc-frame::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            opacity: 0.45;
+            background: conic-gradient(from var(--vc-angle),
+                transparent 0 70%,
+                rgba(235, 232, 224, 0.14) 80%,
+                rgba(255, 255, 255, 0.72) 86%,
+                rgba(235, 232, 224, 0.14) 92%,
+                transparent 100%);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+            animation: vcFrameTrace 12s linear infinite;
+            transition: opacity 0.6s var(--ease-lux), animation-duration 0.6s ease;
+        }
+
+        @keyframes vcFrameTrace { to { --vc-angle: 360deg; } }
+
+        .vc-frame::after {
+            content: '';
+            position: absolute;
+            top: -1px;
+            right: 15%;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            opacity: 0;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 0 6px 1px rgba(235, 232, 224, 0.7);
+            animation: vcSpark 15s ease-in-out infinite;
+        }
+
+        @keyframes vcSpark {
+            0%, 88%, 100% { opacity: 0; }
+            90% { opacity: 1; }
+            92% { opacity: 0.2; }
+            94% { opacity: 0.85; }
+            97% { opacity: 0; }
+        }
+
+        /* Faint breathing outer glow once the panel is open. */
+        .void-concierge.vc-open .vc-panel {
+            animation: vcPanelGlow 7.5s ease-in-out infinite 0.6s;
+        }
+
+        @keyframes vcPanelGlow {
+            0%, 100% { box-shadow: 0 34px 80px rgba(0, 0, 0, 0.66), 0 0 40px 2px rgba(199, 169, 108, 0.1), 0 0 0 0 rgba(235, 232, 224, 0); }
+            50% { box-shadow: 0 34px 84px rgba(0, 0, 0, 0.66), 0 0 52px 3px rgba(199, 169, 108, 0.14), 0 0 30px 2px rgba(235, 232, 224, 0.07); }
+        }
+
+        /* Hover + opening activation briefly intensifies the frame energy, then settles. */
+        .vc-panel:hover .vc-frame,
+        .void-concierge.vc-activate .vc-frame { opacity: 1; }
+
+        .vc-panel:hover .vc-frame::before,
+        .void-concierge.vc-activate .vc-frame::before { opacity: 0.85; animation-duration: 6s; }
+
+        /* Send button: restrained energy pulse when a message is ready to send. */
+        .vc-input.vc-ready .vc-send { animation: vcSendPulse 2.4s ease-in-out infinite; }
+
+        @keyframes vcSendPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(235, 232, 224, 0); }
+            50% { box-shadow: 0 0 14px 1px rgba(235, 232, 224, 0.4); }
+        }
+
+        /* Send discharge: a subtle energy ripple from the send button on send. */
+        .vc-send { position: relative; }
+        .vc-send::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            opacity: 0;
+            border: 1px solid rgba(235, 232, 224, 0.7);
+        }
+
+        .vc-input.vc-discharge .vc-send::after { animation: vcDischarge 0.6s var(--ease-lux); }
+
+        @keyframes vcDischarge {
+            0% { opacity: 0.9; transform: scale(1); }
+            100% { opacity: 0; transform: scale(2.1); }
+        }
+
+        /* Typing indicator: silver dots with a faint ambient glow. */
+        .vc-typing span { box-shadow: 0 0 6px rgba(235, 232, 224, 0.35); }
+
+        /* Reduced motion: keep the static depth, drop the non-essential animation. */
+        html.reduce-motion .vc-atmos-portal,
+        html.reduce-motion .vc-atmos-mist,
+        html.reduce-motion .vc-atmos-particles,
+        html.reduce-motion .vc-atmos-scan,
+        html.reduce-motion .vc-frame::before,
+        html.reduce-motion .vc-frame::after,
+        html.reduce-motion .void-concierge.vc-open .vc-panel,
+        html.reduce-motion .vc-input.vc-ready .vc-send,
+        html.reduce-motion .vc-input.vc-discharge .vc-send::after { animation: none; }
+
+        html.reduce-motion .vc-atmos-scan { opacity: 0; }
+
         @media (max-width: 600px) {
             .void-concierge {
                 right: calc(0.5rem + env(safe-area-inset-right, 0px));
@@ -6964,6 +7183,13 @@
             <span class="vc-launcher-sweep" aria-hidden="true"></span>
         </button>
         <section class="vc-panel" id="vcPanel" role="dialog" aria-modal="false" aria-labelledby="vcTitle" aria-hidden="true">
+            <div class="vc-atmos" aria-hidden="true">
+                <span class="vc-atmos-portal"></span>
+                <span class="vc-atmos-mist"></span>
+                <span class="vc-atmos-particles"></span>
+                <span class="vc-atmos-scan"></span>
+            </div>
+            <div class="vc-frame" aria-hidden="true"></div>
             <header class="vc-head vc-reveal">
                 <div class="vc-head-titles">
                     <h3 class="vc-title" id="vcTitle" data-i18n="vcTitle">The VOID Concierge</h3>
@@ -9778,15 +10004,32 @@
             function sendGuestMessage(text) {
                 const clean = text.trim();
                 if (!clean || busy) return;
+                form.classList.remove('vc-ready');
+                pulseDischarge();
                 appendMessage('user', escapeMarkup(clean));
                 history.push({ role: 'user', content: clean });
                 respond(clean);
+            }
+
+            // Briefly intensifies the frame energy when the panel opens, then settles.
+            function pulseActivation() {
+                root.classList.add('vc-activate');
+                window.setTimeout(() => root.classList.remove('vc-activate'), 1400);
+            }
+
+            // A short silver discharge ripple from the send button whenever a message leaves.
+            function pulseDischarge() {
+                form.classList.remove('vc-discharge');
+                void form.offsetWidth;   // restart the animation
+                form.classList.add('vc-discharge');
+                window.setTimeout(() => form.classList.remove('vc-discharge'), 640);
             }
 
             function openConcierge() {
                 if (root.classList.contains('vc-open')) return;
                 closeCartPopup();
                 root.classList.add('vc-open');
+                pulseActivation();
                 launcher.setAttribute('aria-expanded', 'true');
                 panel.setAttribute('aria-hidden', 'false');
                 if (typeof trackAnalyticsEvent === 'function') trackAnalyticsEvent('open_concierge', {});
@@ -9816,6 +10059,11 @@
                 const text = input.value;
                 input.value = '';
                 sendGuestMessage(text);
+            });
+
+            // Restrained send-button pulse while there is typed text ready to send.
+            input.addEventListener('input', () => {
+                form.classList.toggle('vc-ready', input.value.trim().length > 0);
             });
 
             root.querySelectorAll('[data-vc-quick]').forEach((chip) => {
