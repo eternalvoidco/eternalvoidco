@@ -399,6 +399,7 @@
         body.gate-open .cart-fab,
         body.gate-open .cart-popup,
         body.gate-open .theme-switch,
+        body.gate-open .void-concierge,
         body.gate-open .footer {
             visibility: hidden;
             opacity: 0;
@@ -4909,6 +4910,369 @@
             animation: needsSizePulse 0.38s ease;
         }
 
+        /* ===================== THE VOID CONCIERGE (OBSIDIAN) ===================== */
+        .void-concierge {
+            position: fixed;
+            right: 1.25rem;
+            bottom: calc(1.25rem + 82px + 0.9rem);
+            z-index: 1250;
+        }
+
+        .vc-launcher {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 1px solid rgba(199, 169, 108, 0.4);
+            background: radial-gradient(circle at 50% 30%, rgba(28, 26, 22, 0.96), rgba(6, 6, 6, 0.96));
+            color: var(--void-gold-soft);
+            cursor: pointer;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+            isolation: isolate;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(199, 169, 108, 0.08);
+            transition: transform 0.5s var(--ease-lux), border-color 0.5s var(--ease-lux), box-shadow 0.5s var(--ease-lux), opacity 0.4s ease;
+            animation: vcBreathe 4.2s ease-in-out infinite;
+        }
+
+        .vc-launcher-mark {
+            position: relative;
+            z-index: 2;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.7rem;
+            line-height: 1;
+            color: var(--void-gold-soft);
+        }
+
+        .vc-launcher-sweep {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background: linear-gradient(115deg, transparent 40%, rgba(245, 232, 202, 0.22) 50%, transparent 60%);
+            transform: translateX(-120%);
+        }
+
+        .vc-launcher:hover,
+        .vc-launcher:focus-visible {
+            transform: translateY(-3px);
+            border-color: rgba(199, 169, 108, 0.85);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55), 0 0 26px rgba(199, 169, 108, 0.22);
+            outline: none;
+        }
+
+        .vc-launcher:hover .vc-launcher-sweep {
+            transition: transform 0.9s var(--ease-lux);
+            transform: translateX(120%);
+        }
+
+        @keyframes vcBreathe {
+            0%, 100% { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(199, 169, 108, 0.08), 0 0 0 0 rgba(199, 169, 108, 0); }
+            50% { box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(199, 169, 108, 0.14), 0 0 22px 2px rgba(199, 169, 108, 0.18); }
+        }
+
+        .void-concierge.vc-open .vc-launcher {
+            transform: scale(0.6);
+            opacity: 0;
+            pointer-events: none;
+            animation: none;
+        }
+
+        html.reduce-motion .vc-launcher { animation: none; }
+
+        .vc-panel {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: min(90vw, 384px);
+            height: min(72vh, 560px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            border-radius: 14px;
+            background:
+                radial-gradient(120% 80% at 15% 0%, rgba(199, 169, 108, 0.08), transparent 40%),
+                linear-gradient(170deg, rgba(16, 15, 13, 0.98), rgba(6, 6, 6, 0.99));
+            box-shadow: 0 34px 80px rgba(0, 0, 0, 0.66), 0 0 40px 2px rgba(199, 169, 108, 0.1);
+            transform-origin: bottom right;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(16px) scale(0.92);
+            filter: blur(6px);
+            transition: opacity 0.5s var(--ease-lux), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.5s ease, visibility 0.5s ease;
+        }
+
+        .void-concierge.vc-open .vc-panel {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        .vc-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.5;
+            mix-blend-mode: overlay;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 3px 3px;
+        }
+
+        .vc-panel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            pointer-events: none;
+            opacity: 0.8;
+            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.85), transparent);
+            background-size: 220% 100%;
+            animation: vcBorderSweep 6s linear infinite;
+        }
+
+        @keyframes vcBorderSweep { to { background-position: 220% 0; } }
+
+        html.reduce-motion .vc-panel {
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            transform: none;
+            filter: none;
+        }
+
+        html.reduce-motion .vc-panel::after { animation: none; }
+
+        .void-concierge.vc-open .vc-reveal { animation: vcReveal 0.6s var(--ease-lux) both; }
+        .void-concierge.vc-open .vc-head { animation-delay: 0.12s; }
+        .void-concierge.vc-open .vc-body { animation-delay: 0.2s; }
+        .void-concierge.vc-open .vc-quick { animation-delay: 0.28s; }
+        .void-concierge.vc-open .vc-input { animation-delay: 0.34s; }
+
+        @keyframes vcReveal {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        html.reduce-motion .vc-reveal { animation: none !important; }
+
+        .vc-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            padding: 1rem 1.1rem 0.85rem;
+            border-bottom: 1px solid rgba(199, 169, 108, 0.2);
+        }
+
+        .vc-head-titles { min-width: 0; }
+
+        .vc-title {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--void-white);
+        }
+
+        .vc-subtitle {
+            margin: 0.18rem 0 0;
+            font-size: 0.54rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--void-gold-soft);
+        }
+
+        .vc-close {
+            flex: 0 0 auto;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            background: rgba(10, 10, 10, 0.7);
+            color: var(--void-white);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: border-color 0.24s ease, background 0.24s ease;
+        }
+
+        .vc-close:hover,
+        .vc-close:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            background: rgba(22, 17, 9, 0.9);
+        }
+
+        .vc-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1.1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(199, 169, 108, 0.6) transparent;
+        }
+
+        .vc-body::-webkit-scrollbar { width: 0.4rem; }
+        .vc-body::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(220, 190, 126, 0.7), rgba(126, 98, 48, 0.7)); }
+
+        .vc-msg {
+            max-width: 82%;
+            padding: 0.62rem 0.8rem;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            animation: vcMsgIn 0.5s var(--ease-lux) both;
+        }
+
+        @keyframes vcMsgIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        html.reduce-motion .vc-msg { animation: none; }
+
+        .vc-msg-bot {
+            align-self: flex-start;
+            color: rgba(245, 242, 236, 0.9);
+            background: linear-gradient(160deg, rgba(24, 22, 18, 0.9), rgba(12, 12, 12, 0.92));
+            border: 1px solid rgba(199, 169, 108, 0.22);
+            border-left: 2px solid rgba(199, 169, 108, 0.55);
+            border-radius: 3px 12px 12px 12px;
+        }
+
+        .vc-msg-user {
+            align-self: flex-end;
+            color: var(--void-white);
+            background: linear-gradient(160deg, rgba(40, 38, 33, 0.92), rgba(20, 20, 20, 0.92));
+            border: 1px solid rgba(245, 242, 236, 0.14);
+            border-radius: 12px 3px 12px 12px;
+        }
+
+        .vc-msg a {
+            color: var(--void-gold-soft);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .vc-typing {
+            align-self: flex-start;
+            display: inline-flex;
+            gap: 5px;
+            padding: 0.7rem 0.85rem;
+            border: 1px solid rgba(199, 169, 108, 0.22);
+            border-left: 2px solid rgba(199, 169, 108, 0.55);
+            border-radius: 3px 12px 12px 12px;
+            background: rgba(16, 15, 13, 0.9);
+        }
+
+        .vc-typing span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--void-gold-soft);
+            opacity: 0.5;
+            animation: vcDot 1.2s ease-in-out infinite;
+        }
+
+        .vc-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .vc-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes vcDot {
+            0%, 100% { opacity: 0.35; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-3px); }
+        }
+
+        html.reduce-motion .vc-typing span { animation: none; }
+
+        .vc-quick {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0 1.1rem 0.6rem;
+        }
+
+        .vc-chip {
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            background: rgba(14, 12, 8, 0.6);
+            color: var(--void-gold-soft);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.58rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            padding: 0.44rem 0.65rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: border-color 0.22s ease, background 0.22s ease, color 0.22s ease, transform 0.22s ease;
+        }
+
+        .vc-chip:hover,
+        .vc-chip:focus-visible {
+            border-color: rgba(199, 169, 108, 0.9);
+            background: rgba(24, 19, 10, 0.8);
+            color: var(--void-gold-bright);
+            transform: translateY(-1px);
+        }
+
+        .vc-input {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 0.8rem;
+            border-top: 1px solid rgba(199, 169, 108, 0.2);
+        }
+
+        .vc-input input {
+            flex: 1;
+            min-width: 0;
+            background: rgba(8, 8, 8, 0.7);
+            border: 1px solid rgba(199, 169, 108, 0.28);
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.8rem;
+            padding: 0.6rem 0.7rem;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .vc-input input::placeholder { color: rgba(245, 242, 236, 0.4); }
+
+        .vc-input input:focus {
+            border-color: rgba(199, 169, 108, 0.7);
+            box-shadow: 0 0 0 2px rgba(199, 169, 108, 0.12);
+        }
+
+        .vc-send {
+            flex: 0 0 auto;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            background: var(--void-gold-gradient);
+            color: #120d05;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: filter 0.2s ease, transform 0.2s ease;
+        }
+
+        .vc-send:hover { filter: brightness(1.06); transform: translateY(-1px); }
+        .vc-send svg { width: 18px; height: 18px; }
+
+        @media (max-width: 600px) {
+            .void-concierge {
+                right: calc(0.5rem + env(safe-area-inset-right, 0px));
+                bottom: calc(0.5rem + 66px + 0.7rem + env(safe-area-inset-bottom, 0px));
+            }
+            .vc-panel { width: min(94vw, 384px); height: min(76vh, 560px); }
+        }
+
         .cart-fab {
             position: fixed;
             right: 1.25rem;
@@ -6593,6 +6957,37 @@
         </section>
     </div>
 
+    <!-- THE VOID CONCIERGE (presented feature) · persona: OBSIDIAN -->
+    <div class="void-concierge" id="voidConcierge">
+        <button type="button" class="vc-launcher" id="vcLauncher" aria-haspopup="dialog" aria-expanded="false" aria-controls="vcPanel" aria-label="Open the VOID Concierge" data-i18n-aria-label="vcOpen">
+            <span class="vc-launcher-mark" aria-hidden="true">V</span>
+            <span class="vc-launcher-sweep" aria-hidden="true"></span>
+        </button>
+        <section class="vc-panel" id="vcPanel" role="dialog" aria-modal="false" aria-labelledby="vcTitle" aria-hidden="true">
+            <header class="vc-head vc-reveal">
+                <div class="vc-head-titles">
+                    <h3 class="vc-title" id="vcTitle" data-i18n="vcTitle">The VOID Concierge</h3>
+                    <p class="vc-subtitle" data-i18n="vcSubtitle">Powered by OBSIDIAN</p>
+                </div>
+                <button type="button" class="vc-close" id="vcClose" aria-label="Close concierge" data-i18n-aria-label="vcClose">✕</button>
+            </header>
+            <div class="vc-body vc-reveal" id="vcBody" role="log" aria-live="polite"></div>
+            <div class="vc-quick vc-reveal" id="vcQuick">
+                <button type="button" class="vc-chip" data-vc-quick="collection" data-i18n="vcQ1">Explore the collection</button>
+                <button type="button" class="vc-chip" data-vc-quick="size" data-i18n="vcQ2">Find my size</button>
+                <button type="button" class="vc-chip" data-vc-quick="materials" data-i18n="vcQ3">Materials &amp; quality</button>
+                <button type="button" class="vc-chip" data-vc-quick="preorder" data-i18n="vcQ4">Pre-orders</button>
+                <button type="button" class="vc-chip" data-vc-quick="shipping" data-i18n="vcQ5">Shipping &amp; contact</button>
+            </div>
+            <form class="vc-input vc-reveal" id="vcForm">
+                <input type="text" id="vcInput" autocomplete="off" placeholder="Ask the concierge…" data-i18n-placeholder="vcPlaceholder" aria-label="Ask the concierge" data-i18n-aria-label="vcPlaceholder">
+                <button type="submit" class="vc-send" aria-label="Send message" data-i18n-aria-label="vcSend">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </form>
+        </section>
+    </div>
+
     <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart" data-i18n-aria-label="openCart">
         <span class="cart-fab-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
@@ -6788,6 +7183,17 @@
             catSweatshirts: 'Sweatshirts',
             catTrackPants: 'Track Pants',
             catEnsembles: 'Ensembles',
+            vcTitle: 'The VOID Concierge',
+            vcSubtitle: 'Powered by OBSIDIAN',
+            vcOpen: 'Open the VOID Concierge',
+            vcClose: 'Close concierge',
+            vcSend: 'Send message',
+            vcPlaceholder: 'Ask the concierge…',
+            vcQ1: 'Explore the collection',
+            vcQ2: 'Find my size',
+            vcQ3: 'Materials & quality',
+            vcQ4: 'Pre-orders',
+            vcQ5: 'Shipping & contact',
             collectionEmpty: 'No pieces in this category yet.',
             pdClose: 'Close product',
             pdBack: 'Back to collection',
@@ -9259,6 +9665,190 @@
                 closeStyleGuide();
             }
         });
+
+        // ============================ THE VOID CONCIERGE ============================
+        // Presented to guests as "THE VOID CONCIERGE"; the AI persona is OBSIDIAN.
+        //
+        // ── Connecting the real Claude API later ──────────────────────────────────
+        // Flip `useApi` to true to route messages through the serverless proxy at
+        // `api/concierge.js` (which keeps your ANTHROPIC_API_KEY server-side — it is
+        // NEVER exposed to the browser). Until then, the local mock below runs so the
+        // full experience is testable with no API keys.
+        const VOID_CONCIERGE_CONFIG = {
+            useApi: false,            // ← set true once api/concierge.js has ANTHROPIC_API_KEY
+            endpoint: '/api/concierge'
+        };
+
+        (function initVoidConcierge() {
+            const root = document.getElementById('voidConcierge');
+            const launcher = document.getElementById('vcLauncher');
+            const panel = document.getElementById('vcPanel');
+            const closeBtn = document.getElementById('vcClose');
+            const bodyEl = document.getElementById('vcBody');
+            const form = document.getElementById('vcForm');
+            const input = document.getElementById('vcInput');
+            if (!root || !launcher || !panel || !bodyEl || !form || !input) return;
+
+            let greeted = false;
+            let busy = false;
+            const history = [];   // { role: 'user' | 'assistant', content: string }
+
+            // Grounded knowledge — the concierge never states anything outside this set;
+            // unknowns are handed off to the VOID team. Assistant strings are trusted
+            // (authored here); only guest input is escaped before rendering.
+            const CONTACT = 'a member of the VOID team will assist you personally. Please reach us via the <a href="#" data-vc-action="preorder">pre-order form</a> or at <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>.';
+            const REPLIES = {
+                collection: 'Season One is a limited ritual of oversized VOID&copy; essentials — heavyweight cotton tees cut with an intentional oversized architecture, in monochrome and oblique-signature colourways. You may <a href="#" data-vc-action="shop">explore the collection</a>, currently available by <a href="#" data-vc-action="preorder">pre-order</a>.',
+                size: 'Every VOID&copy; garment is cut with an intentional oversized architecture, measured in centimetres against an oversized baseline fit. If you prefer a cleaner silhouette, choose one size down. The full measurements live in the <a href="#" data-vc-action="sizeguide">Size Guide</a>.',
+                materials: 'Our pieces are made in heavyweight cotton with a dense, substantial hand-feel, finished for depth and permanence. To preserve them: machine wash cold at 30&deg;C, inside out, no bleach, no tumble dry, and iron inside out at a low temperature.',
+                preorder: 'The collection is released as limited drops. Reserve the next drop through the <a href="#" data-vc-action="preorder">pre-order form</a> to receive early access and priority updates before it opens.',
+                shipping: 'Once your pre-order ships, delivery is safe and tracked worldwide, with free returns and exchanges within 14 days, excluding personalised items. For anything further, ' + CONTACT,
+                fallback: 'For that, ' + CONTACT
+            };
+            const GREETING = 'Welcome to VOID. How may we assist your journey?';
+
+            function scrollToEnd() {
+                window.requestAnimationFrame(() => { bodyEl.scrollTop = bodyEl.scrollHeight; });
+            }
+
+            function appendMessage(role, html) {
+                const el = document.createElement('div');
+                el.className = 'vc-msg ' + (role === 'user' ? 'vc-msg-user' : 'vc-msg-bot');
+                el.innerHTML = html;
+                bodyEl.appendChild(el);
+                scrollToEnd();
+                return el;
+            }
+
+            function showTyping() {
+                const el = document.createElement('div');
+                el.className = 'vc-typing';
+                el.setAttribute('aria-hidden', 'true');
+                el.innerHTML = '<span></span><span></span><span></span>';
+                bodyEl.appendChild(el);
+                scrollToEnd();
+                return el;
+            }
+
+            function resolveIntent(text) {
+                const q = text.toLowerCase();
+                if (/\b(size|sizing|fit|measure|measurement|small|medium|large|xl|chest)\b/.test(q)) return 'size';
+                if (/\b(material|fabric|cotton|quality|care|wash|washing|shrink|iron)\b/.test(q)) return 'materials';
+                if (/\b(pre-?order|reserve|drop|buy|purchase|order|available|availability|restock|when)\b/.test(q)) return 'preorder';
+                if (/\b(ship|shipping|deliver|delivery|return|returns|exchange|contact|email|support|track)\b/.test(q)) return 'shipping';
+                if (/\b(collection|collections|product|products|piece|pieces|tee|tees|shirt|shirts|explore|catalog|catalogue|browse)\b/.test(q)) return 'collection';
+                return 'fallback';
+            }
+
+            function mockReply(text) {
+                return REPLIES[resolveIntent(text)] || REPLIES.fallback;
+            }
+
+            async function apiReply(text) {
+                try {
+                    const res = await fetch(VOID_CONCIERGE_CONFIG.endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messages: history.concat([{ role: 'user', content: text }]) })
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok || !data.reply) throw new Error('concierge_unavailable');
+                    return escapeMarkup(data.reply).replace(/\n/g, '<br>');
+                } catch (error) {
+                    return REPLIES.fallback;
+                }
+            }
+
+            async function respond(text) {
+                busy = true;
+                const typing = showTyping();
+                let replyHtml;
+                if (VOID_CONCIERGE_CONFIG.useApi) {
+                    replyHtml = await apiReply(text);
+                } else {
+                    await new Promise((resolve) => setTimeout(resolve, 620 + Math.random() * 420));
+                    replyHtml = mockReply(text);
+                }
+                typing.remove();
+                appendMessage('bot', replyHtml);
+                history.push({ role: 'assistant', content: replyHtml.replace(/<[^>]+>/g, '') });
+                busy = false;
+            }
+
+            function sendGuestMessage(text) {
+                const clean = text.trim();
+                if (!clean || busy) return;
+                appendMessage('user', escapeMarkup(clean));
+                history.push({ role: 'user', content: clean });
+                respond(clean);
+            }
+
+            function openConcierge() {
+                if (root.classList.contains('vc-open')) return;
+                closeCartPopup();
+                root.classList.add('vc-open');
+                launcher.setAttribute('aria-expanded', 'true');
+                panel.setAttribute('aria-hidden', 'false');
+                if (typeof trackAnalyticsEvent === 'function') trackAnalyticsEvent('open_concierge', {});
+                if (!greeted) {
+                    greeted = true;
+                    window.setTimeout(() => {
+                        appendMessage('bot', GREETING);
+                        history.push({ role: 'assistant', content: GREETING });
+                    }, 360);
+                }
+                window.setTimeout(() => { focusElementSafely(input); }, 420);
+            }
+
+            function closeConcierge() {
+                if (!root.classList.contains('vc-open')) return;
+                root.classList.remove('vc-open');
+                launcher.setAttribute('aria-expanded', 'false');
+                panel.setAttribute('aria-hidden', 'true');
+                focusElementSafely(launcher);
+            }
+
+            launcher.addEventListener('click', openConcierge);
+            closeBtn.addEventListener('click', closeConcierge);
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const text = input.value;
+                input.value = '';
+                sendGuestMessage(text);
+            });
+
+            root.querySelectorAll('[data-vc-quick]').forEach((chip) => {
+                chip.addEventListener('click', () => {
+                    if (busy) return;
+                    sendGuestMessage(chip.textContent.trim());
+                });
+            });
+
+            // In-message action links route into the existing site flows.
+            bodyEl.addEventListener('click', (event) => {
+                const link = event.target.closest('[data-vc-action]');
+                if (!link) return;
+                event.preventDefault();
+                const action = link.getAttribute('data-vc-action');
+                if (action === 'sizeguide') {
+                    openSizeGuide();
+                } else if (action === 'preorder') {
+                    const trigger = document.querySelector('[data-preorder-trigger]');
+                    if (trigger) trigger.click();
+                } else if (action === 'shop') {
+                    closeConcierge();
+                    window.location.hash = '#shop';
+                }
+            });
+
+            // Escape closes the concierge (only when it's the top-most surface).
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && root.classList.contains('vc-open')) {
+                    closeConcierge();
+                }
+            });
+        })();
 
         if (sizePopupConfirm) {
             sizePopupConfirm.addEventListener('click', () => {
