@@ -7232,7 +7232,7 @@
                 <button type="button" class="vc-chip" data-vc-quick="shipping" data-i18n="vcQ5">Shipping &amp; contact</button>
             </div>
             <form class="vc-input vc-reveal" id="vcForm">
-                <input type="text" id="vcInput" autocomplete="off" placeholder="Ask the concierge…" data-i18n-placeholder="vcPlaceholder" aria-label="Ask the concierge" data-i18n-aria-label="vcPlaceholder">
+                <input type="text" id="vcInput" autocomplete="off" maxlength="800" placeholder="Ask the concierge…" data-i18n-placeholder="vcPlaceholder" aria-label="Ask the concierge" data-i18n-aria-label="vcPlaceholder">
                 <button type="submit" class="vc-send" aria-label="Send message" data-i18n-aria-label="vcSend">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
@@ -9943,6 +9943,8 @@
             useApi: false,            // ← set true once api/concierge.js has ANTHROPIC_API_KEY
             endpoint: '/api/concierge'
         };
+        const VC_HISTORY_LIMIT = 10;  // recent turns sent to the server (cost control)
+        const VC_MAX_INPUT = 800;     // max characters accepted from a single message
 
         (function initVoidConcierge() {
             const root = document.getElementById('voidConcierge');
@@ -9963,11 +9965,17 @@
             // (authored here); only guest input is escaped before rendering.
             const CONTACT = 'a member of the VOID team will assist you personally. Please reach us via the <a href="#" data-vc-action="preorder">pre-order form</a> or at <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>.';
             const REPLIES = {
-                collection: 'Season One is a limited ritual of oversized VOID&copy; essentials — heavyweight cotton tees cut with an intentional oversized architecture, in monochrome and oblique-signature colourways. You may <a href="#" data-vc-action="shop">explore the collection</a>, currently available by <a href="#" data-vc-action="preorder">pre-order</a>.',
-                size: 'Every VOID&copy; garment is cut with an intentional oversized architecture, measured in centimetres against an oversized baseline fit. If you prefer a cleaner silhouette, choose one size down. The full measurements live in the <a href="#" data-vc-action="sizeguide">Size Guide</a>.',
-                materials: 'Our pieces are made in heavyweight cotton with a dense, substantial hand-feel, finished for depth and permanence. To preserve them: machine wash cold at 30&deg;C, inside out, no bleach, no tumble dry, and iron inside out at a low temperature.',
-                preorder: 'The collection is released as limited drops. Reserve the next drop through the <a href="#" data-vc-action="preorder">pre-order form</a> to receive early access and priority updates before it opens.',
-                shipping: 'Once your pre-order ships, delivery is safe and tracked worldwide, with free returns and exchanges within 14 days, excluding personalised items. For anything further, ' + CONTACT,
+                collection: 'Season One is a limited run of oversized VOID&copy; essentials — heavyweight cotton tees cut with an intentional oversized architecture, in monochrome and oblique-signature colourways. You may <a href="#" data-vc-action="shop">explore the collection</a>, currently available by <a href="#" data-vc-action="preorder">pre-order</a>.',
+                size: 'VOID&copy; pieces are cut with an intentional oversized architecture against an oversized baseline fit. Keep your usual size for the fullest look, or size down one for a cleaner, closer silhouette. For exact measurements in centimetres, see the <a href="#" data-vc-action="sizeguide">Size Guide</a>.',
+                materials: 'Yes — our Season One tees are heavyweight cotton with a dense, substantial hand-feel, finished for depth and permanence. To care for them: machine wash cold at 30&deg;C, inside out, no bleach, no tumble dry, and iron inside out at a low temperature.',
+                preorder: 'The collection is released as limited drops. Reserve through the <a href="#" data-vc-action="preorder">pre-order form</a> for early access and priority updates before a drop opens.',
+                price: 'Pricing for Season One is not published here yet. Reserve through the <a href="#" data-vc-action="preorder">pre-order form</a> or contact <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>, and the VOID team will confirm current prices.',
+                launch: 'Season One is released as limited pre-order drops. There is no confirmed public launch date yet — reserve through the <a href="#" data-vc-action="preorder">pre-order form</a> to receive early access and be notified first.',
+                shippingcost: 'Shipping cost depends on the destination and the final order details. If you share your country and city or postcode, the VOID team will confirm the exact delivery fee before your order is placed — reach them via the <a href="#" data-vc-action="preorder">pre-order form</a> or at <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>.',
+                delivery: 'Delivery is tracked worldwide once your pre-order ships. Exact timeframes depend on your destination and are confirmed at that point; for order-specific timing, ' + CONTACT,
+                shipping: 'Delivery is tracked worldwide once your pre-order ships, with free returns and exchanges within 14 days, excluding personalised items. For anything further, ' + CONTACT,
+                returns: 'Returns and exchanges are free within 14 days, excluding personalised items. For a specific request, ' + CONTACT,
+                contact: 'You can reach the VOID team at <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>, or through the <a href="#" data-vc-action="preorder">pre-order form</a> on the site.',
                 fallback: 'For that, ' + CONTACT
             };
             const GREETING = 'Welcome to VOID. How may we assist your journey?';
@@ -9995,12 +10003,27 @@
                 return el;
             }
 
+            // Offline intent routing (used when useApi is false). Order matters:
+            // more specific intents are checked first. Kept honest — it never
+            // quotes a fee, price, or date that has not been configured.
             function resolveIntent(text) {
                 const q = text.toLowerCase();
-                if (/\b(size|sizing|fit|measure|measurement|small|medium|large|xl|chest)\b/.test(q)) return 'size';
-                if (/\b(material|fabric|cotton|quality|care|wash|washing|shrink|iron)\b/.test(q)) return 'materials';
-                if (/\b(pre-?order|reserve|drop|buy|purchase|order|available|availability|restock|when)\b/.test(q)) return 'preorder';
-                if (/\b(ship|shipping|deliver|delivery|return|returns|exchange|contact|email|support|track)\b/.test(q)) return 'shipping';
+                const asksShipping = /\b(ship|shipping|shipped|deliver|delivery|postage|courier|send)\b/.test(q);
+                const asksCost = /how much|\b(cost|costs|fee|fees|price|priced|pricing|charge|charges)\b/.test(q);
+                const asksDeliveryTime = /\b(arrive|arrives|arrival|delivered|eta)\b/.test(q)
+                    || (asksShipping && /\b(when|long|days|time|track|tracking)\b/.test(q))
+                    || (/\border\b/.test(q) && /\b(when|status|track|where)\b/.test(q));
+
+                if (asksShipping && asksCost) return 'shippingcost';
+                if (asksDeliveryTime) return 'delivery';
+                if (/\b(return|returns|exchange|exchanges|refund)\b/.test(q)) return 'returns';
+                if (/\b(size|sizing|fit|fits|measure|measurement|small|medium|large|xl|chest|\d+\s?cm|\d+\s?kg|height|tall)\b/.test(q)) return 'size';
+                if (/\b(material|materials|fabric|cotton|heavyweight|weight|gsm|quality|care|wash|washing|shrink|iron)\b/.test(q)) return 'materials';
+                if (/\b(launch|launching|release|released|drop|drops|restock|available|availability)\b/.test(q) || /\bwhen\b/.test(q)) return 'launch';
+                if (/\b(contact|email|e-mail|reach|support|speak|talk|human|team)\b/.test(q)) return 'contact';
+                if (asksCost) return 'price';
+                if (asksShipping) return 'shipping';
+                if (/\b(pre-?order|reserve|buy|purchase|order)\b/.test(q)) return 'preorder';
                 if (/\b(collection|collections|product|products|piece|pieces|tee|tees|shirt|shirts|explore|catalog|catalogue|browse)\b/.test(q)) return 'collection';
                 return 'fallback';
             }
@@ -10011,10 +10034,12 @@
 
             async function apiReply(text) {
                 try {
+                    // Send only the most recent turns for context, to control cost.
+                    const recent = history.slice(-VC_HISTORY_LIMIT).concat([{ role: 'user', content: text }]);
                     const res = await fetch(VOID_CONCIERGE_CONFIG.endpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: history.concat([{ role: 'user', content: text }]) })
+                        body: JSON.stringify({ messages: recent })
                     });
                     const data = await res.json().catch(() => ({}));
                     if (!res.ok || !data.reply) throw new Error('concierge_unavailable');
@@ -10041,7 +10066,9 @@
             }
 
             function sendGuestMessage(text) {
-                const clean = text.trim();
+                // Input validation: require non-empty text, ignore while busy,
+                // and cap length so an oversized message can't be sent.
+                const clean = (typeof text === 'string' ? text : '').trim().slice(0, VC_MAX_INPUT);
                 if (!clean || busy) return;
                 form.classList.remove('vc-ready');
                 pulseDischarge();
