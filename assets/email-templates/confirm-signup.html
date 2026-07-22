@@ -1,0 +1,61 @@
+<!--
+  VOID — "Confirm signup" email template.
+
+  WHERE TO PASTE: Supabase Dashboard → Authentication → Emails → Templates →
+  "Confirm signup". Paste this whole block into the Message body (HTML), keep the
+  Subject as something like: Confirm your VOID email
+  Leave the {{ .ConfirmationURL }} placeholders exactly as they are — Supabase
+  fills them in. (Uses only email-safe inline styles + web-safe fonts.)
+-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#000000;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background-color:#0a0a0a;border:1px solid #4a3f26;">
+        <!-- Wordmark -->
+        <tr>
+          <td align="center" style="padding:46px 44px 0;">
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:30px;line-height:1;letter-spacing:10px;color:#f5f2ec;">VOID<span style="font-size:11px;vertical-align:super;letter-spacing:0;">&#169;</span></div>
+            <div style="width:56px;height:1px;background-color:#c7a96c;margin:22px auto 0;line-height:1px;font-size:0;">&nbsp;</div>
+          </td>
+        </tr>
+        <!-- Heading -->
+        <tr>
+          <td align="center" style="padding:30px 44px 0;">
+            <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#c7a96c;">Private Members</p>
+            <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:27px;line-height:1.2;color:#f5f2ec;">Confirm your email</h1>
+            <p style="margin:0 0 32px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#bdb5a8;">Welcome to VOID. Verify your email address to complete your membership and enter the collection.</p>
+          </td>
+        </tr>
+        <!-- Button -->
+        <tr>
+          <td align="center" style="padding:0 44px;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td align="center" bgcolor="#c7a96c" style="background-color:#c7a96c;">
+                  <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:15px 42px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;color:#0a0a0a;text-decoration:none;">Confirm email</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- Fallback link -->
+        <tr>
+          <td align="center" style="padding:28px 44px 0;">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#8f8778;">Or paste this link into your browser:<br>
+              <a href="{{ .ConfirmationURL }}" style="color:#c7a96c;text-decoration:underline;word-break:break-all;">{{ .ConfirmationURL }}</a>
+            </p>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="padding:34px 44px 42px;">
+            <div style="border-top:1px solid #1c1a15;padding-top:22px;">
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#6a6459;text-align:center;">If you didn&rsquo;t create a VOID account, you can safely ignore this email.</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:22px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#5a5348;">&#169; VOID &mdash; Eternal Void</p>
+    </td>
+  </tr>
+</table>

@@ -42,9 +42,13 @@ export async function isConfigured() {
     try { await getSupabase(); return true; } catch (e) { return false; }
 }
 
-export async function signUp(email, password) {
+export async function signUp(email, password, redirectTo) {
     const sb = await getSupabase();
-    return sb.auth.signUp({ email, password });
+    return sb.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: redirectTo || (location.origin + '/?confirmed=1') }
+    });
 }
 
 export async function signIn(email, password) {
