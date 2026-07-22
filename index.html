@@ -10456,17 +10456,29 @@ void main() {
             let hoverAmount = 0, isHovered = false, burst = 0;
             const clamp = (v, m) => Math.max(-m, Math.min(m, v));
 
+            // While the cursor is over the hero the rings react; the moment it
+            // crosses any edge (e.g. down into the Collection) the target eases
+            // back to neutral so the reaction smoothly stops.
+            const settle = () => { mouseX = 0; mouseY = 0; isHovered = false; };
             const onMove = (e) => {
                 const rect = hero.getBoundingClientRect();
                 if (!rect.width || !rect.height) return;
-                mouseX = clamp((e.clientX - rect.left) / rect.width - 0.5, 0.75);
-                mouseY = clamp(-((e.clientY - rect.top) / rect.height - 0.5), 0.75);
-                isHovered = e.clientX >= rect.left && e.clientX <= rect.right &&
-                            e.clientY >= rect.top && e.clientY <= rect.bottom;
+                const inside = e.clientX >= rect.left && e.clientX <= rect.right &&
+                               e.clientY >= rect.top && e.clientY <= rect.bottom;
+                if (inside) {
+                    mouseX = clamp((e.clientX - rect.left) / rect.width - 0.5, 0.75);
+                    mouseY = clamp(-((e.clientY - rect.top) / rect.height - 0.5), 0.75);
+                    isHovered = true;
+                } else {
+                    settle();
+                }
             };
             const onClick = () => { if (c.clickBurst) burst = 0.45; };   // subtle pulse, not a flash
             window.addEventListener('mousemove', onMove, { passive: true });
             window.addEventListener('click', onClick);
+            // Also settle if the cursor leaves the window entirely.
+            document.addEventListener('mouseleave', settle);
+            window.addEventListener('blur', settle);
 
             const renderFrame = (tMs) => {
                 // Ease the cursor-driven values so motion stays smooth and settles.
