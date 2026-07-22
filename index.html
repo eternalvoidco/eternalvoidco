@@ -3242,13 +3242,13 @@
             left: 50%;
             bottom: 0;
             transform: translateX(-50%);
-            width: min(82%, 920px);
+            width: min(96%, 1600px);
             height: 1px;
             background: linear-gradient(90deg,
                 transparent 0%,
-                rgba(199, 169, 108, 0.15) 18%,
+                rgba(199, 169, 108, 0.15) 8%,
                 rgba(212, 182, 120, 0.7) 50%,
-                rgba(199, 169, 108, 0.15) 82%,
+                rgba(199, 169, 108, 0.15) 92%,
                 transparent 100%);
             box-shadow: 0 0 14px rgba(199, 169, 108, 0.4);
         }
@@ -3259,7 +3259,7 @@
             left: 50%;
             bottom: -2px;
             transform: translateX(-50%);
-            width: min(60%, 680px);
+            width: min(86%, 1200px);
             height: 54px;
             background: radial-gradient(60% 100% at 50% 100%, rgba(199, 169, 108, 0.12), transparent 72%);
         }
@@ -6705,12 +6705,14 @@
             box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(245, 242, 236, 0.08), 0 0 46px 4px rgba(199, 169, 108, 0.14);
             padding: 2.4rem 2rem 2rem;
             text-align: center;
-            transform: translateY(14px) scale(0.96);
+            /* Cinematic emerge: unfurls from a thin line out of the page. */
+            transform: scaleY(0.06) scaleX(0.92) translateY(8px);
+            transform-origin: center;
             opacity: 0;
-            transition: transform 0.6s cubic-bezier(0.34, 1.3, 0.5, 1), opacity 0.4s ease;
+            transition: transform 0.62s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.36s ease;
         }
 
-        .void-auth.active .void-auth-panel { transform: none; opacity: 1; }
+        .void-auth.active .void-auth-panel { transform: scaleY(1) scaleX(1) translateY(0); opacity: 1; }
 
         .void-auth-close {
             position: absolute;
@@ -7269,7 +7271,8 @@
         .void-auth-toast {
             position: fixed;
             left: 50%;
-            bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+            /* Sits above the bottom dock so it never covers it. */
+            bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
             transform: translate(-50%, 160%);
             z-index: 1900;
             max-width: min(92vw, 430px);
@@ -7339,6 +7342,7 @@
             .void-auth-toast {
                 left: 0.8rem;
                 right: 0.8rem;
+                bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
                 max-width: none;
                 transform: translateY(160%);
             }
@@ -7489,14 +7493,16 @@
             box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(245, 242, 236, 0.08), 0 0 46px 4px rgba(199, 169, 108, 0.14);
             padding: 2.2rem 1.8rem 1.9rem;
             text-align: center;
-            transform: translateY(14px) scale(0.96);
+            /* Cinematic emerge: unfurls from a thin line out of the page. */
+            transform: scaleY(0.06) scaleX(0.92) translateY(8px);
+            transform-origin: center;
             opacity: 0;
-            transition: transform 0.55s cubic-bezier(0.34, 1.3, 0.5, 1), opacity 0.4s ease;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.36s ease;
             scrollbar-width: thin;
             scrollbar-color: rgba(199, 169, 108, 0.6) transparent;
         }
 
-        .void-modal.active .void-modal-panel { transform: none; opacity: 1; }
+        .void-modal.active .void-modal-panel { transform: scaleY(1) scaleX(1) translateY(0); opacity: 1; }
         .void-modal-lg { width: min(94vw, 520px); text-align: left; }
 
         .void-modal-close {
@@ -7655,6 +7661,38 @@
             font-size: 0.74rem;
             line-height: 1.55;
         }
+
+        .void-set-note[hidden] { display: none; }
+
+        .void-set-pw {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            margin: -0.2rem 0 0.6rem;
+            padding: 0.7rem;
+            border: 1px solid rgba(199, 169, 108, 0.22);
+            background: rgba(199, 169, 108, 0.05);
+        }
+
+        .void-set-pw[hidden] { display: none; }
+
+        .void-set-pw-input {
+            width: 100%;
+            background: rgba(8, 8, 8, 0.8);
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            color: var(--void-white);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.84rem;
+            padding: 0.6rem 0.7rem;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .void-set-pw-input:focus { border-color: rgba(199, 169, 108, 0.7); box-shadow: 0 0 0 2px rgba(199, 169, 108, 0.1); }
+        .void-set-pw-save { align-self: flex-start; }
+        .void-set-pw .void-set-note { margin: 0.2rem 0 0; }
+        .void-set-pw .void-set-note.ok { border-left-color: var(--void-gold-soft); color: var(--void-gold-soft); }
 
         html.reduce-motion .void-modal,
         html.reduce-motion .void-modal-panel {
@@ -8458,7 +8496,12 @@
                     <span class="void-set-label">Change password<span class="void-set-hint">Account security</span></span>
                     <button type="button" class="void-set-btn" data-set-action="password">Manage</button>
                 </div>
-                <div class="void-set-note" id="voidSetPwNote" hidden>Password sign-in is coming soon — VOID currently uses secure email sign-in, so there is no password to change yet.</div>
+                <div class="void-set-pw" id="voidSetPwForm" hidden>
+                    <input type="password" id="voidSetPwNew" class="void-set-pw-input" placeholder="New password" autocomplete="new-password" minlength="6">
+                    <input type="password" id="voidSetPwConfirm" class="void-set-pw-input" placeholder="Confirm new password" autocomplete="new-password" minlength="6">
+                    <button type="button" class="void-set-btn void-set-pw-save" id="voidSetPwSave">Update password</button>
+                    <p class="void-set-note" id="voidSetPwMsg" aria-live="polite" hidden></p>
+                </div>
                 <div class="void-set-row">
                     <span class="void-set-label">ENTER THE VOID intro gate<span class="void-set-hint">Play the cinematic entry on load</span></span>
                     <button type="button" class="void-set-switch" id="voidSetGate" role="switch" aria-checked="true" aria-label="Toggle the ENTER THE VOID intro gate"><span class="void-set-knob" aria-hidden="true"></span></button>
@@ -9912,6 +9955,9 @@
 
             window.requestAnimationFrame(step);
         }
+
+        // Exposed so the dock Home button can use the same cinematic scroll.
+        window.voidSmoothScrollTo = smoothScrollToTarget;
 
         // Nav scroll
         window.addEventListener('scroll', () => {
@@ -11849,6 +11895,18 @@
                 try { const c = await ensureSupabase(); if (c) await c.auth.updateUser({ data: { shipping: data } }); } catch (e) {}
             };
 
+            // Set / change the account password (works for social accounts too —
+            // it adds email+password sign-in). Returns { ok, message }.
+            window.voidUpdatePassword = async function (newPassword) {
+                const c = await ensureSupabase();
+                if (!c) return { ok: false, message: 'Password change needs the account backend connected.' };
+                const { data } = await c.auth.getSession();
+                if (!data || !data.session) return { ok: false, message: 'Please sign in first to set a password.' };
+                const { error } = await c.auth.updateUser({ password: newPassword });
+                if (error) return { ok: false, message: error.message || 'Could not update the password.' };
+                return { ok: true, message: 'Password updated. You can now sign in with your email and this password.' };
+            };
+
             // ── Gate: greet or prompt once inside the site ──
             async function runGate() {
                 if (gateRan) return; gateRan = true;
@@ -11966,9 +12024,32 @@
             const settingsModal = document.getElementById('voidSettings');
             const themeSeg = document.getElementById('voidSetTheme');
             const gateSwitch = document.getElementById('voidSetGate');
-            const pwNote = document.getElementById('voidSetPwNote');
+            const pwForm = document.getElementById('voidSetPwForm');
+            const pwNew = document.getElementById('voidSetPwNew');
+            const pwConfirm = document.getElementById('voidSetPwConfirm');
+            const pwSave = document.getElementById('voidSetPwSave');
+            const pwMsg = document.getElementById('voidSetPwMsg');
             const signoutRow = document.getElementById('voidSetSignoutRow');
             const signedInAs = document.getElementById('voidSetSignedInAs');
+
+            function setPwMsg(text, ok) {
+                if (!pwMsg) return;
+                pwMsg.textContent = text || '';
+                pwMsg.hidden = !text;
+                pwMsg.classList.toggle('ok', !!ok);
+            }
+            if (pwSave) pwSave.addEventListener('click', async () => {
+                const a = (pwNew && pwNew.value) || '';
+                const b = (pwConfirm && pwConfirm.value) || '';
+                if (a.length < 6) { setPwMsg('Password must be at least 6 characters.', false); return; }
+                if (a !== b) { setPwMsg('The passwords do not match.', false); return; }
+                pwSave.disabled = true; pwSave.textContent = 'Updating…';
+                let res = { ok: false, message: 'Password change is unavailable right now.' };
+                try { if (typeof window.voidUpdatePassword === 'function') res = await window.voidUpdatePassword(a); } catch (e) { res = { ok: false, message: 'Could not update the password.' }; }
+                setPwMsg(res.message, res.ok);
+                if (res.ok && pwNew && pwConfirm) { pwNew.value = ''; pwConfirm.value = ''; }
+                pwSave.disabled = false; pwSave.textContent = 'Update password';
+            });
 
             function currentThemeMode() {
                 if (document.body.classList.contains('mode-cart')) return 'cart';
@@ -11991,7 +12072,8 @@
                         if (who && signedInAs) signedInAs.textContent = who;
                     }
                 });
-                if (pwNote) pwNote.hidden = true;
+                if (pwForm) pwForm.hidden = true;
+                setPwMsg('', false);
             }
 
             // Dock buttons
@@ -12000,7 +12082,12 @@
                 if (!btn) return;
                 const action = btn.getAttribute('data-dock');
                 if (action === 'home') {
-                    window.scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' });
+                    const hero = document.querySelector('.video-section.hero');
+                    if (!reduce() && hero && typeof window.voidSmoothScrollTo === 'function') {
+                        window.voidSmoothScrollTo(hero);   // cinematic letterbox scroll to the top
+                    } else {
+                        window.scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' });
+                    }
                 } else if (action === 'concierge') {
                     const launcher = document.getElementById('vcLauncher');
                     if (launcher) launcher.click();
@@ -12048,7 +12135,10 @@
                     if (sec) sec.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'center' });
                     if (email) window.setTimeout(() => { try { email.focus(); } catch (e) {} }, 500);
                 } else if (action === 'password') {
-                    if (pwNote) pwNote.hidden = !pwNote.hidden;
+                    if (pwForm) {
+                        pwForm.hidden = !pwForm.hidden;
+                        if (!pwForm.hidden) { setPwMsg('', false); if (pwNew) { try { pwNew.focus(); } catch (e) {} } }
+                    }
                 } else if (action === 'signout') {
                     Promise.resolve(typeof window.voidSignOut === 'function' ? window.voidSignOut() : null).then(() => {
                         syncSettings();
@@ -12177,6 +12267,13 @@
                 const modal = document.getElementById('voidProfile');
                 if (modal) { modal.classList.remove('active'); modal.setAttribute('aria-hidden', 'true'); }
                 if (typeof window.voidAuthOpen === 'function') window.voidAuthOpen();
+            });
+
+            // Remember exactly where the visitor was so account.html's "Back to
+            // site" returns them to the same spot.
+            const acctLink = document.getElementById('voidProfileAccountLink');
+            if (acctLink) acctLink.addEventListener('click', () => {
+                try { sessionStorage.setItem('void-scroll', String(Math.round(window.scrollY || window.pageYOffset || 0))); } catch (e) {}
             });
 
             // Reflect the current signed-in state on load (after Supabase settles).
