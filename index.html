@@ -400,6 +400,7 @@
         body.gate-open .cart-popup,
         body.gate-open .theme-switch,
         body.gate-open .void-concierge,
+        body.gate-open .void-dock,
         body.gate-open .footer {
             visibility: hidden;
             opacity: 0;
@@ -6634,6 +6635,622 @@
                 padding-right: min(5.5vw, 6rem);
             }
         }
+
+        /* ===================== VOID MEMBER SIGN-IN (client-side) ===================== */
+        .void-auth {
+            position: fixed;
+            inset: 0;
+            z-index: 1850;
+            display: grid;
+            place-items: center;
+            padding: calc(1.2rem + env(safe-area-inset-top, 0px)) 1rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+            background: radial-gradient(circle at 50% 32%, rgba(199, 169, 108, 0.16), transparent 34%), rgba(0, 0, 0, 0.74);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.5s var(--ease-lux), visibility 0.5s var(--ease-lux);
+        }
+
+        .void-auth.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        body.void-auth-open { overflow: hidden; }
+
+        .void-auth-panel {
+            position: relative;
+            width: min(94vw, 420px);
+            border: 1px solid rgba(199, 169, 108, 0.42);
+            background: linear-gradient(145deg, rgba(14, 13, 11, 0.98), rgba(0, 0, 0, 0.99));
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(245, 242, 236, 0.08), 0 0 46px 4px rgba(199, 169, 108, 0.14);
+            padding: 2.4rem 2rem 2rem;
+            text-align: center;
+            transform: translateY(14px) scale(0.96);
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.34, 1.3, 0.5, 1), opacity 0.4s ease;
+        }
+
+        .void-auth.active .void-auth-panel { transform: none; opacity: 1; }
+
+        .void-auth-close {
+            position: absolute;
+            top: 0.7rem;
+            right: 0.7rem;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(10, 10, 10, 0.6);
+            color: var(--void-white);
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: border-color 0.24s ease, background 0.24s ease;
+        }
+
+        .void-auth-close:hover,
+        .void-auth-close:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            background: rgba(22, 17, 9, 0.9);
+            outline: none;
+        }
+
+        .void-auth-eyebrow {
+            margin: 0 0 0.5rem;
+            color: var(--void-accent);
+            font-size: 0.62rem;
+            letter-spacing: 0.34em;
+            text-transform: uppercase;
+        }
+
+        .void-auth-title {
+            margin: 0 0 0.5rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            font-size: 2.1rem;
+            letter-spacing: 0.04em;
+            color: var(--void-white);
+        }
+
+        .void-auth-sub {
+            margin: 0 0 1.5rem;
+            color: rgba(245, 242, 236, 0.6);
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+
+        .void-auth-field { position: relative; text-align: left; margin-bottom: 1rem; }
+
+        .void-auth-label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: var(--void-gold-soft);
+            font-size: 0.58rem;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+        }
+
+        .void-auth-input {
+            width: 100%;
+            background: rgba(8, 8, 8, 0.8);
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.9rem;
+            padding: 0.75rem 0.85rem;
+            outline: none;
+            transition: border-color 0.24s ease, box-shadow 0.24s ease;
+        }
+
+        .void-auth-input::placeholder { color: rgba(245, 242, 236, 0.35); }
+
+        .void-auth-input:focus {
+            border-color: rgba(199, 169, 108, 0.75);
+            box-shadow: 0 0 0 2px rgba(199, 169, 108, 0.12);
+        }
+
+        .void-auth-suggest {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 5;
+            margin: 0;
+            padding: 0.3rem;
+            list-style: none;
+            background: rgba(12, 11, 9, 0.98);
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .void-auth-suggest[hidden] { display: none; }
+
+        .void-auth-suggest li {
+            display: flex;
+            align-items: center;
+            padding: 0.55rem 0.7rem;
+            font-size: 0.84rem;
+            color: rgba(245, 242, 236, 0.85);
+            cursor: pointer;
+            transition: background 0.16s ease, color 0.16s ease;
+        }
+
+        .void-auth-suggest-dom { color: var(--void-gold-soft); }
+
+        .void-auth-suggest li:hover,
+        .void-auth-suggest li.active {
+            background: rgba(199, 169, 108, 0.14);
+            color: var(--void-white);
+        }
+
+        .void-auth-remember {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.4rem;
+            cursor: pointer;
+            text-align: left;
+            color: rgba(245, 242, 236, 0.75);
+            font-size: 0.78rem;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .void-auth-remember input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .void-auth-check {
+            flex: 0 0 auto;
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            display: grid;
+            place-items: center;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .void-auth-check::after {
+            content: '';
+            width: 5px;
+            height: 9px;
+            border: solid #0a0a0a;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg) scale(0);
+            transition: transform 0.2s var(--ease-lux);
+            margin-top: -2px;
+        }
+
+        .void-auth-remember input:checked + .void-auth-check {
+            background: var(--void-gold-gradient);
+            border-color: var(--void-accent);
+        }
+
+        .void-auth-remember input:checked + .void-auth-check::after { transform: rotate(45deg) scale(1); }
+        .void-auth-remember input:focus-visible + .void-auth-check { box-shadow: 0 0 0 2px rgba(199, 169, 108, 0.35); }
+
+        .void-auth-submit {
+            width: 100%;
+            padding: 0.85rem 1.5rem;
+            background: var(--void-gold-gradient);
+            border: 1px solid var(--void-accent);
+            color: #090909;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.35);
+            transition: background 0.35s var(--ease-lux), color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), filter 0.35s var(--ease-lux);
+        }
+
+        .void-auth-submit:hover,
+        .void-auth-submit:focus-visible {
+            background: transparent;
+            color: var(--void-gold-soft);
+            box-shadow: 0 0 20px rgba(199, 169, 108, 0.16);
+            filter: brightness(1.02);
+            outline: none;
+        }
+
+        .void-auth-error {
+            min-height: 1rem;
+            margin: 0.8rem 0 0;
+            color: #e6a5a5;
+            font-size: 0.76rem;
+        }
+
+        html.reduce-motion .void-auth,
+        html.reduce-motion .void-auth-panel {
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            transform: none;
+        }
+
+        /* Gold success toast */
+        .void-auth-toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+            transform: translate(-50%, 160%);
+            z-index: 1900;
+            max-width: min(92vw, 430px);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            padding: 1rem 1.3rem;
+            border: 1px solid rgba(199, 169, 108, 0.6);
+            background: linear-gradient(145deg, rgba(24, 20, 12, 0.98), rgba(10, 9, 6, 0.98));
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 40px 2px rgba(199, 169, 108, 0.22);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+        }
+
+        .void-auth-toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .void-auth-toast-icon {
+            flex: 0 0 auto;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--void-gold-gradient);
+            display: grid;
+            place-items: center;
+            box-shadow: 0 0 14px rgba(199, 169, 108, 0.5);
+        }
+
+        .void-auth-toast-icon::after {
+            content: '';
+            width: 6px;
+            height: 11px;
+            border: solid #0a0a0a;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-top: -2px;
+        }
+
+        .void-auth-toast-body { text-align: left; }
+
+        .void-auth-toast-title {
+            margin: 0 0 0.2rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            letter-spacing: 0.04em;
+            color: var(--void-gold-bright);
+        }
+
+        .void-auth-toast-text {
+            margin: 0;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            color: rgba(245, 242, 236, 0.8);
+        }
+
+        .void-auth-toast-text strong { color: var(--void-gold-soft); font-weight: 600; }
+
+        html.reduce-motion .void-auth-toast { transition: opacity 0.2s ease; }
+
+        @media (max-width: 600px) {
+            .void-auth-panel { padding: 2rem 1.3rem 1.6rem; }
+            .void-auth-title { font-size: 1.8rem; }
+            .void-auth-toast {
+                left: 0.8rem;
+                right: 0.8rem;
+                max-width: none;
+                transform: translateY(160%);
+            }
+            .void-auth-toast.show { transform: translateY(0); }
+        }
+
+        /* ===================== VOID DOCK (bottom navigation) ===================== */
+        .void-dock {
+            position: fixed;
+            left: 50%;
+            bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px));
+            transform: translateX(-50%);
+            z-index: 1180;
+            pointer-events: none;
+        }
+
+        .void-dock-panel {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.55rem;
+            padding: 0.5rem 0.7rem;
+            border-radius: 1rem;
+            pointer-events: auto;
+            background: linear-gradient(160deg, rgba(18, 16, 12, 0.92), rgba(6, 6, 6, 0.94));
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(245, 242, 236, 0.06), 0 0 30px rgba(199, 169, 108, 0.08);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        .void-dock-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            padding: 0;
+            border-radius: 12px;
+            border: 1px solid rgba(199, 169, 108, 0.28);
+            background: radial-gradient(circle at 50% 32%, rgba(30, 27, 20, 0.95), rgba(8, 8, 8, 0.95));
+            color: var(--void-gold-soft);
+            cursor: pointer;
+            outline: none;
+            transition: width 0.18s cubic-bezier(0.22, 1, 0.36, 1), height 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+        }
+
+        .void-dock-item:hover,
+        .void-dock-item:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            color: var(--void-gold-bright);
+            box-shadow: 0 0 20px rgba(199, 169, 108, 0.22);
+        }
+
+        .void-dock-icon {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            pointer-events: none;
+        }
+
+        .void-dock-icon svg {
+            width: 42%;
+            height: 42%;
+            display: block;
+        }
+
+        .void-dock-label {
+            position: absolute;
+            bottom: calc(100% + 0.5rem);
+            left: 50%;
+            transform: translate(-50%, 6px);
+            white-space: nowrap;
+            padding: 0.2rem 0.55rem;
+            border-radius: 6px;
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            background: rgba(12, 11, 9, 0.96);
+            color: var(--void-white);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .void-dock-item:hover .void-dock-label,
+        .void-dock-item:focus-visible .void-dock-label {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        html.reduce-motion .void-dock-item { transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; }
+
+        @media (max-width: 600px) {
+            .void-dock-panel { gap: 0.4rem; padding: 0.45rem 0.55rem; }
+            .void-dock-item { width: 44px; height: 44px; }
+        }
+
+        /* ===================== VOID GENERIC MODAL (profile / settings) ============ */
+        .void-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1860;
+            display: grid;
+            place-items: center;
+            padding: calc(1.2rem + env(safe-area-inset-top, 0px)) 1rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+            background: radial-gradient(circle at 50% 32%, rgba(199, 169, 108, 0.14), transparent 34%), rgba(0, 0, 0, 0.74);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.4s var(--ease-lux), visibility 0.4s var(--ease-lux);
+        }
+
+        .void-modal.active { opacity: 1; visibility: visible; pointer-events: auto; }
+
+        .void-modal-panel {
+            position: relative;
+            width: min(94vw, 380px);
+            max-height: calc(100dvh - 3rem);
+            overflow-y: auto;
+            border: 1px solid rgba(199, 169, 108, 0.42);
+            background: linear-gradient(145deg, rgba(14, 13, 11, 0.98), rgba(0, 0, 0, 0.99));
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(245, 242, 236, 0.08), 0 0 46px 4px rgba(199, 169, 108, 0.14);
+            padding: 2.2rem 1.8rem 1.9rem;
+            text-align: center;
+            transform: translateY(14px) scale(0.96);
+            opacity: 0;
+            transition: transform 0.55s cubic-bezier(0.34, 1.3, 0.5, 1), opacity 0.4s ease;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(199, 169, 108, 0.6) transparent;
+        }
+
+        .void-modal.active .void-modal-panel { transform: none; opacity: 1; }
+        .void-modal-lg { width: min(94vw, 520px); text-align: left; }
+
+        .void-modal-close {
+            position: absolute;
+            top: 0.7rem;
+            right: 0.7rem;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(10, 10, 10, 0.6);
+            color: var(--void-white);
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: border-color 0.24s ease, background 0.24s ease;
+        }
+
+        .void-modal-close:hover,
+        .void-modal-close:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            background: rgba(22, 17, 9, 0.9);
+            outline: none;
+        }
+
+        .void-modal-title {
+            margin: 0 0 0.5rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            font-size: 2rem;
+            letter-spacing: 0.04em;
+            color: var(--void-white);
+        }
+
+        .void-modal-lg .void-modal-title { text-align: left; }
+
+        .void-modal-sub {
+            margin: 0 0 0.5rem;
+            color: rgba(245, 242, 236, 0.62);
+            font-size: 0.84rem;
+            line-height: 1.7;
+        }
+
+        /* Settings rows */
+        .void-set-list { display: flex; flex-direction: column; gap: 0.2rem; margin-top: 1.4rem; }
+
+        .void-set-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.9rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .void-set-row:first-child { border-top: none; }
+        .void-set-block { flex-direction: column; align-items: stretch; gap: 0.7rem; }
+
+        .void-set-label {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            color: var(--void-white);
+            font-size: 0.82rem;
+            letter-spacing: 0.02em;
+        }
+
+        .void-set-hint {
+            color: rgba(245, 242, 236, 0.45);
+            font-size: 0.66rem;
+            letter-spacing: 0.04em;
+        }
+
+        .void-set-btn {
+            flex: 0 0 auto;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            background: rgba(14, 12, 8, 0.6);
+            color: var(--void-gold-soft);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.24s ease, background 0.24s ease, color 0.24s ease;
+        }
+
+        .void-set-btn:hover,
+        .void-set-btn:focus-visible {
+            border-color: rgba(199, 169, 108, 0.95);
+            background: rgba(24, 19, 10, 0.85);
+            color: var(--void-gold-bright);
+            outline: none;
+        }
+
+        .void-set-seg { display: flex; gap: 0.4rem; }
+
+        .void-set-seg button {
+            flex: 1;
+            padding: 0.55rem 0.4rem;
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            background: rgba(10, 10, 10, 0.6);
+            color: rgba(245, 242, 236, 0.7);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.24s ease, background 0.24s ease, color 0.24s ease;
+        }
+
+        .void-set-seg button:hover { border-color: rgba(199, 169, 108, 0.7); color: var(--void-white); }
+
+        .void-set-seg button[aria-pressed="true"] {
+            background: var(--void-gold-gradient);
+            border-color: var(--void-accent);
+            color: #0a0a0a;
+        }
+
+        .void-set-switch {
+            flex: 0 0 auto;
+            position: relative;
+            width: 46px;
+            height: 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            background: rgba(10, 10, 10, 0.7);
+            cursor: pointer;
+            transition: background 0.28s ease, border-color 0.28s ease;
+        }
+
+        .void-set-knob {
+            position: absolute;
+            top: 50%;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(245, 242, 236, 0.7);
+            transform: translateY(-50%);
+            transition: left 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.28s ease;
+        }
+
+        .void-set-switch[aria-checked="true"] { background: var(--void-gold-gradient); border-color: var(--void-accent); }
+        .void-set-switch[aria-checked="true"] .void-set-knob { left: 26px; background: #0a0a0a; }
+
+        .void-set-note {
+            margin: -0.2rem 0 0.5rem;
+            padding: 0.6rem 0.7rem;
+            border-left: 2px solid rgba(199, 169, 108, 0.55);
+            background: rgba(199, 169, 108, 0.06);
+            color: rgba(245, 242, 236, 0.72);
+            font-size: 0.74rem;
+            line-height: 1.55;
+        }
+
+        html.reduce-motion .void-modal,
+        html.reduce-motion .void-modal-panel {
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            transform: none;
+        }
     </style>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0J10500JCQ"></script>
@@ -6655,11 +7272,19 @@
            intro or drop them at the top. Runs before the gate paints. */
         (function () {
             try {
-                if (sessionStorage.getItem('void-entered') === '1') {
+                var gateDisabled = false;
+                try { gateDisabled = localStorage.getItem('void-gate-disabled') === '1'; } catch (e) {}
+                var returning = false;
+                try { returning = sessionStorage.getItem('void-entered') === '1'; } catch (e) {}
+                if (gateDisabled || returning) {
                     document.body.classList.remove('gate-open');
-                    document.body.classList.add('void-entered', 'void-returning');
+                    document.body.classList.add('void-entered');
+                    if (returning) document.body.classList.add('void-returning');
+                    // When the gate is turned off in Settings, treat the visitor as
+                    // already inside for the rest of the session.
+                    if (gateDisabled) { try { sessionStorage.setItem('void-entered', '1'); } catch (e) {} }
                     var y = parseInt(sessionStorage.getItem('void-scroll') || '0', 10);
-                    if (y > 0) {
+                    if (returning && y > 0) {
                         var restore = function () { window.scrollTo(0, y); };
                         document.addEventListener('DOMContentLoaded', restore);
                         window.addEventListener('load', restore);
@@ -7235,6 +7860,111 @@
         </section>
     </div>
 
+    <!-- VOID member sign-in (client-side email; appears after entering the VOID) -->
+    <div class="void-auth" id="voidAuth" aria-hidden="true">
+        <div class="void-auth-panel" role="dialog" aria-modal="true" aria-labelledby="voidAuthTitle">
+            <button type="button" class="void-auth-close" id="voidAuthClose" aria-label="Close sign-in">✕</button>
+            <p class="void-auth-eyebrow">Members</p>
+            <h2 class="void-auth-title" id="voidAuthTitle">Enter the House</h2>
+            <p class="void-auth-sub">Sign in with your email to access VOID and your pre-order privileges.</p>
+            <form class="void-auth-form" id="voidAuthForm" novalidate>
+                <div class="void-auth-field">
+                    <label class="void-auth-label" for="voidAuthEmail">Email address</label>
+                    <input type="email" id="voidAuthEmail" class="void-auth-input" autocomplete="email" inputmode="email" spellcheck="false" placeholder="you@gmail.com" required aria-describedby="voidAuthError" aria-autocomplete="list" aria-controls="voidAuthSuggest">
+                    <ul class="void-auth-suggest" id="voidAuthSuggest" role="listbox" hidden></ul>
+                </div>
+                <label class="void-auth-remember">
+                    <input type="checkbox" id="voidAuthRemember" checked>
+                    <span class="void-auth-check" aria-hidden="true"></span>
+                    <span>Keep me signed in on this device</span>
+                </label>
+                <button type="submit" class="void-auth-submit">Sign In</button>
+                <p class="void-auth-error" id="voidAuthError" role="alert" aria-live="polite"></p>
+            </form>
+        </div>
+    </div>
+    <div class="void-auth-toast" id="voidAuthToast" role="status" aria-live="polite" aria-hidden="true"></div>
+
+    <!-- VOID dock -->
+    <nav class="void-dock" id="voidDock" aria-label="VOID quick navigation">
+        <div class="void-dock-panel" id="voidDockPanel" role="toolbar" aria-label="VOID dock">
+            <button type="button" class="void-dock-item" data-dock="home" aria-label="Home">
+                <span class="void-dock-label">Home</span>
+                <span class="void-dock-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 11.5 12 4l8 7.5M6 10v9.5h4V14h4v5.5h4V10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+            </button>
+            <button type="button" class="void-dock-item" data-dock="concierge" aria-label="The VOID Concierge">
+                <span class="void-dock-label">Concierge</span>
+                <span class="void-dock-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3 21 12 12 21 3 12 12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 8.2 15.8 12 12 15.8 8.2 12 12 8.2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+                </span>
+            </button>
+            <button type="button" class="void-dock-item" data-dock="profile" aria-label="Profile">
+                <span class="void-dock-label">Profile</span>
+                <span class="void-dock-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8.2" r="3.4" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19c0-3.3 2.9-5.6 6.5-5.6s6.5 2.3 6.5 5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+            </button>
+            <button type="button" class="void-dock-item" data-dock="settings" aria-label="Settings">
+                <span class="void-dock-label">Settings</span>
+                <span class="void-dock-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.6v2.6M12 18.8v2.6M21.4 12h-2.6M5.2 12H2.6M18.6 5.4l-1.8 1.8M7.2 16.8l-1.8 1.8M18.6 18.6l-1.8-1.8M7.2 7.2 5.4 5.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Profile modal (coming soon) -->
+    <div class="void-modal" id="voidProfile" aria-hidden="true">
+        <div class="void-modal-panel void-modal-sm" role="dialog" aria-modal="true" aria-labelledby="voidProfileTitle">
+            <button type="button" class="void-modal-close" data-close-modal aria-label="Close">✕</button>
+            <p class="void-auth-eyebrow">Profile</p>
+            <h2 class="void-modal-title" id="voidProfileTitle">Coming Soon</h2>
+            <p class="void-modal-sub">Your VOID profile — order history, saved fits, and member privileges — is being tailored. It arrives with the first drop.</p>
+        </div>
+    </div>
+
+    <!-- Settings modal -->
+    <div class="void-modal" id="voidSettings" aria-hidden="true">
+        <div class="void-modal-panel void-modal-lg" role="dialog" aria-modal="true" aria-labelledby="voidSettingsTitle">
+            <button type="button" class="void-modal-close" data-close-modal aria-label="Close">✕</button>
+            <p class="void-auth-eyebrow">Settings</p>
+            <h2 class="void-modal-title" id="voidSettingsTitle">Preferences</h2>
+            <div class="void-set-list">
+                <div class="void-set-row void-set-block">
+                    <span class="void-set-label">Country theme</span>
+                    <div class="void-set-seg" id="voidSetTheme">
+                        <button type="button" data-set-theme="full">Country</button>
+                        <button type="button" data-set-theme="cart">Cart only</button>
+                        <button type="button" data-set-theme="original">Original</button>
+                    </div>
+                </div>
+                <div class="void-set-row">
+                    <span class="void-set-label">Pre-order access<span class="void-set-hint">Reserve the next drop</span></span>
+                    <button type="button" class="void-set-btn" data-set-action="preorder">Open</button>
+                </div>
+                <div class="void-set-row">
+                    <span class="void-set-label">Newsletter<span class="void-set-hint">Drop updates &amp; early access</span></span>
+                    <button type="button" class="void-set-btn" data-set-action="newsletter">Subscribe</button>
+                </div>
+                <div class="void-set-row">
+                    <span class="void-set-label">Change password<span class="void-set-hint">Account security</span></span>
+                    <button type="button" class="void-set-btn" data-set-action="password">Manage</button>
+                </div>
+                <div class="void-set-note" id="voidSetPwNote" hidden>Password sign-in is coming soon — VOID currently uses secure email sign-in, so there is no password to change yet.</div>
+                <div class="void-set-row">
+                    <span class="void-set-label">ENTER THE VOID intro gate<span class="void-set-hint">Play the cinematic entry on load</span></span>
+                    <button type="button" class="void-set-switch" id="voidSetGate" role="switch" aria-checked="true" aria-label="Toggle the ENTER THE VOID intro gate"><span class="void-set-knob" aria-hidden="true"></span></button>
+                </div>
+                <div class="void-set-row" id="voidSetSignoutRow" hidden>
+                    <span class="void-set-label">Session<span class="void-set-hint" id="voidSetSignedInAs">Signed in</span></span>
+                    <button type="button" class="void-set-btn" data-set-action="signout">Sign out</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- THE VOID CONCIERGE (presented feature) · persona: OBSIDIAN -->
     <div class="void-concierge" id="voidConcierge">
         <button type="button" class="vc-launcher" id="vcLauncher" aria-haspopup="dialog" aria-expanded="false" aria-controls="vcPanel" aria-label="Open the VOID Concierge" data-i18n-aria-label="vcOpen">
@@ -7686,7 +8416,10 @@
             if (!entryGate || entryGate.classList.contains('hidden') || entryGate.classList.contains('entering')) return;
 
             const reduceMotion = document.documentElement.classList.contains('reduce-motion');
-            const offerPreorder = shouldOfferPreorderOnEntry();
+            // If the member sign-in popup will show this load, don't also stack the
+            // occasional pre-order offer on top of it.
+            const willPromptLogin = typeof window.voidAuthWillPrompt === 'function' && window.voidAuthWillPrompt();
+            const offerPreorder = shouldOfferPreorderOnEntry() && !willPromptLogin;
 
             // Reveal the landing world behind the gate so it can settle-zoom in
             // as the gate dissolves — a seamless hand-off, not a page swap.
@@ -7708,6 +8441,7 @@
                 entryGate.classList.add('hidden');
                 if (entryGateVideo) entryGateVideo.pause();
                 window.setTimeout(() => { entryGate.style.display = 'none'; }, 320);
+                if (typeof window.voidAuthOnEnter === 'function') window.voidAuthOnEnter();
                 if (offerPreorder) {
                     window.setTimeout(openPreorderModal, 1200);
                 }
@@ -7724,6 +8458,9 @@
                 if (entryGateVideo) entryGateVideo.pause();
                 entryGate.style.display = 'none';
             }, 1320);
+
+            // Once inside, present the member sign-in (unless already signed in).
+            if (typeof window.voidAuthOnEnter === 'function') window.voidAuthOnEnter();
 
             // Let the visitor arrive and take in the landing page first; only
             // offer the pre-order occasionally (see shouldOfferPreorderOnEntry).
@@ -10290,6 +11027,361 @@
         updateCartUI();
     </script>
 
+    <script>
+        // ── VOID member sign-in (client-side, no password) ──────────────────────
+        // Remembers the visitor's email in the browser. "Keep me signed in" stores
+        // it persistently (localStorage) so a returning visitor is auto signed in;
+        // otherwise it lasts only for the current browser session. This is a
+        // convenience / personalisation sign-in — NOT security. Nothing is sent to
+        // a server unless you later wire the captured email into your own API.
+        (function initVoidAuth() {
+            const overlay = document.getElementById('voidAuth');
+            const form = document.getElementById('voidAuthForm');
+            const input = document.getElementById('voidAuthEmail');
+            const remember = document.getElementById('voidAuthRemember');
+            const suggest = document.getElementById('voidAuthSuggest');
+            const errorEl = document.getElementById('voidAuthError');
+            const closeBtn = document.getElementById('voidAuthClose');
+            const toast = document.getElementById('voidAuthToast');
+            if (!overlay || !form || !input || !suggest || !toast) return;
+
+            const PERSIST_KEY = 'void-auth';
+            const SESSION_KEY = 'void-auth-session';
+            const GREETED_KEY = 'void-auth-greeted';
+            const DOMAINS = ['gmail.com', 'outlook.com', 'yahoo.com', 'icloud.com', 'hotmail.com', 'proton.me'];
+            const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            let gateRan = false;
+            let activeIndex = -1;
+            let toastTimer = null;
+
+            function escapeHtml(s) {
+                return String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+            }
+
+            function readAuth() {
+                try {
+                    const p = JSON.parse(localStorage.getItem(PERSIST_KEY) || 'null');
+                    if (p && p.email) return { email: p.email, persistent: true };
+                    const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+                    if (s && s.email) return { email: s.email, persistent: false };
+                } catch (e) {}
+                return null;
+            }
+
+            // ── Email domain suggestions (Gmail-style) ──
+            function buildSuggestions() {
+                const v = input.value.trim();
+                if (!v || /\s/.test(v)) return [];
+                const at = v.indexOf('@');
+                const local = at === -1 ? v : v.slice(0, at);
+                let partial = at === -1 ? '' : v.slice(at + 1).toLowerCase();
+                if (!local) return [];
+                let doms = DOMAINS.filter((d) => d.startsWith(partial));
+                if (at !== -1 && partial === '') doms = DOMAINS.slice();
+                // Nothing to add once a full known domain is already typed.
+                if (partial && doms.length === 1 && doms[0] === partial) return [];
+                return doms.slice(0, 6).map((d) => ({ local: local, domain: d, full: local + '@' + d }));
+            }
+
+            function renderSuggestions() {
+                const items = buildSuggestions();
+                activeIndex = -1;
+                if (!items.length) { hideSuggest(); return; }
+                suggest.innerHTML = items.map((it) =>
+                    '<li role="option" data-full="' + escapeHtml(it.full) + '">'
+                    + escapeHtml(it.local)
+                    + '<span class="void-auth-suggest-dom">@' + escapeHtml(it.domain) + '</span></li>'
+                ).join('');
+                suggest.hidden = false;
+            }
+            function hideSuggest() { suggest.hidden = true; suggest.innerHTML = ''; activeIndex = -1; }
+
+            function pick(full) {
+                input.value = full;
+                hideSuggest();
+                input.focus();
+            }
+
+            input.addEventListener('input', renderSuggestions);
+            input.addEventListener('focus', renderSuggestions);
+            input.addEventListener('blur', () => { window.setTimeout(hideSuggest, 120); });
+
+            suggest.addEventListener('mousedown', (e) => {
+                const li = e.target.closest('li');
+                if (!li) return;
+                e.preventDefault();   // keep focus on the input
+                pick(li.getAttribute('data-full'));
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (suggest.hidden) return;
+                const items = suggest.querySelectorAll('li');
+                if (!items.length) return;
+                if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = (activeIndex + 1) % items.length; }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = (activeIndex - 1 + items.length) % items.length; }
+                else if (e.key === 'Enter' && activeIndex >= 0) { e.preventDefault(); pick(items[activeIndex].getAttribute('data-full')); return; }
+                else if (e.key === 'Escape') { hideSuggest(); return; }
+                else return;
+                items.forEach((li, i) => li.classList.toggle('active', i === activeIndex));
+            });
+
+            // ── Modal open / close ──
+            function openModal() {
+                overlay.classList.add('active');
+                overlay.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('void-auth-open');
+                window.setTimeout(() => { try { input.focus(); } catch (e) {} }, 420);
+            }
+            function closeModal() {
+                overlay.classList.remove('active');
+                overlay.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('void-auth-open');
+                hideSuggest();
+            }
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) closeModal(); });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && overlay.classList.contains('active')) closeModal();
+            });
+
+            // ── Gold success toast ──
+            function showToast(title, textHtml) {
+                toast.innerHTML =
+                    '<span class="void-auth-toast-icon" aria-hidden="true"></span>'
+                    + '<div class="void-auth-toast-body">'
+                    + '<p class="void-auth-toast-title">' + escapeHtml(title) + '</p>'
+                    + '<p class="void-auth-toast-text">' + textHtml + '</p>'
+                    + '</div>';
+                toast.setAttribute('aria-hidden', 'false');
+                toast.classList.add('show');
+                window.clearTimeout(toastTimer);
+                toastTimer = window.setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.setAttribute('aria-hidden', 'true');
+                }, 6500);
+            }
+
+            // ── Sign in ──
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = input.value.trim();
+                if (!EMAIL_RE.test(email)) {
+                    errorEl.textContent = 'Please enter a valid email address.';
+                    input.focus();
+                    return;
+                }
+                errorEl.textContent = '';
+                const stayed = !!remember.checked;
+                const record = { email: email, ts: Date.now() };
+                try {
+                    sessionStorage.setItem(SESSION_KEY, JSON.stringify(record));
+                    if (stayed) localStorage.setItem(PERSIST_KEY, JSON.stringify({ email: email, ts: record.ts, autoLogin: true }));
+                    else localStorage.removeItem(PERSIST_KEY);
+                    sessionStorage.setItem(GREETED_KEY, '1');
+                } catch (err) {}
+
+                if (typeof trackAnalyticsEvent === 'function') trackAnalyticsEvent('member_sign_in', { remember: stayed });
+
+                closeModal();
+                const who = '<strong>' + escapeHtml(email) + '</strong>';
+                if (stayed) {
+                    showToast('Welcome to VOID', 'Signed in as ' + who + '. You’re set on this device — you won’t need to sign in again.');
+                } else {
+                    showToast('Welcome to VOID', 'Signed in as ' + who + '.');
+                }
+            });
+
+            // ── Decide what happens once the visitor is inside the site ──
+            function runGate() {
+                if (gateRan) return;
+                gateRan = true;
+                const auth = readAuth();
+                if (auth) {
+                    if (auth.persistent && !sessionStorage.getItem(GREETED_KEY)) {
+                        try { sessionStorage.setItem(GREETED_KEY, '1'); } catch (e) {}
+                        const who = '<strong>' + escapeHtml(auth.email) + '</strong>';
+                        showToast('Welcome back', 'Signed in as ' + who + '. You’re signed in automatically — no need to log in again on this device.');
+                    }
+                    return;   // already signed in
+                }
+                openModal();
+            }
+
+            // Shared gold toast (also used by the dock's Settings → Sign out).
+            window.voidToast = showToast;
+            // Whether the sign-in popup will be shown this load (used by enterVoid to
+            // avoid stacking it with the occasional pre-order offer).
+            window.voidAuthWillPrompt = function () { return !readAuth(); };
+            // Called by enterVoid() after the entry gate dissolves.
+            window.voidAuthOnEnter = function () { window.setTimeout(runGate, 1100); };
+
+            // Returning within the same session (the entry gate is skipped): the body
+            // is already marked entered before this script runs, so run the gate now.
+            if (document.body.classList.contains('void-entered')) {
+                window.setTimeout(runGate, 700);
+            }
+        })();
+    </script>
+
+    <script>
+        // ── VOID dock + Profile / Settings ──────────────────────────────────────
+        (function initVoidDock() {
+            const panel = document.getElementById('voidDockPanel');
+            if (!panel) return;
+            const items = Array.prototype.slice.call(panel.querySelectorAll('.void-dock-item'));
+            const reduce = () => document.documentElement.classList.contains('reduce-motion');
+
+            // macOS-style magnification (vanilla — no motion library).
+            const BASE = window.matchMedia('(max-width: 600px)').matches ? 44 : 48;
+            const MAG = 68;
+            const DIST = 150;
+            function setSizes(clientX) {
+                items.forEach((it) => {
+                    const r = it.getBoundingClientRect();
+                    const center = r.left + r.width / 2;
+                    const t = Math.max(0, 1 - Math.abs(clientX - center) / DIST);
+                    const size = BASE + (MAG - BASE) * t;
+                    it.style.width = size + 'px';
+                    it.style.height = size + 'px';
+                });
+            }
+            function resetSizes() { items.forEach((it) => { it.style.width = BASE + 'px'; it.style.height = BASE + 'px'; }); }
+            resetSizes();
+            if (!reduce()) {
+                panel.addEventListener('mousemove', (e) => setSizes(e.clientX));
+                panel.addEventListener('mouseleave', resetSizes);
+            }
+
+            // ── Generic modal open/close ──
+            function anyModalOpen() {
+                if (document.querySelector('.void-modal.active')) return true;
+                const auth = document.getElementById('voidAuth');
+                return !!(auth && auth.classList.contains('active'));
+            }
+            function openModal(el) {
+                if (!el) return;
+                el.classList.add('active');
+                el.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('void-auth-open');
+            }
+            function closeModal(el) {
+                if (!el) return;
+                el.classList.remove('active');
+                el.setAttribute('aria-hidden', 'true');
+                if (!anyModalOpen()) document.body.classList.remove('void-auth-open');
+            }
+            document.querySelectorAll('.void-modal').forEach((modal) => {
+                modal.addEventListener('mousedown', (e) => { if (e.target === modal) closeModal(modal); });
+                modal.querySelectorAll('[data-close-modal]').forEach((b) => b.addEventListener('click', () => closeModal(modal)));
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                const open = document.querySelector('.void-modal.active');
+                if (open) closeModal(open);
+            });
+
+            const profileModal = document.getElementById('voidProfile');
+            const settingsModal = document.getElementById('voidSettings');
+            const themeSeg = document.getElementById('voidSetTheme');
+            const gateSwitch = document.getElementById('voidSetGate');
+            const pwNote = document.getElementById('voidSetPwNote');
+            const signoutRow = document.getElementById('voidSetSignoutRow');
+            const signedInAs = document.getElementById('voidSetSignedInAs');
+
+            function currentThemeMode() {
+                if (document.body.classList.contains('mode-cart')) return 'cart';
+                if (document.body.classList.contains('mode-original')) return 'original';
+                return 'full';
+            }
+            function syncSettings() {
+                const mode = currentThemeMode();
+                if (themeSeg) themeSeg.querySelectorAll('[data-set-theme]').forEach((b) => {
+                    b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === mode ? 'true' : 'false');
+                });
+                let disabled = false;
+                try { disabled = localStorage.getItem('void-gate-disabled') === '1'; } catch (e) {}
+                if (gateSwitch) gateSwitch.setAttribute('aria-checked', disabled ? 'false' : 'true');
+                let email = null;
+                try {
+                    const p = JSON.parse(localStorage.getItem('void-auth') || 'null');
+                    const s = JSON.parse(sessionStorage.getItem('void-auth-session') || 'null');
+                    email = (p && p.email) || (s && s.email) || null;
+                } catch (e) {}
+                if (signoutRow) {
+                    signoutRow.hidden = !email;
+                    if (email && signedInAs) signedInAs.textContent = email;
+                }
+                if (pwNote) pwNote.hidden = true;
+            }
+
+            // Dock buttons
+            panel.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-dock]');
+                if (!btn) return;
+                const action = btn.getAttribute('data-dock');
+                if (action === 'home') {
+                    window.scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' });
+                } else if (action === 'concierge') {
+                    const launcher = document.getElementById('vcLauncher');
+                    if (launcher) launcher.click();
+                } else if (action === 'profile') {
+                    openModal(profileModal);
+                } else if (action === 'settings') {
+                    syncSettings();
+                    openModal(settingsModal);
+                }
+            });
+
+            // Theme segment → drive the existing (hidden) country-theme switch.
+            if (themeSeg) themeSeg.addEventListener('click', (e) => {
+                const b = e.target.closest('[data-set-theme]');
+                if (!b) return;
+                const target = document.querySelector('.theme-switch-option[data-theme-mode="' + b.getAttribute('data-set-theme') + '"]');
+                if (target) target.click();
+                syncSettings();
+            });
+
+            // Intro-gate toggle (checked = gate shown on load).
+            if (gateSwitch) gateSwitch.addEventListener('click', () => {
+                const nowEnabled = gateSwitch.getAttribute('aria-checked') !== 'true';
+                gateSwitch.setAttribute('aria-checked', nowEnabled ? 'true' : 'false');
+                try {
+                    if (nowEnabled) localStorage.removeItem('void-gate-disabled');
+                    else localStorage.setItem('void-gate-disabled', '1');
+                } catch (e) {}
+            });
+
+            // Settings action buttons.
+            if (settingsModal) settingsModal.addEventListener('click', (e) => {
+                const b = e.target.closest('[data-set-action]');
+                if (!b) return;
+                const action = b.getAttribute('data-set-action');
+                if (action === 'preorder') {
+                    closeModal(settingsModal);
+                    const trg = document.querySelector('[data-preorder-trigger]');
+                    if (trg) trg.click();
+                } else if (action === 'newsletter') {
+                    closeModal(settingsModal);
+                    const sec = document.getElementById('newsletter');
+                    const email = document.getElementById('newsletterEmail');
+                    if (sec) sec.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'center' });
+                    if (email) window.setTimeout(() => { try { email.focus(); } catch (e) {} }, 500);
+                } else if (action === 'password') {
+                    if (pwNote) pwNote.hidden = !pwNote.hidden;
+                } else if (action === 'signout') {
+                    try {
+                        localStorage.removeItem('void-auth');
+                        sessionStorage.removeItem('void-auth-session');
+                        sessionStorage.removeItem('void-auth-greeted');
+                    } catch (e) {}
+                    syncSettings();
+                    if (typeof window.voidToast === 'function') window.voidToast('Signed out', 'You have been signed out on this device.');
+                }
+            });
+        })();
+    </script>
+
     <!-- ─────────────────────────────────────────────────────────────────────
          MAGIC RINGS — gold WebGL hero backdrop (adapted from the React Bits
          component to vanilla JS for this static site). Three.js is loaded from
@@ -10309,7 +11401,7 @@
             const MAGIC_RINGS_CONFIG = {
                 color: '#8a6a34',       // deep gold — inner rings
                 colorTwo: '#f3e3ba',    // champagne — outer rings
-                speed: 0.5,             // animation pace (1 = original)
+                speed: 0.85,            // animation pace (1 = original) — smooth, close to source
                 ringCount: 6,
                 attenuation: 10,
                 lineThickness: 2,
@@ -10317,16 +11409,17 @@
                 radiusStep: 0.1,
                 scaleRate: 0.1,
                 opacity: 1,
-                noiseAmount: 0.05,
+                noiseAmount: 0.04,
                 rotation: 0,
                 ringGap: 1.5,
                 fadeIn: 0.7,
                 fadeOut: 0.5,
-                // ── Cursor reactivity (tracked page-wide, layer stays click-through) ──
+                // ── Cursor reactivity — gentle, like the source (keeps the centred
+                //    sphere calm and smooth rather than shoving it around) ──
                 followMouse: true,      // rings drift toward the cursor
-                mouseInfluence: 0.24,   // how far they drift (0 = off)
-                parallax: 0.09,         // per-ring depth offset with the cursor
-                hoverScale: 1.12,       // swell while the cursor is over the hero
+                mouseInfluence: 0.09,   // how far they drift (0 = off)
+                parallax: 0.05,         // per-ring depth offset with the cursor
+                hoverScale: 1.05,       // subtle swell while the cursor is over the hero
                 clickBurst: true        // soft flare on click
             };
 
@@ -10493,9 +11586,9 @@ void main() {
 
             const renderFrame = (tMs) => {
                 // Ease the cursor-driven values so motion stays smooth and settles.
-                smoothX += (mouseX - smoothX) * 0.12;
-                smoothY += (mouseY - smoothY) * 0.12;
-                hoverAmount += ((isHovered ? 1 : 0) - hoverAmount) * 0.1;
+                smoothX += (mouseX - smoothX) * 0.06;
+                smoothY += (mouseY - smoothY) * 0.06;
+                hoverAmount += ((isHovered ? 1 : 0) - hoverAmount) * 0.06;
                 burst *= 0.95;
                 if (burst < 0.001) burst = 0;
 
