@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Eternal Void — Extrait de Parfum by VOID. Black bergamot, cold incense, smoked iris, oud. 50 ml. Limited first release. Join the private waitlist.">
+    <meta name="theme-color" content="#050505">
+    <title>VOID — Eternal Void · Extrait de Parfum</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg?v=20260713-ev">
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260713-ev">
+    <link rel="canonical" href="https://www.eternalvoid.co/fragrance/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="VOID — Eternal Void · Extrait de Parfum">
+    <meta property="og:description" content="Scented in darkness. A limited first release from the house of VOID.">
+    <meta property="og:url" content="https://www.eternalvoid.co/fragrance/">
+    <meta property="og:site_name" content="VOID©">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #050505;
+            --char: #0d0d0f;
+            --gold: #c9a24a;
+            --gold-hi: #e8c876;
+            --gold-dim: #8a6b2c;
+            --ivory: #efe9dd;
+            --ivory-dim: rgba(239, 233, 221, 0.55);
+            --serif: 'Cormorant Garamond', 'Times New Roman', serif;
+            --sans: 'Jost', 'Helvetica Neue', sans-serif;
+        }
+        html { background: var(--bg); scroll-behavior: auto; }
+        body {
+            background: var(--bg);
+            color: var(--ivory);
+            font-family: var(--sans);
+            font-weight: 300;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::selection { background: rgba(201, 162, 74, 0.35); color: var(--ivory); }
+
+        /* ---------- fixed 3D stage ---------- */
+        #stage {
+            position: fixed; inset: 0;
+            width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+            display: block;
+        }
+        .no3d #stage { display: none; }
+        .no3d body::before {
+            content: ''; position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 70% 55% at 50% 42%, #17130c 0%, #0a0908 55%, #050505 100%);
+        }
+
+        /* ---------- cinematic overlays ---------- */
+        .vignette {
+            position: fixed; inset: 0; z-index: 4; pointer-events: none;
+            background: radial-gradient(ellipse 105% 90% at 50% 46%, transparent 55%, rgba(0,0,0,0.55) 100%);
+        }
+        .grain {
+            position: fixed; inset: -50%; z-index: 5; pointer-events: none;
+            opacity: 0.05; mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        .progress-rail {
+            position: fixed; top: 0; right: 0; width: 2px; height: 100%;
+            z-index: 11; pointer-events: none;
+        }
+        .progress-rail i {
+            display: block; width: 100%; height: 100%;
+            background: linear-gradient(180deg, var(--gold-hi), var(--gold-dim));
+            transform: scaleY(0); transform-origin: top; opacity: 0.5;
+        }
+
+        /* ---------- header ---------- */
+        .site-head {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: clamp(18px, 3vw, 30px) clamp(20px, 4.5vw, 56px);
+            mix-blend-mode: normal;
+        }
+        .site-head::after {
+            content: ''; position: absolute; left: clamp(20px, 4.5vw, 56px); right: clamp(20px, 4.5vw, 56px);
+            bottom: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(201,162,74,0.35), transparent);
+            opacity: 0; transition: opacity 0.8s ease;
+        }
+        .scrolled .site-head::after { opacity: 1; }
+        .wordmark {
+            font-family: var(--serif); font-weight: 500; font-size: 21px;
+            letter-spacing: 0.42em; text-indent: 0.42em; color: var(--ivory);
+            text-decoration: none;
+        }
+        .wordmark span { color: var(--gold); }
+        .head-link {
+            font-family: var(--sans); font-weight: 400; font-size: 11px;
+            letter-spacing: 0.32em; text-transform: uppercase;
+            color: var(--ivory-dim); text-decoration: none;
+            padding-bottom: 4px; border-bottom: 1px solid transparent;
+            transition: color 0.5s ease, border-color 0.5s ease;
+        }
+        .head-link:hover { color: var(--gold-hi); border-color: rgba(201,162,74,0.5); }
+
+        /* ---------- sections / pins ---------- */
+        main { position: relative; z-index: 2; }
+        section { position: relative; }
+        .pin {
+            position: sticky; top: 0;
+            height: 100vh; height: 100svh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 0 clamp(22px, 6vw, 80px);
+            overflow: hidden;
+        }
+        .eyebrow {
+            font-family: var(--sans); font-weight: 400; font-size: 11px;
+            letter-spacing: 0.5em; text-indent: 0.5em; text-transform: uppercase;
+            color: var(--gold); margin-bottom: clamp(18px, 2.6vh, 30px);
+        }
+        .eyebrow::before, .eyebrow::after { content: ''; }
+        h2 {
+            font-family: var(--serif); font-weight: 400;
+            font-size: clamp(38px, 6.2vw, 84px);
+            letter-spacing: 0.06em; line-height: 1.08;
+            color: var(--ivory); text-align: center;
+        }
+        .copy {
+            font-family: var(--sans); font-weight: 300;
+            font-size: clamp(14px, 1.35vw, 17px);
+            line-height: 2.05; letter-spacing: 0.08em;
+            color: var(--ivory-dim); text-align: center;
+            max-width: 34em; margin-top: clamp(20px, 3.4vh, 38px);
+        }
+        .copy em { font-style: normal; color: var(--ivory); }
+        .hairline {
+            width: 56px; height: 1px; margin: clamp(22px, 3.5vh, 40px) auto 0;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        /* ---------- hero ---------- */
+        #hero .pin { justify-content: center; }
+        .hero-eyebrow {
+            font-size: 11px; letter-spacing: 0.55em; text-indent: 0.55em;
+            text-transform: uppercase; color: var(--gold);
+            font-weight: 400; margin-bottom: clamp(20px, 3vh, 34px);
+        }
+        .hero-title {
+            font-family: var(--serif); font-weight: 500;
+            font-size: clamp(64px, 14vw, 190px);
+            line-height: 0.95; color: var(--ivory);
+            letter-spacing: 0.24em; text-indent: 0.24em;
+            text-shadow: 0 0 80px rgba(201,162,74,0.18);
+            white-space: nowrap;
+        }
+        .hero-sub {
+            font-family: var(--sans); font-weight: 300; font-size: clamp(12px, 1.6vw, 17px);
+            letter-spacing: 0.85em; text-indent: 0.85em; text-transform: uppercase;
+            color: var(--ivory-dim); margin-top: clamp(16px, 2.6vh, 28px);
+        }
+        .hero-ctas {
+            position: absolute; bottom: clamp(84px, 13vh, 130px);
+            display: flex; gap: clamp(26px, 4vw, 54px); align-items: center;
+        }
+        .cta-gold, .cta-ghost {
+            font-family: var(--sans); font-weight: 400; font-size: 11.5px;
+            letter-spacing: 0.3em; text-transform: uppercase; text-decoration: none;
+            padding: 15px 30px; cursor: pointer; background: none;
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .cta-gold {
+            color: #0a0905;
+            background: linear-gradient(135deg, var(--gold-hi), var(--gold) 55%, var(--gold-dim));
+            border: none;
+        }
+        .cta-gold:hover { box-shadow: 0 0 40px rgba(201,162,74,0.4); transform: translateY(-1px); }
+        .cta-ghost {
+            color: var(--ivory-dim); border: 1px solid rgba(239,233,221,0.22);
+        }
+        .cta-ghost:hover { color: var(--gold-hi); border-color: rgba(201,162,74,0.6); }
+        .scroll-cue {
+            position: absolute; bottom: clamp(26px, 4.5vh, 44px); left: 50%;
+            transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            font-size: 9px; letter-spacing: 0.45em; text-indent: 0.45em;
+            text-transform: uppercase; color: rgba(239,233,221,0.35);
+        }
+        .scroll-cue i {
+            width: 1px; height: 44px; overflow: hidden; position: relative;
+            background: rgba(239,233,221,0.12);
+        }
+        .scroll-cue i::after {
+            content: ''; position: absolute; left: 0; top: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(180deg, transparent, var(--gold));
+            animation: cue-drop 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+        }
+        @keyframes cue-drop { 0% { top: -100%; } 55% { top: 100%; } 100% { top: 100%; } }
+
+        /* ---------- notes ---------- */
+        #notes .pin { align-items: flex-start; justify-content: flex-end; padding-bottom: clamp(56px, 11vh, 120px); }
+        .notes-block { max-width: 520px; }
+        .note-group { margin-top: clamp(26px, 4.2vh, 46px); }
+        .note-tier {
+            font-family: var(--sans); font-weight: 400; font-size: 10px;
+            letter-spacing: 0.5em; text-transform: uppercase; color: var(--gold);
+            display: flex; align-items: center; gap: 16px;
+        }
+        .note-tier::after {
+            content: ''; height: 1px; width: 46px;
+            background: linear-gradient(90deg, rgba(201,162,74,0.6), transparent);
+        }
+        .note-line {
+            font-family: var(--serif); font-weight: 400;
+            font-size: clamp(21px, 2.9vw, 34px); letter-spacing: 0.05em;
+            color: var(--ivory); margin-top: 10px; line-height: 1.35;
+        }
+        .note-line i { font-style: normal; color: rgba(201,162,74,0.85); padding: 0 0.35em; font-size: 0.65em; vertical-align: 0.18em; }
+
+        /* ---------- craft ---------- */
+        .craft-detail {
+            display: flex; gap: clamp(24px, 4.5vw, 70px); flex-wrap: wrap; justify-content: center;
+            margin-top: clamp(26px, 4.5vh, 48px);
+        }
+        .craft-detail span {
+            font-family: var(--sans); font-weight: 400; font-size: 10.5px;
+            letter-spacing: 0.34em; text-indent: 0.34em; text-transform: uppercase;
+            color: var(--ivory-dim);
+        }
+
+        /* ---------- story: bottle drifts left, words keep the right ---------- */
+        @media (min-width: 900px) and (orientation: landscape) {
+            #story .pin { align-items: flex-end; }
+            #story .pin > * { margin-right: 4vw; }
+            #story h2, #story .copy { text-align: right; max-width: 15em; }
+            #story .copy { max-width: 26em; }
+            #story .hairline { margin-right: calc(4vw + 1px); }
+        }
+
+        /* ---------- mood ---------- */
+        #mood .pin { justify-content: flex-end; padding-bottom: clamp(60px, 12vh, 130px); }
+        .spec-row {
+            display: flex; gap: 0; flex-wrap: wrap; justify-content: center;
+            margin-top: clamp(28px, 4.6vh, 52px);
+        }
+        .spec-row span {
+            font-family: var(--sans); font-weight: 400; font-size: 10.5px;
+            letter-spacing: 0.32em; text-indent: 0.32em; text-transform: uppercase;
+            color: var(--ivory-dim); padding: 6px clamp(16px, 2.6vw, 34px);
+            border-right: 1px solid rgba(201,162,74,0.25);
+        }
+        .spec-row span:last-child { border-right: none; }
+
+        /* ---------- waitlist ---------- */
+        #waitlist {
+            min-height: 100vh; min-height: 100svh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 18vh clamp(22px, 6vw, 80px) 14vh;
+        }
+        .wait-card { text-align: center; max-width: 560px; width: 100%; }
+        .wait-form {
+            display: flex; margin-top: clamp(30px, 5vh, 52px);
+            border: 1px solid rgba(201,162,74,0.35);
+            background: rgba(5,5,5,0.55); backdrop-filter: blur(6px);
+        }
+        .wait-form input {
+            flex: 1; min-width: 0; background: none; border: none; outline: none;
+            font-family: var(--sans); font-weight: 300; font-size: 13px;
+            letter-spacing: 0.14em; color: var(--ivory);
+            padding: 18px 22px;
+        }
+        .wait-form input::placeholder { color: rgba(239,233,221,0.3); letter-spacing: 0.22em; text-transform: uppercase; font-size: 10.5px; }
+        .wait-form button {
+            font-family: var(--sans); font-weight: 500; font-size: 10.5px;
+            letter-spacing: 0.3em; text-transform: uppercase;
+            color: #0a0905; border: none; cursor: pointer;
+            padding: 0 clamp(18px, 3vw, 34px);
+            background: linear-gradient(135deg, var(--gold-hi), var(--gold) 55%, var(--gold-dim));
+            transition: box-shadow 0.5s ease;
+            white-space: nowrap;
+        }
+        .wait-form button:hover { box-shadow: 0 0 34px rgba(201,162,74,0.45); }
+        .wait-note {
+            margin-top: 20px; font-size: 10px; letter-spacing: 0.28em; text-indent: 0.28em;
+            text-transform: uppercase; color: rgba(239,233,221,0.3);
+        }
+        .wait-done {
+            display: none; margin-top: clamp(30px, 5vh, 52px);
+            font-family: var(--serif); font-size: clamp(20px, 2.6vw, 28px);
+            letter-spacing: 0.1em; color: var(--gold-hi);
+        }
+        .wait-done small {
+            display: block; margin-top: 14px; font-family: var(--sans);
+            font-size: 10.5px; letter-spacing: 0.3em; text-transform: uppercase;
+            color: var(--ivory-dim);
+        }
+        .waitlist-done .wait-form, .waitlist-done .wait-note { display: none; }
+        .waitlist-done .wait-done { display: block; }
+
+        /* ---------- footer ---------- */
+        footer {
+            position: relative; z-index: 2;
+            padding: 60px clamp(22px, 6vw, 80px) 54px;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+            border-top: 1px solid rgba(201,162,74,0.14);
+            background: linear-gradient(180deg, transparent, rgba(0,0,0,0.6));
+        }
+        .foot-mark {
+            font-family: var(--serif); font-weight: 500; font-size: 19px;
+            letter-spacing: 0.14em; color: var(--gold);
+            width: 52px; height: 52px; border: 1px solid rgba(201,162,74,0.45);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            text-indent: 0.14em;
+        }
+        footer p { font-size: 10px; letter-spacing: 0.34em; text-indent: 0.34em; text-transform: uppercase; color: rgba(239,233,221,0.35); text-align: center; }
+        footer a { color: rgba(201,162,74,0.7); text-decoration: none; letter-spacing: 0.3em; font-size: 10px; text-transform: uppercase; }
+        footer a:hover { color: var(--gold-hi); }
+
+        /* ---------- fx defaults (JS drives opacity) ---------- */
+        .fx [data-fx] { opacity: 0; transform: translateY(26px); will-change: opacity, transform; }
+        .fx .hero-el { transform: none; }
+
+        @media (max-width: 760px) {
+            .hero-title { letter-spacing: 0.16em; text-indent: 0.16em; }
+            .hero-ctas { flex-direction: column; gap: 16px; bottom: 96px; }
+            .cta-gold, .cta-ghost { padding: 13px 26px; font-size: 10.5px; }
+            #notes .pin { justify-content: flex-end; align-items: center; }
+            .notes-block { text-align: center; }
+            .note-tier { justify-content: center; }
+            .note-tier::after { display: none; }
+            .wait-form { flex-direction: column; }
+            .wait-form input { text-align: center; padding: 17px 18px; }
+            .wait-form button { padding: 16px; }
+            .spec-row span { border-right: none; padding: 5px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stage"></canvas>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+    <div class="progress-rail"><i id="progressBar"></i></div>
+
+    <header class="site-head">
+        <a class="wordmark" href="/">VOID<span>&#169;</span></a>
+        <a class="head-link" href="#waitlist" id="headWaitlist">Waitlist</a>
+    </header>
+
+    <main id="main">
+
+        <section id="hero" data-phase="hero">
+            <div class="pin">
+                <div class="hero-eyebrow hero-el" id="heroEyebrow">Eternal Void &middot; Extrait de Parfum</div>
+                <h1 class="hero-title hero-el" id="heroTitle">VOID</h1>
+                <div class="hero-sub hero-el" id="heroSub">Fragrance</div>
+                <div class="hero-ctas hero-el" id="heroCtas">
+                    <a class="cta-gold" href="#waitlist">Join the Private Waitlist</a>
+                    <a class="cta-ghost" href="#notes" id="discoverBtn">Discover the Scent</a>
+                </div>
+                <div class="scroll-cue hero-el" id="scrollCue"><span>Scroll</span><i></i></div>
+            </div>
+        </section>
+
+        <section id="story" data-phase="story">
+            <div class="pin">
+                <div class="eyebrow" data-fx data-in="0.06" data-out="0.9">Chapter I</div>
+                <h2 data-fx data-in="0.1" data-out="0.92">Scented in Darkness</h2>
+                <p class="copy" data-fx data-in="0.18" data-out="0.94">
+                    Some scents are worn.<br>This one is <em>entered</em>.
+                </p>
+                <p class="copy" style="margin-top: 14px;" data-fx data-in="0.26" data-out="0.94">
+                    Eternal Void opens cold and closes warm &mdash;
+                    incense and saffron giving way to smoke, iris and oud.
+                    Made for the hours after midnight.
+                </p>
+                <div class="hairline" data-fx data-in="0.34" data-out="0.94"></div>
+            </div>
+        </section>
+
+        <section id="notes" data-phase="macro">
+            <div class="pin">
+                <div class="notes-block">
+                    <div class="eyebrow" style="margin-bottom: 0;" data-fx data-in="0.05" data-out="0.93">The Composition</div>
+                    <div class="note-group" data-fx data-in="0.14" data-out="0.93">
+                        <div class="note-tier">Top</div>
+                        <div class="note-line">Black bergamot<i>&#9702;</i>Cold incense<i>&#9702;</i>Saffron</div>
+                    </div>
+                    <div class="note-group" data-fx data-in="0.4" data-out="0.94">
+                        <div class="note-tier">Heart</div>
+                        <div class="note-line">Smoked iris<i>&#9702;</i>Dark rose<i>&#9702;</i>Mineral amber</div>
+                    </div>
+                    <div class="note-group" data-fx data-in="0.64" data-out="0.95">
+                        <div class="note-tier">Base</div>
+                        <div class="note-line">Oud wood<i>&#9702;</i>Leather<i>&#9702;</i>Black musk<i>&#9702;</i>Vanilla resin</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="craft" data-phase="craft">
+            <div class="pin">
+                <div class="eyebrow" data-fx data-in="0.05" data-out="0.9">The Object</div>
+                <h2 data-fx data-in="0.09" data-out="0.92">Cast in Obsidian</h2>
+                <p class="copy" data-fx data-in="0.3" data-out="0.93">
+                    Black glass, cut square and bevelled by hand.
+                    A magnetic cap, weighted like a stone.
+                    The emblem, set in muted gold.
+                </p>
+                <div class="craft-detail" data-fx data-in="0.72" data-out="0.96">
+                    <span>Extrait de Parfum</span>
+                    <span>50 ml</span>
+                    <span>Limited first release</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="mood" data-phase="mood">
+            <div class="pin">
+                <h2 data-fx data-in="0.12" data-out="0.92">For Evening. Only.</h2>
+                <p class="copy" data-fx data-in="0.24" data-out="0.93">
+                    Long-lasting. Dark. Intimate.<br>
+                    Worn closest to the skin &mdash; revealed only at close range.
+                </p>
+                <div class="spec-row" data-fx data-in="0.4" data-out="0.94">
+                    <span>Extrait de Parfum</span>
+                    <span>50 ml</span>
+                    <span>Limited First Release</span>
+                    <span>Evening Wear</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="waitlist" data-phase="waitlist">
+            <div class="wait-card" id="waitCard">
+                <div class="eyebrow" data-fx data-in="0.1" data-out="2">Limited First Release</div>
+                <h2 data-fx data-in="0.16" data-out="2">Enter the Void.</h2>
+                <p class="copy" data-fx data-in="0.24" data-out="2">
+                    Five hundred numbered bottles.<br>
+                    Allocation by invitation, in order of the list.
+                </p>
+                <form class="wait-form" id="waitForm" data-fx data-in="0.3" data-out="2" novalidate>
+                    <input type="email" id="waitEmail" placeholder="Your email" autocomplete="email" required>
+                    <button type="submit">Join the Private Waitlist</button>
+                </form>
+                <p class="wait-note" data-fx data-in="0.36" data-out="2">No noise. One letter, when it is time.</p>
+                <div class="wait-done">
+                    You are on the list.
+                    <small>We will write to you once &mdash; when the doors open.</small>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="foot-mark">EV</div>
+        <p>VOID&#169; &mdash; Eternal Void &middot; Maison de Parfum</p>
+        <a href="/">eternalvoid.co</a>
+    </footer>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+    import * as THREE from 'three';
+    import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    /* ============================================================
+       VOID — Eternal Void · cinematic scroll experience
+       One continuous 3D scene, scrubbed by scroll (no scroll-jack).
+       Phases: hero orbit → story → macro spray → craft assembly
+               → atmosphere → waitlist.
+       ============================================================ */
+
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const easeO = t => 1 - Math.pow(1 - t, 3);
+    const seg = (p, a, b) => clamp((p - a) / (b - a), 0, 1);
+
+    const isMobile = () => window.innerWidth < 760;
+    const portrait = () => window.innerHeight > window.innerWidth;
+
+    document.documentElement.classList.add('fx');
+
+    /* ---------- renderer ---------- */
+    const canvas = document.getElementById('stage');
+    let renderer;
+    try {
+        renderer = new THREE.WebGLRenderer({
+            canvas, antialias: true, alpha: true, powerPreference: 'high-performance'
+        });
+    } catch (e) {
+        document.documentElement.classList.add('no3d');
+        document.documentElement.classList.remove('fx');
+        throw e;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile() ? 1.75 : 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x050505, 0.055);
+
+    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 60);
+    camera.position.set(0, 0.15, 5.6);
+
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    /* ---------- lights ---------- */
+    scene.add(new THREE.AmbientLight(0x1c1a20, 0.55));
+    const key = new THREE.DirectionalLight(0xfff1da, 1.15);
+    key.position.set(3.2, 4.2, 4.5);
+    scene.add(key);
+    const rimGold = new THREE.DirectionalLight(0xd8a94f, 2.0);
+    rimGold.position.set(-4.5, 1.6, -3.2);
+    scene.add(rimGold);
+    const rimCool = new THREE.DirectionalLight(0x8fa1c0, 0.45);
+    rimCool.position.set(4.2, -0.6, -4.0);
+    scene.add(rimCool);
+    const spot = new THREE.SpotLight(0xffe6bb, 0, 26, 0.5, 0.65, 1.4);
+    spot.position.set(0, 7.5, 2.4);
+    spot.target.position.set(0, -1, 0);
+    scene.add(spot, spot.target);
+
+    /* ---------- shared liquid uniforms (glass body + mirror) ---------- */
+    const glassUniforms = {
+        uFill: { value: 0.34 },      // fraction of body height filled with amber
+        uGlow: { value: 1.0 }
+    };
+    const BODY_H = 2.1, BODY_BOTTOM = -1.05;
+
+    function makeGlassMaterial(opacity) {
+        const m = new THREE.MeshPhysicalMaterial({
+            color: 0x0a0a0c,
+            metalness: 0.0,
+            roughness: 0.09,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.14,
+            envMapIntensity: 1.35,
+            transparent: opacity < 1,
+            opacity
+        });
+        m.onBeforeCompile = shader => {
+            shader.uniforms.uFill = glassUniforms.uFill;
+            shader.uniforms.uGlow = glassUniforms.uGlow;
+            shader.vertexShader = shader.vertexShader
+                .replace('#include <common>', '#include <common>\nvarying float vVoidY;')
+                .replace('#include <begin_vertex>', '#include <begin_vertex>\nvVoidY = position.y;');
+            shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>', `#include <common>
+                    varying float vVoidY;
+                    uniform float uFill;
+                    uniform float uGlow;`)
+                .replace('#include <color_fragment>', `#include <color_fragment>
+                    {
+                        float fillY = ${BODY_BOTTOM.toFixed(2)} + uFill * ${BODY_H.toFixed(2)};
+                        float t = smoothstep(fillY + 0.22, fillY - 0.55, vVoidY);
+                        vec3 amberDeep = vec3(0.28, 0.12, 0.015);
+                        diffuseColor.rgb = mix(diffuseColor.rgb, amberDeep, t * 0.9);
+                    }`)
+                .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+                    {
+                        float fillY = ${BODY_BOTTOM.toFixed(2)} + uFill * ${BODY_H.toFixed(2)};
+                        float t = smoothstep(fillY + 0.1, fillY - 0.7, vVoidY);
+                        vec3 amberGlow = vec3(0.85, 0.38, 0.05);
+                        totalEmissiveRadiance += amberGlow * pow(t, 1.9) * 0.55 * uGlow;
+                    }`);
+        };
+        return m;
+    }
+
+    const goldMat = new THREE.MeshStandardMaterial({
+        color: 0xc9a24a, metalness: 1.0, roughness: 0.24, envMapIntensity: 1.4
+    });
+    const goldDeepMat = new THREE.MeshStandardMaterial({
+        color: 0x8a6b2c, metalness: 1.0, roughness: 0.34, envMapIntensity: 1.2
+    });
+
+    /* ---------- bottle ---------- */
+    const bottle = new THREE.Group();
+    scene.add(bottle);
+
+    const bodyGeo = new RoundedBoxGeometry(1.5, BODY_H, 0.95, 5, 0.16);
+    const glassMat = makeGlassMaterial(1);
+    const body = new THREE.Mesh(bodyGeo, glassMat);
+    bottle.add(body);
+
+    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.165, 0.185, 0.11, 40), goldMat);
+    collar.position.y = 1.1;
+    bottle.add(collar);
+
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.13, 24), goldDeepMat);
+    stem.position.y = 1.215;
+    const nozzleHead = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.075, 24), goldMat);
+    nozzleHead.position.y = 1.315;
+    const nozzleTip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.036, 0.045), goldDeepMat);
+    nozzleTip.position.set(0.075, 1.322, 0);
+    const atomizer = new THREE.Group();
+    atomizer.add(stem, nozzleHead, nozzleTip);
+    bottle.add(atomizer);
+
+    // flared magnetic cap — lathe profile echoing the reference bottle
+    const capPts = [];
+    [[0.02, 0], [0.42, 0.005], [0.56, 0.05], [0.63, 0.16], [0.6, 0.3],
+     [0.46, 0.43], [0.26, 0.52], [0.1, 0.555], [0.0, 0.56]].forEach(p => capPts.push(new THREE.Vector2(p[0], p[1])));
+    const capMat = new THREE.MeshPhysicalMaterial({
+        color: 0x121014, metalness: 0.0, roughness: 0.08,
+        clearcoat: 1.0, clearcoatRoughness: 0.14, envMapIntensity: 1.9
+    });
+    const cap = new THREE.Mesh(new THREE.LatheGeometry(capPts, 64), capMat);
+    cap.position.y = 1.155;
+    bottle.add(cap);
+
+    /* ---------- label (gold EV medallion + VOID, canvas texture) ---------- */
+    const labelMat = new THREE.MeshBasicMaterial({
+        transparent: true, opacity: 0.96, toneMapped: false, depthWrite: false
+    });
+    const label = new THREE.Mesh(new THREE.PlaneGeometry(1.06, 1.325), labelMat);
+    label.position.set(0, -0.06, 0.4805);
+    label.renderOrder = 3;
+    label.visible = false;
+    bottle.add(label);
+
+    function goldGrad(ctx, y0, y1) {
+        const g = ctx.createLinearGradient(0, y0, 0, y1);
+        g.addColorStop(0, '#f0d489');
+        g.addColorStop(0.45, '#c9a24a');
+        g.addColorStop(1, '#8a6b2c');
+        return g;
+    }
+
+    async function buildLabel() {
+        const W = 1024, H = 1280;
+        const c = document.createElement('canvas');
+        c.width = W; c.height = H;
+        const ctx = c.getContext('2d');
+
+        try { await document.fonts.load('500 150px "Cormorant Garamond"'); } catch (e) {}
+        try { await document.fonts.load('300 40px "Jost"'); } catch (e) {}
+
+        // --- medallion rings ---
+        const cx = W / 2, cy = 470, rOut = 320, rIn = 292;
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = goldGrad(ctx, cy - rOut, cy + rOut);
+        ctx.beginPath(); ctx.arc(cx, cy, rOut, 0, Math.PI * 2); ctx.stroke();
+        ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.arc(cx, cy, rIn, 0, Math.PI * 2); ctx.stroke();
+        // tick ring
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 96; i++) {
+            const a = (i / 96) * Math.PI * 2;
+            const len = i % 8 === 0 ? 13 : 6;
+            const r0 = rIn + 8, r1 = r0 + len;
+            ctx.beginPath();
+            ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
+            ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+            ctx.stroke();
+        }
+
+        // --- EV glyph: lift the real mark from the brand PNG, re-cast in gold ---
+        let glyphDrawn = false;
+        try {
+            const img = await new Promise((res, rej) => {
+                const im = new Image();
+                im.onload = () => res(im);
+                im.onerror = rej;
+                im.src = '/assets/ev-eternalvoid.png';
+            });
+            const sw = 640; // analyse at reduced size
+            const sh = Math.round(img.height / img.width * sw);
+            const tmp = document.createElement('canvas');
+            tmp.width = sw; tmp.height = sh;
+            const tctx = tmp.getContext('2d', { willReadFrequently: true });
+            tctx.drawImage(img, 0, 0, sw, sh);
+            // the EV monogram lives in the left ~34% of the lockup (the "|"
+            // divider sits just past that). The mark is black-on-TRANSPARENT,
+            // so the alpha channel is the mask — luminance is useless here.
+            const scanW = Math.round(sw * 0.34);
+            const data = tctx.getImageData(0, 0, scanW, sh).data;
+            let minX = scanW, maxX = 0, minY = sh, maxY = 0;
+            for (let y = 0; y < sh; y++) {
+                for (let x = 0; x < scanW; x++) {
+                    const a = data[(y * scanW + x) * 4 + 3];
+                    if (a > 200) {
+                        if (x < minX) minX = x; if (x > maxX) maxX = x;
+                        if (y < minY) minY = y; if (y > maxY) maxY = y;
+                    }
+                }
+            }
+            if (maxX > minX + 20 && maxY > minY + 20) {
+                const bw = maxX - minX + 1, bh = maxY - minY + 1;
+                const crop = tctx.getImageData(minX, minY, bw, bh);
+                const g = document.createElement('canvas');
+                g.width = bw; g.height = bh;
+                const gctx = g.getContext('2d');
+                const out = gctx.createImageData(bw, bh);
+                for (let y = 0; y < bh; y++) {
+                    const ty = y / bh; // vertical gold gradient
+                    const r = lerp(0xf0, 0x8a, ty), gg = lerp(0xd4, 0x6b, ty), b = lerp(0x89, 0x2c, ty);
+                    for (let x = 0; x < bw; x++) {
+                        const i = (y * bw + x) * 4;
+                        // steepened alpha keeps the letterforms crisp and trims
+                        // the soft halo baked into the source mark
+                        const a = clamp((crop.data[i + 3] - 140) * 2.4, 0, 255);
+                        out.data[i] = r; out.data[i + 1] = gg; out.data[i + 2] = b;
+                        out.data[i + 3] = a;
+                    }
+                }
+                gctx.putImageData(out, 0, 0);
+                const target = (rIn * 2) * 0.62;
+                const s = Math.min(target / bw, target / bh);
+                ctx.save();
+                ctx.shadowColor = 'rgba(232, 200, 118, 0.55)';
+                ctx.shadowBlur = 26;
+                ctx.drawImage(g, cx - bw * s / 2, cy - bh * s / 2, bw * s, bh * s);
+                ctx.restore();
+                glyphDrawn = true;
+            }
+        } catch (e) { /* fall through to typographic mark */ }
+
+        if (!glyphDrawn) {
+            ctx.save();
+            ctx.fillStyle = goldGrad(ctx, cy - 170, cy + 170);
+            ctx.font = '600 300px "Cormorant Garamond", serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(232, 200, 118, 0.5)'; ctx.shadowBlur = 24;
+            ctx.fillText('E', cx - 62, cy);
+            ctx.fillText('V', cx + 62, cy + 8);
+            ctx.restore();
+        }
+
+        // --- VOID wordmark ---
+        const drawSpaced = (text, y, font, spacing, fill, blur) => {
+            ctx.save();
+            ctx.font = font;
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = fill;
+            if (blur) { ctx.shadowColor = 'rgba(232, 200, 118, 0.4)'; ctx.shadowBlur = blur; }
+            let total = 0;
+            for (const ch of text) total += ctx.measureText(ch).width + spacing;
+            total -= spacing;
+            let x = cx - total / 2;
+            for (const ch of text) {
+                const w = ctx.measureText(ch).width;
+                ctx.fillText(ch, x + w / 2, y);
+                x += w + spacing;
+                ctx.textAlign = 'center';
+            }
+            ctx.restore();
+        };
+        ctx.textAlign = 'center';
+        drawSpaced('VOID', 1005, '500 168px "Cormorant Garamond", serif', 58, goldGrad(ctx, 920, 1090), 20);
+        drawSpaced('EXTRAIT DE PARFUM', 1155, '300 30px "Jost", sans-serif', 15, 'rgba(201, 162, 74, 0.75)', 0);
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        labelMat.map = tex;
+        labelMat.needsUpdate = true;
+        label.visible = true;
+    }
+    buildLabel();
+
+    /* ---------- mirror bottle + floor (atmosphere) ---------- */
+    const FLOOR_Y = -1.06;
+    const mirror = new THREE.Group();
+    mirror.scale.y = -1;
+    mirror.position.y = FLOOR_Y * 2;
+    const mirrorMats = [];
+    {
+        const mGlass = makeGlassMaterial(0.5);
+        mGlass.depthWrite = false;
+        const mGold = goldMat.clone(); mGold.transparent = true; mGold.opacity = 0.5; mGold.depthWrite = false;
+        const mCap = capMat.clone(); mCap.transparent = true; mCap.opacity = 0.5; mCap.depthWrite = false;
+        mirrorMats.push(mGlass, mGold, mCap);
+        const mb = new THREE.Mesh(bodyGeo, mGlass);
+        const mcollar = new THREE.Mesh(collar.geometry, mGold); mcollar.position.copy(collar.position);
+        const mcap = new THREE.Mesh(cap.geometry, mCap); mcap.position.copy(cap.position);
+        const mlabel = new THREE.Mesh(label.geometry, labelMat); mlabel.position.copy(label.position);
+        mirror.add(mb, mcollar, mcap, mlabel);
+    }
+    mirror.visible = false;
+    scene.add(mirror);
+
+    const floorMat = new THREE.MeshStandardMaterial({
+        color: 0x0b0b0e, metalness: 0.75, roughness: 0.32,
+        envMapIntensity: 0.5, transparent: true, opacity: 0
+    });
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 48), floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = FLOOR_Y;
+    floor.renderOrder = 2;
+    floor.visible = false;
+    scene.add(floor);
+
+    /* ---------- gold dust ---------- */
+    const dustCount = isMobile() ? 140 : 260;
+    const dustGeo = new THREE.BufferGeometry();
+    const dustPos = new Float32Array(dustCount * 3);
+    const dustSeed = new Float32Array(dustCount);
+    for (let i = 0; i < dustCount; i++) {
+        dustPos[i * 3] = (Math.random() - 0.5) * 11;
+        dustPos[i * 3 + 1] = (Math.random() - 0.5) * 7;
+        dustPos[i * 3 + 2] = (Math.random() - 0.5) * 6 - 0.5;
+        dustSeed[i] = Math.random() * 100;
+    }
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+    const dustMat = new THREE.PointsMaterial({
+        color: 0xe8c876, size: 0.022, sizeAttenuation: true,
+        transparent: true, opacity: 0.4, depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+    const dust = new THREE.Points(dustGeo, dustMat);
+    scene.add(dust);
+
+    /* ---------- smoke ---------- */
+    function smokeTexture() {
+        const s = 256, c = document.createElement('canvas');
+        c.width = c.height = s;
+        const x = c.getContext('2d');
+        const blob = (bx, by, r, a) => {
+            const g = x.createRadialGradient(bx, by, 0, bx, by, r);
+            g.addColorStop(0, `rgba(210, 200, 185, ${a})`);
+            g.addColorStop(1, 'rgba(210, 200, 185, 0)');
+            x.fillStyle = g;
+            x.fillRect(0, 0, s, s);
+        };
+        blob(128, 128, 120, 0.5);
+        blob(90, 150, 80, 0.35);
+        blob(170, 100, 70, 0.3);
+        const t = new THREE.CanvasTexture(c);
+        return t;
+    }
+    const smokeTex = smokeTexture();
+    const smokes = [];
+    const smokeCount = isMobile() ? 5 : 7;
+    for (let i = 0; i < smokeCount; i++) {
+        const m = new THREE.MeshBasicMaterial({
+            map: smokeTex, transparent: true, opacity: 0,
+            depthWrite: false, toneMapped: false
+        });
+        const size = 2.6 + Math.random() * 2.6;
+        const p = new THREE.Mesh(new THREE.PlaneGeometry(size, size), m);
+        p.position.set((Math.random() - 0.5) * 3.4, -0.9 + Math.random() * 1.3, -0.8 - Math.random() * 1.4);
+        p.rotation.z = Math.random() * Math.PI * 2;
+        p.userData = { base: 0.05 + Math.random() * 0.06, rs: (Math.random() - 0.5) * 0.05, ys: 0.02 + Math.random() * 0.03 };
+        smokes.push(p);
+        scene.add(p);
+    }
+
+    /* ---------- spray particles ---------- */
+    const sprayCount = isMobile() ? 320 : 600;
+    const sprayGeo = new THREE.BufferGeometry();
+    const sprayPos = new Float32Array(sprayCount * 3);
+    const sprayVel = [];
+    const sprayLife = new Float32Array(sprayCount);
+    for (let i = 0; i < sprayCount; i++) {
+        sprayPos[i * 3 + 1] = -999;
+        sprayVel.push(new THREE.Vector3());
+        sprayLife[i] = 0;
+    }
+    sprayGeo.setAttribute('position', new THREE.BufferAttribute(sprayPos, 3));
+    const sprayMat = new THREE.PointsMaterial({
+        color: 0xf0d489, size: 0.03, sizeAttenuation: true,
+        transparent: true, opacity: 0, depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+    const spray = new THREE.Points(sprayGeo, sprayMat);
+    spray.frustumCulled = false;
+    scene.add(spray);
+    const NOZZLE = new THREE.Vector3(0.1, 1.322, 0);
+
+    function updateSpray(dt, strength) {
+        const emitPerFrame = strength > 0.02 ? Math.ceil(strength * (isMobile() ? 7 : 12)) : 0;
+        let emitted = 0;
+        for (let i = 0; i < sprayCount; i++) {
+            if (sprayLife[i] > 0) {
+                sprayLife[i] -= dt * 1.1;
+                const v = sprayVel[i];
+                v.y -= 0.22 * dt;
+                v.multiplyScalar(1 - 0.55 * dt);
+                sprayPos[i * 3] += v.x * dt;
+                sprayPos[i * 3 + 1] += v.y * dt;
+                sprayPos[i * 3 + 2] += v.z * dt;
+                if (sprayLife[i] <= 0) sprayPos[i * 3 + 1] = -999;
+            } else if (emitted < emitPerFrame) {
+                emitted++;
+                sprayLife[i] = 0.55 + Math.random() * 0.6;
+                sprayPos[i * 3] = NOZZLE.x;
+                sprayPos[i * 3 + 1] = NOZZLE.y + (Math.random() - 0.5) * 0.02;
+                sprayPos[i * 3 + 2] = NOZZLE.z + (Math.random() - 0.5) * 0.02;
+                const spread = 0.38;
+                sprayVel[i].set(
+                    1.5 + Math.random() * 1.3,
+                    (Math.random() - 0.5) * spread + 0.18,
+                    (Math.random() - 0.5) * spread
+                ).multiplyScalar(0.55 + Math.random() * 0.5);
+            }
+        }
+        sprayGeo.attributes.position.needsUpdate = true;
+        sprayMat.opacity = lerp(sprayMat.opacity, strength * 0.75, 0.2);
+    }
+
+    /* ---------- assembly (craft phase) home / exploded offsets ---------- */
+    const parts = [
+        { obj: body,     home: body.position.clone(),     away: new THREE.Vector3(0, -0.85, 0), rot: 0 },
+        { obj: collar,   home: collar.position.clone(),   away: new THREE.Vector3(0, 0.75, 0),  rot: 0 },
+        { obj: atomizer, home: atomizer.position.clone(), away: new THREE.Vector3(0, 1.45, 0),  rot: 0 },
+        { obj: cap,      home: cap.position.clone(),      away: new THREE.Vector3(0, 2.3, 0),   rot: 2.4 },
+        { obj: label,    home: label.position.clone(),    away: new THREE.Vector3(0, 0, 1.5),   rot: 0 }
+    ];
+
+    /* ---------- scroll / phases ---------- */
+    const sections = Array.from(document.querySelectorAll('[data-phase]')).map(el => ({
+        el, phase: el.dataset.phase, top: 0, height: 0
+    }));
+    let vh = window.innerHeight;
+
+    function measure() {
+        vh = window.innerHeight;
+        sections.forEach(s => {
+            const r = s.el.getBoundingClientRect();
+            s.top = r.top + window.scrollY;
+            s.height = r.height;
+        });
+    }
+    measure();
+
+    function sectionProgress(s, y) {
+        const span = Math.max(1, s.height - vh);
+        if (s.height <= vh * 1.15) return clamp((y + vh - s.top) / (vh * 1.1), 0, 1);
+        return clamp((y - s.top) / span, 0, 1);
+    }
+
+    /* camera targets per phase — returns {pos, look, fov, rotY|null} */
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    function phaseTargets(phase, p, t) {
+        const far = portrait() ? 1.45 : 1;
+        const fovAdj = portrait() ? 8 : 0;
+        switch (phase) {
+            case 'hero':
+                return {
+                    pos: V(0, 0.15 + p * 0.25, 5.5 * far),
+                    look: V(0, 0.05, 0),
+                    fov: 38 + fovAdj,
+                    rotY: p * Math.PI * 2
+                };
+            case 'story': {
+                const off = (isMobile() || portrait()) ? 0 : 0.62;
+                return {
+                    pos: V(-off * 1.4, 0.3, 5.9 * far),
+                    look: V(off, 0.05, 0),
+                    fov: 37 + fovAdj,
+                    rotY: null
+                };
+            }
+            case 'macro': {
+                const off = (isMobile() || portrait()) ? 0 : -0.42;
+                return {
+                    pos: V(1.45 + Math.sin(t * 0.7) * 0.03, 1.42 + Math.cos(t * 0.9) * 0.02, 1.35 * far),
+                    look: V(off, 1.3, 0),
+                    fov: 34 + fovAdj,
+                    rotY: 0
+                };
+            }
+            case 'craft':
+                return {
+                    pos: V(0, 0.35, 7.2 * far),
+                    look: V(0, 0.35, 0),
+                    fov: 40 + fovAdj,
+                    rotY: -0.4 + p * 0.8
+                };
+            case 'mood':
+                return {
+                    pos: V(0, 0.7, 6.3 * far),
+                    look: V(0, -0.18, 0),
+                    fov: 38 + fovAdj,
+                    rotY: null
+                };
+            case 'waitlist':
+                return {
+                    pos: V(0, 0.3, 8.6 * far),
+                    look: V(0, 0.15, 0),
+                    fov: 38 + fovAdj,
+                    rotY: null
+                };
+        }
+    }
+
+    /* smoothed camera state */
+    const cur = {
+        pos: camera.position.clone(),
+        look: new THREE.Vector3(0, 0.05, 0),
+        fov: 38,
+        rotY: 0
+    };
+    let idleRot = 0;
+
+    /* ---------- DOM fx ---------- */
+    const fxEls = sections.map(s =>
+        Array.from(s.el.querySelectorAll('[data-fx]')).map(el => ({
+            el,
+            a: parseFloat(el.dataset.in || 0.1),
+            b: parseFloat(el.dataset.out || 0.92)
+        }))
+    );
+    const heroEls = {
+        title: document.getElementById('heroTitle'),
+        eyebrow: document.getElementById('heroEyebrow'),
+        sub: document.getElementById('heroSub'),
+        ctas: document.getElementById('heroCtas'),
+        cue: document.getElementById('scrollCue')
+    };
+    const progressBar = document.getElementById('progressBar');
+    const pageH = () => document.documentElement.scrollHeight - vh;
+
+    const t0 = performance.now();
+    function heroTitleFx(heroP) {
+        // letters track in on load, breathe out + dissolve as the orbit is scrubbed
+        const reveal = easeO(clamp((performance.now() - t0) / 2200, 0, 1));
+        const spread = clamp((heroP - 0.3) / 0.55, 0, 1);
+        const ls = lerp(0.75, 0.24, reveal) + spread * 0.55;
+        const op = reveal * (1 - seg(heroP, 0.45, 0.8));
+        const st = heroEls.title.style;
+        st.letterSpacing = ls + 'em';
+        st.textIndent = ls + 'em';
+        st.opacity = op;
+        heroEls.sub.style.opacity = reveal * (1 - seg(heroP, 0.4, 0.7));
+        heroEls.eyebrow.style.opacity = reveal * (1 - seg(heroP, 0.35, 0.6));
+        const ctaOp = reveal * (1 - seg(heroP, 0.12, 0.3));
+        heroEls.ctas.style.opacity = ctaOp;
+        heroEls.ctas.style.pointerEvents = ctaOp < 0.2 ? 'none' : 'auto';
+        heroEls.cue.style.opacity = reveal * (1 - seg(heroP, 0.05, 0.18));
+    }
+
+    function domFx(si, p) {
+        fxEls[si].forEach(({ el, a, b }) => {
+            const i = easeO(seg(p, a, a + 0.1));
+            const o = b >= 1.5 ? 0 : seg(p, b, Math.min(1, b + 0.07));
+            const op = i * (1 - o);
+            el.style.opacity = op;
+            el.style.transform = `translateY(${(1 - i) * 26 + o * -18}px)`;
+        });
+    }
+
+    /* ---------- main loop ---------- */
+    let lastT = performance.now();
+    const dbg = { phase: 'hero', p: 0 };
+    window.__void = {
+        dbg, camera, bottle,
+        /* advance the simulation manually (testing / hidden-tab tools) */
+        step(n = 1, ms = 16) { for (let i = 0; i < n; i++) update(lastT + ms); },
+        capture(w = 480) {
+            renderer.render(scene, camera);
+            const src = renderer.domElement;
+            const h = Math.round(src.height / src.width * w);
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(src, 0, 0, w, h);
+            return c.toDataURL('image/jpeg', 0.72);
+        }
+    };
+
+    function update(now) {
+        const dt = clamp((now - lastT) / 1000, 0.001, 0.05);
+        lastT = now;
+        const t = now / 1000;
+        const y = window.scrollY;
+
+        /* self-heal if the page was laid out at 0×0 (hidden tab / webview) */
+        const needW = Math.round(window.innerWidth * renderer.getPixelRatio());
+        if (window.innerWidth > 0 && Math.abs(canvas.width - needW) > 4) {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            measure();
+        }
+
+        /* active phase = last section whose top passed viewport middle */
+        let si = 0;
+        for (let i = 0; i < sections.length; i++) {
+            if (y >= sections[i].top - vh * 0.5) si = i;
+        }
+        const s = sections[si];
+        const p = sectionProgress(s, y);
+        dbg.phase = s.phase; dbg.p = p;
+
+        document.documentElement.classList.toggle('scrolled', y > 40);
+        progressBar.style.transform = `scaleY(${clamp(y / Math.max(1, pageH()), 0, 1)})`;
+
+        /* ---- camera ---- */
+        const tg = phaseTargets(s.phase, p, t);
+        const k = 1 - Math.exp(-dt * 5.2);
+        const kr = 1 - Math.exp(-dt * 7);
+        cur.pos.lerp(tg.pos, k);
+        cur.look.lerp(tg.look, k);
+        cur.fov = lerp(cur.fov, tg.fov, k);
+        camera.position.copy(cur.pos);
+        camera.fov = cur.fov;
+        camera.updateProjectionMatrix();
+        camera.lookAt(cur.look);
+
+        /* ---- bottle rotation ---- */
+        if (tg.rotY === null) {
+            idleRot += dt * 0.16;
+            bottle.rotation.y += (idleRot - bottle.rotation.y) * kr;
+        } else {
+            idleRot = tg.rotY;
+            bottle.rotation.y += (tg.rotY - bottle.rotation.y) * kr;
+        }
+        // gentle float everywhere except macro (nozzle must stay put)
+        const floatAmp = s.phase === 'macro' ? 0 : 0.035;
+        bottle.position.y = Math.sin(t * 0.8) * floatAmp;
+        mirror.position.y = FLOOR_Y * 2 - bottle.position.y * 2;
+        mirror.rotation.y = bottle.rotation.y;
+
+        /* ---- phase weights for atmosphere bits ---- */
+        const moodW = s.phase === 'mood' ? seg(p, 0.02, 0.3) * (1 - seg(p, 0.92, 1)) :
+                      s.phase === 'waitlist' ? 1 - seg(p, 0, 0.45) : 0;
+        const storyW = s.phase === 'story' ? seg(p, 0.05, 0.35) * (1 - seg(p, 0.85, 1)) : 0;
+        const waitW = s.phase === 'waitlist' ? seg(p, 0.1, 0.6) : 0;
+
+        /* smoke */
+        smokes.forEach(sm => {
+            sm.rotation.z += sm.userData.rs * dt;
+            sm.position.y += Math.sin(t * 0.3 + sm.userData.base * 40) * sm.userData.ys * dt;
+            sm.material.opacity = sm.userData.base * (0.35 + storyW * 0.9 + moodW * 1.6);
+        });
+        /* dust */
+        for (let i = 0; i < dustCount; i++) {
+            dustPos[i * 3 + 1] += Math.sin(t * 0.25 + dustSeed[i]) * 0.0009;
+            dustPos[i * 3] += Math.cos(t * 0.2 + dustSeed[i] * 1.7) * 0.0007;
+        }
+        dustGeo.attributes.position.needsUpdate = true;
+        dustMat.opacity = 0.28 + moodW * 0.2 - waitW * 0.15;
+
+        /* spotlight, floor, mirror */
+        spot.intensity = moodW * 260;
+        floor.visible = moodW > 0.01;
+        mirror.visible = moodW > 0.01;
+        floorMat.opacity = moodW * 0.92;
+        mirrorMats.forEach(m => { m.opacity = moodW * 0.32; });
+        scene.fog.density = 0.055 - moodW * 0.02;
+
+        /* exposure dims as the card takes over */
+        renderer.toneMappingExposure = lerp(renderer.toneMappingExposure, 1.12 - waitW * 0.45, k);
+
+        /* ---- macro: lift cap, spray ---- */
+        let capLift = 0, sprayStrength = 0;
+        if (s.phase === 'macro') {
+            capLift = easeIO(seg(p, 0.02, 0.22)) * 1.9;
+            const burst = Math.sin(clamp((p - 0.28) / 0.55, 0, 1) * Math.PI);
+            sprayStrength = clamp(burst * 1.2, 0, 1) * seg(p, 0.24, 0.32);
+        }
+        updateSpray(dt, sprayStrength);
+
+        /* ---- craft: exploded assembly ---- */
+        const FILL_HOME = 0.34;
+        let explode = 0, fill = FILL_HOME;
+        if (s.phase === 'craft') {
+            explode = easeIO(seg(p, 0.02, 0.28)) * (1 - easeIO(seg(p, 0.52, 0.86)));
+            fill = lerp(FILL_HOME, 0.07, easeIO(seg(p, 0.02, 0.28))) + (FILL_HOME - 0.07) * easeIO(seg(p, 0.58, 0.9));
+            fill = clamp(fill, 0.07, FILL_HOME);
+        }
+        glassUniforms.uFill.value = lerp(glassUniforms.uFill.value, fill, k * 1.4);
+        parts.forEach(pt => {
+            const e = easeIO(explode);
+            pt.obj.position.set(
+                pt.home.x + pt.away.x * e,
+                pt.home.y + pt.away.y * e + (pt.obj === cap ? capLift : 0),
+                pt.home.z + pt.away.z * e
+            );
+            if (pt.rot) pt.obj.rotation.y = pt.rot * e;
+            if (pt.obj === label) labelMat.opacity = 0.96 * (1 - e * 0.85);
+        });
+
+        /* ---- DOM ---- */
+        if (s.phase === 'hero') heroTitleFx(p); else heroTitleFx(1);
+        sections.forEach((sec, i) => {
+            if (i === si) domFx(i, p);
+            else domFx(i, y > sec.top ? 1 : 0);
+        });
+
+        renderer.render(scene, camera);
+    }
+    function frame(now) {
+        update(now);
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    /* ---------- resize ---------- */
+    let rto;
+    window.addEventListener('resize', () => {
+        clearTimeout(rto);
+        rto = setTimeout(() => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            measure();
+        }, 120);
+    });
+    window.addEventListener('load', measure);
+
+    /* ---------- smooth anchors ---------- */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const el = document.querySelector(a.getAttribute('href'));
+            if (!el) return;
+            e.preventDefault();
+            const sec = sections.find(s => s.el === el);
+            // land where the section's content is actually revealed
+            const target = sec && sec.height > vh * 1.15
+                ? sec.top + (sec.height - vh) * 0.45
+                : el.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({ top: target, behavior: 'smooth' });
+        });
+    });
+
+    /* ---------- waitlist form ---------- */
+    const waitForm = document.getElementById('waitForm');
+    const waitCard = document.getElementById('waitCard');
+    const waitEmail = document.getElementById('waitEmail');
+    waitForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const v = waitEmail.value.trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+            waitEmail.style.borderBottom = '1px solid rgba(200, 70, 50, 0.7)';
+            waitEmail.focus();
+            return;
+        }
+        try {
+            const list = JSON.parse(localStorage.getItem('void-fragrance-waitlist') || '[]');
+            if (!list.includes(v)) list.push(v);
+            localStorage.setItem('void-fragrance-waitlist', JSON.stringify(list));
+        } catch (err) {}
+        waitCard.classList.add('waitlist-done');
+        waitCard.querySelector('.wait-done').style.opacity = 0;
+        requestAnimationFrame(() => {
+            waitCard.querySelector('.wait-done').style.transition = 'opacity 1.4s ease';
+            waitCard.querySelector('.wait-done').style.opacity = 1;
+        });
+    });
+    </script>
+
+    <!-- Section heights define the scrub length of each cinematic phase -->
+    <style>
+        #hero { height: 340vh; }
+        #story { height: 230vh; }
+        #notes { height: 340vh; }
+        #craft { height: 330vh; }
+        #mood { height: 250vh; }
+    </style>
+</body>
+</html>
