@@ -12205,10 +12205,16 @@
                 const inputEl = document.getElementById('pfCountry');
                 const listEl = document.getElementById('pfCountrySuggest');
                 if (!inputEl || !listEl) return;
-                const COUNTRIES = Array.prototype.slice
-                    .call(document.querySelectorAll('#preorderCountryList [data-country]'))
-                    .map((o) => ({ name: o.getAttribute('data-country'), flag: o.getAttribute('data-flag') }))
-                    .filter((c) => c.name && c.name !== 'Other');
+                // Full world list for autocomplete. Countries that VOID ships to
+                // carry a flag token (from the pre-order picker) so selecting them
+                // also applies the country theme; the rest just fill the field.
+                const FLAG_MAP = {};
+                Array.prototype.slice.call(document.querySelectorAll('#preorderCountryList [data-country]')).forEach((o) => {
+                    const n = o.getAttribute('data-country'); const f = o.getAttribute('data-flag');
+                    if (n && f && f !== 'flag-empty') FLAG_MAP[n] = f;
+                });
+                const COUNTRY_NAMES = ['Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil','Brunei','Bulgaria','Burkina Faso','Burundi','Cambodia','Cameroon','Canada','Cape Verde','Central African Republic','Chad','Chile','China','Colombia','Comoros','Congo','Costa Rica','Croatia','Cuba','Cyprus','Czechia','Democratic Republic of the Congo','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea','Estonia','Eswatini','Ethiopia','Fiji','Finland','France','Gabon','Gambia','Georgia','Germany','Ghana','Greece','Grenada','Guatemala','Guinea','Guinea-Bissau','Guyana','Haiti','Honduras','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Ivory Coast','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kiribati','Kosovo','Kuwait','Kyrgyzstan','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Marshall Islands','Mauritania','Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia','Montenegro','Morocco','Mozambique','Myanmar','Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Korea','North Macedonia','Norway','Oman','Pakistan','Palau','Palestine','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Rwanda','Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines','Samoa','San Marino','Sao Tome and Principe','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands','Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan','Suriname','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor-Leste','Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Vanuatu','Vatican City','Venezuela','Vietnam','Yemen','Zambia','Zimbabwe'];
+                const COUNTRIES = COUNTRY_NAMES.map((name) => ({ name: name, flag: FLAG_MAP[name] || '' }));
                 let active = -1;
                 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -12218,17 +12224,18 @@
                     if (!matches.length) { hide(); return; }
                     listEl.innerHTML = matches.map((c) =>
                         '<li role="option" data-country="' + esc(c.name) + '" data-flag="' + esc(c.flag) + '">'
-                        + '<span class="country-flag ' + esc(c.flag) + '" aria-hidden="true"></span>' + esc(c.name) + '</li>'
+                        + (c.flag ? '<span class="country-flag ' + esc(c.flag) + '" aria-hidden="true"></span>' : '')
+                        + esc(c.name) + '</li>'
                     ).join('');
                     listEl.hidden = false;
                     inputEl.setAttribute('aria-expanded', 'true');
                 }
                 function matchesFor(q) {
                     q = (q || '').trim().toLowerCase();
-                    if (!q) return COUNTRIES.slice();
+                    if (!q) return [];
                     const starts = COUNTRIES.filter((c) => c.name.toLowerCase().indexOf(q) === 0);
                     const contains = COUNTRIES.filter((c) => c.name.toLowerCase().indexOf(q) > 0);
-                    return starts.concat(contains);
+                    return starts.concat(contains).slice(0, 8);
                 }
                 function choose(name, flag) {
                     inputEl.value = name;
