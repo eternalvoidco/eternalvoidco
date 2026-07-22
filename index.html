@@ -10311,11 +10311,11 @@
                 ringGap: 1.5,
                 fadeIn: 0.7,
                 fadeOut: 0.5,
-                // ── Cursor reactivity (tracked on the hero, layer stays click-through) ──
+                // ── Cursor reactivity (tracked page-wide, layer stays click-through) ──
                 followMouse: true,      // rings drift toward the cursor
-                mouseInfluence: 0.14,   // how far they drift (0 = off)
-                parallax: 0.06,         // per-ring depth offset with the cursor
-                hoverScale: 1.08,       // gentle swell while the cursor is over the hero
+                mouseInfluence: 0.24,   // how far they drift (0 = off)
+                parallax: 0.09,         // per-ring depth offset with the cursor
+                hoverScale: 1.12,       // swell while the cursor is over the hero
                 clickBurst: true        // soft flare on click
             };
 
@@ -10448,30 +10448,31 @@ void main() {
 
             const reduceMotion = () => document.documentElement.classList.contains('reduce-motion');
 
-            // Cursor state. The layer is click-through, so we listen on the hero
-            // section (events bubble up from the buttons too) and normalise to it.
+            // Cursor state. The layer is click-through, so we track the pointer at
+            // the window level (normalised to the hero, gently clamped) and swell
+            // only while the cursor is actually over the hero.
             const hero = mount.closest('.video-section.hero') || mount.parentElement || mount;
             let mouseX = 0, mouseY = 0, smoothX = 0, smoothY = 0;
             let hoverAmount = 0, isHovered = false, burst = 0;
+            const clamp = (v, m) => Math.max(-m, Math.min(m, v));
 
             const onMove = (e) => {
                 const rect = hero.getBoundingClientRect();
                 if (!rect.width || !rect.height) return;
-                mouseX = (e.clientX - rect.left) / rect.width - 0.5;
-                mouseY = -((e.clientY - rect.top) / rect.height - 0.5);
-                isHovered = true;
+                mouseX = clamp((e.clientX - rect.left) / rect.width - 0.5, 0.75);
+                mouseY = clamp(-((e.clientY - rect.top) / rect.height - 0.5), 0.75);
+                isHovered = e.clientX >= rect.left && e.clientX <= rect.right &&
+                            e.clientY >= rect.top && e.clientY <= rect.bottom;
             };
-            const onLeave = () => { isHovered = false; mouseX = 0; mouseY = 0; };
             const onClick = () => { if (c.clickBurst) burst = 0.45; };   // subtle pulse, not a flash
-            hero.addEventListener('mousemove', onMove);
-            hero.addEventListener('mouseleave', onLeave);
-            hero.addEventListener('click', onClick);
+            window.addEventListener('mousemove', onMove, { passive: true });
+            window.addEventListener('click', onClick);
 
             const renderFrame = (tMs) => {
                 // Ease the cursor-driven values so motion stays smooth and settles.
-                smoothX += (mouseX - smoothX) * 0.08;
-                smoothY += (mouseY - smoothY) * 0.08;
-                hoverAmount += ((isHovered ? 1 : 0) - hoverAmount) * 0.08;
+                smoothX += (mouseX - smoothX) * 0.12;
+                smoothY += (mouseY - smoothY) * 0.12;
+                hoverAmount += ((isHovered ? 1 : 0) - hoverAmount) * 0.1;
                 burst *= 0.95;
                 if (burst < 0.001) burst = 0;
 
