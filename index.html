@@ -7545,6 +7545,64 @@
             line-height: 1.7;
         }
 
+        /* Branded notice modal (replaces native alerts) */
+        .void-notice-panel {
+            width: min(94vw, 400px);
+            text-align: center;
+            padding: 2.6rem 2.2rem 2.2rem;
+        }
+
+        .void-notice-glyph {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 1.2rem;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: var(--void-gold-soft);
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            background: radial-gradient(circle at 50% 30%, rgba(30, 27, 20, 0.96), rgba(8, 8, 8, 0.96));
+            box-shadow: 0 0 28px rgba(199, 169, 108, 0.28), inset 0 1px 0 rgba(245, 242, 236, 0.08);
+            animation: voidNoticeGlow 3.6s ease-in-out infinite;
+        }
+
+        .void-notice-glyph svg { width: 26px; height: 26px; display: block; }
+
+        @keyframes voidNoticeGlow {
+            0%, 100% { box-shadow: 0 0 22px rgba(199, 169, 108, 0.22), inset 0 1px 0 rgba(245, 242, 236, 0.08); }
+            50% { box-shadow: 0 0 34px rgba(199, 169, 108, 0.4), inset 0 1px 0 rgba(245, 242, 236, 0.1); }
+        }
+
+        html.reduce-motion .void-notice-glyph { animation: none; }
+
+        .void-notice-panel .void-modal-title { text-align: center; margin-bottom: 0.4rem; }
+
+        .void-notice-btn {
+            margin-top: 1.7rem;
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            background: var(--void-gold-gradient);
+            border: 1px solid var(--void-accent);
+            color: #090909;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.35);
+            transition: background 0.35s var(--ease-lux), color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), filter 0.35s var(--ease-lux);
+        }
+
+        .void-notice-btn:hover,
+        .void-notice-btn:focus-visible {
+            background: transparent;
+            color: var(--void-gold-soft);
+            box-shadow: 0 0 20px rgba(199, 169, 108, 0.16);
+            filter: brightness(1.02);
+            outline: none;
+        }
+
         /* Settings rows */
         .void-set-list { display: flex; flex-direction: column; gap: 0.2rem; margin-top: 1.4rem; }
 
@@ -8369,6 +8427,19 @@
         </div>
     </div>
     <div class="void-auth-toast" id="voidAuthToast" role="status" aria-live="polite" aria-hidden="true"></div>
+
+    <!-- Branded notice modal (replaces native browser alerts) -->
+    <div class="void-modal" id="voidNotice" aria-hidden="true">
+        <div class="void-modal-panel void-notice-panel" role="alertdialog" aria-modal="true" aria-labelledby="voidNoticeTitle" aria-describedby="voidNoticeMsg">
+            <span class="void-notice-glyph" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 8.5V7.2C7.5 4.9 9.4 3 11.75 3S16 4.9 16 7.2V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5 9h13.5l-1.1 10.5H6.1L5 9Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="void-auth-eyebrow" id="voidNoticeEyebrow">Eternal Void</p>
+            <h2 class="void-modal-title" id="voidNoticeTitle">Your Cart</h2>
+            <p class="void-modal-sub" id="voidNoticeMsg">Your cart is currently empty.</p>
+            <button type="button" class="void-notice-btn" id="voidNoticeBtn">Continue shopping</button>
+        </div>
+    </div>
 
     <!-- VOID dock -->
     <nav class="void-dock" id="voidDock" aria-label="VOID quick navigation">
@@ -10848,12 +10919,53 @@
             updateCartUI();
         }
 
+        // ── Branded VOID notice modal (replaces native browser alerts) ──
+        const voidNoticeEl = document.getElementById('voidNotice');
+        const voidNoticeTitle = document.getElementById('voidNoticeTitle');
+        const voidNoticeMsg = document.getElementById('voidNoticeMsg');
+        const voidNoticeBtn = document.getElementById('voidNoticeBtn');
+        let voidNoticeAction = null;
+
+        function hideVoidNotice() {
+            if (!voidNoticeEl) return;
+            voidNoticeEl.classList.remove('active');
+            voidNoticeEl.setAttribute('aria-hidden', 'true');
+            if (!document.querySelector('.void-modal.active')) document.body.classList.remove('void-auth-open');
+        }
+        function showVoidNotice(opts) {
+            if (!voidNoticeEl) return;
+            opts = opts || {};
+            if (voidNoticeTitle) voidNoticeTitle.textContent = opts.title || 'Your Cart';
+            if (voidNoticeMsg) voidNoticeMsg.textContent = opts.message || '';
+            if (voidNoticeBtn) voidNoticeBtn.textContent = opts.button || 'Continue';
+            voidNoticeAction = (typeof opts.onButton === 'function') ? opts.onButton : null;
+            voidNoticeEl.classList.add('active');
+            voidNoticeEl.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('void-auth-open');
+            window.setTimeout(() => { if (voidNoticeBtn) { try { voidNoticeBtn.focus(); } catch (e) {} } }, 320);
+        }
+        if (voidNoticeBtn) voidNoticeBtn.addEventListener('click', () => {
+            const act = voidNoticeAction;
+            hideVoidNotice();
+            if (typeof act === 'function') act();
+        });
+        if (voidNoticeEl) voidNoticeEl.addEventListener('mousedown', (e) => { if (e.target === voidNoticeEl) hideVoidNotice(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && voidNoticeEl && voidNoticeEl.classList.contains('active')) hideVoidNotice();
+        });
+
         if (cartCheckout) {
             cartCheckout.addEventListener('click', (event) => {
                 event.preventDefault();
 
                 if (cart.length === 0) {
-                    alert(t('checkoutEmptyAlert'));
+                    // Branded modal instead of a native browser alert; cart logic unchanged.
+                    showVoidNotice({
+                        title: 'Your Cart',
+                        message: 'Your cart is currently empty.',
+                        button: 'Continue shopping',
+                        onButton: () => { if (typeof closeCartPopup === 'function') closeCartPopup(); }
+                    });
                     return;
                 }
 
