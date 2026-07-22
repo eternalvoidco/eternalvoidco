@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Account | VOID©</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void-black: #000;
+            --void-white: #f5f2ec;
+            --void-grey: #8f8778;
+            --void-muted: #bdb5a8;
+            --void-border: rgba(199, 169, 108, 0.34);
+            --void-accent: #c7a96c;
+            --void-gold-soft: #d8c08a;
+            --void-gold-bright: #f2e2bd;
+            --void-gold-gradient: linear-gradient(135deg, #e7d4a6 0%, #c7a96c 46%, #9c7c46 100%);
+            --ease-lux: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(120% 80% at 12% -10%, rgba(199, 169, 108, 0.08), transparent 46%),
+                radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%),
+                var(--void-black);
+            color: var(--void-white);
+            font-family: 'Jost', sans-serif;
+            line-height: 1.7;
+            display: grid;
+            place-items: center;
+            padding: 2rem 1.2rem;
+        }
+        .acct { width: 100%; max-width: 560px; }
+        .brand {
+            display: block;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            letter-spacing: 0.34em;
+            color: var(--void-white);
+            text-decoration: none;
+        }
+        .brand sup { font-size: 0.36em; vertical-align: super; }
+        .card {
+            border: 1px solid var(--void-border);
+            background: linear-gradient(145deg, rgba(14, 13, 11, 0.98), rgba(0, 0, 0, 0.99));
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(245, 242, 236, 0.06);
+            padding: 2.4rem 2rem;
+        }
+        .eyebrow {
+            color: var(--void-accent);
+            font-size: 0.62rem;
+            letter-spacing: 0.34em;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+        .title {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            font-size: 2.2rem;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.4rem;
+        }
+        .who { color: var(--void-muted); font-size: 0.92rem; margin-bottom: 1.6rem; }
+        .who strong { color: var(--void-gold-soft); font-weight: 600; }
+        .sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            font-size: 1.3rem;
+            margin: 1.8rem 0 0.4rem;
+            color: var(--void-white);
+        }
+        .rows { display: flex; flex-direction: column; }
+        .row {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0.75rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            font-size: 0.9rem;
+        }
+        .row:first-child { border-top: none; }
+        .row span { color: var(--void-gold-soft); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; }
+        .row strong { color: var(--void-white); font-weight: 400; text-align: right; }
+        .muted { color: var(--void-grey); font-size: 0.86rem; padding: 0.6rem 0; }
+        .actions { display: flex; gap: 0.7rem; margin-top: 2rem; flex-wrap: wrap; }
+        .btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 0.85rem 1.4rem;
+            border: 1px solid var(--void-accent);
+            background: var(--void-gold-gradient);
+            color: #0a0a0a;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.35s var(--ease-lux), color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux);
+        }
+        .btn:hover { background: transparent; color: var(--void-gold-soft); box-shadow: 0 0 20px rgba(199, 169, 108, 0.16); }
+        .btn.ghost { background: transparent; color: var(--void-gold-soft); }
+        .btn.ghost:hover { border-color: rgba(199, 169, 108, 0.9); color: var(--void-gold-bright); }
+        .center { text-align: center; }
+        .spinner {
+            width: 34px; height: 34px; margin: 0.4rem auto 1.1rem;
+            border: 2px solid rgba(199, 169, 108, 0.25);
+            border-top-color: var(--void-accent);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+        .state-msg { color: var(--void-muted); font-size: 0.92rem; }
+        .err-title { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; margin-bottom: 0.5rem; }
+        #errMsg { color: #e6a5a5; font-size: 0.9rem; margin-bottom: 1.4rem; }
+    </style>
+</head>
+<body>
+    <main class="acct">
+        <a class="brand" href="/">VOID<sup>©</sup></a>
+
+        <section id="loading" class="card center" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <p class="state-msg">Verifying your access…</p>
+        </section>
+
+        <section id="error" class="card center" hidden>
+            <p class="err-title">Something went wrong</p>
+            <p id="errMsg">We couldn’t verify your session.</p>
+            <div class="actions">
+                <a href="/" class="btn ghost">Back to site</a>
+                <button type="button" class="btn" onclick="location.reload()">Try again</button>
+            </div>
+        </section>
+
+        <section id="dash" class="card" hidden>
+            <p class="eyebrow">Private Members</p>
+            <h1 class="title">Your Account</h1>
+            <p class="who" id="who"></p>
+
+            <div class="rows">
+                <div class="row"><span>Email</span><strong id="acEmail">—</strong></div>
+                <div class="row"><span>Signed in via</span><strong id="acProvider">—</strong></div>
+                <div class="row"><span>Member since</span><strong id="acSince">—</strong></div>
+            </div>
+
+            <h2 class="sub">Shipping details</h2>
+            <div class="rows" id="shipping"></div>
+
+            <div class="actions">
+                <a href="/" class="btn ghost">Back to site</a>
+                <button type="button" id="signout" class="btn">Sign out</button>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { getSession, signOut, onAuthChange, displayName } from '/assets/supabase-client.js';
+
+        const LOGIN_URL = '/?login=required';
+        const show = (id) => ['loading', 'error', 'dash'].forEach((x) => { document.getElementById(x).hidden = (x !== id); });
+        const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        function renderShipping(user) {
+            let ship = (user.user_metadata && user.user_metadata.shipping) || null;
+            try { if (!ship) ship = JSON.parse(localStorage.getItem('void-profile') || 'null'); } catch (e) {}
+            const el = document.getElementById('shipping');
+            const has = ship && Object.keys(ship).some((k) => ship[k]);
+            if (!has) { el.innerHTML = '<p class="muted">No shipping details saved yet — add them from the Profile icon on the site.</p>'; return; }
+            const row = (label, v) => v ? '<div class="row"><span>' + label + '</span><strong>' + esc(v) + '</strong></div>' : '';
+            el.innerHTML =
+                row('Name', ship.pfName) +
+                row('Address', [ship.pfAddr1, ship.pfAddr2].filter(Boolean).join(', ')) +
+                row('City', ship.pfCity) +
+                row('Postcode', ship.pfPostcode) +
+                row('Country', ship.pfCountry) +
+                row('Phone', ship.pfPhone);
+        }
+
+        function renderDash(user) {
+            document.getElementById('who').innerHTML = 'Welcome back, <strong>' + esc(displayName(user)) + '</strong>.';
+            document.getElementById('acEmail').textContent = user.email || '—';
+            const provider = (user.app_metadata && user.app_metadata.provider) || 'email';
+            document.getElementById('acProvider').textContent = provider.charAt(0).toUpperCase() + provider.slice(1);
+            document.getElementById('acSince').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '—';
+            renderShipping(user);
+        }
+
+        (async () => {
+            try {
+                const session = await getSession();
+                if (!session) { location.replace(LOGIN_URL); return; }
+                renderDash(session.user);
+                show('dash');
+                // If the user signs out (here or in another tab), send them to login.
+                onAuthChange((event, s) => { if (!s) location.replace(LOGIN_URL); });
+            } catch (e) {
+                document.getElementById('errMsg').textContent = (e && e.message) ? e.message : 'We couldn’t verify your session.';
+                show('error');
+            }
+        })();
+
+        document.getElementById('signout').addEventListener('click', async () => {
+            const btn = document.getElementById('signout');
+            btn.disabled = true; btn.textContent = 'Signing out…';
+            try { await signOut(); } catch (e) {}
+            location.replace(LOGIN_URL);
+        });
+    </script>
+</body>
+</html>

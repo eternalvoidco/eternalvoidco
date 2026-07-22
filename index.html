@@ -7498,13 +7498,16 @@
                 try { returning = sessionStorage.getItem('void-entered') === '1'; } catch (e) {}
                 // Returning from a social (OAuth) sign-in redirect — land inside.
                 var oauthReturn = (location.hash && location.hash.indexOf('access_token') !== -1);
-                if (gateDisabled || returning || oauthReturn) {
+                // Sent here to sign in (e.g. from the protected account page).
+                var loginRequest = (location.search && location.search.indexOf('login') !== -1);
+                if (gateDisabled || returning || oauthReturn || loginRequest) {
                     document.body.classList.remove('gate-open');
-                    document.body.classList.add('void-entered');
-                    if (returning) document.body.classList.add('void-returning');
+                    // void-returning also hides the intro gate via CSS, so any skip
+                    // path lands the visitor straight inside.
+                    document.body.classList.add('void-entered', 'void-returning');
                     // When the gate is turned off in Settings, treat the visitor as
                     // already inside for the rest of the session.
-                    if (gateDisabled || oauthReturn) { try { sessionStorage.setItem('void-entered', '1'); } catch (e) {} }
+                    if (gateDisabled || oauthReturn || loginRequest) { try { sessionStorage.setItem('void-entered', '1'); } catch (e) {} }
                     var y = parseInt(sessionStorage.getItem('void-scroll') || '0', 10);
                     if (returning && y > 0) {
                         var restore = function () { window.scrollTo(0, y); };
@@ -8180,6 +8183,7 @@
             <p class="void-auth-eyebrow" id="voidProfileEyebrow">Profile</p>
             <h2 class="void-modal-title" id="voidProfileTitle">Your Details</h2>
             <p class="void-modal-sub" id="voidProfileWho">Save your shipping details for a faster, private checkout.</p>
+            <p class="void-pf-note" id="voidProfileAccountWrap" hidden><a class="void-auth-link" id="voidProfileAccountLink" href="/account.html">View full account &rarr;</a></p>
             <form class="void-profile-form" id="voidProfileForm" novalidate>
                 <div class="void-pf-grid">
                     <div class="void-pf-field void-pf-full">
@@ -11348,16 +11352,11 @@
             const socialWrap = overlay ? overlay.querySelector('.void-auth-social') : null;
             if (!overlay || !form || !input || !suggest || !toast) return;
 
-            /* ══════════════════════════════════════════════════════════════════
-               SUPABASE — paste your project values here to switch on real
-               Google / Facebook / Apple + email-and-password accounts. Both
-               values are PUBLIC and safe to expose. Leave blank to keep the
-               lightweight email sign-in until you're ready.
-               ────────────────────────────────────────────────────────────────── */
-            const SUPABASE_URL = '';        // e.g. 'https://abcdefgh.supabase.co'
-            const SUPABASE_ANON_KEY = '';   // your project's anon / publishable key
-            /* ════════════════════════════════════════════════════════════════ */
-            const configured = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+            // Real accounts are powered by Supabase. The public config (URL + anon
+            // key) is served from /api/config, which reads them from environment
+            // variables — nothing is hardcoded here, and the service_role key is
+            // never involved. Until the env vars are set, ensureSupabase() returns
+            // null and the lightweight email fallback is used instead.
 
             const PERSIST_KEY = 'void-auth';
             const SESSION_KEY = 'void-auth-session';
@@ -11371,10 +11370,15 @@
                 return String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
             }
 
+            // Resolves the shared Supabase client, or null if not configured yet.
             async function ensureSupabase() {
-                if (sbClient || !configured) return sbClient;
-                const mod = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-                sbClient = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                if (sbClient) return sbClient;
+                try {
+                    const mod = await import('/assets/supabase-client.js');
+                    sbClient = await mod.getSupabase();   // throws if env vars aren't set
+                } catch (e) {
+                    sbClient = null;
+                }
                 return sbClient;
             }
 
@@ -11396,10 +11400,10 @@
 
             // Public identity lookup (used by the Profile + Settings screens).
             async function getIdentity() {
-                if (configured) {
+                {
                     try {
                         const c = await ensureSupabase();
-                        const { data } = await c.auth.getSession();
+                        const { data } = c ? await c.auth.getSession() : { data: null };
                         if (data && data.session) {
                             const u = data.session.user;
                             return { name: nameFromUser(u), email: u.email || '', source: 'account' };
@@ -11514,16 +11518,17 @@
             }
             if (modeToggle) modeToggle.addEventListener('click', () => setMode(mode === 'signin' ? 'signup' : 'signin'));
 
-            if (setupNote) setupNote.hidden = configured;
+            // Reveal the "not connected yet" note only when Supabase isn't configured.
+            ensureSupabase().then((c) => { if (setupNote) setupNote.hidden = !!c; });
 
             // Social sign-in
             if (socialWrap) socialWrap.addEventListener('click', async (e) => {
                 const b = e.target.closest('[data-oauth]'); if (!b) return;
                 const provider = b.getAttribute('data-oauth');
-                if (!configured) { if (setupNote) setupNote.hidden = false; errorEl.textContent = 'Social sign-in isn’t connected yet — continue with email below.'; return; }
+                const client = await ensureSupabase();
+                if (!client) { if (setupNote) setupNote.hidden = false; errorEl.textContent = 'Social sign-in isn’t connected yet — continue with email below.'; return; }
                 try {
-                    const c = await ensureSupabase();
-                    await c.auth.signInWithOAuth({ provider: provider, options: { redirectTo: location.origin + location.pathname } });
+                    await client.auth.signInWithOAuth({ provider: provider, options: { redirectTo: location.origin + '/' } });
                 } catch (err) { errorEl.textContent = 'Could not start ' + provider + ' sign-in. Please try again.'; }
             });
 
@@ -11531,10 +11536,10 @@
             if (forgotBtn) forgotBtn.addEventListener('click', async () => {
                 const email = input.value.trim();
                 if (!EMAIL_RE.test(email)) { errorEl.textContent = 'Enter your email above first, then tap “Forgot password?”.'; input.focus(); return; }
-                if (!configured) { errorEl.textContent = 'Password reset activates once accounts are connected.'; return; }
+                const client = await ensureSupabase();
+                if (!client) { errorEl.textContent = 'Password reset activates once accounts are connected.'; return; }
                 try {
-                    const c = await ensureSupabase();
-                    await c.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+                    await client.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/' });
                     errorEl.style.color = 'var(--void-gold-soft)';
                     errorEl.textContent = 'If that email has an account, a reset link is on its way.';
                 } catch (e) { errorEl.style.color = ''; errorEl.textContent = 'Could not send the reset email.'; }
@@ -11554,11 +11559,12 @@
                 errorEl.textContent = '';
                 const stayed = !!remember.checked;
 
-                if (configured) {
+                const client = await ensureSupabase();
+                if (client) {
                     if (!password || password.length < 6) { errorEl.textContent = 'Enter a password (at least 6 characters).'; if (passInput) passInput.focus(); return; }
                     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = (mode === 'signup') ? 'Creating…' : 'Signing in…'; }
                     try {
-                        const c = await ensureSupabase();
+                        const c = client;
                         if (mode === 'signup') {
                             const { data, error } = await c.auth.signUp({ email: email, password: password });
                             if (error) throw error;
@@ -11597,15 +11603,14 @@
             // Sign out (used by Settings → Sign out)
             async function signOut() {
                 try { localStorage.removeItem(PERSIST_KEY); sessionStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(GREETED_KEY); } catch (e) {}
-                if (configured) { try { const c = await ensureSupabase(); await c.auth.signOut(); } catch (e) {} }
+                try { const c = await ensureSupabase(); if (c) await c.auth.signOut(); } catch (e) {}
                 refreshAvatar();
             }
             window.voidSignOut = signOut;
             window.voidAuthOpen = openModal;
             // Save shipping details onto the signed-in account (when connected).
             window.voidUpdateProfileMeta = async function (data) {
-                if (!configured) return;
-                try { const c = await ensureSupabase(); await c.auth.updateUser({ data: { shipping: data } }); } catch (e) {}
+                try { const c = await ensureSupabase(); if (c) await c.auth.updateUser({ data: { shipping: data } }); } catch (e) {}
             };
 
             // ── Gate: greet or prompt once inside the site ──
@@ -11623,19 +11628,27 @@
             window.voidAuthOnEnter = function () { window.setTimeout(runGate, 1100); };
 
             // React to OAuth redirect completion + restore an existing session.
-            if (configured) {
-                ensureSupabase().then((c) => {
-                    if (!c) return;
-                    c.auth.onAuthStateChange((event, session) => {
-                        if (event === 'SIGNED_IN' && session && !greetedThisLoad) {
-                            greetedThisLoad = true; markGreeted(); closeModal();
-                            try { if (location.hash.indexOf('access_token') !== -1) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
-                            successToast(nameFromUser(session.user));
-                            refreshAvatar();
-                        }
-                    });
-                }).catch(() => {});
-            }
+            ensureSupabase().then((c) => {
+                if (!c) return;
+                c.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_IN' && session && !greetedThisLoad) {
+                        greetedThisLoad = true; markGreeted(); closeModal();
+                        try { if (location.hash.indexOf('access_token') !== -1) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+                        successToast(nameFromUser(session.user));
+                        refreshAvatar();
+                    } else if (event === 'SIGNED_OUT') {
+                        refreshAvatar();
+                    }
+                });
+            }).catch(() => {});
+
+            // A protected page (account.html) can send visitors here to sign in.
+            try {
+                if (new URLSearchParams(location.search).has('login')) {
+                    window.setTimeout(openModal, 400);
+                    history.replaceState(null, '', location.pathname);
+                }
+            } catch (e) {}
 
             if (document.body.classList.contains('void-entered')) {
                 window.setTimeout(runGate, 700);
@@ -11839,6 +11852,8 @@
                     ? ('Signed in as ' + (id.email || id.name) + ' — details save to your account.')
                     : 'Save your shipping details for a faster, private checkout.';
                 if (signinNote) signinNote.hidden = !!id;
+                const acctWrap = document.getElementById('voidProfileAccountWrap');
+                if (acctWrap) acctWrap.hidden = !id;
                 if (id && id.name && id.name !== id.email) {
                     const nameEl = document.getElementById('pfName');
                     if (nameEl && !nameEl.value) nameEl.value = id.name;
