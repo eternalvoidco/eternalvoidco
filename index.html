@@ -3329,13 +3329,15 @@
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
         }
 
+        /* Same hover as the SUBSCRIBE button: the gold fill empties to a
+           transparent, gold-outlined button with gold text and a soft glow. */
         .collection-preorder-trigger:hover,
         .collection-preorder-trigger:focus-visible {
-            border-color: var(--void-gold-soft);
-            color: #080808;
-            transform: translateY(-2px);
-            box-shadow: 0 14px 34px rgba(199, 169, 108, 0.28);
-            filter: brightness(1.04);
+            background: transparent;
+            border-color: var(--void-accent);
+            color: var(--void-gold-soft);
+            box-shadow: 0 0 20px rgba(199, 169, 108, 0.16);
+            filter: brightness(1.02);
         }
 
         .products-header h2 {
