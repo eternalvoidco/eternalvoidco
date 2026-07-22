@@ -7058,6 +7058,196 @@
 
         .void-pf-field input:focus { border-color: rgba(199, 169, 108, 0.7); box-shadow: 0 0 0 2px rgba(199, 169, 108, 0.1); }
 
+        /* Country type-ahead (mirrors the pre-order country list). */
+        .void-pf-country { position: relative; }
+
+        .void-pf-suggest {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 6;
+            margin: 0;
+            padding: 0.3rem;
+            list-style: none;
+            max-height: 210px;
+            overflow-y: auto;
+            background: rgba(12, 11, 9, 0.98);
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(199, 169, 108, 0.6) transparent;
+        }
+
+        .void-pf-suggest[hidden] { display: none; }
+
+        .void-pf-suggest li {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.5rem 0.6rem;
+            font-size: 0.84rem;
+            color: rgba(245, 242, 236, 0.85);
+            cursor: pointer;
+            transition: background 0.16s ease, color 0.16s ease;
+        }
+
+        .void-pf-suggest li:hover,
+        .void-pf-suggest li.active {
+            background: rgba(199, 169, 108, 0.14);
+            color: var(--void-white);
+        }
+
+        .void-pf-suggest li .country-flag { width: 1.35rem; height: 0.86rem; flex: 0 0 auto; }
+
+        /* ── VOID member card (ProfileCard, re-imagined in gold/monochrome) ── */
+        .void-pcard { margin: 1.3rem 0 0.4rem; }
+        .void-pcard[hidden] { display: none; }
+
+        .void-pcard-wrap {
+            position: relative;
+            perspective: 700px;
+            --px: 50%;
+            --py: 50%;
+            --rx: 0deg;
+            --ry: 0deg;
+        }
+
+        .void-pcard-glow {
+            position: absolute;
+            inset: -14px;
+            z-index: 0;
+            pointer-events: none;
+            border-radius: 20px;
+            background: radial-gradient(circle at var(--px) var(--py), rgba(199, 169, 108, 0.4) 0%, transparent 55%);
+            filter: blur(28px);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .void-pcard-wrap:hover .void-pcard-glow { opacity: 1; }
+
+        .void-pcard-shell { position: relative; z-index: 1; }
+
+        .void-pcard-inner {
+            position: relative;
+            overflow: hidden;
+            height: 208px;
+            border-radius: 16px;
+            border: 1px solid rgba(199, 169, 108, 0.42);
+            background:
+                radial-gradient(120% 90% at 50% -10%, rgba(199, 169, 108, 0.16), transparent 55%),
+                linear-gradient(160deg, rgba(26, 22, 15, 0.98), rgba(6, 6, 6, 0.99));
+            box-shadow: 0 22px 54px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(245, 242, 236, 0.06);
+            transform: rotateX(var(--rx)) rotateY(var(--ry));
+            transform-style: preserve-3d;
+            transition: transform 0.5s var(--ease-lux);
+        }
+
+        .void-pcard-wrap:hover .void-pcard-inner { transition: transform 0.09s linear; }
+
+        .void-pcard-shine {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at var(--px) var(--py), rgba(245, 232, 202, 0.2) 0%, transparent 46%);
+            mix-blend-mode: screen;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .void-pcard-wrap:hover .void-pcard-shine { opacity: 1; }
+
+        .void-pcard-emblem {
+            position: absolute;
+            inset: 0 0 44px;
+            display: grid;
+            place-items: center;
+            transform: translateZ(26px);
+        }
+
+        .void-pcard-emblem img {
+            width: 90px;
+            height: auto;
+            opacity: 0.94;
+            transform: translateX(4%);
+            filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.6));
+        }
+
+        .void-pcard-bar {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 11px;
+            border-radius: 11px;
+            background: rgba(18, 16, 12, 0.5);
+            border: 1px solid rgba(199, 169, 108, 0.28);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transform: translateZ(42px);
+        }
+
+        .void-pcard-provider {
+            width: 34px;
+            height: 34px;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: var(--void-gold-soft);
+            border: 1px solid rgba(199, 169, 108, 0.4);
+            background: radial-gradient(circle at 50% 30%, rgba(30, 27, 20, 0.95), rgba(8, 8, 8, 0.95));
+        }
+
+        .void-pcard-provider svg { width: 16px; height: 16px; }
+
+        .void-pcard-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+
+        .void-pcard-handle {
+            font-size: 0.84rem;
+            color: var(--void-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .void-pcard-status {
+            font-size: 0.6rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--void-gold-soft);
+        }
+
+        .void-pcard-btn {
+            flex: 0 0 auto;
+            padding: 0.52rem 0.9rem;
+            border-radius: 7px;
+            border: 1px solid rgba(199, 169, 108, 0.5);
+            background: rgba(14, 12, 8, 0.6);
+            color: var(--void-gold-soft);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.58rem;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: border-color 0.24s ease, background 0.24s ease, color 0.24s ease;
+        }
+
+        .void-pcard-btn:hover,
+        .void-pcard-btn:focus-visible {
+            border-color: rgba(199, 169, 108, 0.95);
+            background: rgba(24, 19, 10, 0.85);
+            color: var(--void-gold-bright);
+            outline: none;
+        }
+
+        html.reduce-motion .void-pcard-inner { transform: none !important; transition: none; }
+
         .void-pf-note {
             margin: 0.9rem 0 0;
             color: rgba(245, 242, 236, 0.55);
@@ -8179,6 +8369,28 @@
             <button type="button" class="void-modal-close" data-close-modal aria-label="Close">✕</button>
             <p class="void-auth-eyebrow" id="voidProfileEyebrow">Profile</p>
             <h2 class="void-modal-title" id="voidProfileTitle">Your Details</h2>
+
+            <!-- Member card (React Bits ProfileCard, re-imagined in VOID colours) -->
+            <div class="void-pcard" id="voidProfileCard" hidden>
+                <div class="void-pcard-wrap" id="voidPcardWrap">
+                    <div class="void-pcard-glow" aria-hidden="true"></div>
+                    <div class="void-pcard-shell" id="voidPcardShell">
+                        <div class="void-pcard-inner">
+                            <div class="void-pcard-shine" aria-hidden="true"></div>
+                            <div class="void-pcard-emblem" aria-hidden="true"><img src="/assets/ev-emblem.png?v=20260714c" alt="" width="594" height="500"></div>
+                            <div class="void-pcard-bar">
+                                <span class="void-pcard-provider" id="voidPcardProvider" aria-hidden="true"></span>
+                                <span class="void-pcard-id">
+                                    <span class="void-pcard-handle" id="voidPcardHandle">@member</span>
+                                    <span class="void-pcard-status" id="voidPcardStatus">Signed in</span>
+                                </span>
+                                <button type="button" class="void-pcard-btn" id="voidPcardBtn">Sign out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <p class="void-modal-sub" id="voidProfileWho">Save your shipping details for a faster, private checkout.</p>
             <p class="void-pf-note" id="voidProfileAccountWrap" hidden><a class="void-auth-link" id="voidProfileAccountLink" href="/account.html">View full account &rarr;</a></p>
             <form class="void-profile-form" id="voidProfileForm" novalidate>
@@ -8203,9 +8415,10 @@
                         <label for="pfPostcode">Postcode</label>
                         <input type="text" id="pfPostcode" autocomplete="postal-code">
                     </div>
-                    <div class="void-pf-field">
+                    <div class="void-pf-field void-pf-country">
                         <label for="pfCountry">Country</label>
-                        <input type="text" id="pfCountry" autocomplete="country-name">
+                        <input type="text" id="pfCountry" autocomplete="off" spellcheck="false" placeholder="Type to search…" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="pfCountrySuggest">
+                        <ul class="void-pf-suggest" id="pfCountrySuggest" role="listbox" aria-label="Country suggestions" hidden></ul>
                     </div>
                     <div class="void-pf-field">
                         <label for="pfPhone">Phone <span>(optional)</span></label>
@@ -9203,6 +9416,11 @@
             themeSwitch.classList.remove('open');
             if (themeSwitchToggle) themeSwitchToggle.setAttribute('aria-expanded', 'false');
         }
+
+        // Exposed so the Profile → Country field can apply the same country theme.
+        window.voidApplyCountryTheme = function (country, flagToken) {
+            try { applyCountryTheme(country, flagToken, true); } catch (e) {}
+        };
 
         function applyCountryTheme(country, flagToken, persist) {
             if (!isValidFlagToken(flagToken)) return;
@@ -11388,9 +11606,9 @@
             function readLocalAuth() {
                 try {
                     const p = JSON.parse(localStorage.getItem(PERSIST_KEY) || 'null');
-                    if (p && p.email) return { email: p.email, name: p.name || p.email, persistent: true, source: 'email' };
+                    if (p && p.email) return { email: p.email, name: p.name || p.email, persistent: true, source: 'email', provider: 'email' };
                     const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
-                    if (s && s.email) return { email: s.email, name: s.name || s.email, persistent: false, source: 'email' };
+                    if (s && s.email) return { email: s.email, name: s.name || s.email, persistent: false, source: 'email', provider: 'email' };
                 } catch (e) {}
                 return null;
             }
@@ -11403,7 +11621,15 @@
                         const { data } = c ? await c.auth.getSession() : { data: null };
                         if (data && data.session) {
                             const u = data.session.user;
-                            return { name: nameFromUser(u), email: u.email || '', source: 'account' };
+                            const m = u.user_metadata || {};
+                            return {
+                                name: nameFromUser(u),
+                                email: u.email || '',
+                                source: 'account',
+                                provider: (u.app_metadata && u.app_metadata.provider) || 'email',
+                                providerId: m.provider_id || m.sub || '',
+                                avatar: m.avatar_url || m.picture || ''
+                            };
                         }
                     } catch (e) {}
                 }
@@ -11871,9 +12097,13 @@
                 FIELDS.forEach((id) => { const el = document.getElementById(id); if (el && data[id] != null) el.value = data[id]; });
                 let id = null;
                 try { id = (typeof window.voidGetIdentity === 'function') ? await window.voidGetIdentity() : null; } catch (e) {}
-                if (whoEl) whoEl.textContent = id
-                    ? ('Signed in as ' + (id.email || id.name) + ' — details save to your account.')
-                    : 'Save your shipping details for a faster, private checkout.';
+                // When signed in, the member card carries the identity; the plain
+                // "who" line is only shown to signed-out visitors.
+                if (whoEl) {
+                    whoEl.hidden = !!id;
+                    if (!id) whoEl.textContent = 'Save your shipping details for a faster, private checkout.';
+                }
+                populateCard(id);
                 if (signinNote) signinNote.hidden = !!id;
                 const acctWrap = document.getElementById('voidProfileAccountWrap');
                 if (acctWrap) acctWrap.hidden = !id;
@@ -11884,6 +12114,64 @@
                 updateDockAvatar();
             }
             window.voidProfilePrefill = prefill;
+
+            // ── Member card: EV emblem avatar + provider-aware handle & icon ──
+            const cardEl = document.getElementById('voidProfileCard');
+            const pcHandle = document.getElementById('voidPcardHandle');
+            const pcStatus = document.getElementById('voidPcardStatus');
+            const pcProvider = document.getElementById('voidPcardProvider');
+            const pcBtn = document.getElementById('voidPcardBtn');
+            const PROVIDER_ICON = {
+                google: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.35 11.1H12v3.24h5.35c-.5 2.4-2.55 3.68-5.35 3.68A5.92 5.92 0 1 1 12 6.1c1.5 0 2.86.55 3.92 1.55l2.4-2.4A9.35 9.35 0 1 0 12 21.4c5.28 0 8.9-3.7 8.9-8.9 0-.6-.06-1.05-.15-1.4Z"/></svg>',
+                facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.4 8.4h-2V7c0-.66.5-1 1.05-1H15.4V3.3l-2.2-.05C10.6 3.25 9.4 4.9 9.4 7v1.4H7.2v2.9h2.2v8.4h3.4v-8.4h2.3l.3-2.9Z"/></svg>',
+                email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg>'
+            };
+            const PROVIDER_LABEL = { google: 'Google', facebook: 'Facebook', email: 'Email' };
+
+            function populateCard(id) {
+                if (!cardEl) return;
+                if (!id) { cardEl.hidden = true; return; }
+                const p = (id.provider || 'email').toLowerCase();
+                let handle;
+                if (p === 'facebook') handle = id.providerId || id.name || id.email;
+                else handle = (id.name && id.name !== id.email) ? id.name : id.email;
+                handle = handle || 'member';
+                if (pcHandle) pcHandle.textContent = (handle.indexOf('@') !== -1) ? handle : ('@' + handle);
+                if (pcStatus) pcStatus.textContent = 'Signed in · ' + (PROVIDER_LABEL[p] || 'Member');
+                if (pcProvider) pcProvider.innerHTML = PROVIDER_ICON[p] || PROVIDER_ICON.email;
+                cardEl.hidden = false;
+            }
+
+            if (pcBtn) pcBtn.addEventListener('click', async () => {
+                if (typeof window.voidSignOut === 'function') { try { await window.voidSignOut(); } catch (e) {} }
+                if (typeof window.voidToast === 'function') window.voidToast('Signed out', 'You have been signed out on this device.');
+                const modal = document.getElementById('voidProfile');
+                if (modal) { modal.classList.remove('active'); modal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('void-auth-open'); }
+                prefill();
+            });
+
+            // 3D tilt on hover (VOID re-imagining of the ProfileCard tilt effect).
+            (function initPcardTilt() {
+                const wrap = document.getElementById('voidPcardWrap');
+                const shell = document.getElementById('voidPcardShell');
+                if (!wrap || !shell) return;
+                if (document.documentElement.classList.contains('reduce-motion')) return;
+                shell.addEventListener('pointermove', (e) => {
+                    const r = shell.getBoundingClientRect();
+                    const px = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+                    const py = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+                    wrap.style.setProperty('--px', (px * 100).toFixed(1) + '%');
+                    wrap.style.setProperty('--py', (py * 100).toFixed(1) + '%');
+                    wrap.style.setProperty('--ry', ((px - 0.5) * 14).toFixed(2) + 'deg');
+                    wrap.style.setProperty('--rx', (-(py - 0.5) * 12).toFixed(2) + 'deg');
+                });
+                shell.addEventListener('pointerleave', () => {
+                    wrap.style.setProperty('--rx', '0deg');
+                    wrap.style.setProperty('--ry', '0deg');
+                    wrap.style.setProperty('--px', '50%');
+                    wrap.style.setProperty('--py', '50%');
+                });
+            })();
 
             if (signinBtn) signinBtn.addEventListener('click', () => {
                 const modal = document.getElementById('voidProfile');
@@ -11910,6 +12198,66 @@
                     if (!document.querySelector('.void-modal.active') && !authOpen) document.body.classList.remove('void-auth-open');
                 }
             });
+
+            // ── Country type-ahead: reuses the pre-order country list and applies
+            //    the same country theme on selection. ──
+            (function initCountryAutocomplete() {
+                const inputEl = document.getElementById('pfCountry');
+                const listEl = document.getElementById('pfCountrySuggest');
+                if (!inputEl || !listEl) return;
+                const COUNTRIES = Array.prototype.slice
+                    .call(document.querySelectorAll('#preorderCountryList [data-country]'))
+                    .map((o) => ({ name: o.getAttribute('data-country'), flag: o.getAttribute('data-flag') }))
+                    .filter((c) => c.name && c.name !== 'Other');
+                let active = -1;
+                const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+                function hide() { listEl.hidden = true; listEl.innerHTML = ''; active = -1; inputEl.setAttribute('aria-expanded', 'false'); }
+                function render(matches) {
+                    active = -1;
+                    if (!matches.length) { hide(); return; }
+                    listEl.innerHTML = matches.map((c) =>
+                        '<li role="option" data-country="' + esc(c.name) + '" data-flag="' + esc(c.flag) + '">'
+                        + '<span class="country-flag ' + esc(c.flag) + '" aria-hidden="true"></span>' + esc(c.name) + '</li>'
+                    ).join('');
+                    listEl.hidden = false;
+                    inputEl.setAttribute('aria-expanded', 'true');
+                }
+                function matchesFor(q) {
+                    q = (q || '').trim().toLowerCase();
+                    if (!q) return COUNTRIES.slice();
+                    const starts = COUNTRIES.filter((c) => c.name.toLowerCase().indexOf(q) === 0);
+                    const contains = COUNTRIES.filter((c) => c.name.toLowerCase().indexOf(q) > 0);
+                    return starts.concat(contains);
+                }
+                function choose(name, flag) {
+                    inputEl.value = name;
+                    hide();
+                    if (flag && flag !== 'flag-empty' && typeof window.voidApplyCountryTheme === 'function') {
+                        window.voidApplyCountryTheme(name, flag);
+                    }
+                }
+                inputEl.addEventListener('input', () => render(matchesFor(inputEl.value)));
+                inputEl.addEventListener('focus', () => render(matchesFor(inputEl.value)));
+                inputEl.addEventListener('blur', () => window.setTimeout(hide, 140));
+                listEl.addEventListener('mousedown', (e) => {
+                    const li = e.target.closest('li'); if (!li) return;
+                    e.preventDefault();
+                    choose(li.getAttribute('data-country'), li.getAttribute('data-flag'));
+                });
+                inputEl.addEventListener('keydown', (e) => {
+                    if (listEl.hidden) { if (e.key === 'ArrowDown') render(matchesFor(inputEl.value)); return; }
+                    const items = listEl.querySelectorAll('li');
+                    if (!items.length) return;
+                    if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % items.length; }
+                    else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + items.length) % items.length; }
+                    else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); choose(items[active].getAttribute('data-country'), items[active].getAttribute('data-flag')); return; }
+                    else if (e.key === 'Escape') { hide(); return; }
+                    else return;
+                    items.forEach((li, i) => li.classList.toggle('active', i === active));
+                    if (items[active]) items[active].scrollIntoView({ block: 'nearest' });
+                });
+            })();
         })();
     </script>
 
