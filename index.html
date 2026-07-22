@@ -2558,6 +2558,27 @@
             z-index: 1;
         }
 
+        /* Gold "Magic Rings" WebGL layer — above the video (z1), below the
+           content (z10). Never intercepts clicks; the gold glows over the dark
+           video via screen blending. Fades in once the visitor passes the gate. */
+        .hero-rings {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0;
+            mix-blend-mode: screen;
+            transition: opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body.void-entered .hero-rings { opacity: 0.82; }
+
+        .hero-rings canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
         .hero-content {
             position: relative;
             z-index: 10;
@@ -6722,6 +6743,7 @@
         <video loop muted playsinline preload="none" class="hero-video" id="heroVideo">
             <source src="hero-video.mp4" type="video/mp4">
         </video>
+        <div class="hero-rings" id="heroRings" aria-hidden="true"></div>
         <div class="hero-content fade-in-up" style="--delay: 80ms;">
             <h1 class="hero-title"><img class="hero-title-img" src="/assets/ev-emblem.png?v=20260714c" alt="Eternal Void" width="594" height="500"></h1>
             <div class="hero-actions">
@@ -10255,6 +10277,218 @@
 
         applyTranslations();
         updateCartUI();
+    </script>
+
+    <!-- ─────────────────────────────────────────────────────────────────────
+         MAGIC RINGS — gold WebGL hero backdrop (adapted from the React Bits
+         component to vanilla JS for this static site). Three.js is loaded from
+         a CDN (allowed in the CSP). Purely ambient: no pointer interaction, so
+         it never blocks the hero buttons. Pauses when off-screen or the tab is
+         hidden, and renders a single static frame under reduce-motion.
+         ── Edit MAGIC_RINGS_CONFIG below to tune colours, count, speed, etc. ──
+    ───────────────────────────────────────────────────────────────────────── -->
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+        (function initMagicRings() {
+            const mount = document.getElementById('heroRings');
+            if (!mount) return;
+
+            // ── Editable configuration (gold, tuned for the VOID hero) ──
+            const MAGIC_RINGS_CONFIG = {
+                color: '#8a6a34',       // deep gold — inner rings
+                colorTwo: '#f3e3ba',    // champagne — outer rings
+                speed: 0.5,             // animation pace (1 = original)
+                ringCount: 6,
+                attenuation: 10,
+                lineThickness: 2,
+                baseRadius: 0.35,
+                radiusStep: 0.1,
+                scaleRate: 0.1,
+                opacity: 1,
+                noiseAmount: 0.05,
+                rotation: 0,
+                ringGap: 1.5,
+                fadeIn: 0.7,
+                fadeOut: 0.5
+            };
+
+            const vertexShader = `
+void main() {
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+            const fragmentShader = `
+precision highp float;
+
+uniform float uTime, uAttenuation, uLineThickness;
+uniform float uBaseRadius, uRadiusStep, uScaleRate;
+uniform float uOpacity, uNoiseAmount, uRotation, uRingGap;
+uniform float uFadeIn, uFadeOut;
+uniform float uMouseInfluence, uHoverAmount, uHoverScale, uParallax, uBurst;
+uniform vec2 uResolution, uMouse;
+uniform vec3 uColor, uColorTwo;
+uniform int uRingCount;
+
+const float HP = 1.5707963;
+const float CYCLE = 3.45;
+
+float fade(float t) {
+  return t < uFadeIn ? smoothstep(0.0, uFadeIn, t) : 1.0 - smoothstep(uFadeOut, CYCLE - 0.2, t);
+}
+
+float ring(vec2 p, float ri, float cut, float t0, float px) {
+  float t = mod(uTime + t0, CYCLE);
+  float r = ri + t / CYCLE * uScaleRate;
+  float d = abs(length(p) - r);
+  float a = atan(abs(p.y), abs(p.x)) / HP;
+  float th = max(1.0 - a, 0.5) * px * uLineThickness;
+  float h = (1.0 - smoothstep(th, th * 1.5, d)) + 1.0;
+  d += pow(cut * a, 3.0) * r;
+  return h * exp(-uAttenuation * d) * fade(t);
+}
+
+void main() {
+  float px = 1.0 / min(uResolution.x, uResolution.y);
+  vec2 p = (gl_FragCoord.xy - 0.5 * uResolution.xy) * px;
+  float cr = cos(uRotation), sr = sin(uRotation);
+  p = mat2(cr, -sr, sr, cr) * p;
+  p -= uMouse * uMouseInfluence;
+  float sc = mix(1.0, uHoverScale, uHoverAmount) + uBurst * 0.3;
+  p /= sc;
+  vec3 c = vec3(0.0);
+  float rcf = max(float(uRingCount) - 1.0, 1.0);
+  for (int i = 0; i < 10; i++) {
+    if (i >= uRingCount) break;
+    float fi = float(i);
+    vec2 pr = p - fi * uParallax * uMouse;
+    vec3 rc = mix(uColor, uColorTwo, fi / rcf);
+    c = mix(c, rc, vec3(ring(pr, uBaseRadius + fi * uRadiusStep, pow(uRingGap, fi), i == 0 ? 0.0 : 2.95 * fi, px)));
+  }
+  c *= 1.0 + uBurst * 2.0;
+  float n = fract(sin(dot(gl_FragCoord.xy + uTime * 100.0, vec2(12.9898, 78.233))) * 43758.5453);
+  c += (n - 0.5) * uNoiseAmount;
+  gl_FragColor = vec4(c, max(c.r, max(c.g, c.b)) * uOpacity);
+}
+`;
+
+            let renderer;
+            try {
+                renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            } catch (e) {
+                return;   // no WebGL — the hero video remains as-is
+            }
+            if (!renderer.capabilities.isWebGL2) {
+                renderer.dispose();
+                return;
+            }
+            renderer.setClearColor(0x000000, 0);
+            mount.appendChild(renderer.domElement);
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
+            camera.position.z = 1;
+
+            const uniforms = {
+                uTime: { value: 0 },
+                uAttenuation: { value: 0 },
+                uResolution: { value: new THREE.Vector2() },
+                uColor: { value: new THREE.Color() },
+                uColorTwo: { value: new THREE.Color() },
+                uLineThickness: { value: 0 },
+                uBaseRadius: { value: 0 },
+                uRadiusStep: { value: 0 },
+                uScaleRate: { value: 0 },
+                uRingCount: { value: 0 },
+                uOpacity: { value: 1 },
+                uNoiseAmount: { value: 0 },
+                uRotation: { value: 0 },
+                uRingGap: { value: 1.6 },
+                uFadeIn: { value: 0.5 },
+                uFadeOut: { value: 0.75 },
+                // Ambient backdrop — mouse/hover/burst intentionally stay at 0.
+                uMouse: { value: new THREE.Vector2() },
+                uMouseInfluence: { value: 0 },
+                uHoverAmount: { value: 0 },
+                uHoverScale: { value: 1 },
+                uParallax: { value: 0 },
+                uBurst: { value: 0 }
+            };
+
+            const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms, transparent: true });
+            const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
+            scene.add(quad);
+
+            const c = MAGIC_RINGS_CONFIG;
+            uniforms.uAttenuation.value = c.attenuation;
+            uniforms.uColor.value.set(c.color);
+            uniforms.uColorTwo.value.set(c.colorTwo);
+            uniforms.uLineThickness.value = c.lineThickness;
+            uniforms.uBaseRadius.value = c.baseRadius;
+            uniforms.uRadiusStep.value = c.radiusStep;
+            uniforms.uScaleRate.value = c.scaleRate;
+            uniforms.uRingCount.value = c.ringCount;
+            uniforms.uOpacity.value = c.opacity;
+            uniforms.uNoiseAmount.value = c.noiseAmount;
+            uniforms.uRotation.value = (c.rotation * Math.PI) / 180;
+            uniforms.uRingGap.value = c.ringGap;
+            uniforms.uFadeIn.value = c.fadeIn;
+            uniforms.uFadeOut.value = c.fadeOut;
+
+            const reduceMotion = () => document.documentElement.classList.contains('reduce-motion');
+
+            const renderFrame = (tMs) => {
+                uniforms.uTime.value = tMs * 0.001 * c.speed;
+                renderer.render(scene, camera);
+            };
+
+            const resize = () => {
+                const w = mount.clientWidth || 1;
+                const h = mount.clientHeight || 1;
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                renderer.setPixelRatio(dpr);
+                renderer.setSize(w, h, false);
+                uniforms.uResolution.value.set(w * dpr, h * dpr);
+                if (!running) renderFrame(reduceMotion() ? 3000 : uniforms.uTime.value * 1000 / (c.speed || 1));
+            };
+
+            let frameId = null;
+            let running = false;
+            const animate = (tMs) => {
+                if (!running) return;
+                frameId = requestAnimationFrame(animate);
+                renderFrame(tMs);
+            };
+            const start = () => {
+                if (running) return;
+                if (reduceMotion()) { renderFrame(3000); return; }   // static single frame
+                running = true;
+                frameId = requestAnimationFrame(animate);
+            };
+            const stop = () => {
+                running = false;
+                if (frameId) cancelAnimationFrame(frameId);
+                frameId = null;
+            };
+
+            resize();
+            window.addEventListener('resize', resize);
+            if ('ResizeObserver' in window) new ResizeObserver(resize).observe(mount);
+
+            // Only run while the hero is on-screen and the tab is visible.
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver((entries) => {
+                    const visible = entries.some((e) => e.isIntersecting);
+                    if (visible && !document.hidden) start(); else stop();
+                }, { threshold: 0.01 }).observe(mount);
+            } else {
+                start();
+            }
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) stop(); else start();
+            });
+        })();
     </script>
 </body>
 </html>
