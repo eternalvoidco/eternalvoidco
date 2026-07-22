@@ -1194,8 +1194,9 @@
         }
 
         .theme-switch-toggle {
-            width: 54px;
-            height: 54px;
+            /* Idle: a small gold dot. Expands on hover / when the menu is open. */
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             border: 1px solid var(--void-border);
             background: radial-gradient(circle at 50% 32%, rgba(26, 24, 20, 0.96), rgba(6, 6, 6, 0.95));
@@ -1206,14 +1207,37 @@
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(245, 242, 236, 0.05);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            transition: border-color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), transform 0.35s var(--ease-lux);
+            transition: width 0.45s var(--ease-lux), height 0.45s var(--ease-lux), border-color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), transform 0.35s var(--ease-lux);
         }
 
         .theme-switch-toggle:hover,
+        .theme-switch-toggle:focus-visible,
         .theme-switch.open .theme-switch-toggle {
+            width: 54px;
+            height: 54px;
             border-color: rgba(199, 169, 108, 0.6);
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(199, 169, 108, 0.18), inset 0 1px 0 rgba(245, 242, 236, 0.07);
-            transform: translateY(-1px);
+        }
+
+        /* One premium glyph for every mode; the old flag/cart/swatch on the toggle
+           is retired. The glyph only appears once the dot has expanded. */
+        .theme-switch-toggle > [data-toggle-icon] { display: none !important; }
+
+        .theme-switch-glyph {
+            display: inline-flex;
+            color: var(--void-gold-soft);
+            opacity: 0;
+            transform: scale(0.3);
+            transition: opacity 0.3s ease, transform 0.4s var(--ease-lux);
+        }
+
+        .theme-switch-glyph svg { width: 1.5rem; height: 1.5rem; display: block; }
+
+        .theme-switch-toggle:hover .theme-switch-glyph,
+        .theme-switch-toggle:focus-visible .theme-switch-glyph,
+        .theme-switch.open .theme-switch-toggle .theme-switch-glyph {
+            opacity: 1;
+            transform: none;
         }
 
         .theme-switch-toggle .country-flag {
@@ -4962,8 +4986,9 @@
 
         .vc-launcher {
             position: relative;
-            width: 60px;
-            height: 60px;
+            /* Idle: a small gold dot so it barely takes space. Grows on hover. */
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             border: 1px solid rgba(199, 169, 108, 0.4);
             background: radial-gradient(circle at 50% 30%, rgba(28, 26, 22, 0.96), rgba(6, 6, 6, 0.96));
@@ -4974,7 +4999,7 @@
             place-items: center;
             isolation: isolate;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(199, 169, 108, 0.08);
-            transition: transform 0.5s var(--ease-lux), border-color 0.5s var(--ease-lux), box-shadow 0.5s var(--ease-lux), opacity 0.4s ease;
+            transition: width 0.45s var(--ease-lux), height 0.45s var(--ease-lux), transform 0.5s var(--ease-lux), border-color 0.5s var(--ease-lux), box-shadow 0.5s var(--ease-lux), opacity 0.4s ease;
             animation: vcBreathe 4.2s ease-in-out infinite;
         }
 
@@ -4985,6 +5010,9 @@
             font-size: 1.7rem;
             line-height: 1;
             color: var(--void-gold-soft);
+            opacity: 0;
+            transform: scale(0.3);
+            transition: opacity 0.3s ease, transform 0.4s var(--ease-lux);
         }
 
         .vc-launcher-sweep {
@@ -4998,10 +5026,18 @@
 
         .vc-launcher:hover,
         .vc-launcher:focus-visible {
+            width: 60px;
+            height: 60px;
             transform: translateY(-3px);
             border-color: rgba(199, 169, 108, 0.85);
             box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55), 0 0 26px rgba(199, 169, 108, 0.22);
             outline: none;
+        }
+
+        .vc-launcher:hover .vc-launcher-mark,
+        .vc-launcher:focus-visible .vc-launcher-mark {
+            opacity: 1;
+            transform: none;
         }
 
         .vc-launcher:hover .vc-launcher-sweep {
@@ -7181,6 +7217,26 @@
             display: block;
         }
 
+        /* Signed-in avatar: the member's initial replaces the person glyph. */
+        .void-dock-initial {
+            display: none;
+            width: 100%;
+            height: 100%;
+            place-items: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            line-height: 1;
+            color: var(--void-gold-bright);
+            pointer-events: none;
+        }
+
+        .void-dock-item.is-signed-in .void-dock-icon { display: none; }
+        .void-dock-item.is-signed-in .void-dock-initial { display: grid; }
+        .void-dock-item.is-signed-in {
+            border-color: rgba(199, 169, 108, 0.7);
+            box-shadow: 0 0 16px rgba(199, 169, 108, 0.16);
+        }
+
         .void-dock-label {
             position: absolute;
             bottom: calc(100% + 0.5rem);
@@ -8106,6 +8162,7 @@
                 <span class="void-dock-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8.2" r="3.4" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 19c0-3.3 2.9-5.6 6.5-5.6s6.5 2.3 6.5 5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                 </span>
+                <span class="void-dock-initial" aria-hidden="true"></span>
             </button>
             <button type="button" class="void-dock-item" data-dock="settings" aria-label="Settings">
                 <span class="void-dock-label">Settings</span>
@@ -8155,7 +8212,7 @@
                     </div>
                 </div>
                 <button type="submit" class="void-auth-submit">Save details</button>
-                <p class="void-pf-note" id="voidProfileSignin" hidden>Sign in to keep these details saved to your account across devices.</p>
+                <p class="void-pf-note" id="voidProfileSignin" hidden>Sign in to save these details to your account across devices. <button type="button" class="void-auth-link" id="voidProfileSigninBtn">Sign in</button></p>
             </form>
         </div>
     </div>
@@ -8270,6 +8327,9 @@
             </button>
         </div>
         <button type="button" class="theme-switch-toggle" id="themeSwitchToggle" aria-haspopup="true" aria-expanded="false" aria-label="Switch country theme" data-i18n-aria-label="switchCountryTheme">
+            <span class="theme-switch-glyph" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.4"/><path d="M3.6 12h16.8M12 3.6c2.4 2.3 2.4 14.5 0 16.8M12 3.6c-2.4 2.3-2.4 14.5 0 16.8" stroke="currentColor" stroke-width="1.15"/></svg>
+            </span>
             <span class="theme-switch-flag country-flag" id="themeSwitchToggleFlag" data-toggle-icon="full" aria-hidden="true"></span>
             <span class="theme-switch-ico" data-toggle-icon="cart" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
@@ -11481,7 +11541,8 @@
             });
 
             function markGreeted() { try { sessionStorage.setItem(GREETED_KEY, '1'); } catch (e) {} }
-            function onSignedIn(name) { greetedThisLoad = true; markGreeted(); closeModal(); successToast(name); }
+            function refreshAvatar() { if (typeof window.voidUpdateDockAvatar === 'function') window.voidUpdateDockAvatar(); }
+            function onSignedIn(name) { greetedThisLoad = true; markGreeted(); closeModal(); successToast(name); refreshAvatar(); }
 
             // Email + password submit
             form.addEventListener('submit', async (e) => {
@@ -11530,12 +11591,14 @@
                 greetedThisLoad = true;
                 closeModal();
                 successToast(email);
+                refreshAvatar();
             });
 
             // Sign out (used by Settings → Sign out)
             async function signOut() {
                 try { localStorage.removeItem(PERSIST_KEY); sessionStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(GREETED_KEY); } catch (e) {}
                 if (configured) { try { const c = await ensureSupabase(); await c.auth.signOut(); } catch (e) {} }
+                refreshAvatar();
             }
             window.voidSignOut = signOut;
             window.voidAuthOpen = openModal;
@@ -11551,6 +11614,7 @@
                 const id = await getIdentity();
                 if (id) {
                     if (!sessionStorage.getItem(GREETED_KEY)) { markGreeted(); successToast(id.name || id.email); }
+                    refreshAvatar();
                     return;
                 }
                 openModal();
@@ -11567,6 +11631,7 @@
                             greetedThisLoad = true; markGreeted(); closeModal();
                             try { if (location.hash.indexOf('access_token') !== -1) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
                             successToast(nameFromUser(session.user));
+                            refreshAvatar();
                         }
                     });
                 }).catch(() => {});
@@ -11740,9 +11805,30 @@
             const FIELDS = ['pfName', 'pfAddr1', 'pfAddr2', 'pfCity', 'pfPostcode', 'pfCountry', 'pfPhone'];
             const whoEl = document.getElementById('voidProfileWho');
             const signinNote = document.getElementById('voidProfileSignin');
+            const signinBtn = document.getElementById('voidProfileSigninBtn');
             const PKEY = 'void-profile';
 
             function loadStored() { try { return JSON.parse(localStorage.getItem(PKEY) || '{}') || {}; } catch (e) { return {}; } }
+
+            // Show the member's initial on the Profile dock icon when signed in.
+            async function updateDockAvatar() {
+                const btn = document.querySelector('[data-dock="profile"]');
+                if (!btn) return;
+                let id = null;
+                try { id = (typeof window.voidGetIdentity === 'function') ? await window.voidGetIdentity() : null; } catch (e) {}
+                const initEl = btn.querySelector('.void-dock-initial');
+                if (id) {
+                    const src = (id.name && id.name !== id.email) ? id.name : (id.email || '');
+                    const letter = ((src.trim()[0]) || 'V').toUpperCase();
+                    if (initEl) initEl.textContent = letter;
+                    btn.classList.add('is-signed-in');
+                    btn.setAttribute('aria-label', 'Profile — ' + (id.email || id.name || 'signed in'));
+                } else {
+                    btn.classList.remove('is-signed-in');
+                    btn.setAttribute('aria-label', 'Profile');
+                }
+            }
+            window.voidUpdateDockAvatar = updateDockAvatar;
 
             async function prefill() {
                 const data = loadStored();
@@ -11757,8 +11843,18 @@
                     const nameEl = document.getElementById('pfName');
                     if (nameEl && !nameEl.value) nameEl.value = id.name;
                 }
+                updateDockAvatar();
             }
             window.voidProfilePrefill = prefill;
+
+            if (signinBtn) signinBtn.addEventListener('click', () => {
+                const modal = document.getElementById('voidProfile');
+                if (modal) { modal.classList.remove('active'); modal.setAttribute('aria-hidden', 'true'); }
+                if (typeof window.voidAuthOpen === 'function') window.voidAuthOpen();
+            });
+
+            // Reflect the current signed-in state on load (after Supabase settles).
+            window.setTimeout(updateDockAvatar, 900);
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
