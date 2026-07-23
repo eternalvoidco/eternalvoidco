@@ -12041,7 +12041,9 @@
 
             // Sign out (used by Settings → Sign out)
             async function signOut() {
-                try { localStorage.removeItem(PERSIST_KEY); sessionStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(GREETED_KEY); } catch (e) {}
+                // Clear the session, greeting, and the saved shipping details so
+                // nothing lingers for the next visitor on this device.
+                try { localStorage.removeItem(PERSIST_KEY); localStorage.removeItem('void-profile'); sessionStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(GREETED_KEY); } catch (e) {}
                 try { const c = await ensureSupabase(); if (c) await c.auth.signOut(); } catch (e) {}
                 refreshAvatar();
             }
@@ -12340,10 +12342,12 @@
             window.voidUpdateDockAvatar = updateDockAvatar;
 
             async function prefill() {
-                const data = loadStored();
-                FIELDS.forEach((id) => { const el = document.getElementById(id); if (el && data[id] != null) el.value = data[id]; });
                 let id = null;
                 try { id = (typeof window.voidGetIdentity === 'function') ? await window.voidGetIdentity() : null; } catch (e) {}
+                // Only show saved details while signed in. When signed out, every
+                // field is emptied so no previous member's details linger.
+                const data = id ? loadStored() : {};
+                FIELDS.forEach((fid) => { const el = document.getElementById(fid); if (el) el.value = (data[fid] != null ? data[fid] : ''); });
                 // When signed in, the member card carries the identity; the plain
                 // "who" line is only shown to signed-out visitors.
                 if (whoEl) {
