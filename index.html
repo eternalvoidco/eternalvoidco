@@ -8608,6 +8608,14 @@
                     <button type="button" class="void-set-btn void-set-pw-save" id="voidSetPwSave">Update password</button>
                     <p class="void-set-note" id="voidSetPwMsg" aria-live="polite" hidden></p>
                 </div>
+                <div class="void-set-row void-set-block">
+                    <span class="void-set-label">Phone number<span class="void-set-hint">For order updates &amp; delivery</span></span>
+                    <div class="void-set-pw">
+                        <input type="tel" id="voidSetPhone" class="void-set-pw-input" placeholder="+36 20 123 4567" autocomplete="tel" inputmode="tel">
+                        <button type="button" class="void-set-btn void-set-pw-save" id="voidSetPhoneSave">Save number</button>
+                        <p class="void-set-note" id="voidSetPhoneMsg" aria-live="polite" hidden></p>
+                    </div>
+                </div>
                 <div class="void-set-row">
                     <span class="void-set-label">ENTER THE VOID intro gate<span class="void-set-hint">Play the cinematic entry on load</span></span>
                     <button type="button" class="void-set-switch" id="voidSetGate" role="switch" aria-checked="true" aria-label="Toggle the ENTER THE VOID intro gate"><span class="void-set-knob" aria-hidden="true"></span></button>
@@ -12043,7 +12051,7 @@
             async function signOut() {
                 // Clear the session, greeting, and the saved shipping details so
                 // nothing lingers for the next visitor on this device.
-                try { localStorage.removeItem(PERSIST_KEY); localStorage.removeItem('void-profile'); sessionStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(GREETED_KEY); } catch (e) {}
+                try { localStorage.removeItem(PERSIST_KEY); localStorage.removeItem('void-profile'); localStorage.removeItem('void-phone'); sessionStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(GREETED_KEY); } catch (e) {}
                 try { const c = await ensureSupabase(); if (c) await c.auth.signOut(); } catch (e) {}
                 refreshAvatar();
             }
@@ -12052,6 +12060,10 @@
             // Save shipping details onto the signed-in account (when connected).
             window.voidUpdateProfileMeta = async function (data) {
                 try { const c = await ensureSupabase(); if (c) await c.auth.updateUser({ data: { shipping: data } }); } catch (e) {}
+            };
+            // Save a contact phone number onto the account metadata (no SMS/verify).
+            window.voidUpdatePhone = async function (phone) {
+                try { const c = await ensureSupabase(); if (c) await c.auth.updateUser({ data: { phone: phone } }); } catch (e) {}
             };
 
             // Set / change the account password (works for social accounts too —
@@ -12190,6 +12202,25 @@
             const pwMsg = document.getElementById('voidSetPwMsg');
             const signoutRow = document.getElementById('voidSetSignoutRow');
             const signedInAs = document.getElementById('voidSetSignedInAs');
+            const phoneInput = document.getElementById('voidSetPhone');
+            const phoneSave = document.getElementById('voidSetPhoneSave');
+            const phoneMsg = document.getElementById('voidSetPhoneMsg');
+
+            function setPhoneMsg(text, ok) {
+                if (!phoneMsg) return;
+                phoneMsg.textContent = text || '';
+                phoneMsg.hidden = !text;
+                phoneMsg.classList.toggle('ok', !!ok);
+            }
+            if (phoneSave) phoneSave.addEventListener('click', async () => {
+                const val = (phoneInput && phoneInput.value || '').trim();
+                if (val && !/^[+()\-\s0-9]{6,20}$/.test(val)) { setPhoneMsg('Please enter a valid phone number.', false); return; }
+                phoneSave.disabled = true; phoneSave.textContent = 'Saving…';
+                try { localStorage.setItem('void-phone', val); } catch (e) {}
+                try { if (typeof window.voidUpdatePhone === 'function') await window.voidUpdatePhone(val); } catch (e) {}
+                setPhoneMsg(val ? 'Phone number saved.' : 'Phone number cleared.', true);
+                phoneSave.disabled = false; phoneSave.textContent = 'Save number';
+            });
 
             function setPwMsg(text, ok) {
                 if (!pwMsg) return;
@@ -12233,6 +12264,9 @@
                 });
                 if (pwForm) pwForm.hidden = true;
                 setPwMsg('', false);
+                // Load the saved phone number for this device.
+                if (phoneInput) { let ph = ''; try { ph = localStorage.getItem('void-phone') || ''; } catch (e) {} phoneInput.value = ph; }
+                setPhoneMsg('', false);
             }
 
             // Dock buttons
