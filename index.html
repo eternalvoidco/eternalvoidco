@@ -6826,6 +6826,41 @@
             color: var(--void-white);
         }
 
+        /* Reusable email domain autocomplete (newsletter / pre-order) — matches
+           the login menu's suggestion list; fixed-positioned to escape overflow. */
+        .void-email-suggest {
+            position: fixed;
+            z-index: 3000;
+            margin: 0;
+            padding: 0.3rem;
+            list-style: none;
+            max-height: 220px;
+            overflow-y: auto;
+            background: rgba(12, 11, 9, 0.98);
+            border: 1px solid rgba(199, 169, 108, 0.34);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(199, 169, 108, 0.6) transparent;
+        }
+
+        .void-email-suggest[hidden] { display: none; }
+
+        .void-email-suggest li {
+            padding: 0.5rem 0.65rem;
+            font-size: 0.84rem;
+            color: rgba(245, 242, 236, 0.85);
+            cursor: pointer;
+            transition: background 0.16s ease, color 0.16s ease;
+        }
+
+        .void-email-suggest li:hover,
+        .void-email-suggest li.active {
+            background: rgba(199, 169, 108, 0.14);
+            color: var(--void-white);
+        }
+
+        .void-email-suggest-dom { color: var(--void-gold-soft); }
+
         .void-auth-remember {
             display: flex;
             align-items: center;
@@ -12480,6 +12515,87 @@
                     if (items[active]) items[active].scrollIntoView({ block: 'nearest' });
                 });
             })();
+        })();
+    </script>
+
+    <script>
+        // ── Reusable email-domain autocomplete (same behaviour as the login menu) ──
+        // Attaches Gmail-style domain suggestions to any email input.
+        (function initEmailAutocomplete() {
+            const DOMAINS = ['gmail.com', 'outlook.com', 'yahoo.com', 'icloud.com', 'hotmail.com', 'proton.me'];
+            const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+            function attach(input) {
+                if (!input || input.dataset.emailAc) return;
+                input.dataset.emailAc = '1';
+                input.setAttribute('autocomplete', 'email');
+                input.setAttribute('aria-autocomplete', 'list');
+
+                const list = document.createElement('ul');
+                list.className = 'void-email-suggest';
+                list.setAttribute('role', 'listbox');
+                list.hidden = true;
+                document.body.appendChild(list);
+                let active = -1;
+
+                function position() {
+                    const r = input.getBoundingClientRect();
+                    list.style.left = r.left + 'px';
+                    list.style.width = r.width + 'px';
+                    const h = list.offsetHeight;
+                    const below = window.innerHeight - r.bottom - 6;
+                    list.style.top = (below < h && r.top > below ? Math.max(8, r.top - 6 - h) : r.bottom + 6) + 'px';
+                }
+                function build() {
+                    const v = input.value.trim();
+                    if (!v || /\s/.test(v)) return [];
+                    const at = v.indexOf('@');
+                    const local = at === -1 ? v : v.slice(0, at);
+                    let partial = at === -1 ? '' : v.slice(at + 1).toLowerCase();
+                    if (!local) return [];
+                    let doms = DOMAINS.filter((d) => d.startsWith(partial));
+                    if (at !== -1 && partial === '') doms = DOMAINS.slice();
+                    if (partial && doms.length === 1 && doms[0] === partial) return [];
+                    return doms.slice(0, 6).map((d) => ({ local: local, domain: d, full: local + '@' + d }));
+                }
+                function render() {
+                    const items = build();
+                    active = -1;
+                    if (!items.length) { hide(); return; }
+                    list.innerHTML = items.map((it) =>
+                        '<li role="option" data-full="' + esc(it.full) + '">' + esc(it.local)
+                        + '<span class="void-email-suggest-dom">@' + esc(it.domain) + '</span></li>'
+                    ).join('');
+                    list.hidden = false;
+                    position();
+                }
+                function hide() { list.hidden = true; list.innerHTML = ''; active = -1; }
+                function pick(full) { input.value = full; hide(); input.focus(); try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
+
+                input.addEventListener('input', render);
+                input.addEventListener('focus', render);
+                input.addEventListener('blur', () => window.setTimeout(hide, 140));
+                list.addEventListener('mousedown', (e) => {
+                    const li = e.target.closest('li'); if (!li) return;
+                    e.preventDefault(); pick(li.getAttribute('data-full'));
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (list.hidden) return;
+                    const items = list.querySelectorAll('li');
+                    if (!items.length) return;
+                    if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % items.length; }
+                    else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + items.length) % items.length; }
+                    else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); pick(items[active].getAttribute('data-full')); return; }
+                    else if (e.key === 'Escape') { hide(); return; }
+                    else return;
+                    items.forEach((li, i) => li.classList.toggle('active', i === active));
+                });
+                window.addEventListener('resize', () => { if (!list.hidden) position(); });
+                window.addEventListener('scroll', () => { if (!list.hidden) position(); }, true);
+            }
+
+            ['newsletterEmail', 'preorderEmail'].forEach((id) => attach(document.getElementById(id)));
+            window.voidAttachEmailAutocomplete = attach;
         })();
     </script>
 
