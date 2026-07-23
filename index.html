@@ -3283,6 +3283,83 @@
             background: radial-gradient(90% 42% at 50% 0%, rgba(199, 169, 108, 0.05), transparent 62%);
         }
 
+        /* ── Full-section ambient background (CSS-only, behind the grid at z0) ──
+           Almost-black with faint dark-gold depth: slow smoky drift, sparse dark
+           particles and an occasional soft gold shimmer. Sits behind the near-
+           opaque product cards, so readability is never affected. */
+        .products-atmos {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .products-atmos > span { position: absolute; display: block; }
+
+        /* Smoky / liquid dark-gold depth */
+        .pa-smoke {
+            inset: -20%;
+            filter: blur(60px);
+            background:
+                radial-gradient(30% 40% at 20% 30%, rgba(107, 81, 29, 0.12), transparent 60%),
+                radial-gradient(34% 44% at 78% 68%, rgba(26, 20, 8, 0.55), transparent 62%),
+                radial-gradient(26% 32% at 60% 18%, rgba(184, 148, 58, 0.06), transparent 60%),
+                radial-gradient(30% 38% at 40% 84%, rgba(107, 81, 29, 0.09), transparent 62%);
+            animation: paSmoke 48s ease-in-out infinite alternate;
+        }
+
+        @keyframes paSmoke {
+            0% { transform: translate3d(-2%, -1%, 0) scale(1.05); }
+            100% { transform: translate3d(2%, 2%, 0) scale(1.12); }
+        }
+
+        /* Faint dark-gold particles (no bright dots) */
+        .pa-particles {
+            inset: 0;
+            opacity: 0.55;
+            background-image:
+                radial-gradient(1.5px 1.5px at 12% 24%, rgba(184, 148, 58, 0.2), transparent),
+                radial-gradient(1.5px 1.5px at 32% 66%, rgba(107, 81, 29, 0.26), transparent),
+                radial-gradient(1.5px 1.5px at 54% 38%, rgba(184, 148, 58, 0.16), transparent),
+                radial-gradient(1.5px 1.5px at 72% 78%, rgba(107, 81, 29, 0.22), transparent),
+                radial-gradient(1.5px 1.5px at 86% 30%, rgba(184, 148, 58, 0.14), transparent),
+                radial-gradient(1.5px 1.5px at 22% 88%, rgba(107, 81, 29, 0.18), transparent),
+                radial-gradient(1.5px 1.5px at 64% 12%, rgba(184, 148, 58, 0.14), transparent);
+            animation: paDrift 64s linear infinite;
+        }
+
+        @keyframes paDrift {
+            0% { transform: translateY(12px); opacity: 0.3; }
+            50% { opacity: 0.55; }
+            100% { transform: translateY(-64px); opacity: 0.3; }
+        }
+
+        /* Occasional soft gold shimmer sweep */
+        .pa-shimmer {
+            inset: -40% -10%;
+            background: linear-gradient(115deg, transparent 42%, rgba(184, 148, 58, 0.05) 50%, transparent 58%);
+            transform: translateX(-60%);
+            animation: paShimmer 28s ease-in-out infinite;
+        }
+
+        @keyframes paShimmer {
+            0%, 68% { transform: translateX(-60%); opacity: 0; }
+            80% { opacity: 1; }
+            100% { transform: translateX(60%); opacity: 0; }
+        }
+
+        html.reduce-motion .pa-smoke,
+        html.reduce-motion .pa-particles,
+        html.reduce-motion .pa-shimmer { animation: none; }
+
+        /* Lighter + calmer on phones (performance) */
+        @media (max-width: 600px) {
+            .pa-smoke { animation: none; filter: blur(42px); }
+            .pa-particles { animation: none; }
+            .pa-shimmer { display: none; }
+        }
+
         .products-inner {
             position: relative;
             z-index: 1;
@@ -8064,6 +8141,11 @@
 
     <!-- Products Section - BLACK -->
     <section class="products" id="shop">
+        <div class="products-atmos" aria-hidden="true">
+            <span class="pa-smoke"></span>
+            <span class="pa-particles"></span>
+            <span class="pa-shimmer"></span>
+        </div>
         <div class="products-inner">
             <div class="products-header fade-in-up" style="--delay: 40ms;">
                 <p class="section-eyebrow" data-i18n="collectionEyebrow">Season One</p>
