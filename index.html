@@ -5101,6 +5101,12 @@
             z-index: 1250;
         }
 
+        /* When the cart is open, drop the Concierge launcher/panel behind it so
+           it never overlaps the cart (cart is z-index 1200). */
+        body:has(.cart-popup.open) .void-concierge {
+            z-index: 1150;
+        }
+
         .vc-launcher {
             position: relative;
             /* Idle: a small gold dot so it barely takes space. Grows on hover. */
