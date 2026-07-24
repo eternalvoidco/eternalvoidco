@@ -3283,80 +3283,120 @@
             background: radial-gradient(90% 42% at 50% 0%, rgba(199, 169, 108, 0.05), transparent 62%);
         }
 
-        /* ── Full-section ambient background (CSS-only, behind the grid at z0) ──
-           Almost-black with faint dark-gold depth: slow smoky drift, sparse dark
-           particles and an occasional soft gold shimmer. Sits behind the near-
-           opaque product cards, so readability is never affected. */
+        /* ── Full-section cinematic atmosphere (CSS-only, behind the grid at z0) ──
+           Layered luxury depth: charcoal/blue-black base, slow moving fog, a soft
+           breathing glow, faint gold dust, fine grain and an occasional light
+           sweep. The whole layer is masked to fade at the top and bottom so the
+           section melts into the black above and the footer below — no hard cut.
+           Sits behind the near-opaque product cards, so text stays readable. */
         .products-atmos {
             position: absolute;
             inset: 0;
             z-index: 0;
             pointer-events: none;
             overflow: hidden;
+            -webkit-mask: linear-gradient(to bottom, transparent 0%, #000 9%, #000 80%, transparent 100%);
+            mask: linear-gradient(to bottom, transparent 0%, #000 9%, #000 80%, transparent 100%);
         }
 
-        .products-atmos > span { position: absolute; display: block; }
+        .products-atmos > span { position: absolute; display: block; inset: 0; }
 
-        /* Smoky / liquid dark-gold depth */
-        .pa-smoke {
-            inset: -20%;
-            filter: blur(60px);
+        /* Deep layered base — charcoal + blue-black undertone + faint gold (not flat black) */
+        .pa-base {
             background:
-                radial-gradient(30% 40% at 20% 30%, rgba(107, 81, 29, 0.12), transparent 60%),
-                radial-gradient(34% 44% at 78% 68%, rgba(26, 20, 8, 0.55), transparent 62%),
-                radial-gradient(26% 32% at 60% 18%, rgba(184, 148, 58, 0.06), transparent 60%),
-                radial-gradient(30% 38% at 40% 84%, rgba(107, 81, 29, 0.09), transparent 62%);
-            animation: paSmoke 48s ease-in-out infinite alternate;
+                radial-gradient(120% 82% at 50% 6%, rgba(184, 148, 58, 0.05), transparent 55%),
+                radial-gradient(92% 72% at 16% 40%, rgba(15, 17, 26, 0.6), transparent 60%),
+                radial-gradient(92% 72% at 84% 62%, rgba(22, 17, 9, 0.66), transparent 62%),
+                linear-gradient(180deg, #050506 0%, #0a0906 48%, #060505 100%);
         }
 
-        @keyframes paSmoke {
-            0% { transform: translate3d(-2%, -1%, 0) scale(1.05); }
-            100% { transform: translate3d(2%, 2%, 0) scale(1.12); }
+        /* Soft moving light / fog */
+        .pa-fog {
+            inset: -25%;
+            filter: blur(70px);
+            opacity: 0.85;
+            background:
+                radial-gradient(30% 42% at 26% 34%, rgba(107, 81, 29, 0.16), transparent 60%),
+                radial-gradient(34% 46% at 76% 66%, rgba(28, 24, 38, 0.5), transparent 62%),
+                radial-gradient(24% 30% at 58% 22%, rgba(184, 148, 58, 0.07), transparent 60%);
+            animation: paFog 54s ease-in-out infinite alternate;
         }
 
-        /* Faint dark-gold particles (no bright dots) */
+        @keyframes paFog {
+            0% { transform: translate3d(-2%, -1.5%, 0) scale(1.06); }
+            100% { transform: translate3d(2.5%, 2%, 0) scale(1.14); }
+        }
+
+        /* Slow breathing glow */
+        .pa-glow {
+            background: radial-gradient(46% 40% at 50% 56%, rgba(184, 148, 58, 0.09), transparent 66%);
+            animation: paBreathe 11s ease-in-out infinite;
+        }
+
+        @keyframes paBreathe {
+            0%, 100% { opacity: 0.3; transform: scale(0.99); }
+            50% { opacity: 0.6; transform: scale(1.03); }
+        }
+
+        /* Faint drifting gold dust (no bright dots) */
         .pa-particles {
-            inset: 0;
-            opacity: 0.55;
+            opacity: 0.5;
             background-image:
                 radial-gradient(1.5px 1.5px at 12% 24%, rgba(184, 148, 58, 0.2), transparent),
-                radial-gradient(1.5px 1.5px at 32% 66%, rgba(107, 81, 29, 0.26), transparent),
-                radial-gradient(1.5px 1.5px at 54% 38%, rgba(184, 148, 58, 0.16), transparent),
-                radial-gradient(1.5px 1.5px at 72% 78%, rgba(107, 81, 29, 0.22), transparent),
-                radial-gradient(1.5px 1.5px at 86% 30%, rgba(184, 148, 58, 0.14), transparent),
-                radial-gradient(1.5px 1.5px at 22% 88%, rgba(107, 81, 29, 0.18), transparent),
-                radial-gradient(1.5px 1.5px at 64% 12%, rgba(184, 148, 58, 0.14), transparent);
-            animation: paDrift 64s linear infinite;
+                radial-gradient(1.5px 1.5px at 32% 66%, rgba(107, 81, 29, 0.24), transparent),
+                radial-gradient(1.5px 1.5px at 54% 38%, rgba(184, 148, 58, 0.15), transparent),
+                radial-gradient(1.5px 1.5px at 72% 78%, rgba(107, 81, 29, 0.2), transparent),
+                radial-gradient(1.5px 1.5px at 86% 30%, rgba(184, 148, 58, 0.13), transparent),
+                radial-gradient(1.5px 1.5px at 22% 88%, rgba(107, 81, 29, 0.16), transparent),
+                radial-gradient(1.5px 1.5px at 64% 12%, rgba(184, 148, 58, 0.13), transparent),
+                radial-gradient(1px 1px at 44% 54%, rgba(184, 148, 58, 0.12), transparent);
+            animation: paDrift 70s linear infinite;
         }
 
         @keyframes paDrift {
-            0% { transform: translateY(12px); opacity: 0.3; }
-            50% { opacity: 0.55; }
-            100% { transform: translateY(-64px); opacity: 0.3; }
+            0% { transform: translateY(14px); opacity: 0.28; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-70px); opacity: 0.28; }
         }
 
-        /* Occasional soft gold shimmer sweep */
+        /* Fine grain texture */
+        .pa-grain {
+            opacity: 0.5;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 0.5px, transparent 0.6px);
+            background-size: 3px 3px;
+            mix-blend-mode: overlay;
+        }
+
+        /* Occasional soft light sweep */
         .pa-shimmer {
-            inset: -40% -10%;
-            background: linear-gradient(115deg, transparent 42%, rgba(184, 148, 58, 0.05) 50%, transparent 58%);
-            transform: translateX(-60%);
-            animation: paShimmer 28s ease-in-out infinite;
+            inset: -40% -12%;
+            background: linear-gradient(115deg, transparent 43%, rgba(184, 148, 58, 0.05) 50%, transparent 57%);
+            transform: translateX(-62%);
+            animation: paSweep 30s ease-in-out infinite;
         }
 
-        @keyframes paShimmer {
-            0%, 68% { transform: translateX(-60%); opacity: 0; }
-            80% { opacity: 1; }
-            100% { transform: translateX(60%); opacity: 0; }
+        @keyframes paSweep {
+            0%, 70% { transform: translateX(-62%); opacity: 0; }
+            82% { opacity: 1; }
+            100% { transform: translateX(62%); opacity: 0; }
         }
 
-        html.reduce-motion .pa-smoke,
+        /* Cinematic vignette for depth */
+        .pa-vignette {
+            background: radial-gradient(120% 92% at 50% 42%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
+        }
+
+        html.reduce-motion .pa-fog,
+        html.reduce-motion .pa-glow,
         html.reduce-motion .pa-particles,
         html.reduce-motion .pa-shimmer { animation: none; }
 
         /* Lighter + calmer on phones (performance) */
         @media (max-width: 600px) {
-            .pa-smoke { animation: none; filter: blur(42px); }
+            .pa-fog { animation: none; filter: blur(48px); }
+            .pa-glow { animation: none; }
             .pa-particles { animation: none; }
+            .pa-grain { opacity: 0.35; }
             .pa-shimmer { display: none; }
         }
 
@@ -6040,7 +6080,10 @@
             max-width: 1600px;
             margin: 8rem auto 0;
             padding: 4rem 0;
-            border-top: 1px solid var(--void-border);
+            /* Soft gradient divider that fades at the ends — a premium, less
+               abrupt separation than a hard full-width line. */
+            border-top: 1px solid transparent;
+            border-image: linear-gradient(90deg, transparent 0%, rgba(199, 169, 108, 0.3) 28%, rgba(199, 169, 108, 0.3) 72%, transparent 100%) 1;
         }
 
         .footer-content {
@@ -8047,9 +8090,13 @@
     <!-- Products Section - BLACK -->
     <section class="products" id="shop">
         <div class="products-atmos" aria-hidden="true">
-            <span class="pa-smoke"></span>
+            <span class="pa-base"></span>
+            <span class="pa-fog"></span>
+            <span class="pa-glow"></span>
             <span class="pa-particles"></span>
+            <span class="pa-grain"></span>
             <span class="pa-shimmer"></span>
+            <span class="pa-vignette"></span>
         </div>
         <div class="products-inner">
             <div class="products-header fade-in-up" style="--delay: 40ms;">
