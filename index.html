@@ -7260,101 +7260,6 @@
 
         .void-pcard-wrap.pc-tilting .void-pcard-inner { transition: transform 0.09s linear; }
 
-        /* ── Premium atmosphere behind the card content (never over text) ── */
-        .void-pcard-atmos {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-            border-radius: 16px;
-        }
-
-        .void-pcard-atmos > span { position: absolute; display: block; }
-
-        /* Slow dark-gold smoky drift */
-        .void-pcard-smoke {
-            inset: -30%;
-            filter: blur(11px);
-            opacity: 0.7;
-            background:
-                radial-gradient(38% 46% at 28% 24%, rgba(199, 169, 108, 0.14), transparent 60%),
-                radial-gradient(44% 52% at 74% 78%, rgba(120, 95, 45, 0.16), transparent 64%),
-                radial-gradient(30% 36% at 60% 40%, rgba(245, 232, 202, 0.06), transparent 60%);
-            animation: pcardSmoke 26s ease-in-out infinite alternate;
-        }
-
-        @keyframes pcardSmoke {
-            0% { transform: translate3d(-2%, -1%, 0) scale(1.04); }
-            100% { transform: translate3d(3%, 2%, 0) scale(1.1); }
-        }
-
-        /* Soft radial light pulse (centred, breathing) */
-        .void-pcard-pulse {
-            inset: 0;
-            background: radial-gradient(58% 60% at 50% 42%, rgba(199, 169, 108, 0.16), transparent 62%);
-            opacity: 0.4;
-            animation: pcardPulse 7.5s ease-in-out infinite;
-        }
-
-        @keyframes pcardPulse {
-            0%, 100% { opacity: 0.26; transform: scale(0.98); }
-            50% { opacity: 0.52; transform: scale(1.04); }
-        }
-
-        /* Sparse drifting gold dust */
-        .void-pcard-particles {
-            inset: 0;
-            opacity: 0.4;
-            background-image:
-                radial-gradient(1px 1px at 18% 30%, rgba(245, 232, 202, 0.6), transparent),
-                radial-gradient(1px 1px at 68% 62%, rgba(199, 169, 108, 0.5), transparent),
-                radial-gradient(1px 1px at 40% 80%, rgba(245, 232, 202, 0.5), transparent),
-                radial-gradient(1px 1px at 84% 26%, rgba(199, 169, 108, 0.4), transparent),
-                radial-gradient(1px 1px at 54% 15%, rgba(245, 232, 202, 0.4), transparent),
-                radial-gradient(1px 1px at 30% 58%, rgba(199, 169, 108, 0.36), transparent);
-            animation: pcardDrift 24s linear infinite;
-        }
-
-        @keyframes pcardDrift {
-            0% { transform: translateY(6px); opacity: 0.14; }
-            50% { opacity: 0.42; }
-            100% { transform: translateY(-40px); opacity: 0.14; }
-        }
-
-        /* Delicate gold shimmer travelling around the frame (reuses --vc-angle) */
-        .void-pcard-shimmer {
-            position: absolute;
-            inset: 0;
-            z-index: 5;
-            pointer-events: none;
-            border-radius: 16px;
-            padding: 1px;
-            opacity: 0.55;
-            background: conic-gradient(from var(--vc-angle),
-                transparent 0 66%,
-                rgba(199, 169, 108, 0.12) 78%,
-                rgba(245, 232, 202, 0.72) 86%,
-                rgba(199, 169, 108, 0.12) 92%,
-                transparent 100%);
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            mask-composite: exclude;
-            animation: vcFrameTrace 14s linear infinite;
-        }
-
-        /* Pause the card atmosphere while its modal is closed (optimisation). */
-        .void-modal:not(.active) .void-pcard-smoke,
-        .void-modal:not(.active) .void-pcard-pulse,
-        .void-modal:not(.active) .void-pcard-particles,
-        .void-modal:not(.active) .void-pcard-shimmer { animation-play-state: paused; }
-
-        html.reduce-motion .void-pcard-smoke,
-        html.reduce-motion .void-pcard-pulse,
-        html.reduce-motion .void-pcard-particles,
-        html.reduce-motion .void-pcard-shimmer { animation: none; }
-
         .void-pcard-shine {
             position: absolute;
             inset: 0;
@@ -8697,12 +8602,6 @@
                     <div class="void-pcard-glow" aria-hidden="true"></div>
                     <div class="void-pcard-shell" id="voidPcardShell">
                         <div class="void-pcard-inner">
-                            <div class="void-pcard-atmos" aria-hidden="true">
-                                <span class="void-pcard-smoke"></span>
-                                <span class="void-pcard-pulse"></span>
-                                <span class="void-pcard-particles"></span>
-                            </div>
-                            <div class="void-pcard-shimmer" aria-hidden="true"></div>
                             <div class="void-pcard-shine" aria-hidden="true"></div>
                             <div class="void-pcard-emblem" aria-hidden="true"><img src="/assets/ev-emblem.png?v=20260714c" alt="" width="594" height="500"></div>
                             <div class="void-pcard-bar">
