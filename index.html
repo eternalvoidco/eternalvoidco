@@ -3523,7 +3523,7 @@
         .product-card {
             position: relative;
             padding: 0.7rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(199, 169, 108, 0.12);
             background: linear-gradient(180deg, rgba(20, 20, 22, 0.85), rgba(8, 8, 8, 0.96));
             box-shadow: inset 0 1px 0 rgba(245, 242, 236, 0.03), 0 10px 28px rgba(0, 0, 0, 0.32);
             transition: transform 0.6s var(--ease-lux), border-color 0.6s var(--ease-lux), box-shadow 0.6s var(--ease-lux);
@@ -3559,15 +3559,26 @@
             container-type: inline-size;
             width: 100%;
             aspect-ratio: 3/4;
-            background: radial-gradient(circle at 22% 18%, rgba(199, 169, 108, 0.16), rgba(9, 9, 9, 0.94) 52%), linear-gradient(180deg, rgba(24, 24, 24, 0.88), rgba(4, 4, 4, 0.98));
+            /* Atelier plinth: a soft key light from above, a faint gold pool at
+               the base like a lit display, and a deep graphite fall-off — a
+               dimensional studio set rather than a flat placeholder swatch. */
+            background:
+                radial-gradient(120% 78% at 50% -12%, rgba(232, 212, 172, 0.11), transparent 58%),
+                radial-gradient(66% 44% at 50% 96%, rgba(199, 169, 108, 0.12), transparent 72%),
+                radial-gradient(circle at 24% 16%, rgba(199, 169, 108, 0.08), transparent 46%),
+                linear-gradient(178deg, rgba(26, 25, 23, 0.92) 0%, rgba(11, 10, 9, 0.97) 46%, rgba(4, 4, 4, 0.99) 100%);
             margin-bottom: 0.85rem;
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            border: 1px solid rgba(199, 169, 108, 0.2);
-            box-shadow: inset 0 0 58px rgba(0, 0, 0, 0.62), inset 0 0 0 1px rgba(199, 169, 108, 0.08);
+            border: 1px solid rgba(199, 169, 108, 0.24);
+            box-shadow:
+                inset 0 1px 0 rgba(245, 238, 220, 0.06),
+                inset 0 0 0 1px rgba(199, 169, 108, 0.06),
+                inset 0 -40px 66px rgba(0, 0, 0, 0.55),
+                inset 0 0 58px rgba(0, 0, 0, 0.5);
             isolation: isolate;
-            transition: box-shadow 0.6s var(--ease-lux);
+            transition: box-shadow 0.6s var(--ease-lux), border-color 0.6s var(--ease-lux);
         }
 
         .product-card:hover .product-image {
@@ -3608,11 +3619,17 @@
             place-items: center;
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(1.05rem, 17cqi, 1.9rem);
-            letter-spacing: 0.16em;
+            /* Couture-spaced monogram; text-indent compensates the trailing
+               tracking so the mark stays optically centred. */
+            letter-spacing: 0.42em;
+            text-indent: 0.42em;
             text-transform: uppercase;
-            color: rgba(245, 242, 236, 0.86);
+            /* Foil-stamped: soft gold with an emboss shadow, reading as a mark
+               pressed into the surface rather than flat placeholder text. */
+            color: rgba(219, 198, 158, 0.72);
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55), 0 0 24px rgba(199, 169, 108, 0.14);
             transform: scale(1);
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.5s ease;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.5s ease, text-shadow 0.5s ease;
             z-index: 1;
             pointer-events: none;
         }
@@ -3645,6 +3662,7 @@
         .product-card:hover .product-logo-mark {
             transform: scale(1.03);
             color: #f7e8ca;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5), 0 0 30px rgba(199, 169, 108, 0.28);
         }
 
         .product-card:hover .product-coming-soon {
@@ -6098,13 +6116,31 @@
 
         /* Footer */
         .footer {
+            position: relative;
             max-width: 1600px;
             margin: 8rem auto 0;
             padding: 4rem 0;
-            /* Soft gradient divider that fades at the ends — a premium, less
-               abrupt separation than a hard full-width line. */
+            /* Whisper-faint hairline — the atmospheric seam below carries the
+               real separation, so this only needs to hint at the edge. */
             border-top: 1px solid transparent;
-            border-image: linear-gradient(90deg, transparent 0%, rgba(199, 169, 108, 0.3) 28%, rgba(199, 169, 108, 0.3) 72%, transparent 100%) 1;
+            border-image: linear-gradient(90deg, transparent 0%, rgba(199, 169, 108, 0.16) 30%, rgba(199, 169, 108, 0.16) 70%, transparent 100%) 1;
+        }
+
+        /* Atmospheric seam: a soft gold haze straddling the grid→footer join so
+           the collection dissolves into the footer with depth instead of a hard
+           cut. Bleeds up into the section's black tail and down past the line. */
+        .footer::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translate(-50%, -50%);
+            width: min(94%, 1500px);
+            height: 340px;
+            pointer-events: none;
+            background:
+                radial-gradient(62% 100% at 50% 50%, rgba(199, 169, 108, 0.07), transparent 72%),
+                radial-gradient(30% 60% at 50% 50%, rgba(120, 96, 44, 0.06), transparent 70%);
         }
 
         .footer-content {
