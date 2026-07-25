@@ -3153,43 +3153,11 @@
             transform: none;
         }
 
-        /* Calm mode: no crawl. The story becomes a still, readable column the
-           visitor can scroll at their own pace. */
-        html.reduce-motion .story-overlay-stage {
-            perspective: none;
-            display: grid;
-            place-items: center;
-            padding: clamp(3.5rem, 9svh, 5rem) 1.5rem clamp(5.5rem, 13svh, 7rem);
-            -webkit-mask: none;
-            mask: none;
-        }
-
-        html.reduce-motion .story-crawl {
-            position: static;
-            transform: none;
-            width: min(720px, 90vw);
-            max-height: 100%;
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            opacity: 1;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(199, 169, 108, 0.45) transparent;
-        }
-
+        /* Calm mode keeps the crawl — it is the whole point of the sequence —
+           but takes it at an easier pace and holds the field still. There is no
+           static-column fallback: a centred text card is not this page. */
         html.reduce-motion .story-crawl.is-animating {
-            animation: none !important;
-        }
-
-        html.reduce-motion .story-crawl-title {
-            font-size: clamp(2.2rem, 6vw, 3.4rem);
-            margin-bottom: 1.4rem;
-        }
-
-        html.reduce-motion .story-crawl-title::after { margin-top: 1.4rem; }
-
-        html.reduce-motion .story-crawl p {
-            font-size: clamp(1.05rem, 2vw, 1.28rem);
-            line-height: 1.75;
+            animation-duration: 78s;
         }
 
         /* Honour the OS signal too. Note this stops MOTION only — the galaxy
@@ -3206,15 +3174,12 @@
                 transform: none !important;
             }
 
-            /* Slow the crawl rather than removing it. The OS flag is reported as
-               on by a great many Windows machines whose owners never asked for
-               it, and killing the crawl there would hide the centrepiece of the
-               page. Visitors who genuinely want it still can opt out with
-               ?calm, which sets html.reduce-motion and drops the crawl to a
-               still, scrollable column (see the rules above). */
-            .story-crawl.is-animating {
-                animation-duration: 96s !important;
-            }
+            /* The crawl itself is deliberately NOT slowed or disabled here. A
+               great many Windows machines report this flag on without the owner
+               ever asking, and throttling the crawl made it read as a frozen
+               block of text — the exact bug this replaced. The explicit ?calm
+               switch (html.reduce-motion) is the real opt-out, and the Return
+               to VOID button is always available to leave the sequence. */
         }
 
         /* The crawl stage: a deep camera looking up at a tilted plane. The
@@ -3225,11 +3190,19 @@
             inset: 0;
             z-index: 3;
             overflow: hidden;
-            perspective: clamp(420px, 62vw, 820px);
+            /* A fixed camera distance, not a viewport-relative one. The copy
+               wraps much taller on narrow screens, so a vw-based perspective
+               pulled the camera in exactly where the block was longest and drove
+               its near edge through the camera plane (the type blew up to
+               thousands of pixels). 900px is measured to hold at 390, 768,
+               1440 and 1920. */
+            perspective: 900px;
             perspective-origin: 50% 0%;
             pointer-events: none;
-            -webkit-mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.22) 11%, #000 33%, #000 100%);
-            mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.22) 11%, #000 33%, #000 100%);
+            /* The copy thins out as it nears the horizon and is gone before the
+               top edge, so nothing ever clips — it dissolves into deep space. */
+            -webkit-mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.12) 9%, rgba(0, 0, 0, 0.6) 20%, #000 38%, #000 100%);
+            mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.12) 9%, rgba(0, 0, 0, 0.6) 20%, #000 38%, #000 100%);
         }
 
         .story-crawl {
@@ -3238,9 +3211,9 @@
             bottom: 0;
             /* Kept under the frame once perspective magnifies the nearest edge
                (projected width runs ~15% over the layout width at this tilt). */
-            width: min(880px, 82vw);
+            width: min(880px, 78vw);
             transform-origin: 50% 100%;
-            transform: translateX(-50%) rotateX(56deg) translateY(8%);
+            transform: translateX(-50%) translateZ(0) rotateX(45deg) translateY(60%);
             opacity: 0;
             /* Warm ivory with an antique-gold cast — large, serif, editorial. */
             color: #ecdfc0;
@@ -3259,16 +3232,21 @@
             animation: voidStoryCrawl 54s linear forwards;
         }
 
-        /* Begins low and close, recedes up the plane, shrinking into the dark. */
+        /* One unified block — kicker, title, rule and paragraphs together —
+           rises from below the frame, travels up the tilted floor away from the
+           camera, and is pulled further back in Z as it goes, so it shrinks
+           into the distance and is completely gone by the end. Nothing is left
+           behind on screen. */
         @keyframes voidStoryCrawl {
             0% {
-                transform: translateX(-50%) rotateX(56deg) translateY(8%);
+                transform: translateX(-50%) translateZ(0) rotateX(45deg) translateY(60%);
                 opacity: 0;
             }
-            4% { opacity: 1; }
+            3% { opacity: 1; }
+            88% { opacity: 1; }
             100% {
-                transform: translateX(-50%) rotateX(56deg) translateY(-330%);
-                opacity: 1;
+                transform: translateX(-50%) translateZ(-300px) rotateX(45deg) translateY(-160%);
+                opacity: 0;
             }
         }
 
