@@ -563,6 +563,32 @@ h2 em {
   background: #060606;
 }
 
+.hero-card::before,
+.hero-card::after {
+  position: absolute;
+  z-index: 8;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--gold-light);
+  opacity: 0.7;
+  content: '';
+  pointer-events: none;
+}
+
+.hero-card::before {
+  top: calc(94px + env(safe-area-inset-top) + 30px);
+  left: 22px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.hero-card::after {
+  right: 22px;
+  bottom: 28px;
+  border-top: 0;
+  border-left: 0;
+}
+
 .hero-video {
   position: absolute;
   z-index: -6;
@@ -841,9 +867,24 @@ h2 em {
   overflow: hidden;
   margin-top: 104px;
   padding: 38px 26px 26px;
+  border: 1px solid var(--gold-line);
   background:
     radial-gradient(circle at 100% 0%, rgba(201, 170, 105, 0.17), transparent 42%),
     linear-gradient(145deg, #11100e, #080808 72%);
+}
+
+.access-banner::after {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  border-top: 1px solid var(--gold-light);
+  border-right: 1px solid var(--gold-light);
+  opacity: 0.8;
+  content: '';
+  pointer-events: none;
 }
 
 .shimmer-border::before {
@@ -851,7 +892,7 @@ h2 em {
   z-index: -1;
   inset: 0;
   padding: 1px;
-  background: conic-gradient(from var(--border-angle, 0deg), transparent 8%, rgba(201, 170, 105, 0.1) 28%, rgba(235, 213, 162, 0.65) 38%, rgba(201, 170, 105, 0.12) 48%, transparent 72%);
+  background: conic-gradient(from var(--border-angle, 0deg), transparent 8%, rgba(201, 170, 105, 0.16) 28%, rgba(235, 213, 162, 0.85) 38%, rgba(201, 170, 105, 0.18) 48%, transparent 72%);
   content: '';
   pointer-events: none;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -905,6 +946,32 @@ h2 em {
 
 .product-visual-rail {
   aspect-ratio: 0.88;
+}
+
+.product-visual-rail::before,
+.product-visual-rail::after {
+  position: absolute;
+  z-index: 7;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--gold-light);
+  opacity: 0.65;
+  content: '';
+  pointer-events: none;
+}
+
+.product-visual-rail::before {
+  top: 10px;
+  left: 10px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.product-visual-rail::after {
+  right: 10px;
+  bottom: 10px;
+  border-top: 0;
+  border-left: 0;
 }
 
 .product-visual-detail {
@@ -1020,7 +1087,7 @@ h2 em {
     radial-gradient(120% 70% at 30% 8%, rgba(255, 255, 255, 0.07), transparent 55%),
     linear-gradient(164deg, var(--garment-edge), var(--garment) 30%, var(--garment) 74%, #060606 122%);
   clip-path: polygon(28% 0%, 40% 0%, 40% 7%, 60% 7%, 60% 0%, 72% 0%, 100% 18%, 86% 36%, 74% 27%, 74% 100%, 26% 100%, 26% 27%, 14% 36%, 0% 18%);
-  filter: drop-shadow(0 26px 24px rgba(0, 0, 0, 0.52));
+  filter: drop-shadow(0 26px 24px rgba(0, 0, 0, 0.52)) drop-shadow(0 0 1px rgba(234, 215, 168, 0.55));
   transform: translateY(-1%);
   transition: transform 0.8s var(--ease), filter 0.8s ease;
   animation: garmentFloat 7s ease-in-out infinite;
