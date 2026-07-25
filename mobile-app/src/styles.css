@@ -1,10 +1,10 @@
 /* VOID Mobile Atelier · Season One */
 :root {
-  --void: #050505;
-  --void-soft: #080808;
-  --ink: #0b0b0c;
-  --charcoal: #111113;
-  --graphite: #171719;
+  --void: #030302;
+  --void-soft: #050403;
+  --ink: #080705;
+  --charcoal: #0d0b08;
+  --graphite: #141210;
   --gold: #c9aa69;
   --gold-light: #ead7a8;
   --gold-pale: #f4e8cb;
@@ -109,8 +109,9 @@ svg {
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% -20%, rgba(201, 170, 105, 0.065), transparent 38%),
-    linear-gradient(180deg, #060606, #030303);
+    radial-gradient(circle at 50% -20%, rgba(201, 170, 105, 0.055), transparent 40%),
+    radial-gradient(140% 90% at 50% 100%, rgba(0, 0, 0, 0.6), transparent 55%),
+    linear-gradient(180deg, #050403, var(--void));
   pointer-events: none;
 }
 
@@ -119,22 +120,22 @@ svg {
   width: 440px;
   height: 440px;
   border-radius: 50%;
-  filter: blur(110px);
-  opacity: 0.1;
+  filter: blur(120px);
+  opacity: 0.08;
   will-change: transform;
 }
 
 .ambient-orb-one {
   top: 12%;
   left: -300px;
-  background: #806638;
+  background: #6b5228;
   animation: ambientFloatOne 24s var(--ease-in-out) infinite alternate;
 }
 
 .ambient-orb-two {
   right: -330px;
   bottom: 8%;
-  background: #31243a;
+  background: #211a10;
   animation: ambientFloatTwo 30s var(--ease-in-out) infinite alternate;
 }
 
@@ -171,9 +172,18 @@ svg {
   margin: 0 auto;
   overflow: clip;
   background:
-    radial-gradient(circle at 90% 36%, rgba(201, 170, 105, 0.025), transparent 32%),
+    radial-gradient(circle at 90% 36%, rgba(201, 170, 105, 0.03), transparent 32%),
     var(--void);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.025), 0 0 90px rgba(0, 0, 0, 0.85);
+}
+
+.app-frame::after {
+  position: absolute;
+  z-index: 60;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 8%, transparent 62%, rgba(0, 0, 0, 0.5) 100%);
+  content: '';
+  pointer-events: none;
 }
 
 .screen {
@@ -925,19 +935,56 @@ h2 em {
   line-height: 1.45;
 }
 
-/* Product presentation */
+/* Product presentation — cinematic empty slots, no garment mockups */
 .product-visual {
-  --garment: #171719;
-  --garment-edge: #29292c;
   position: relative;
   isolation: isolate;
   display: grid;
   width: 100%;
   place-items: center;
   overflow: hidden;
+  border: 1px solid rgba(201, 170, 105, 0.2);
   background:
-    radial-gradient(circle at 50% 42%, rgba(201, 170, 105, 0.08), transparent 34%),
-    linear-gradient(145deg, #111113, #080809 70%);
+    radial-gradient(120% 85% at 50% 16%, rgba(201, 170, 105, 0.055), transparent 55%),
+    linear-gradient(165deg, #0c0a06, var(--void) 78%);
+  box-shadow: inset 0 0 1px rgba(234, 215, 168, 0.2), inset 0 0 46px rgba(0, 0, 0, 0.6);
+}
+
+.product-visual::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  padding: 1px;
+  background: conic-gradient(from var(--border-angle, 0deg), transparent 4%, rgba(201, 170, 105, 0.14) 22%, rgba(235, 213, 162, 0.78) 32%, rgba(201, 170, 105, 0.16) 42%, transparent 64%);
+  content: '';
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: borderShimmer 13s linear infinite;
+}
+
+.visual-glow {
+  position: absolute;
+  z-index: 0;
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 170, 105, 0.12), transparent 68%);
+  filter: blur(20px);
+  animation: productAura 7s ease-in-out infinite;
+}
+
+.visual-mark {
+  position: relative;
+  z-index: 1;
+  color: rgba(201, 170, 105, 0.15);
+  font-family: var(--serif);
+  font-size: 88px;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1;
+  user-select: none;
 }
 
 .product-visual-card {
@@ -948,38 +995,17 @@ h2 em {
   aspect-ratio: 0.88;
 }
 
-.product-visual-rail::before,
-.product-visual-rail::after {
-  position: absolute;
-  z-index: 7;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--gold-light);
-  opacity: 0.65;
-  content: '';
-  pointer-events: none;
-}
-
-.product-visual-rail::before {
-  top: 10px;
-  left: 10px;
-  border-right: 0;
-  border-bottom: 0;
-}
-
-.product-visual-rail::after {
-  right: 10px;
-  bottom: 10px;
-  border-top: 0;
-  border-left: 0;
+.product-visual-rail .visual-mark {
+  font-size: 72px;
 }
 
 .product-visual-detail {
   height: min(72svh, 720px);
   min-height: 520px;
-  background:
-    radial-gradient(circle at 50% 40%, rgba(201, 170, 105, 0.11), transparent 31%),
-    linear-gradient(155deg, #131315, #070708 72%);
+}
+
+.product-visual-detail .visual-mark {
+  font-size: 168px;
 }
 
 .product-visual-saved,
@@ -987,186 +1013,22 @@ h2 em {
   aspect-ratio: 0.82;
 }
 
-.product-visual[data-tone='ivory'] {
-  --garment: #d8d4ca;
-  --garment-edge: #f0ede5;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(201, 170, 105, 0.12), transparent 34%),
-    linear-gradient(145deg, #171715, #090909 70%);
-}
-
-.product-visual[data-tone='graphite'] {
-  --garment: #232326;
-  --garment-edge: #3a393d;
-}
-
-.product-visual[data-tone='noir'] {
-  --garment: #0b0b0c;
-  --garment-edge: #232326;
-}
-
-.product-visual[data-tone='cobalt'] {
-  --garment: #d8d5cd;
-  --garment-edge: #f2efe7;
-}
-
-.product-halo {
-  position: absolute;
-  width: 76%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(201, 170, 105, 0.16), rgba(201, 170, 105, 0.03) 45%, transparent 70%);
-  filter: blur(8px);
-  animation: productAura 7s ease-in-out infinite;
-}
-
-.product-ring {
-  position: absolute;
-  width: 70%;
-  aspect-ratio: 1;
-  border: 1px solid rgba(201, 170, 105, 0.16);
-  border-radius: 50%;
-}
-
-.product-ring::after {
-  position: absolute;
-  top: -2px;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--gold-light);
-  box-shadow: 0 0 12px var(--gold);
-  content: '';
-}
-
-.product-ring-one {
-  transform: rotate(-20deg) scaleY(0.76);
-  animation: productOrbit 28s linear infinite;
-}
-
-.product-ring-two {
-  width: 52%;
-  border-color: rgba(243, 240, 233, 0.08);
-  transform: rotate(66deg) scaleY(0.83);
-  animation: productOrbitReverse 34s linear infinite;
-}
-
-.product-surface {
-  position: absolute;
-  right: 8%;
-  bottom: 8%;
-  left: 8%;
-  height: 23%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.8), transparent 65%);
-  filter: blur(9px);
-  transform: perspective(300px) rotateX(70deg);
-}
-
-.product-shadow {
-  position: absolute;
-  z-index: 1;
-  bottom: 13%;
-  width: 42%;
-  height: 8%;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.7);
-  filter: blur(13px);
-}
-
-.garment-shape {
-  position: relative;
-  z-index: 3;
-  display: grid;
-  width: 58%;
-  aspect-ratio: 0.84;
-  place-items: center;
-  background:
-    linear-gradient(78deg, transparent 0 6%, rgba(255, 255, 255, 0.05) 7% 9%, transparent 15% 46%, rgba(255, 255, 255, 0.03) 52% 55%, transparent 63% 100%),
-    radial-gradient(120% 70% at 30% 8%, rgba(255, 255, 255, 0.07), transparent 55%),
-    linear-gradient(164deg, var(--garment-edge), var(--garment) 30%, var(--garment) 74%, #060606 122%);
-  clip-path: polygon(28% 0%, 40% 0%, 40% 7%, 60% 7%, 60% 0%, 72% 0%, 100% 18%, 86% 36%, 74% 27%, 74% 100%, 26% 100%, 26% 27%, 14% 36%, 0% 18%);
-  filter: drop-shadow(0 26px 24px rgba(0, 0, 0, 0.52)) drop-shadow(0 0 1px rgba(234, 215, 168, 0.55));
-  transform: translateY(-1%);
-  transition: transform 0.8s var(--ease), filter 0.8s ease;
-  animation: garmentFloat 7s ease-in-out infinite;
-}
-
-.garment-shape::before,
-.garment-shape::after {
-  position: absolute;
-  top: 30%;
-  bottom: 6%;
-  width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.05) 30%, transparent 85%);
-  content: '';
-}
-
-.garment-shape::before {
-  left: 34%;
-}
-
-.garment-shape::after {
-  left: 66%;
-}
-
-.garment-neck {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  left: 50%;
-  width: 20%;
-  aspect-ratio: 2.1;
-  border: 2px solid color-mix(in srgb, var(--garment-edge) 78%, #050505);
-  border-top: 0;
-  border-radius: 0 0 50% 50%;
-  background: #070707;
-  transform: translateX(-50%);
-}
-
-.garment-shape img {
-  position: absolute;
-  bottom: 30%;
-  left: 40%;
-  z-index: 2;
-  width: 11%;
-  filter: sepia(0.4) saturate(0.7) contrast(0.9);
-  opacity: 0.6;
-}
-
-.product-visual[data-tone='cobalt'] .garment-shape img {
-  filter: hue-rotate(155deg) saturate(1.8) brightness(0.72);
-}
-
-.product-visual[data-tone='ivory'] .garment-shape img {
-  filter: sepia(0.9) saturate(1.5) brightness(0.7);
-}
-
-.product-light {
-  position: absolute;
-  z-index: 4;
-  top: -28%;
-  left: -60%;
-  width: 40%;
-  height: 150%;
-  background: linear-gradient(90deg, transparent, rgba(245, 230, 193, 0.12), transparent);
-  filter: blur(10px);
-  transform: rotate(18deg);
-  animation: productLightSweep 8s ease-in-out infinite;
+.product-visual-saved .visual-mark,
+.product-visual-bag .visual-mark {
+  font-size: 52px;
 }
 
 .product-grain {
   position: absolute;
-  z-index: 5;
+  z-index: 2;
   inset: -45%;
-  opacity: 0.035;
+  opacity: 0.03;
   animation: grainMove 8s steps(8) infinite;
 }
 
 .product-index {
   position: absolute;
-  z-index: 6;
+  z-index: 3;
   right: 13px;
   bottom: 12px;
   color: rgba(243, 240, 233, 0.32);
@@ -1176,20 +1038,9 @@ h2 em {
   text-transform: uppercase;
 }
 
-.product-visual-detail .garment-shape {
-  width: min(62%, 390px);
-}
-
 .product-visual-saved .product-index,
-.product-visual-bag .product-index,
-.product-visual-saved .product-ring,
-.product-visual-bag .product-ring {
+.product-visual-bag .product-index {
   display: none;
-}
-
-.product-visual-saved .garment-shape,
-.product-visual-bag .garment-shape {
-  width: 65%;
 }
 
 /* Collection */
@@ -1330,8 +1181,8 @@ h2 em {
   aspect-ratio: 1.15;
 }
 
-.product-card:nth-child(3n) .garment-shape {
-  width: 42%;
+.product-card:nth-child(3n) .visual-mark {
+  font-size: 64px;
 }
 
 .product-open {
@@ -1722,6 +1573,36 @@ h2 em {
   border: 1px solid var(--gold-line);
   background: linear-gradient(145deg, rgba(19, 18, 16, 0.98), rgba(8, 8, 8, 0.98));
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+.join-form::before,
+.join-form::after,
+.member-card::before,
+.member-card::after {
+  position: absolute;
+  z-index: 6;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--gold-light);
+  opacity: 0.55;
+  content: '';
+  pointer-events: none;
+}
+
+.join-form::before,
+.member-card::before {
+  top: 12px;
+  left: 12px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.join-form::after,
+.member-card::after {
+  right: 12px;
+  bottom: 12px;
+  border-top: 0;
+  border-left: 0;
 }
 
 .join-form label {
@@ -2502,13 +2383,12 @@ h2 em {
     transform: translateX(4px);
   }
 
-  .product-open:hover .garment-shape {
-    filter: drop-shadow(0 32px 26px rgba(0, 0, 0, 0.62));
-    transform: translateY(-3%) scale(1.025);
+  .product-open:hover .product-visual {
+    border-color: rgba(201, 170, 105, 0.4);
   }
 
-  .product-card:hover .product-light {
-    animation-duration: 3s;
+  .product-open:hover .visual-mark {
+    color: rgba(201, 170, 105, 0.24);
   }
 
   .wish-toggle:hover {
@@ -2559,8 +2439,8 @@ h2 em {
     aspect-ratio: 0.79;
   }
 
-  .product-card:nth-child(3n) .garment-shape {
-    width: 58%;
+  .product-card:nth-child(3n) .visual-mark {
+    font-size: 88px;
   }
 
   .product-card:last-child {
@@ -2571,8 +2451,8 @@ h2 em {
     aspect-ratio: 1.25;
   }
 
-  .product-card:last-child .garment-shape {
-    width: 40%;
+  .product-card:last-child .visual-mark {
+    font-size: 64px;
   }
 }
 
@@ -2694,19 +2574,6 @@ h2 em {
 @keyframes productAura {
   0%, 100% { opacity: 0.42; transform: scale(0.94); }
   50% { opacity: 0.9; transform: scale(1.08); }
-}
-
-@keyframes productOrbit {
-  to { transform: rotate(340deg) scaleY(0.76); }
-}
-
-@keyframes productOrbitReverse {
-  to { transform: rotate(-294deg) scaleY(0.83); }
-}
-
-@keyframes garmentFloat {
-  0%, 100% { translate: 0 2px; }
-  50% { translate: 0 -5px; }
 }
 
 @keyframes productLightSweep {

@@ -167,11 +167,10 @@ function orbitalEmblem(size = 'large') {
 }
 
 function productVisual(product, variant = 'card') {
-  return `<div class="product-visual product-visual-${variant}" data-tone="${product.tone}">
-    <span class="product-halo"></span><span class="product-ring product-ring-one"></span><span class="product-ring product-ring-two"></span>
-    <span class="product-surface"></span><span class="product-shadow"></span>
-    <div class="garment-shape"><span class="garment-neck"></span><img src="${emblemUrl}" alt="" /></div>
-    <span class="product-light"></span><span class="product-grain"></span>
+  return `<div class="product-visual product-visual-${variant}">
+    <span class="visual-glow" aria-hidden="true"></span>
+    <span class="visual-mark" aria-hidden="true">${product.name.charAt(0)}</span>
+    <span class="product-grain" aria-hidden="true"></span>
     <span class="product-index">${product.edition}</span>
   </div>`;
 }
