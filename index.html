@@ -2804,15 +2804,22 @@
                 #050507 62%,
                 #000000 100%);
             opacity: 0;
+            /* Fully inert while closed: visibility:hidden stops the subtree from
+               taking clicks, wheel events or tab focus. Without it a descendant
+               that sets pointer-events:auto (the crawl) overrides the overlay's
+               `none` and becomes an invisible blocker over the hero. */
+            visibility: hidden;
             pointer-events: none;
-            transition: opacity 0.55s ease;
+            transition: opacity 0.55s ease, visibility 0s linear 0.55s;
             overflow: hidden;
             backdrop-filter: blur(2px) brightness(0.28);
         }
 
         .story-overlay.open {
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
+            transition: opacity 0.55s ease, visibility 0s linear 0s;
         }
 
         /* Soft pool of light behind the copy plus a restrained edge vignette,
@@ -3119,7 +3126,8 @@
             color: rgba(238, 233, 222, 0.88);
             /* A dark lift for legibility over the star field, not a glow. */
             text-shadow: 0 1px 20px rgba(0, 0, 0, 0.62);
-            pointer-events: auto;
+            /* Only interactive while the overlay is open — see .story-overlay. */
+            pointer-events: none;
             transition: opacity 0.6s ease;
             scrollbar-width: thin;
             scrollbar-color: rgba(199, 169, 108, 0.45) transparent;
@@ -3128,6 +3136,8 @@
         .story-crawl::-webkit-scrollbar { width: 3px; }
         .story-crawl::-webkit-scrollbar-track { background: transparent; }
         .story-crawl::-webkit-scrollbar-thumb { background: rgba(199, 169, 108, 0.4); }
+
+        .story-overlay.open .story-crawl { pointer-events: auto; }
 
         .story-crawl.is-animating { opacity: 1; }
 
