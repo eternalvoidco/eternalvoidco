@@ -1860,6 +1860,11 @@
             to { transform: translate3d(-1.6%, -1.2%, 0); }
         }
 
+        @keyframes storyDriftMid {
+            from { transform: translate3d(0, 0, 0); }
+            to { transform: translate3d(-2.2%, -1.7%, 0); }
+        }
+
         @keyframes storyDriftBright {
             from { transform: translate3d(0, 0, 0); }
             to { transform: translate3d(-3%, -2.2%, 0); }
@@ -2695,17 +2700,24 @@
             pointer-events: none;
         }
 
+        /* Restrained gold edge illumination and a slight depth shift, rather
+           than flooding the button with gold — reads more expensive and keeps
+           the emblem above it the focal point. */
         .cta-button:hover,
         .cta-button:focus-visible {
-            color: #090909;
-            border-color: var(--void-gold-soft);
+            color: #f7ecd2;
+            border-color: rgba(226, 199, 138, 0.95);
             transform: translateY(-2px);
-            box-shadow: 0 16px 42px rgba(199, 169, 108, 0.22), 0 0 0 1px rgba(199, 169, 108, 0.35);
+            box-shadow:
+                0 0 0 1px rgba(199, 169, 108, 0.3),
+                0 0 26px rgba(199, 169, 108, 0.26),
+                0 18px 40px rgba(0, 0, 0, 0.5),
+                inset 0 0 22px rgba(199, 169, 108, 0.09);
         }
 
         .cta-button:hover::before,
         .cta-button:focus-visible::before {
-            opacity: 1;
+            opacity: 0.14;
         }
 
         .cta-button:hover::after,
@@ -2786,10 +2798,12 @@
 
         .story-trigger-button:hover,
         .story-trigger-button:focus-visible {
-            border-color: rgba(245, 242, 236, 0.92);
-            background: rgba(24, 24, 24, 0.84);
-            color: #ffffff;
+            /* Secondary action: a quieter gold edge than the primary CTA. */
+            border-color: rgba(212, 184, 124, 0.72);
+            background: rgba(20, 18, 14, 0.86);
+            color: #f4ecdc;
             transform: translateY(-2px);
+            box-shadow: 0 0 18px rgba(199, 169, 108, 0.14), 0 14px 32px rgba(0, 0, 0, 0.45);
         }
 
         .story-overlay {
@@ -2828,11 +2842,43 @@
             content: '';
             position: absolute;
             inset: 0;
+            z-index: 0;
             pointer-events: none;
             background:
                 radial-gradient(44% 36% at 50% 50%, rgba(199, 169, 108, 0.045), transparent 72%),
                 radial-gradient(40% 34% at 50% 50%, rgba(150, 160, 190, 0.03), transparent 70%),
                 radial-gradient(125% 95% at 50% 48%, transparent 42%, rgba(0, 0, 0, 0.5) 78%, rgba(0, 0, 0, 0.82) 100%);
+        }
+
+        /* Mid-depth bed — sits between the distant wash and the bright anchors,
+           tiled at a different rate so the three depths never line up. */
+        .story-overlay::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background-image:
+                radial-gradient(1px 1px at 9% 14%, rgba(255, 255, 255, 0.6), transparent 100%),
+                radial-gradient(1px 1px at 19% 52%, rgba(255, 255, 255, 0.44), transparent 100%),
+                radial-gradient(1.2px 1.2px at 31% 27%, rgba(252, 250, 244, 0.58), transparent 100%),
+                radial-gradient(1px 1px at 42% 71%, rgba(255, 255, 255, 0.4), transparent 100%),
+                radial-gradient(1.2px 1.2px at 51% 38%, rgba(255, 255, 255, 0.62), transparent 100%),
+                radial-gradient(1px 1px at 61% 84%, rgba(246, 248, 255, 0.42), transparent 100%),
+                radial-gradient(1.2px 1.2px at 69% 22%, rgba(255, 255, 255, 0.56), transparent 100%),
+                radial-gradient(1px 1px at 78% 61%, rgba(255, 255, 255, 0.38), transparent 100%),
+                radial-gradient(1.2px 1.2px at 87% 33%, rgba(253, 250, 242, 0.54), transparent 100%),
+                radial-gradient(1px 1px at 94% 77%, rgba(255, 255, 255, 0.44), transparent 100%),
+                radial-gradient(1px 1px at 25% 92%, rgba(255, 255, 255, 0.36), transparent 100%),
+                radial-gradient(1px 1px at 64% 6%, rgba(255, 255, 255, 0.46), transparent 100%);
+            background-size: 43% 37%;
+            -webkit-mask: radial-gradient(115% 90% at 50% 46%, #000 38%, rgba(0, 0, 0, 0.4) 74%, transparent 100%);
+            mask: radial-gradient(115% 90% at 50% 46%, #000 38%, rgba(0, 0, 0, 0.4) 74%, transparent 100%);
+            opacity: 0;
+            animation:
+                storyStarsFadeIn 3.2s ease forwards,
+                storyDriftMid 185s ease-in-out infinite alternate;
+            will-change: transform;
         }
 
         /* ── Deep-space field ──────────────────────────────────────────────
@@ -2857,6 +2903,7 @@
         /* Distant bed — small, dim, numerous. Tiled so a modest number of
            gradients reads as a deep field without extra paint cost. */
         .story-overlay-stars {
+            z-index: 1;
             background-image:
                 radial-gradient(1px 1px at 3% 7%, rgba(255, 255, 255, 0.5), transparent 100%),
                 radial-gradient(1px 1px at 11% 23%, rgba(255, 255, 255, 0.34), transparent 100%),
@@ -2915,11 +2962,14 @@
         /* Dust and nebula haze — the depth cue. Near-neutral, barely there. */
         .story-overlay-stars::after {
             inset: -22%;
+            /* Held to the edges so the haze frames the copy instead of washing
+               over it — charcoal and graphite with one barely-there warm pocket. */
             background-image:
-                radial-gradient(32% 38% at 24% 30%, rgba(44, 52, 74, 0.42), transparent 66%),
-                radial-gradient(28% 34% at 76% 62%, rgba(58, 48, 32, 0.36), transparent 68%),
-                radial-gradient(24% 30% at 58% 16%, rgba(34, 38, 54, 0.32), transparent 70%),
-                radial-gradient(30% 26% at 40% 84%, rgba(30, 30, 40, 0.34), transparent 70%);
+                radial-gradient(34% 44% at 1% 26%, rgba(46, 54, 76, 0.44), transparent 68%),
+                radial-gradient(30% 40% at 99% 68%, rgba(60, 50, 33, 0.4), transparent 70%),
+                radial-gradient(46% 26% at 50% 104%, rgba(34, 38, 54, 0.36), transparent 72%),
+                radial-gradient(42% 24% at 50% -4%, rgba(30, 32, 44, 0.34), transparent 72%),
+                radial-gradient(26% 34% at 97% 10%, rgba(52, 44, 30, 0.28), transparent 70%);
             filter: blur(56px);
             opacity: 0;
             animation:
@@ -2931,7 +2981,7 @@
         .story-overlay-spark {
             position: absolute;
             pointer-events: none;
-            z-index: 1;
+            z-index: 2;
             mix-blend-mode: screen;
             opacity: 0;
         }
@@ -3000,7 +3050,7 @@
             left: 50%;
             bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
             transform: translateX(-50%);
-            z-index: 2;
+            z-index: 4;
             isolation: isolate;
             overflow: hidden;
             border-radius: 3px;
@@ -3090,7 +3140,8 @@
            set explicitly because the layers rest at 0 and are faded in by
            animation. */
         html.reduce-motion .story-overlay-stars,
-        html.reduce-motion .story-overlay-stars::before {
+        html.reduce-motion .story-overlay-stars::before,
+        html.reduce-motion .story-overlay::after {
             animation: none !important;
             opacity: 1;
             transform: none;
@@ -3102,92 +3153,154 @@
             transform: none;
         }
 
-        html.reduce-motion .story-crawl.is-animating > * {
-            animation: none !important;
-        }
-
-        .story-overlay-stage {
-            position: absolute;
-            inset: 0;
+        /* Calm mode: no crawl. The story becomes a still, readable column the
+           visitor can scroll at their own pace. */
+        html.reduce-motion .story-overlay-stage {
+            perspective: none;
             display: grid;
             place-items: center;
-            /* Bottom padding clears the fixed return button. */
-            padding: clamp(3.5rem, 9svh, 5.5rem) 1.5rem clamp(5.5rem, 13svh, 7.5rem);
-            pointer-events: none;
+            padding: clamp(3.5rem, 9svh, 5rem) 1.5rem clamp(5.5rem, 13svh, 7rem);
+            -webkit-mask: none;
+            mask: none;
         }
 
-        .story-crawl {
-            width: min(640px, 92vw);
+        html.reduce-motion .story-crawl {
+            position: static;
+            transform: none;
+            width: min(720px, 90vw);
             max-height: 100%;
             overflow-y: auto;
             overscroll-behavior: contain;
-            opacity: 0;
-            /* Muted ivory, not gold — the copy stays quiet and readable. */
-            color: rgba(238, 233, 222, 0.88);
-            /* A dark lift for legibility over the star field, not a glow. */
-            text-shadow: 0 1px 20px rgba(0, 0, 0, 0.62);
-            /* Only interactive while the overlay is open — see .story-overlay. */
-            pointer-events: none;
-            transition: opacity 0.6s ease;
+            opacity: 1;
             scrollbar-width: thin;
             scrollbar-color: rgba(199, 169, 108, 0.45) transparent;
         }
 
-        .story-crawl::-webkit-scrollbar { width: 3px; }
-        .story-crawl::-webkit-scrollbar-track { background: transparent; }
-        .story-crawl::-webkit-scrollbar-thumb { background: rgba(199, 169, 108, 0.4); }
+        html.reduce-motion .story-crawl.is-animating {
+            animation: none !important;
+        }
+
+        html.reduce-motion .story-crawl-title {
+            font-size: clamp(2.2rem, 6vw, 3.4rem);
+            margin-bottom: 1.4rem;
+        }
+
+        html.reduce-motion .story-crawl-title::after { margin-top: 1.4rem; }
+
+        html.reduce-motion .story-crawl p {
+            font-size: clamp(1.05rem, 2vw, 1.28rem);
+            line-height: 1.75;
+        }
+
+        /* Honour the OS signal too. Note this stops MOTION only — the galaxy
+           stays fully visible, because Windows very often reports this as on
+           and blanking the visuals there would be worse than holding them
+           still. The site's own ?calm switch remains the explicit opt-out. */
+        @media (prefers-reduced-motion: reduce) {
+            .story-overlay-stars,
+            .story-overlay-stars::before,
+            .story-overlay-stars::after,
+            .story-overlay::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transform: none !important;
+            }
+
+            /* Slow the crawl rather than removing it. The OS flag is reported as
+               on by a great many Windows machines whose owners never asked for
+               it, and killing the crawl there would hide the centrepiece of the
+               page. Visitors who genuinely want it still can opt out with
+               ?calm, which sets html.reduce-motion and drops the crawl to a
+               still, scrollable column (see the rules above). */
+            .story-crawl.is-animating {
+                animation-duration: 96s !important;
+            }
+        }
+
+        /* The crawl stage: a deep camera looking up at a tilted plane. The
+           vanishing point sits just above the frame, so the copy travels away
+           from the reader and dissolves at the horizon rather than clipping. */
+        .story-overlay-stage {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            overflow: hidden;
+            perspective: clamp(420px, 62vw, 820px);
+            perspective-origin: 50% 0%;
+            pointer-events: none;
+            -webkit-mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.22) 11%, #000 33%, #000 100%);
+            mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.22) 11%, #000 33%, #000 100%);
+        }
+
+        .story-crawl {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            /* Kept under the frame once perspective magnifies the nearest edge
+               (projected width runs ~15% over the layout width at this tilt). */
+            width: min(880px, 82vw);
+            transform-origin: 50% 100%;
+            transform: translateX(-50%) rotateX(56deg) translateY(8%);
+            opacity: 0;
+            /* Warm ivory with an antique-gold cast — large, serif, editorial. */
+            color: #ecdfc0;
+            font-family: 'Cormorant Garamond', serif;
+            text-align: center;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(0, 0, 0, 0.7);
+            /* Only interactive while the overlay is open — see .story-overlay. */
+            pointer-events: none;
+            will-change: transform;
+            backface-visibility: hidden;
+        }
 
         .story-overlay.open .story-crawl { pointer-events: auto; }
 
-        .story-crawl.is-animating { opacity: 1; }
-
-        /* Editorial reveal: each block settles in turn. Replaces the old 3D
-           crawl, which pushed the copy away from the reader. */
-        .story-crawl.is-animating > * {
-            animation: voidStoryLineRise 1.15s var(--ease-lux) both;
+        .story-crawl.is-animating {
+            animation: voidStoryCrawl 54s linear forwards;
         }
 
-        .story-crawl.is-animating > *:nth-child(1) { animation-delay: 0.06s; }
-        .story-crawl.is-animating > *:nth-child(2) { animation-delay: 0.2s; }
-        .story-crawl.is-animating > *:nth-child(3) { animation-delay: 0.36s; }
-        .story-crawl.is-animating > *:nth-child(4) { animation-delay: 0.5s; }
-        .story-crawl.is-animating > *:nth-child(5) { animation-delay: 0.64s; }
-        .story-crawl.is-animating > *:nth-child(6) { animation-delay: 0.78s; }
-
-        @keyframes voidStoryLineRise {
-            from { opacity: 0; transform: translateY(18px); filter: blur(5px); }
-            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        /* Begins low and close, recedes up the plane, shrinking into the dark. */
+        @keyframes voidStoryCrawl {
+            0% {
+                transform: translateX(-50%) rotateX(56deg) translateY(8%);
+                opacity: 0;
+            }
+            4% { opacity: 1; }
+            100% {
+                transform: translateX(-50%) rotateX(56deg) translateY(-330%);
+                opacity: 1;
+            }
         }
 
         .story-crawl-title {
-            text-align: center;
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(2.5rem, 6.5vw, 4rem);
+            font-size: clamp(3.2rem, 9vw, 6rem);
             font-weight: 500;
             line-height: 1.02;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: #f4f0e7;
-            margin: 0 0 1.2rem;
+            /* Antique gold against the ivory body — the one warm accent. */
+            color: #e9d6a8;
+            margin: 0 0 2rem;
         }
 
         /* One restrained gold rule to close the heading block. */
         .story-crawl-title::after {
             content: '';
             display: block;
-            width: 3rem;
+            width: 5rem;
             height: 1px;
-            margin: 1.5rem auto 0;
-            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.75), transparent);
+            margin: 2rem auto 0;
+            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.7), transparent);
         }
 
         .story-crawl p {
-            max-width: 58ch;
+            max-width: none;
             margin: 0 auto 1.15em;
-            font-size: clamp(1.02rem, 1.45vw, 1.15rem);
-            line-height: 1.78;
-            letter-spacing: 0.005em;
-            text-align: left;
+            font-size: clamp(1.55rem, 4vw, 2.6rem);
+            line-height: 1.5;
+            letter-spacing: 0.012em;
+            text-align: center;
         }
 
         .story-crawl p:last-child { margin-bottom: 0; }
@@ -3196,14 +3309,15 @@
            scale — it is a <p>, so the body rule would otherwise win. */
         .story-crawl p.story-crawl-eyebrow {
             max-width: none;
-            margin: 0 0 1.5rem;
+            margin: 0 0 1.7rem;
+            font-family: 'Jost', sans-serif;
             text-align: center;
-            font-size: 0.64rem;
+            font-size: clamp(0.78rem, 1.7vw, 1rem);
             font-weight: 600;
             line-height: 1.6;
-            letter-spacing: 0.36em;
+            letter-spacing: 0.4em;
             text-transform: uppercase;
-            color: rgba(199, 169, 108, 0.9);
+            color: rgba(214, 184, 124, 0.92);
         }
 
         @keyframes storyExitPulse {
@@ -6737,10 +6851,6 @@
                 letter-spacing: 0.13em;
             }
 
-            .story-overlay-stage {
-                padding: clamp(3rem, 7svh, 4rem) 1.15rem clamp(5rem, 12svh, 6.5rem);
-            }
-
             .story-overlay-exit {
                 width: min(88vw, 270px);
                 padding: 0.68rem 1rem;
@@ -6748,26 +6858,28 @@
             }
 
             .story-crawl {
-                width: min(94vw, 640px);
+                width: 78vw;
             }
 
             .story-crawl-title {
-                font-size: clamp(2.05rem, 9vw, 2.65rem);
+                font-size: clamp(2.1rem, 11vw, 3rem);
+                margin-bottom: 1.4rem;
             }
 
             .story-crawl-title::after {
-                margin-top: 1.2rem;
+                width: 3.5rem;
+                margin-top: 1.4rem;
             }
 
             .story-crawl p {
-                font-size: 1rem;
-                line-height: 1.75;
+                font-size: clamp(1.15rem, 5.4vw, 1.5rem);
+                line-height: 1.5;
             }
 
             .story-crawl p.story-crawl-eyebrow {
-                font-size: 0.6rem;
-                letter-spacing: 0.3em;
-                margin-bottom: 1.25rem;
+                font-size: 0.66rem;
+                letter-spacing: 0.32em;
+                margin-bottom: 1.3rem;
             }
 
             /* Lighten the field on phones: no nebula drift, cheaper blur. */
