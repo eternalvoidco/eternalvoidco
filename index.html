@@ -6126,24 +6126,29 @@
             border-image: linear-gradient(90deg, transparent 0%, rgba(199, 169, 108, 0.16) 30%, rgba(199, 169, 108, 0.16) 70%, transparent 100%) 1;
         }
 
-        /* Atmospheric seam: a soft gold haze straddling the grid→footer join so
-           the collection dissolves into the footer with depth instead of a hard
-           cut. Bleeds up into the section's black tail and down past the line. */
+        /* Atmospheric seam bridge: a full-bleed, warm-charcoal cloud (lifted
+           with a faint gold haze) straddling the grid→footer join. It spans the
+           full width so it matches the section atmosphere above edge-to-edge —
+           no narrower centred glow to read as a horizontal line — and fades in
+           every direction so the lit collection dissolves into the footer with
+           continuous depth instead of a hard cut. Sits behind the footer text. */
         .footer::before {
             content: '';
             position: absolute;
             left: 50%;
             top: 0;
             transform: translate(-50%, -50%);
-            width: min(94%, 1500px);
-            height: 340px;
+            width: 100vw;
+            height: 460px;
             pointer-events: none;
             background:
-                radial-gradient(62% 100% at 50% 50%, rgba(199, 169, 108, 0.07), transparent 72%),
-                radial-gradient(30% 60% at 50% 50%, rgba(120, 96, 44, 0.06), transparent 70%);
+                radial-gradient(78% 128% at 50% 50%, rgba(22, 20, 16, 0.62), transparent 76%),
+                radial-gradient(46% 82% at 50% 50%, rgba(199, 169, 108, 0.055), transparent 74%);
         }
 
         .footer-content {
+            position: relative;
+            z-index: 1;
             max-width: 1600px;
             margin: 0 auto;
             padding: 0 4rem 4rem;
@@ -6171,20 +6176,20 @@
         .footer-tagline {
             display: block;
             font-size: 0.78rem;
-            color: var(--void-light-grey);
-            letter-spacing: 0.24em;
+            color: rgba(214, 184, 124, 0.85);
+            letter-spacing: 0.32em;
             text-transform: uppercase;
-            margin-left: 0.22em;
+            margin-left: 0.24em;
         }
 
         .footer-section h4 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.15rem;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.72rem;
             font-weight: 600;
-            letter-spacing: 0.09em;
+            letter-spacing: 0.26em;
             text-transform: uppercase;
-            margin-bottom: 1.5rem;
-            color: var(--void-white);
+            margin-bottom: 1.6rem;
+            color: rgba(212, 184, 122, 0.92);
         }
 
         .footer-section ul {
@@ -6196,15 +6201,24 @@
         }
 
         .footer-section a {
-            color: var(--void-light-grey);
+            color: rgba(245, 242, 236, 0.6);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.86rem;
             font-weight: 300;
-            transition: color 0.3s ease;
+            letter-spacing: 0.02em;
+            /* Editorial gold underline that sweeps in from the left on hover. */
+            background-image: linear-gradient(var(--void-accent), var(--void-accent));
+            background-size: 0% 1px;
+            background-position: 0 100%;
+            background-repeat: no-repeat;
+            padding-bottom: 1px;
+            transition: color 0.35s var(--ease-lux), background-size 0.45s var(--ease-lux);
         }
 
-        .footer-section a:hover {
+        .footer-section a:hover,
+        .footer-section a:focus-visible {
             color: var(--void-white);
+            background-size: 100% 1px;
         }
 
         .footer-newsletter-text {
