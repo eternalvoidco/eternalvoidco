@@ -468,7 +468,6 @@ h2 em {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   transition: transform 0.45s var(--ease), box-shadow 0.45s ease, filter 0.45s ease;
-  animation: buttonMetal 7s ease-in-out infinite;
 }
 
 .gold-button::after {
@@ -489,7 +488,11 @@ h2 em {
   background: rgba(255, 255, 255, 0.28);
   filter: blur(8px);
   transform: skewX(-22deg);
-  animation: buttonSheen 6s ease-in-out infinite;
+  animation: buttonSheen 2.2s ease-in-out 1;
+}
+
+.gold-button:hover .button-sheen {
+  animation: buttonSheen 1.3s ease-in-out 1;
 }
 
 .gold-button svg {
@@ -507,10 +510,16 @@ h2 em {
   transform: translateX(3px);
 }
 
+.gold-button:hover {
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.4), inset 0 -1px rgba(71, 50, 17, 0.36), 0 14px 38px rgba(92, 68, 29, 0.28);
+}
+
 .gold-button.reveal {
-  animation:
-    revealIn 0.9s var(--ease) 0.44s forwards,
-    buttonMetal 7s ease-in-out 1.35s infinite;
+  animation: revealIn 0.9s var(--ease) 0.44s forwards;
+}
+
+.gold-button.reveal .button-sheen {
+  animation: buttonSheen 2.2s ease-in-out 1.7s 1;
 }
 
 .button-compact {
@@ -1007,10 +1016,11 @@ h2 em {
   aspect-ratio: 0.84;
   place-items: center;
   background:
-    linear-gradient(95deg, transparent 0 8%, rgba(255, 255, 255, 0.02) 9%, transparent 22% 80%, rgba(255, 255, 255, 0.035) 92%, transparent 100%),
-    linear-gradient(160deg, var(--garment-edge), var(--garment) 24%, var(--garment) 78%, #080808 120%);
-  clip-path: polygon(29% 3%, 40% 0, 60% 0, 71% 3%, 98% 19%, 88% 39%, 75% 33%, 78% 100%, 22% 100%, 25% 33%, 12% 39%, 2% 19%);
-  filter: drop-shadow(0 24px 22px rgba(0, 0, 0, 0.5));
+    linear-gradient(78deg, transparent 0 6%, rgba(255, 255, 255, 0.05) 7% 9%, transparent 15% 46%, rgba(255, 255, 255, 0.03) 52% 55%, transparent 63% 100%),
+    radial-gradient(120% 70% at 30% 8%, rgba(255, 255, 255, 0.07), transparent 55%),
+    linear-gradient(164deg, var(--garment-edge), var(--garment) 30%, var(--garment) 74%, #060606 122%);
+  clip-path: polygon(28% 0%, 40% 0%, 40% 7%, 60% 7%, 60% 0%, 72% 0%, 100% 18%, 86% 36%, 74% 27%, 74% 100%, 26% 100%, 26% 27%, 14% 36%, 0% 18%);
+  filter: drop-shadow(0 26px 24px rgba(0, 0, 0, 0.52));
   transform: translateY(-1%);
   transition: transform 0.8s var(--ease), filter 0.8s ease;
   animation: garmentFloat 7s ease-in-out infinite;
@@ -1019,41 +1029,43 @@ h2 em {
 .garment-shape::before,
 .garment-shape::after {
   position: absolute;
-  top: 5%;
-  width: 30%;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.08);
+  top: 30%;
+  bottom: 6%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.05) 30%, transparent 85%);
   content: '';
 }
 
 .garment-shape::before {
-  left: 0;
-  transform: rotate(-27deg);
+  left: 34%;
 }
 
 .garment-shape::after {
-  right: 0;
-  transform: rotate(27deg);
+  left: 66%;
 }
 
 .garment-neck {
   position: absolute;
   z-index: 2;
-  top: -1%;
+  top: 0;
   left: 50%;
-  width: 24%;
-  aspect-ratio: 1.5;
-  border: 3px solid color-mix(in srgb, var(--garment-edge) 78%, #050505);
+  width: 20%;
+  aspect-ratio: 2.1;
+  border: 2px solid color-mix(in srgb, var(--garment-edge) 78%, #050505);
   border-top: 0;
   border-radius: 0 0 50% 50%;
-  background: #080808;
+  background: #070707;
   transform: translateX(-50%);
 }
 
 .garment-shape img {
-  width: 21%;
+  position: absolute;
+  bottom: 30%;
+  left: 40%;
+  z-index: 2;
+  width: 11%;
   filter: sepia(0.4) saturate(0.7) contrast(0.9);
-  opacity: 0.67;
+  opacity: 0.6;
 }
 
 .product-visual[data-tone='cobalt'] .garment-shape img {
@@ -2601,10 +2613,6 @@ h2 em {
   55%, 100% { transform: translateX(390%); }
 }
 
-@keyframes buttonMetal {
-  0%, 100% { background-position: 140% 0, 0 0; }
-  50% { background-position: -70% 0, 0 0; }
-}
 
 @keyframes buttonSheen {
   0%, 18% { left: -35%; opacity: 0; }
