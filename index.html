@@ -6116,39 +6116,13 @@
 
         /* Footer */
         .footer {
-            position: relative;
             max-width: 1600px;
             margin: 8rem auto 0;
             padding: 4rem 0;
-            /* Whisper-faint hairline — the atmospheric seam below carries the
-               real separation, so this only needs to hint at the edge. */
-            border-top: 1px solid transparent;
-            border-image: linear-gradient(90deg, transparent 0%, rgba(199, 169, 108, 0.16) 30%, rgba(199, 169, 108, 0.16) 70%, transparent 100%) 1;
-        }
-
-        /* Atmospheric seam bridge: a full-bleed, warm-charcoal cloud (lifted
-           with a faint gold haze) straddling the grid→footer join. It spans the
-           full width so it matches the section atmosphere above edge-to-edge —
-           no narrower centred glow to read as a horizontal line — and fades in
-           every direction so the lit collection dissolves into the footer with
-           continuous depth instead of a hard cut. Sits behind the footer text. */
-        .footer::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 0;
-            transform: translate(-50%, -50%);
-            width: 100vw;
-            height: 460px;
-            pointer-events: none;
-            background:
-                radial-gradient(78% 128% at 50% 50%, rgba(22, 20, 16, 0.62), transparent 76%),
-                radial-gradient(46% 82% at 50% 50%, rgba(199, 169, 108, 0.055), transparent 74%);
+            /* Clean, pure-black footer — no divider line or atmospheric seam. */
         }
 
         .footer-content {
-            position: relative;
-            z-index: 1;
             max-width: 1600px;
             margin: 0 auto;
             padding: 0 4rem 4rem;
