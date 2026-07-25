@@ -2627,7 +2627,10 @@
         }
 
         .hero-title {
-            margin: 0 0 0.28rem;
+            /* Editorial breathing room: let the mark stand apart from the actions
+               the way a fashion-house splash does — the emblem should not sit on
+               top of the buttons. Scales down gracefully on short screens. */
+            margin: 0 0 clamp(1.6rem, 3.8vh, 2.8rem);
             line-height: 0;
         }
 
@@ -2639,8 +2642,20 @@
             /* Optical centering: the solid E is heavier than the open V, so a small
                nudge right makes the mark read as centered over the button. */
             transform: translateX(5%);
-            filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.65));
+            filter: drop-shadow(0 10px 34px rgba(0, 0, 0, 0.68)) drop-shadow(0 0 22px rgba(199, 169, 108, 0.10));
+            /* Whisper-slow cinematic breathe so the focal mark feels alive among
+               the moving rings and dust — never a bounce, pure ease-in-out drift.
+               Starts after the entrance rise has settled. */
+            animation: heroEmblemBreathe 9s ease-in-out 1.5s infinite;
+            will-change: transform;
         }
+
+        @keyframes heroEmblemBreathe {
+            0%, 100% { transform: translateX(5%) translateY(0); }
+            50% { transform: translateX(5%) translateY(-6px); }
+        }
+
+        html.reduce-motion .hero-title-img { animation: none; }
 
         .hero-subtitle {
             font-size: clamp(0.85rem, 2vw, 1.05rem);
