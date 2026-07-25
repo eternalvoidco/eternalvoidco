@@ -666,6 +666,7 @@
         .gallery-preview-backdrop.open .gallery-preview-panel .panel-frame,
         .product-detail-overlay.open .product-detail-panel .panel-frame,
         .style-guide-overlay.open .style-guide-panel .panel-frame,
+        .void-auth.active .void-auth-panel .panel-frame,
         .cart-popup.open .panel-frame {
             opacity: 1;
         }
@@ -676,6 +677,7 @@
         .gallery-preview-backdrop.open .gallery-preview-panel .panel-frame::before,
         .product-detail-overlay.open .product-detail-panel .panel-frame::before,
         .style-guide-overlay.open .style-guide-panel .panel-frame::before,
+        .void-auth.active .void-auth-panel .panel-frame::before,
         .cart-popup.open .panel-frame::before {
             animation: voidFrameOrbit 5.5s linear infinite;
         }
@@ -6877,14 +6879,21 @@
             width: min(94vw, 420px);
             border: 1px solid rgba(199, 169, 108, 0.42);
             background: linear-gradient(145deg, rgba(14, 13, 11, 0.98), rgba(0, 0, 0, 0.99));
-            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(245, 242, 236, 0.08), 0 0 46px 4px rgba(199, 169, 108, 0.14);
+            /* Framed luxury depth under the traveling-light frame: outer shadow +
+               gold halo, an inner gold hairline, and a faint inner warmth. */
+            box-shadow:
+                0 30px 90px rgba(0, 0, 0, 0.72),
+                inset 0 1px 0 rgba(245, 242, 236, 0.08),
+                inset 0 0 0 1px rgba(199, 169, 108, 0.10),
+                inset 0 0 44px rgba(199, 169, 108, 0.045),
+                0 0 46px 4px rgba(199, 169, 108, 0.14);
             padding: 2.4rem 2rem 2rem;
             text-align: center;
             /* Cinematic emerge: unfurls from a thin line out of the page. */
             transform: scaleY(0.06) scaleX(0.92) translateY(8px);
             transform-origin: center;
             opacity: 0;
-            transition: transform 0.62s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.36s ease;
+            transition: transform 0.72s var(--ease-lux), opacity 0.42s ease;
         }
 
         .void-auth.active .void-auth-panel { transform: scaleY(1) scaleX(1) translateY(0); opacity: 1; }
@@ -6955,14 +6964,20 @@
             font-size: 0.9rem;
             padding: 0.75rem 0.85rem;
             outline: none;
-            transition: border-color 0.24s ease, box-shadow 0.24s ease;
+            transition: border-color 0.3s var(--ease-lux), box-shadow 0.3s var(--ease-lux), background 0.3s var(--ease-lux);
         }
 
         .void-auth-input::placeholder { color: rgba(245, 242, 236, 0.35); }
 
         .void-auth-input:focus {
-            border-color: rgba(199, 169, 108, 0.75);
-            box-shadow: 0 0 0 2px rgba(199, 169, 108, 0.12);
+            border-color: rgba(199, 169, 108, 0.85);
+            background: rgba(14, 12, 9, 0.9);
+            /* Refined gold focus: a crisp hairline, a soft outer bloom, and a
+               faint inner warmth — luxurious, never neon. */
+            box-shadow:
+                0 0 0 1px rgba(199, 169, 108, 0.4),
+                0 0 18px rgba(199, 169, 108, 0.14),
+                inset 0 0 14px rgba(199, 169, 108, 0.05);
         }
 
         .void-auth-suggest {
@@ -7098,17 +7113,22 @@
             text-transform: uppercase;
             cursor: pointer;
             box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.35);
-            transition: background 0.35s var(--ease-lux), color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), filter 0.35s var(--ease-lux);
+            transition: background 0.35s var(--ease-lux), color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), filter 0.35s var(--ease-lux), transform 0.35s var(--ease-lux);
         }
 
         .void-auth-submit:hover,
         .void-auth-submit:focus-visible {
             background: transparent;
             color: var(--void-gold-soft);
-            box-shadow: 0 0 20px rgba(199, 169, 108, 0.16);
+            /* Premium hover: the gold fill empties to an outlined button with a
+               soft gold bloom and a whisper of lift. */
+            box-shadow: 0 0 26px rgba(199, 169, 108, 0.24), 0 10px 26px rgba(0, 0, 0, 0.42);
             filter: brightness(1.02);
+            transform: translateY(-1px);
             outline: none;
         }
+
+        .void-auth-submit:active { transform: translateY(0); }
 
         .void-auth-error {
             min-height: 1rem;
@@ -7700,14 +7720,22 @@
             overflow-y: auto;
             border: 1px solid rgba(199, 169, 108, 0.42);
             background: linear-gradient(145deg, rgba(14, 13, 11, 0.98), rgba(0, 0, 0, 0.99));
-            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(245, 242, 236, 0.08), 0 0 46px 4px rgba(199, 169, 108, 0.14);
+            /* Framed luxury depth: outer shadow + gold halo, plus an inner gold
+               hairline and a faint inner warmth (a quiet double-frame). Static
+               box-shadow so it never scrolls with the panel content. */
+            box-shadow:
+                0 30px 90px rgba(0, 0, 0, 0.72),
+                inset 0 1px 0 rgba(245, 242, 236, 0.08),
+                inset 0 0 0 1px rgba(199, 169, 108, 0.10),
+                inset 0 0 44px rgba(199, 169, 108, 0.045),
+                0 0 46px 4px rgba(199, 169, 108, 0.14);
             padding: 2.2rem 1.8rem 1.9rem;
             text-align: center;
             /* Cinematic emerge: unfurls from a thin line out of the page. */
             transform: scaleY(0.06) scaleX(0.92) translateY(8px);
             transform-origin: center;
             opacity: 0;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.36s ease;
+            transition: transform 0.72s var(--ease-lux), opacity 0.42s ease;
             scrollbar-width: thin;
             scrollbar-color: rgba(199, 169, 108, 0.6) transparent;
         }
@@ -8594,6 +8622,7 @@
     <!-- VOID member sign-in (client-side email; appears after entering the VOID) -->
     <div class="void-auth" id="voidAuth" aria-hidden="true">
         <div class="void-auth-panel" role="dialog" aria-modal="true" aria-labelledby="voidAuthTitle">
+            <span class="panel-frame" aria-hidden="true"></span>
             <button type="button" class="void-auth-close" id="voidAuthClose" aria-label="Close sign-in">✕</button>
             <p class="void-auth-eyebrow">Private Members</p>
             <h2 class="void-auth-title" id="voidAuthTitle">The Inner Circle</h2>
