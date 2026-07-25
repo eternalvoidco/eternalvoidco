@@ -6119,7 +6119,10 @@
             max-width: 1600px;
             margin: 8rem auto 0;
             padding: 4rem 0;
-            /* Clean, pure-black footer — no divider line or atmospheric seam. */
+            /* Pure black — no atmospheric haze. Just a thin, elegant gold divider
+               that fades at the ends, matching the legal strip's divider below. */
+            border-top: 1px solid transparent;
+            border-image: linear-gradient(90deg, transparent 0%, rgba(199, 169, 108, 0.22) 32%, rgba(199, 169, 108, 0.22) 68%, transparent 100%) 1;
         }
 
         .footer-content {
