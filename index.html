@@ -8390,12 +8390,10 @@
              sequence still plays over stars rather than flat black. -->
         <video class="story-overlay-video" id="storyOverlayVideo" aria-hidden="true" tabindex="-1"
                autoplay muted loop playsinline preload="auto" disablepictureinpicture>
-            <!-- No type attribute on purpose. The file is H.264 in a QuickTime
-                 container; browsers report canPlayType('video/quicktime') as ""
-                 and will skip a source declared that way, even though they can
-                 decode it. Left untyped so the browser sniffs it and plays.
-                 Firefox still won't take a .mov — it gets the CSS star field. -->
-            <source src="/assets/AdobeStock_395943302.mov">
+            <!-- H.264 .mp4: plays in every current browser, Firefox included.
+                 If it ever fails to load, the CSS star field below shows
+                 through on black rather than a blank frame. -->
+            <source src="/assets/storyswvid.mp4" type="video/mp4">
         </video>
         <div class="story-overlay-stars" aria-hidden="true"></div>
         <div class="story-overlay-spark spark-one" aria-hidden="true">

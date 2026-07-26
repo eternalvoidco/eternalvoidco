@@ -10,3 +10,8 @@
 .DS_Store
 Thumbs.db
 node_modules/
+
+# Master video sources. QuickTime is not a web delivery format — Firefox
+# refuses it outright and the files are large. Keep the .mov masters local and
+# commit an H.264 .mp4 instead (e.g. assets/galaxy-story.mp4).
+*.mov
