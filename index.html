@@ -1849,7 +1849,7 @@
 
         @keyframes storyNebulaFadeIn {
             from { opacity: 0; }
-            to { opacity: 0.6; }
+            to { opacity: 0.28; }
         }
 
         /* Parallax: nearer layers travel further. All movement is a few percent
@@ -2810,12 +2810,12 @@
             position: fixed;
             inset: 0;
             z-index: 1700;
-            /* Deep-space base: a charcoal core falling away to pure black at the
-               frame, so the field reads as depth rather than a flat backdrop. */
+            /* True black, with only the faintest navy breath at the centre so it
+               reads as space rather than a switched-off screen. No grey haze. */
             background: radial-gradient(125% 95% at 50% 44%,
-                #101015 0%,
-                #0a0a0e 32%,
-                #050507 62%,
+                #01010a 0%,
+                #000006 30%,
+                #000003 58%,
                 #000000 100%);
             opacity: 0;
             /* Fully inert while closed: visibility:hidden stops the subtree from
@@ -2844,10 +2844,10 @@
             inset: 0;
             z-index: 0;
             pointer-events: none;
+            /* Vignette only. The warm and blue pools that used to sit here read
+               as cloud and tinted the crawl — the frame just falls to black. */
             background:
-                radial-gradient(44% 36% at 50% 50%, rgba(199, 169, 108, 0.045), transparent 72%),
-                radial-gradient(40% 34% at 50% 50%, rgba(150, 160, 190, 0.03), transparent 70%),
-                radial-gradient(125% 95% at 50% 48%, transparent 42%, rgba(0, 0, 0, 0.5) 78%, rgba(0, 0, 0, 0.82) 100%);
+                radial-gradient(125% 95% at 50% 48%, transparent 44%, rgba(0, 0, 0, 0.62) 78%, rgba(0, 0, 0, 0.92) 100%);
         }
 
         /* Mid-depth bed — sits between the distant wash and the bright anchors,
@@ -2861,17 +2861,17 @@
             background-image:
                 radial-gradient(1px 1px at 9% 14%, rgba(255, 255, 255, 0.6), transparent 100%),
                 radial-gradient(1px 1px at 19% 52%, rgba(255, 255, 255, 0.44), transparent 100%),
-                radial-gradient(1.2px 1.2px at 31% 27%, rgba(252, 250, 244, 0.58), transparent 100%),
+                radial-gradient(1.2px 1.2px at 31% 27%, rgba(255, 255, 255, 0.58), transparent 100%),
                 radial-gradient(1px 1px at 42% 71%, rgba(255, 255, 255, 0.4), transparent 100%),
                 radial-gradient(1.2px 1.2px at 51% 38%, rgba(255, 255, 255, 0.62), transparent 100%),
                 radial-gradient(1px 1px at 61% 84%, rgba(246, 248, 255, 0.42), transparent 100%),
                 radial-gradient(1.2px 1.2px at 69% 22%, rgba(255, 255, 255, 0.56), transparent 100%),
                 radial-gradient(1px 1px at 78% 61%, rgba(255, 255, 255, 0.38), transparent 100%),
-                radial-gradient(1.2px 1.2px at 87% 33%, rgba(253, 250, 242, 0.54), transparent 100%),
+                radial-gradient(1.2px 1.2px at 87% 33%, rgba(255, 255, 255, 0.54), transparent 100%),
                 radial-gradient(1px 1px at 94% 77%, rgba(255, 255, 255, 0.44), transparent 100%),
                 radial-gradient(1px 1px at 25% 92%, rgba(255, 255, 255, 0.36), transparent 100%),
                 radial-gradient(1px 1px at 64% 6%, rgba(255, 255, 255, 0.46), transparent 100%);
-            background-size: 43% 37%;
+            background-size: 66% 58%;
             -webkit-mask: radial-gradient(115% 90% at 50% 46%, #000 38%, rgba(0, 0, 0, 0.4) 74%, transparent 100%);
             mask: radial-gradient(115% 90% at 50% 46%, #000 38%, rgba(0, 0, 0, 0.4) 74%, transparent 100%);
             opacity: 0;
@@ -2929,7 +2929,8 @@
                 radial-gradient(1px 1px at 26% 68%, rgba(255, 255, 255, 0.47), transparent 100%),
                 radial-gradient(1px 1px at 55% 6%, rgba(255, 255, 255, 0.36), transparent 100%),
                 radial-gradient(1px 1px at 79% 95%, rgba(255, 255, 255, 0.4), transparent 100%);
-            background-size: 58% 48%;
+            /* Larger tile = fewer repeats = a sparser, crisper field. */
+            background-size: 88% 78%;
             opacity: 0;
             animation:
                 storyStarsFadeIn 3s ease forwards,
@@ -2940,17 +2941,17 @@
         /* Nearer, brighter anchors — sparse, slightly larger, faint twinkle. */
         .story-overlay-stars::before {
             background-image:
-                radial-gradient(1.6px 1.6px at 14% 31%, rgba(255, 253, 246, 0.92), transparent 100%),
-                radial-gradient(1.4px 1.4px at 27% 15%, rgba(238, 242, 255, 0.8), transparent 100%),
-                radial-gradient(1.7px 1.7px at 36% 63%, rgba(255, 255, 255, 0.86), transparent 100%),
-                radial-gradient(1.4px 1.4px at 46% 22%, rgba(252, 246, 232, 0.74), transparent 100%),
-                radial-gradient(1.8px 1.8px at 57% 47%, rgba(255, 255, 255, 0.9), transparent 100%),
-                radial-gradient(1.4px 1.4px at 64% 78%, rgba(240, 244, 255, 0.72), transparent 100%),
-                radial-gradient(1.6px 1.6px at 72% 19%, rgba(255, 252, 244, 0.84), transparent 100%),
-                radial-gradient(1.5px 1.5px at 83% 44%, rgba(255, 255, 255, 0.78), transparent 100%),
-                radial-gradient(1.7px 1.7px at 90% 66%, rgba(250, 246, 236, 0.82), transparent 100%),
-                radial-gradient(1.4px 1.4px at 20% 84%, rgba(255, 255, 255, 0.7), transparent 100%),
-                radial-gradient(1.5px 1.5px at 51% 9%, rgba(244, 248, 255, 0.76), transparent 100%);
+                radial-gradient(1.5px 1.5px at 14% 31%, rgba(255, 255, 255, 0.92), transparent 100%),
+                radial-gradient(1.3px 1.3px at 27% 15%, rgba(240, 246, 255, 0.78), transparent 100%),
+                radial-gradient(1.6px 1.6px at 36% 63%, rgba(255, 255, 255, 0.86), transparent 100%),
+                radial-gradient(1.3px 1.3px at 46% 22%, rgba(255, 255, 255, 0.72), transparent 100%),
+                radial-gradient(1.7px 1.7px at 57% 47%, rgba(255, 255, 255, 0.9), transparent 100%),
+                radial-gradient(1.3px 1.3px at 64% 78%, rgba(242, 247, 255, 0.7), transparent 100%),
+                radial-gradient(1.5px 1.5px at 72% 19%, rgba(255, 255, 255, 0.82), transparent 100%),
+                radial-gradient(1.4px 1.4px at 83% 44%, rgba(255, 255, 255, 0.76), transparent 100%),
+                radial-gradient(1.6px 1.6px at 90% 66%, rgba(255, 255, 255, 0.8), transparent 100%),
+                radial-gradient(1.3px 1.3px at 20% 84%, rgba(255, 255, 255, 0.68), transparent 100%),
+                radial-gradient(1.4px 1.4px at 51% 9%, rgba(244, 249, 255, 0.74), transparent 100%);
             opacity: 0;
             animation:
                 storyStarsFadeIn 3.6s ease forwards,
@@ -2962,15 +2963,13 @@
         /* Dust and nebula haze — the depth cue. Near-neutral, barely there. */
         .story-overlay-stars::after {
             inset: -22%;
-            /* Held to the edges so the haze frames the copy instead of washing
-               over it — charcoal and graphite with one barely-there warm pocket. */
+            /* Reduced to two almost-invisible navy pockets pinned to the far
+               corners. Enough to keep the black from looking dead, far short of
+               the grey cloud that was here before. No warm tones. */
             background-image:
-                radial-gradient(34% 44% at 1% 26%, rgba(46, 54, 76, 0.44), transparent 68%),
-                radial-gradient(30% 40% at 99% 68%, rgba(60, 50, 33, 0.4), transparent 70%),
-                radial-gradient(46% 26% at 50% 104%, rgba(34, 38, 54, 0.36), transparent 72%),
-                radial-gradient(42% 24% at 50% -4%, rgba(30, 32, 44, 0.34), transparent 72%),
-                radial-gradient(26% 34% at 97% 10%, rgba(52, 44, 30, 0.28), transparent 70%);
-            filter: blur(56px);
+                radial-gradient(30% 38% at 1% 24%, rgba(10, 14, 30, 0.5), transparent 66%),
+                radial-gradient(28% 34% at 99% 72%, rgba(8, 12, 26, 0.44), transparent 68%);
+            filter: blur(64px);
             opacity: 0;
             animation:
                 storyNebulaFadeIn 4.2s ease forwards,
@@ -3215,8 +3214,10 @@
             transform-origin: 50% 100%;
             transform: translateX(-50%) translateZ(0) rotateX(45deg) translateY(60%);
             opacity: 0;
-            /* Warm ivory with an antique-gold cast — large, serif, editorial. */
-            color: #ecdfc0;
+            /* The classic bright crawl yellow — flat colour, no metallic ramp,
+               no bronze cast. The shadow below is pure black for legibility,
+               deliberately not a glow. */
+            color: #ffe81f;
             font-family: 'Cormorant Garamond', serif;
             text-align: center;
             text-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(0, 0, 0, 0.7);
@@ -3257,19 +3258,18 @@
             line-height: 1.02;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            /* Antique gold against the ivory body — the one warm accent. */
-            color: #e9d6a8;
+            color: #ffe81f;
             margin: 0 0 2rem;
         }
 
-        /* One restrained gold rule to close the heading block. */
+        /* Rule matches the crawl, not the site's antique gold. */
         .story-crawl-title::after {
             content: '';
             display: block;
             width: 5rem;
             height: 1px;
             margin: 2rem auto 0;
-            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.7), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 232, 31, 0.6), transparent);
         }
 
         .story-crawl p {
@@ -3295,7 +3295,7 @@
             line-height: 1.6;
             letter-spacing: 0.4em;
             text-transform: uppercase;
-            color: rgba(214, 184, 124, 0.92);
+            color: rgba(255, 232, 31, 0.82);
         }
 
         @keyframes storyExitPulse {
