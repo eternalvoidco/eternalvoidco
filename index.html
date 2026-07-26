@@ -2842,7 +2842,9 @@
             content: '';
             position: absolute;
             inset: 0;
-            z-index: 0;
+            /* Above the galaxy plate so it frames the video's edges. Its centre
+               is fully transparent, so the stars stay bright where they matter. */
+            z-index: 2;
             pointer-events: none;
             /* Vignette only. The warm and blue pools that used to sit here read
                as cloud and tinted the crawl — the frame just falls to black. */
@@ -2880,6 +2882,30 @@
                 storyDriftMid 185s ease-in-out infinite alternate;
             will-change: transform;
         }
+
+        /* Galaxy plate behind the story only. Fully inert: it can never take a
+           click, a wheel event or tab focus, so the Return button and page
+           scrolling are unaffected. Black underneath covers loading and any
+           decode failure. */
+        .story-overlay-video {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+            pointer-events: none;
+            user-select: none;
+            border: 0;
+        }
+
+        /* Calm mode (?calm -> html.reduce-motion) falls back to the still CSS
+           star field on black. Deliberately not gated on the OS
+           prefers-reduced-motion query: this machine and most Windows installs
+           report it on unrequested, which would hide the galaxy from nearly
+           everyone — the same trap that had frozen the crawl. */
+        html.reduce-motion .story-overlay-video { display: none; }
 
         /* ── Deep-space field ──────────────────────────────────────────────
            Three layers at different depths: a dense bed of distant fine stars,
@@ -3195,13 +3221,16 @@
                its near edge through the camera plane (the type blew up to
                thousands of pixels). 900px is measured to hold at 390, 768,
                1440 and 1920. */
-            perspective: 900px;
-            perspective-origin: 50% 0%;
+            perspective: 1100px;
+            /* Horizon sits in the upper middle of the frame: the plane recedes
+               toward that point, so the copy shrinks away into it rather than
+               sliding flatly off the top edge. */
+            perspective-origin: 50% 38%;
             pointer-events: none;
-            /* The copy thins out as it nears the horizon and is gone before the
-               top edge, so nothing ever clips — it dissolves into deep space. */
-            -webkit-mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.12) 9%, rgba(0, 0, 0, 0.6) 20%, #000 38%, #000 100%);
-            mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.12) 9%, rgba(0, 0, 0, 0.6) 20%, #000 38%, #000 100%);
+            /* Only the last stretch before the horizon dissolves, so the copy
+               stays legible almost the whole way out. */
+            -webkit-mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.35) 6%, #000 20%, #000 100%);
+            mask: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.35) 6%, #000 20%, #000 100%);
         }
 
         .story-crawl {
@@ -3212,7 +3241,7 @@
                (projected width runs ~15% over the layout width at this tilt). */
             width: min(880px, 78vw);
             transform-origin: 50% 100%;
-            transform: translateX(-50%) translateZ(0) rotateX(45deg) translateY(60%);
+            transform: translateX(-50%) translateZ(0) rotateX(65deg) translateY(55%);
             opacity: 0;
             /* The classic bright crawl yellow — flat colour, no metallic ramp,
                no bronze cast. The shadow below is pure black for legibility,
@@ -3240,13 +3269,13 @@
            behind on screen. */
         @keyframes voidStoryCrawl {
             0% {
-                transform: translateX(-50%) translateZ(0) rotateX(45deg) translateY(60%);
+                transform: translateX(-50%) translateZ(0) rotateX(65deg) translateY(55%);
                 opacity: 0;
             }
             3% { opacity: 1; }
             88% { opacity: 1; }
             100% {
-                transform: translateX(-50%) translateZ(-300px) rotateX(45deg) translateY(-160%);
+                transform: translateX(-50%) translateZ(-900px) rotateX(65deg) translateY(-360%);
                 opacity: 0;
             }
         }
@@ -3495,7 +3524,7 @@
             inset: 0;
             z-index: 0;
             pointer-events: none;
-            background: radial-gradient(90% 42% at 50% 0%, rgba(199, 169, 108, 0.05), transparent 62%);
+            background: radial-gradient(90% 42% at 50% 0%, rgba(199, 169, 108, 0.022), transparent 62%);
         }
 
         /* ── Full-section cinematic atmosphere (CSS-only, behind the grid at z0) ──
@@ -3516,24 +3545,27 @@
 
         .products-atmos > span { position: absolute; display: block; inset: 0; }
 
-        /* Deep layered base — charcoal + blue-black undertone + faint gold (not flat black) */
+        /* Near-black base matching the site shell. The warm brown pocket that
+           used to sit on the right is now barely tinted, so the section reads as
+           black with a dark-gold breath rather than a brown wash. */
         .pa-base {
             background:
-                radial-gradient(120% 82% at 50% 6%, rgba(184, 148, 58, 0.05), transparent 55%),
-                radial-gradient(92% 72% at 16% 40%, rgba(15, 17, 26, 0.6), transparent 60%),
-                radial-gradient(92% 72% at 84% 62%, rgba(22, 17, 9, 0.66), transparent 62%),
-                linear-gradient(180deg, #050506 0%, #0a0906 48%, #060505 100%);
+                radial-gradient(120% 82% at 50% 6%, rgba(184, 148, 58, 0.022), transparent 55%),
+                radial-gradient(92% 72% at 16% 40%, rgba(12, 13, 20, 0.5), transparent 60%),
+                radial-gradient(92% 72% at 84% 62%, rgba(14, 11, 6, 0.5), transparent 62%),
+                linear-gradient(180deg, #030302 0%, #050403 48%, #030302 100%);
         }
 
         /* Soft moving light / fog */
         .pa-fog {
             inset: -25%;
-            filter: blur(70px);
-            opacity: 0.85;
+            /* Wider blur = a smoother falloff with no visible stepping. */
+            filter: blur(96px);
+            opacity: 0.4;
             background:
-                radial-gradient(30% 42% at 26% 34%, rgba(107, 81, 29, 0.16), transparent 60%),
-                radial-gradient(34% 46% at 76% 66%, rgba(28, 24, 38, 0.5), transparent 62%),
-                radial-gradient(24% 30% at 58% 22%, rgba(184, 148, 58, 0.07), transparent 60%);
+                radial-gradient(30% 42% at 26% 34%, rgba(107, 81, 29, 0.075), transparent 60%),
+                radial-gradient(34% 46% at 76% 66%, rgba(24, 21, 32, 0.42), transparent 62%),
+                radial-gradient(24% 30% at 58% 22%, rgba(184, 148, 58, 0.03), transparent 60%);
             animation: paFog 54s ease-in-out infinite alternate;
         }
 
@@ -3544,7 +3576,7 @@
 
         /* Slow breathing glow */
         .pa-glow {
-            background: radial-gradient(46% 40% at 50% 56%, rgba(184, 148, 58, 0.09), transparent 66%);
+            background: radial-gradient(46% 40% at 50% 56%, rgba(184, 148, 58, 0.038), transparent 66%);
             animation: paBreathe 11s ease-in-out infinite;
         }
 
@@ -3555,7 +3587,7 @@
 
         /* Faint drifting gold dust (no bright dots) */
         .pa-particles {
-            opacity: 0.5;
+            opacity: 0.24;
             background-image:
                 radial-gradient(1.5px 1.5px at 12% 24%, rgba(184, 148, 58, 0.2), transparent),
                 radial-gradient(1.5px 1.5px at 32% 66%, rgba(107, 81, 29, 0.24), transparent),
@@ -3568,16 +3600,18 @@
             animation: paDrift 70s linear infinite;
         }
 
+        /* Same travel as before — only the brightness comes down. */
         @keyframes paDrift {
-            0% { transform: translateY(14px); opacity: 0.28; }
-            50% { opacity: 0.5; }
-            100% { transform: translateY(-70px); opacity: 0.28; }
+            0% { transform: translateY(14px); opacity: 0.13; }
+            50% { opacity: 0.24; }
+            100% { transform: translateY(-70px); opacity: 0.13; }
         }
 
-        /* Fine grain texture */
+        /* Kept only as a dither: at this strength it breaks up banding in the
+           large dark gradients without ever reading as grain or texture. */
         .pa-grain {
-            opacity: 0.5;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 0.5px, transparent 0.6px);
+            opacity: 0.12;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.022) 0.5px, transparent 0.6px);
             background-size: 3px 3px;
             mix-blend-mode: overlay;
         }
@@ -3585,7 +3619,7 @@
         /* Occasional soft light sweep */
         .pa-shimmer {
             inset: -40% -12%;
-            background: linear-gradient(115deg, transparent 43%, rgba(184, 148, 58, 0.05) 50%, transparent 57%);
+            background: linear-gradient(115deg, transparent 43%, rgba(184, 148, 58, 0.022) 50%, transparent 57%);
             transform: translateX(-62%);
             animation: paSweep 30s ease-in-out infinite;
         }
@@ -3608,10 +3642,10 @@
 
         /* Lighter + calmer on phones (performance) */
         @media (max-width: 600px) {
-            .pa-fog { animation: none; filter: blur(48px); }
+            .pa-fog { animation: none; filter: blur(68px); }
             .pa-glow { animation: none; }
             .pa-particles { animation: none; }
-            .pa-grain { opacity: 0.35; }
+            .pa-grain { opacity: 0.1; }
             .pa-shimmer { display: none; }
         }
 
@@ -8350,6 +8384,19 @@
     </section>
 
     <div class="story-overlay" id="storyOverlay" aria-hidden="true">
+        <!-- Galaxy plate. Sits at the very back of the story overlay only, and is
+             inert to input. The CSS star field below stays in place as the
+             fallback, so if the file is missing or the codec is unsupported the
+             sequence still plays over stars rather than flat black. -->
+        <video class="story-overlay-video" id="storyOverlayVideo" aria-hidden="true" tabindex="-1"
+               autoplay muted loop playsinline preload="auto" disablepictureinpicture>
+            <!-- No type attribute on purpose. The file is H.264 in a QuickTime
+                 container; browsers report canPlayType('video/quicktime') as ""
+                 and will skip a source declared that way, even though they can
+                 decode it. Left untyped so the browser sniffs it and plays.
+                 Firefox still won't take a .mov — it gets the CSS star field. -->
+            <source src="/assets/AdobeStock_395943302.mov">
+        </video>
         <div class="story-overlay-stars" aria-hidden="true"></div>
         <div class="story-overlay-spark spark-one" aria-hidden="true">
             <span class="spark-ray"></span>
@@ -10603,6 +10650,7 @@
             void storyOverlay.offsetWidth;
             storyOverlay.classList.add('animate');
             startStoryCrawlAnimation();
+            playStoryBackdrop();
             trackAnalyticsEvent('open_story_overlay', {
                 source: 'hero_read_story_button'
             });
@@ -10614,9 +10662,28 @@
             }
         }
 
+        /* The galaxy plate only runs while the story is on screen — never behind
+           the main page. Looping is left to the <video> itself, so it never
+           touches the crawl animation. */
+        function playStoryBackdrop() {
+            const video = document.getElementById('storyOverlayVideo');
+            if (!video) return;
+            try {
+                const p = video.play();
+                if (p && typeof p.catch === 'function') p.catch(() => {});
+            } catch (e) {}
+        }
+
+        function pauseStoryBackdrop() {
+            const video = document.getElementById('storyOverlayVideo');
+            if (!video) return;
+            try { video.pause(); } catch (e) {}
+        }
+
         function closeStoryOverlay() {
             if (!storyOverlay) return;
 
+            pauseStoryBackdrop();
             storyOverlay.classList.remove('open', 'animate');
             storyOverlay.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('story-open');
