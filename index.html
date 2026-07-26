@@ -2842,9 +2842,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            /* Above the galaxy plate so it frames the video's edges. Its centre
-               is fully transparent, so the stars stay bright where they matter. */
-            z-index: 2;
+            z-index: 0;
             pointer-events: none;
             /* Vignette only. The warm and blue pools that used to sit here read
                as cloud and tinted the crawl — the frame just falls to black. */
@@ -2882,30 +2880,6 @@
                 storyDriftMid 185s ease-in-out infinite alternate;
             will-change: transform;
         }
-
-        /* Galaxy plate behind the story only. Fully inert: it can never take a
-           click, a wheel event or tab focus, so the Return button and page
-           scrolling are unaffected. Black underneath covers loading and any
-           decode failure. */
-        .story-overlay-video {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background: #000;
-            pointer-events: none;
-            user-select: none;
-            border: 0;
-        }
-
-        /* Calm mode (?calm -> html.reduce-motion) falls back to the still CSS
-           star field on black. Deliberately not gated on the OS
-           prefers-reduced-motion query: this machine and most Windows installs
-           report it on unrequested, which would hide the galaxy from nearly
-           everyone — the same trap that had frozen the crawl. */
-        html.reduce-motion .story-overlay-video { display: none; }
 
         /* ── Deep-space field ──────────────────────────────────────────────
            Three layers at different depths: a dense bed of distant fine stars,
@@ -3185,27 +3159,13 @@
             animation-duration: 78s;
         }
 
-        /* Honour the OS signal too. Note this stops MOTION only — the galaxy
-           stays fully visible, because Windows very often reports this as on
-           and blanking the visuals there would be worse than holding them
-           still. The site's own ?calm switch remains the explicit opt-out. */
-        @media (prefers-reduced-motion: reduce) {
-            .story-overlay-stars,
-            .story-overlay-stars::before,
-            .story-overlay-stars::after,
-            .story-overlay::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transform: none !important;
-            }
-
-            /* The crawl itself is deliberately NOT slowed or disabled here. A
-               great many Windows machines report this flag on without the owner
-               ever asking, and throttling the crawl made it read as a frozen
-               block of text — the exact bug this replaced. The explicit ?calm
-               switch (html.reduce-motion) is the real opt-out, and the Return
-               to VOID button is always available to leave the sequence. */
-        }
+        /* Nothing in the story is gated on the OS prefers-reduced-motion query.
+           This machine and most Windows installs report it on without the owner
+           asking, and it had been freezing the star drift to a dead still image
+           and, earlier, the crawl itself. The drift is a few percent over two
+           to five minutes, which is not a motion hazard. The explicit ?calm
+           switch (html.reduce-motion) remains the real opt-out and does stop
+           the field, and Return to VOID always leaves the sequence. */
 
         /* The crawl stage: a deep camera looking up at a tilted plane. The
            vanishing point sits just above the frame, so the copy travels away
@@ -8384,17 +8344,12 @@
     </section>
 
     <div class="story-overlay" id="storyOverlay" aria-hidden="true">
-        <!-- Galaxy plate. Sits at the very back of the story overlay only, and is
-             inert to input. The CSS star field below stays in place as the
-             fallback, so if the file is missing or the codec is unsupported the
-             sequence still plays over stars rather than flat black. -->
-        <video class="story-overlay-video" id="storyOverlayVideo" aria-hidden="true" tabindex="-1"
-               autoplay muted loop playsinline preload="auto" disablepictureinpicture>
-            <!-- H.264 .mp4: plays in every current browser, Firefox included.
-                 If it ever fails to load, the CSS star field below shows
-                 through on black rather than a blank frame. -->
-            <source src="/assets/storyswvid.mp4" type="video/mp4">
-        </video>
+        <!-- The galaxy is drawn procedurally by the layers below rather than
+             from a video. A 20s clip cannot loop invisibly here: its last frame
+             does not match its first, so `loop` teleported the whole star field
+             every 20 seconds. These layers drift with `infinite alternate`
+             easing, which turns around at zero velocity and therefore never
+             resets, jumps or flashes — it is endless by construction. -->
         <div class="story-overlay-stars" aria-hidden="true"></div>
         <div class="story-overlay-spark spark-one" aria-hidden="true">
             <span class="spark-ray"></span>
@@ -10648,7 +10603,6 @@
             void storyOverlay.offsetWidth;
             storyOverlay.classList.add('animate');
             startStoryCrawlAnimation();
-            playStoryBackdrop();
             trackAnalyticsEvent('open_story_overlay', {
                 source: 'hero_read_story_button'
             });
@@ -10660,28 +10614,9 @@
             }
         }
 
-        /* The galaxy plate only runs while the story is on screen — never behind
-           the main page. Looping is left to the <video> itself, so it never
-           touches the crawl animation. */
-        function playStoryBackdrop() {
-            const video = document.getElementById('storyOverlayVideo');
-            if (!video) return;
-            try {
-                const p = video.play();
-                if (p && typeof p.catch === 'function') p.catch(() => {});
-            } catch (e) {}
-        }
-
-        function pauseStoryBackdrop() {
-            const video = document.getElementById('storyOverlayVideo');
-            if (!video) return;
-            try { video.pause(); } catch (e) {}
-        }
-
         function closeStoryOverlay() {
             if (!storyOverlay) return;
 
-            pauseStoryBackdrop();
             storyOverlay.classList.remove('open', 'animate');
             storyOverlay.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('story-open');
