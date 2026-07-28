@@ -8438,13 +8438,13 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Oblique Gold/White Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Ivory Gold Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Oblique Gold/White Tee</h3>
+                        <h3 class="product-name">Ivory Gold Tee</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -8453,13 +8453,13 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Oblique Gold/Black Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Ivory Black Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Oblique Gold/Black Tee</h3>
+                        <h3 class="product-name">Ivory Black Tee</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -8468,13 +8468,13 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Oblique Blue/White Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Ivory Blue Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
                         <div class="product-logo-mark" aria-hidden="true">VOID</div>
                         <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Oblique Blue/White Tee</h3>
+                        <h3 class="product-name">Ivory Blue Tee</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -10754,21 +10754,21 @@
                 L: '56666846364028',
                 XL: '56666846396796'
             },
-            'Oblique Gold/White Tee': {
+            'Ivory Gold Tee': {
                 XS: '56666871464316',
                 S: '56666871431548',
                 M: '56666871398780',
                 L: '56666871366012',
                 XL: '56666871333244'
             },
-            'Oblique Gold/Black Tee': {
+            'Ivory Black Tee': {
                 XS: '56666873201020',
                 S: '56666873233788',
                 M: '56666873266556',
                 L: '56666873299324',
                 XL: '56666873332092'
             },
-            'Oblique Blue/White Tee': {
+            'Ivory Blue Tee': {
                 XS: '56666873528700',
                 S: '56666873495932',
                 M: '56666873463164',
@@ -10776,13 +10776,19 @@
                 XL: '56666873397628'
             }
         };
+        // Old display names resolve to the current canonical keys above, so a
+        // cart already sitting in a shopper's localStorage (or a stale link)
+        // from before the "Ivory" rename still finds its Shopify variant.
         const SHOPIFY_PRODUCT_ALIASES = {
-            'Oblique Black/Gold Tee': 'Oblique Gold/Black Tee',
-            'Oblique Black/Gold': 'Oblique Gold/Black Tee',
-            'Oblique Gold/White': 'Oblique Gold/White Tee',
-            'Oblique Gold/Black': 'Oblique Gold/Black Tee',
-            'Oblique Blue/White': 'Oblique Blue/White Tee',
-            'Monogram Tee': 'Oblique Gold/White Tee'
+            'Oblique Gold/White Tee': 'Ivory Gold Tee',
+            'Oblique Gold/White': 'Ivory Gold Tee',
+            'Oblique Gold/Black Tee': 'Ivory Black Tee',
+            'Oblique Gold/Black': 'Ivory Black Tee',
+            'Oblique Black/Gold Tee': 'Ivory Black Tee',
+            'Oblique Black/Gold': 'Ivory Black Tee',
+            'Oblique Blue/White Tee': 'Ivory Blue Tee',
+            'Oblique Blue/White': 'Ivory Blue Tee',
+            'Monogram Tee': 'Ivory Gold Tee'
         };
 
         const CART_STORAGE_KEY = 'voidCart';
@@ -11574,9 +11580,9 @@
         const PRODUCT_META = {
             'Levitate Tee': { code: 'EV·S1·LVT', description: 'A weightless ritual tee in heavyweight cotton. Dropped shoulder, wide silhouette and a dense hand-feel engineered for layered VOID© styling. Cut with an intentional oversized architecture that drapes rather than clings.' },
             'Endzustand Tee': { code: 'EV·S1·END', description: 'Boxy oversized volume with a structured chest and a blunt hem line. Couture-inspired proportions in a substantial jersey that holds its shape through movement — a quiet statement in monochrome tension.' },
-            'Oblique Gold/White Tee': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-white oblique signature, printed and finished for depth and permanence.' },
-            'Oblique Gold/Black Tee': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
-            'Oblique Blue/White Tee': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-white oblique signature — a cooler register in the season one lineup.' }
+            'Ivory Gold Tee': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-ivory oblique signature, printed and finished for depth and permanence.' },
+            'Ivory Black Tee': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
+            'Ivory Blue Tee': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' }
         };
 
         function updatePdSizes(activeSize) {
