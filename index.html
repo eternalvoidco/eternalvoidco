@@ -2027,13 +2027,7 @@
                 opacity: 0.72;
             }
 
-            .product-logo-mark {
-                transform: translateY(-6px) scale(1.04);
-                letter-spacing: 0.26em;
-                color: #f7e8ca;
-            }
-
-            .product-coming-soon {
+            .product-view-affordance {
                 opacity: 1;
                 transform: translate(-50%, 0);
                 border-color: rgba(199, 169, 108, 0.74);
@@ -3806,41 +3800,52 @@
             transform: translateX(110%);
         }
 
-        .product-logo-mark {
+        /* Real product photography: each composite (front + back side by side,
+           already on a matching dark studio backdrop) sits centred in the
+           existing frame via object-fit:contain, with a consistent inset so
+           every card reads at the same apparent scale — the source images
+           share one resolution and aspect ratio, so this inset alone is
+           enough to keep framing identical across the whole grid.
+           width/height are explicit (not left to inset alone): the <img>'s
+           width/height attributes are mapped as a low-priority presentational
+           hint, and without an explicit author size the box resolves to
+           roughly that raw intrinsic size instead of the inset box — the
+           image would overflow the frame instead of being contained by it. */
+        .product-photo {
             position: absolute;
-            inset: 0;
-            display: grid;
-            place-items: center;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.05rem, 17cqi, 1.9rem);
-            /* Couture-spaced monogram; text-indent compensates the trailing
-               tracking so the mark stays optically centred. */
-            letter-spacing: 0.42em;
-            text-indent: 0.42em;
-            text-transform: uppercase;
-            /* Foil-stamped: soft gold with an emboss shadow, reading as a mark
-               pressed into the surface rather than flat placeholder text. */
-            color: rgba(219, 198, 158, 0.72);
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55), 0 0 24px rgba(199, 169, 108, 0.14);
-            transform: scale(1);
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.5s ease, text-shadow 0.5s ease;
+            inset: 7%;
+            width: 86%;
+            height: 86%;
+            object-fit: contain;
             z-index: 1;
+            transition: transform 0.7s var(--ease-lux);
             pointer-events: none;
         }
 
-        .product-coming-soon {
+        /* Restrained luxury zoom on hover — a hint of depth, never a jump. */
+        .product-card:hover .product-photo {
+            transform: scale(1.045);
+        }
+
+        /* Discreet "View Details" affordance, gold-toned, revealed on hover
+           only — mirrors the reveal timing of the frame's own hover language. */
+        .product-view-affordance {
             position: absolute;
             left: 50%;
             bottom: 9%;
             transform: translate(-50%, 10px);
             opacity: 0;
-            padding: 0.32rem 0.55rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.34rem 0.6rem;
             border: 1px solid rgba(199, 169, 108, 0.4);
             background: rgba(8, 8, 8, 0.8);
             color: #f0dfbd;
+            font-family: 'Jost', sans-serif;
             font-size: 0.5rem;
             font-weight: 600;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.16em;
             text-transform: uppercase;
             white-space: nowrap;
             transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.35s ease;
@@ -3848,18 +3853,18 @@
             pointer-events: none;
         }
 
+        .product-view-affordance svg {
+            width: 12px;
+            height: 12px;
+            flex: none;
+        }
+
         .product-card:hover .product-image::before {
             transform: scale(1.06);
             opacity: 0.6;
         }
 
-        .product-card:hover .product-logo-mark {
-            transform: scale(1.03);
-            color: #f7e8ca;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5), 0 0 30px rgba(199, 169, 108, 0.28);
-        }
-
-        .product-card:hover .product-coming-soon {
+        .product-card:hover .product-view-affordance {
             opacity: 1;
             transform: translate(-50%, 0);
             border-color: rgba(199, 169, 108, 0.7);
@@ -4562,10 +4567,97 @@
             aspect-ratio: 4/5;
             overflow: hidden;
             isolation: isolate;
+            cursor: zoom-in;
+            /* Hand pinch/pan/double-tap entirely to our own pointer-event
+               handlers instead of the browser's native touch gestures. */
+            touch-action: none;
         }
 
-        .pd-media .product-logo-mark {
+        .pd-media-stage:focus-visible {
+            outline: 1px solid rgba(199, 169, 108, 0.78);
+            outline-offset: -2px;
+        }
+
+        .pd-media-stage.is-zoomed {
+            cursor: zoom-out;
+        }
+
+        .pd-media-stage.is-panning {
+            cursor: grabbing;
+        }
+
+        /* Pan/zoom layer: JS drives this element's transform (translate + scale)
+           for the user-controlled zoom, independent of the view-crop transform
+           on the photo itself below. Composing two transformed layers this way
+           means "zoom in on the front view" and "zoom in on the back view"
+           both just work, with no special-casing. */
+        .pd-media-zoom-layer {
             position: absolute;
+            inset: 0;
+            transform-origin: 0 0;
+            will-change: transform;
+        }
+
+        .pd-media-zoom-layer.is-panning,
+        .pd-media-zoom-layer.is-pinching {
+            transition: none;
+        }
+
+        .pd-media-zoom-layer:not(.is-panning):not(.is-pinching) {
+            transition: transform 0.4s var(--ease-lux);
+        }
+
+        /* The single supplied composite (front + back side by side, already on
+           a matching dark studio backdrop) does triple duty: shown whole for
+           "both", or magnified 2x from its left/right edge to isolate one
+           garment for "front"/"back" — derived losslessly with a transform, so
+           no separate crop files are needed and every view stays perfectly
+           sharp. See setPdView() for the accompanying JS. */
+        .pd-media-photo {
+            position: absolute;
+            inset: 7%;
+            width: 86%;
+            height: 86%;
+            object-fit: contain;
+            transition: opacity 0.28s ease;
+        }
+
+        .pd-media-photo.is-swapping {
+            opacity: 0;
+        }
+
+        .pd-zoom-reset {
+            position: absolute;
+            right: 0.85rem;
+            bottom: 0.85rem;
+            z-index: 4;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(199, 169, 108, 0.4);
+            background: rgba(10, 10, 10, 0.72);
+            color: var(--void-gold-soft);
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0.85);
+            pointer-events: none;
+            transition: opacity 0.28s ease, transform 0.28s ease, border-color 0.24s ease;
+        }
+
+        .pd-zoom-reset svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .pd-media-stage.is-zoomed .pd-zoom-reset {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .pd-zoom-reset:hover,
+        .pd-zoom-reset:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
         }
 
         .pd-back {
@@ -4599,14 +4691,53 @@
         }
 
         .pd-thumb {
+            position: relative;
             width: 46px;
             height: 58px;
+            padding: 0;
+            overflow: hidden;
             border: 1px solid rgba(199, 169, 108, 0.2);
             background: linear-gradient(180deg, rgba(24, 24, 24, 0.9), rgba(6, 6, 6, 0.98));
+            cursor: pointer;
+            transition: border-color 0.24s ease;
+        }
+
+        .pd-thumb:hover,
+        .pd-thumb:focus-visible {
+            border-color: rgba(199, 169, 108, 0.5);
         }
 
         .pd-thumb.active {
             border-color: rgba(199, 169, 108, 0.7);
+        }
+
+        /* Genuine mini previews, not blank swatches: the same crop technique
+           used for the main stage, scaled down. */
+        .pd-thumb-photo {
+            position: absolute;
+            inset: 10%;
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+        /* Shared view-crop transform for both the main stage photo and the
+           thumbnail previews. object-fit:contain first renders the full
+           composite as large as the frame allows (garments centred, letterboxed
+           top/bottom); scaling that result 2x from the LEFT edge isolates the
+           front garment at exactly the same visual scale as if it had been
+           contained on its own, and from the RIGHT edge isolates the back —
+           proportional to any frame size, no separate crop files needed. */
+        .pd-media-photo[data-view="front"],
+        .pd-thumb-photo[data-view="front"] {
+            transform-origin: left center;
+            transform: scale(2);
+        }
+
+        .pd-media-photo[data-view="back"],
+        .pd-thumb-photo[data-view="back"] {
+            transform-origin: right center;
+            transform: scale(2);
         }
 
         .pd-info {
@@ -5145,6 +5276,13 @@
         html.reduce-motion .collection-nav-tab::after,
         html.reduce-motion .pd-accordion-body,
         html.reduce-motion .sg-guide .pd-accordion-body {
+            transition: none;
+        }
+
+        html.reduce-motion .pd-media-zoom-layer,
+        html.reduce-motion .pd-media-photo,
+        html.reduce-motion .pd-zoom-reset,
+        html.reduce-motion .product-photo {
             transition: none;
         }
 
@@ -8410,8 +8548,11 @@
             <div class="products-grid">
                 <div class="product-card fade-in-up" style="--delay: 80ms;" data-product-name="Levitate Tee" data-product-price="250" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID© styling.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
+                        <img class="product-photo" src="/assets/eternal-void-white-levitate-oversized-labeled.png" alt="Levitate Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <span class="product-view-affordance" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            <span data-i18n="viewDetails">View Details</span>
+                        </span>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Levitate Tee</h3>
@@ -8425,8 +8566,11 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 140ms;" data-product-name="Endzustand Tee" data-product-price="250" data-fit-title="Boxy Oversized Fit" data-fit-note="Structured chest, blunt hem line, and oversized volume with couture-inspired proportions.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
+                        <img class="product-photo" src="/assets/eternal-void-endzustand-black-graphic-oversized-labeled.png" alt="Endzustand Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <span class="product-view-affordance" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            <span data-i18n="viewDetails">View Details</span>
+                        </span>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Endzustand Tee</h3>
@@ -8440,8 +8584,11 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Ivory Gold Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
+                        <img class="product-photo" src="/assets/eternal-void-ivory-gold-monogram-studio.png" alt="Ivory Gold Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <span class="product-view-affordance" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            <span data-i18n="viewDetails">View Details</span>
+                        </span>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Ivory Gold Tee</h3>
@@ -8455,8 +8602,11 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Ivory Black Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
+                        <img class="product-photo" src="/assets/eternal-void-ivory-black-gold-monogram-studio.png" alt="Ivory Black Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <span class="product-view-affordance" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            <span data-i18n="viewDetails">View Details</span>
+                        </span>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Ivory Black Tee</h3>
@@ -8470,8 +8620,11 @@
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Ivory Blue Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
+                        <img class="product-photo" src="/assets/eternal-void-ivory-blue-monogram-studio.png" alt="Ivory Blue Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <span class="product-view-affordance" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            <span data-i18n="viewDetails">View Details</span>
+                        </span>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Ivory Blue Tee</h3>
@@ -8601,14 +8754,24 @@
             <div class="pd-layout">
                 <div class="pd-media">
                     <button type="button" class="pd-back" id="pdBack" aria-label="Back to collection" data-i18n-aria-label="pdBack">‹</button>
-                    <div class="pd-media-stage">
-                        <div class="product-logo-mark" aria-hidden="true">VOID</div>
-                        <div class="product-coming-soon" aria-hidden="true" data-i18n="comingSoon">Coming Soon</div>
+                    <div class="pd-media-stage" id="pdMediaStage" role="button" tabindex="0" aria-label="View Details" data-i18n-aria-label="viewDetails">
+                        <div class="pd-media-zoom-layer" id="pdZoomLayer">
+                            <img class="pd-media-photo" id="pdMediaPhoto" data-view="both" src="" alt="" width="1672" height="941">
+                        </div>
+                        <button type="button" class="pd-zoom-reset" id="pdZoomReset" aria-label="Reset zoom" data-i18n-aria-label="pdResetZoom">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 10h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        </button>
                     </div>
-                    <div class="pd-thumbs" aria-hidden="true">
-                        <span class="pd-thumb active"></span>
-                        <span class="pd-thumb"></span>
-                        <span class="pd-thumb"></span>
+                    <div class="pd-thumbs" id="pdThumbs" role="group" aria-label="Product views" data-i18n-aria-label="pdThumbsLabel">
+                        <button type="button" class="pd-thumb active" data-pd-view="both" aria-label="Front and back" aria-pressed="true" data-i18n-aria-label="pdViewBoth">
+                            <img class="pd-thumb-photo" data-view="both" src="" alt="" width="1672" height="941">
+                        </button>
+                        <button type="button" class="pd-thumb" data-pd-view="front" aria-label="Front" aria-pressed="false" data-i18n-aria-label="pdViewFront">
+                            <img class="pd-thumb-photo" data-view="front" src="" alt="" width="1672" height="941">
+                        </button>
+                        <button type="button" class="pd-thumb" data-pd-view="back" aria-label="Back" aria-pressed="false" data-i18n-aria-label="pdViewBack">
+                            <img class="pd-thumb-photo" data-view="back" src="" alt="" width="1672" height="941">
+                        </button>
                     </div>
                 </div>
                 <div class="pd-info">
@@ -9261,16 +9424,16 @@
         let refreshCartTranslations = () => {};
         const translations = {
             en: {
-                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Full campaign imagery for this piece is currently in production. Check back soon for the complete atelier gallery.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}'
+                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Full campaign imagery for this piece is currently in production. Check back soon for the complete atelier gallery.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}'
             },
             fr: {
-                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
+                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
             },
             it: {
-                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
+                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', viewDetails: 'Vedi Dettagli', pdResetZoom: 'Reimposta zoom', pdThumbsLabel: 'Viste del prodotto', pdViewBoth: 'Fronte e retro', pdViewFront: 'Fronte', pdViewBack: 'Retro', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
             },
             de: {
-                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
+                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', viewDetails: 'Details ansehen', pdResetZoom: 'Zoom zurücksetzen', pdThumbsLabel: 'Produktansichten', pdViewBoth: 'Vorder- und Rückseite', pdViewFront: 'Vorderseite', pdViewBack: 'Rückseite', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
             }
         };
 
@@ -11559,9 +11722,16 @@
         const pdAddedItem = document.getElementById('pdAddedItem');
         const pdAddedCount = document.getElementById('pdAddedCount');
         const pdAddedView = document.getElementById('pdAddedView');
+        const pdMediaStage = document.getElementById('pdMediaStage');
+        const pdZoomLayer = document.getElementById('pdZoomLayer');
+        const pdMediaPhoto = document.getElementById('pdMediaPhoto');
+        const pdZoomReset = document.getElementById('pdZoomReset');
+        const pdThumbs = document.getElementById('pdThumbs');
+        const pdThumbButtons = pdThumbs ? Array.from(pdThumbs.querySelectorAll('[data-pd-view]')) : [];
         let pdState = { card: null, name: '', price: 0, size: '' };
         let pdBagTouched = false;
         let lastProductDetailFocus = null;
+        let pdCurrentView = 'both';
 
         function cartQuantity() {
             return cart.reduce((total, item) => total + item.quantity, 0);
@@ -11585,6 +11755,19 @@
             'Ivory Blue Tee': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' }
         };
 
+        // Each product has one composite photograph — front and back laid out
+        // side by side on a matching studio backdrop. The product-detail
+        // gallery derives "front only" and "back only" from this same file with
+        // a CSS transform rather than separate crops (see setPdView()), so this
+        // is the only image asset each product needs.
+        const PRODUCT_IMAGES = {
+            'Levitate Tee': '/assets/eternal-void-white-levitate-oversized-labeled.png',
+            'Endzustand Tee': '/assets/eternal-void-endzustand-black-graphic-oversized-labeled.png',
+            'Ivory Gold Tee': '/assets/eternal-void-ivory-gold-monogram-studio.png',
+            'Ivory Black Tee': '/assets/eternal-void-ivory-black-gold-monogram-studio.png',
+            'Ivory Blue Tee': '/assets/eternal-void-ivory-blue-monogram-studio.png'
+        };
+
         function updatePdSizes(activeSize) {
             if (!pdSizes) return;
             pdSizes.querySelectorAll('[data-pd-size]').forEach((button) => {
@@ -11605,6 +11788,7 @@
             const meta = PRODUCT_META[name] || {};
 
             pdState = { card: productCard, name, price, size: productCard.dataset.selectedSize || '' };
+            resetPdGallery(name);
 
             if (pdCode) pdCode.textContent = meta.code || 'EV·ATELIER';
             if (pdNameEl) pdNameEl.textContent = name;
@@ -11653,6 +11837,261 @@
                 pdBagTouched = false;
                 window.setTimeout(openCartPopup, 220);
             }
+
+            pdPointers.clear();
+            pdDragActive = false;
+        }
+
+        // ============== Product detail: gallery views + zoom/pan ==============
+        // One composite photograph per product (front + back side by side on a
+        // matching studio backdrop). "Front" and "Back" are derived from that
+        // same file with a CSS transform (see .pd-media-photo[data-view] and
+        // setPdView() below) rather than separate crops, so switching views
+        // never triggers a new image request and stays perfectly sharp.
+        const PD_ZOOM_LEVEL = 2.2;
+        const PD_ZOOM_MIN = 1;
+        const PD_ZOOM_MAX = 2.2;
+        let pdZoomScale = 1;
+        let pdZoomX = 0;
+        let pdZoomY = 0;
+        let pdSwapTimer = null;
+        const pdPointers = new Map();
+        let pdPinchStartDist = 0;
+        let pdPinchStartScale = 1;
+        let pdDragActive = false;
+        let pdDragMoved = false;
+        let pdDragStartX = 0;
+        let pdDragStartY = 0;
+        let pdDragStartPanX = 0;
+        let pdDragStartPanY = 0;
+        let pdLastTapTime = 0;
+        let pdLastTapX = 0;
+        let pdLastTapY = 0;
+
+        function setPdImages(name) {
+            const src = PRODUCT_IMAGES[name] || '';
+            const bothLabel = name ? `${name} — front and back` : '';
+            if (pdMediaPhoto) {
+                pdMediaPhoto.src = src;
+                pdMediaPhoto.alt = bothLabel;
+            }
+            pdThumbButtons.forEach((button) => {
+                const img = button.querySelector('.pd-thumb-photo');
+                if (!img) return;
+                img.src = src;
+                const view = button.dataset.pdView;
+                img.alt = view === 'front' ? `${name} — front` : view === 'back' ? `${name} — back` : bothLabel;
+            });
+        }
+
+        function clampPdZoomPan(scale, x, y) {
+            if (!pdMediaStage) return { x, y };
+            const rect = pdMediaStage.getBoundingClientRect();
+            const minX = rect.width * (1 - scale);
+            const minY = rect.height * (1 - scale);
+            return {
+                x: Math.min(0, Math.max(minX, x)),
+                y: Math.min(0, Math.max(minY, y))
+            };
+        }
+
+        function applyPdZoomTransform() {
+            if (!pdZoomLayer) return;
+            pdZoomLayer.style.transform = `translate(${pdZoomX}px, ${pdZoomY}px) scale(${pdZoomScale})`;
+            if (pdMediaStage) {
+                pdMediaStage.classList.toggle('is-zoomed', pdZoomScale > 1.001);
+                pdMediaStage.setAttribute('aria-label', t(pdZoomScale > 1.001 ? 'pdResetZoom' : 'viewDetails'));
+            }
+        }
+
+        // Zooms to `scale`, keeping the stage-relative point (anchorX, anchorY)
+        // visually fixed on screen — "zoom toward where you clicked/pinched".
+        function setPdZoom(scale, anchorX, anchorY) {
+            const nextScale = Math.min(PD_ZOOM_MAX, Math.max(PD_ZOOM_MIN, scale));
+            const localX = (anchorX - pdZoomX) / pdZoomScale;
+            const localY = (anchorY - pdZoomY) / pdZoomScale;
+            const nextX = anchorX - nextScale * localX;
+            const nextY = anchorY - nextScale * localY;
+            const clamped = clampPdZoomPan(nextScale, nextX, nextY);
+            pdZoomScale = nextScale;
+            pdZoomX = clamped.x;
+            pdZoomY = clamped.y;
+            applyPdZoomTransform();
+        }
+
+        function resetPdZoom() {
+            pdZoomScale = 1;
+            pdZoomX = 0;
+            pdZoomY = 0;
+            applyPdZoomTransform();
+        }
+
+        function togglePdZoom(anchorX, anchorY) {
+            if (pdZoomScale > 1.001) {
+                resetPdZoom();
+            } else {
+                setPdZoom(PD_ZOOM_LEVEL, anchorX, anchorY);
+            }
+        }
+
+        // Called once when the detail page opens for a product — an instant
+        // reset, not the fading swap used for in-modal thumbnail clicks.
+        function resetPdGallery(name) {
+            setPdImages(name);
+            pdCurrentView = 'both';
+            if (pdMediaPhoto) {
+                pdMediaPhoto.classList.remove('is-swapping');
+                pdMediaPhoto.dataset.view = 'both';
+            }
+            pdThumbButtons.forEach((button) => {
+                const active = button.dataset.pdView === 'both';
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            resetPdZoom();
+        }
+
+        // Thumbnail-driven view swap: fades the image out, swaps the crop, then
+        // fades it back in — never a hard cut.
+        function setPdView(view) {
+            if (!pdMediaPhoto || pdCurrentView === view) return;
+            pdCurrentView = view;
+            resetPdZoom();
+
+            window.clearTimeout(pdSwapTimer);
+            pdMediaPhoto.classList.add('is-swapping');
+            pdSwapTimer = window.setTimeout(() => {
+                pdMediaPhoto.dataset.view = view;
+                pdMediaPhoto.classList.remove('is-swapping');
+            }, 300);
+
+            pdThumbButtons.forEach((button) => {
+                const active = button.dataset.pdView === view;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+        }
+
+        pdThumbButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                setPdView(button.dataset.pdView || 'both');
+            });
+        });
+
+        if (pdZoomReset) {
+            const stopPdReset = (event) => event.stopPropagation();
+            pdZoomReset.addEventListener('pointerdown', stopPdReset);
+            pdZoomReset.addEventListener('pointerup', stopPdReset);
+            pdZoomReset.addEventListener('click', (event) => {
+                event.stopPropagation();
+                resetPdZoom();
+            });
+        }
+
+        if (pdMediaStage) {
+            const stagePoint = (event) => {
+                const rect = pdMediaStage.getBoundingClientRect();
+                return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+            };
+
+            const setActive = (active) => {
+                pdMediaStage.classList.toggle('is-panning', active);
+                if (pdZoomLayer) pdZoomLayer.classList.toggle('is-panning', active);
+            };
+
+            pdMediaStage.addEventListener('pointerdown', (event) => {
+                if (pdZoomReset && (event.target === pdZoomReset || pdZoomReset.contains(event.target))) return;
+                pdPointers.set(event.pointerId, event);
+
+                if (pdPointers.size === 1) {
+                    pdDragActive = true;
+                    pdDragMoved = false;
+                    pdDragStartX = event.clientX;
+                    pdDragStartY = event.clientY;
+                    pdDragStartPanX = pdZoomX;
+                    pdDragStartPanY = pdZoomY;
+                    try { pdMediaStage.setPointerCapture(event.pointerId); } catch (e) {}
+                } else if (pdPointers.size === 2) {
+                    pdDragActive = false;
+                    const pts = Array.from(pdPointers.values());
+                    pdPinchStartDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY) || 1;
+                    pdPinchStartScale = pdZoomScale;
+                }
+            });
+
+            pdMediaStage.addEventListener('pointermove', (event) => {
+                if (!pdPointers.has(event.pointerId)) return;
+                pdPointers.set(event.pointerId, event);
+
+                if (pdPointers.size === 2) {
+                    event.preventDefault();
+                    const pts = Array.from(pdPointers.values());
+                    const dist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY) || 1;
+                    const rect = pdMediaStage.getBoundingClientRect();
+                    const anchorX = (pts[0].clientX + pts[1].clientX) / 2 - rect.left;
+                    const anchorY = (pts[0].clientY + pts[1].clientY) / 2 - rect.top;
+                    setActive(true);
+                    setPdZoom(pdPinchStartScale * (dist / pdPinchStartDist), anchorX, anchorY);
+                    return;
+                }
+
+                if (pdDragActive && pdZoomScale > 1.001) {
+                    const dx = event.clientX - pdDragStartX;
+                    const dy = event.clientY - pdDragStartY;
+                    if (Math.hypot(dx, dy) > 4) pdDragMoved = true;
+                    if (pdDragMoved) {
+                        event.preventDefault();
+                        setActive(true);
+                        const clamped = clampPdZoomPan(pdZoomScale, pdDragStartPanX + dx, pdDragStartPanY + dy);
+                        pdZoomX = clamped.x;
+                        pdZoomY = clamped.y;
+                        applyPdZoomTransform();
+                    }
+                }
+            });
+
+            const endPdPointer = (event) => {
+                const wasPinching = pdPointers.size === 2;
+                pdPointers.delete(event.pointerId);
+                setActive(false);
+
+                if (pdPointers.size === 0 && pdDragActive) {
+                    pdDragActive = false;
+                    if (!pdDragMoved) {
+                        const local = stagePoint(event);
+                        if (event.pointerType === 'mouse' || event.pointerType === 'pen') {
+                            togglePdZoom(local.x, local.y);
+                        } else {
+                            const now = Date.now();
+                            const isDoubleTap = now - pdLastTapTime < 320 && Math.hypot(local.x - pdLastTapX, local.y - pdLastTapY) < 40;
+                            if (isDoubleTap) {
+                                togglePdZoom(local.x, local.y);
+                                pdLastTapTime = 0;
+                            } else {
+                                pdLastTapTime = now;
+                                pdLastTapX = local.x;
+                                pdLastTapY = local.y;
+                            }
+                        }
+                    }
+                }
+
+                if (wasPinching && pdPointers.size < 2) pdPinchStartDist = 0;
+            };
+
+            pdMediaStage.addEventListener('pointerup', endPdPointer);
+            pdMediaStage.addEventListener('pointercancel', endPdPointer);
+            pdMediaStage.addEventListener('pointerleave', (event) => {
+                if (event.pointerType === 'mouse' && pdPointers.has(event.pointerId)) endPdPointer(event);
+            });
+
+            // Keyboard equivalent of a click: toggles zoom centred on the stage.
+            pdMediaStage.addEventListener('keydown', (event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                event.preventDefault();
+                const rect = pdMediaStage.getBoundingClientRect();
+                togglePdZoom(rect.width / 2, rect.height / 2);
+            });
         }
 
         if (pdSizes) {
@@ -11845,11 +12284,18 @@
             });
         }
 
-        // Escape closes the product detail / style guide overlays
+        // Escape closes the product detail / style guide overlays. If the
+        // product image is zoomed, the first Escape backs out of the zoom
+        // instead of leaving the page — matching the reset button/click-to-
+        // toggle behaviour rather than surprising the visitor out of the modal.
         document.addEventListener('keydown', (event) => {
             if (event.key !== 'Escape') return;
             if (productDetailOverlay && productDetailOverlay.classList.contains('open')) {
-                closeProductDetail();
+                if (pdZoomScale > 1.001) {
+                    resetPdZoom();
+                } else {
+                    closeProductDetail();
+                }
             } else if (styleGuideOverlay && styleGuideOverlay.classList.contains('open')) {
                 closeStyleGuide();
             }
