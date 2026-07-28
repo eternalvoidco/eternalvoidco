@@ -4711,33 +4711,14 @@
             border-color: rgba(199, 169, 108, 0.7);
         }
 
-        /* Genuine mini previews, not blank swatches: the same crop technique
-           used for the main stage, scaled down. */
+        /* Genuine mini previews, not blank swatches: each thumbnail loads its
+           own real front/back/both image (see PRODUCT_IMAGES + setPdView()). */
         .pd-thumb-photo {
             position: absolute;
             inset: 10%;
             width: 80%;
             height: 80%;
             object-fit: contain;
-        }
-
-        /* Shared view-crop transform for both the main stage photo and the
-           thumbnail previews. object-fit:contain first renders the full
-           composite as large as the frame allows (garments centred, letterboxed
-           top/bottom); scaling that result 2x from the LEFT edge isolates the
-           front garment at exactly the same visual scale as if it had been
-           contained on its own, and from the RIGHT edge isolates the back —
-           proportional to any frame size, no separate crop files needed. */
-        .pd-media-photo[data-view="front"],
-        .pd-thumb-photo[data-view="front"] {
-            transform-origin: left center;
-            transform: scale(2);
-        }
-
-        .pd-media-photo[data-view="back"],
-        .pd-thumb-photo[data-view="back"] {
-            transform-origin: right center;
-            transform: scale(2);
         }
 
         .pd-info {
@@ -8756,7 +8737,7 @@
                     <button type="button" class="pd-back" id="pdBack" aria-label="Back to collection" data-i18n-aria-label="pdBack">‹</button>
                     <div class="pd-media-stage" id="pdMediaStage" role="button" tabindex="0" aria-label="View Details" data-i18n-aria-label="viewDetails">
                         <div class="pd-media-zoom-layer" id="pdZoomLayer">
-                            <img class="pd-media-photo" id="pdMediaPhoto" data-view="both" src="" alt="" width="1672" height="941">
+                            <img class="pd-media-photo" id="pdMediaPhoto" data-view="both" src="" alt="" decoding="async">
                         </div>
                         <button type="button" class="pd-zoom-reset" id="pdZoomReset" aria-label="Reset zoom" data-i18n-aria-label="pdResetZoom">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 10h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -8764,13 +8745,13 @@
                     </div>
                     <div class="pd-thumbs" id="pdThumbs" role="group" aria-label="Product views" data-i18n-aria-label="pdThumbsLabel">
                         <button type="button" class="pd-thumb active" data-pd-view="both" aria-label="Front and back" aria-pressed="true" data-i18n-aria-label="pdViewBoth">
-                            <img class="pd-thumb-photo" data-view="both" src="" alt="" width="1672" height="941">
+                            <img class="pd-thumb-photo" data-view="both" src="" alt="" loading="lazy" decoding="async">
                         </button>
                         <button type="button" class="pd-thumb" data-pd-view="front" aria-label="Front" aria-pressed="false" data-i18n-aria-label="pdViewFront">
-                            <img class="pd-thumb-photo" data-view="front" src="" alt="" width="1672" height="941">
+                            <img class="pd-thumb-photo" data-view="front" src="" alt="" loading="lazy" decoding="async">
                         </button>
                         <button type="button" class="pd-thumb" data-pd-view="back" aria-label="Back" aria-pressed="false" data-i18n-aria-label="pdViewBack">
-                            <img class="pd-thumb-photo" data-view="back" src="" alt="" width="1672" height="941">
+                            <img class="pd-thumb-photo" data-view="back" src="" alt="" loading="lazy" decoding="async">
                         </button>
                     </div>
                 </div>
@@ -11755,17 +11736,38 @@
             'Ivory Blue Tee': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' }
         };
 
-        // Each product has one composite photograph — front and back laid out
-        // side by side on a matching studio backdrop. The product-detail
-        // gallery derives "front only" and "back only" from this same file with
-        // a CSS transform rather than separate crops (see setPdView()), so this
-        // is the only image asset each product needs.
+        // Each product has three real files: the supplied front+back
+        // composite (the card's default image), and a front-only / back-only
+        // cutout extracted from it — each isolated to just that garment's own
+        // connected pixels and tightly trimmed, so switching views is a plain
+        // src swap with no cropping math and no risk of the other garment's
+        // edge bleeding in.
         const PRODUCT_IMAGES = {
-            'Levitate Tee': '/assets/levitate-white.png',
-            'Endzustand Tee': '/assets/endzustand-black.png',
-            'Ivory Gold Tee': '/assets/ivory-gold-monogram.png',
-            'Ivory Black Tee': '/assets/ivory-black-gold-monogram.png',
-            'Ivory Blue Tee': '/assets/ivory-blue-monogram.png'
+            'Levitate Tee': {
+                both: '/assets/levitate-white.png',
+                front: '/assets/levitate-white-front.png',
+                back: '/assets/levitate-white-back.png'
+            },
+            'Endzustand Tee': {
+                both: '/assets/endzustand-black.png',
+                front: '/assets/endzustand-black-front.png',
+                back: '/assets/endzustand-black-back.png'
+            },
+            'Ivory Gold Tee': {
+                both: '/assets/ivory-gold-monogram.png',
+                front: '/assets/ivory-gold-monogram-front.png',
+                back: '/assets/ivory-gold-monogram-back.png'
+            },
+            'Ivory Black Tee': {
+                both: '/assets/ivory-black-gold-monogram.png',
+                front: '/assets/ivory-black-gold-monogram-front.png',
+                back: '/assets/ivory-black-gold-monogram-back.png'
+            },
+            'Ivory Blue Tee': {
+                both: '/assets/ivory-blue-monogram.png',
+                front: '/assets/ivory-blue-monogram-front.png',
+                back: '/assets/ivory-blue-monogram-back.png'
+            }
         };
 
         function updatePdSizes(activeSize) {
@@ -11843,11 +11845,11 @@
         }
 
         // ============== Product detail: gallery views + zoom/pan ==============
-        // One composite photograph per product (front + back side by side on a
-        // matching studio backdrop). "Front" and "Back" are derived from that
-        // same file with a CSS transform (see .pd-media-photo[data-view] and
-        // setPdView() below) rather than separate crops, so switching views
-        // never triggers a new image request and stays perfectly sharp.
+        // Each product has three real files (PRODUCT_IMAGES): the supplied
+        // front+back composite for "both", plus a front-only and back-only
+        // cutout extracted from it — each isolated to that garment's own
+        // connected pixels and tightly trimmed, so there is no shared crop
+        // boundary that could show a sliver of the other garment.
         const PD_ZOOM_LEVEL = 2.2;
         const PD_ZOOM_MIN = 1;
         const PD_ZOOM_MAX = 2.2;
@@ -11868,19 +11870,24 @@
         let pdLastTapX = 0;
         let pdLastTapY = 0;
 
+        function pdAltFor(name, view) {
+            if (view === 'front') return `${name} — front`;
+            if (view === 'back') return `${name} — back`;
+            return `${name} — front and back`;
+        }
+
         function setPdImages(name) {
-            const src = PRODUCT_IMAGES[name] || '';
-            const bothLabel = name ? `${name} — front and back` : '';
+            const images = PRODUCT_IMAGES[name] || {};
             if (pdMediaPhoto) {
-                pdMediaPhoto.src = src;
-                pdMediaPhoto.alt = bothLabel;
+                pdMediaPhoto.src = images.both || '';
+                pdMediaPhoto.alt = pdAltFor(name, 'both');
             }
             pdThumbButtons.forEach((button) => {
                 const img = button.querySelector('.pd-thumb-photo');
                 if (!img) return;
-                img.src = src;
                 const view = button.dataset.pdView;
-                img.alt = view === 'front' ? `${name} — front` : view === 'back' ? `${name} — back` : bothLabel;
+                img.src = images[view] || '';
+                img.alt = pdAltFor(name, view);
             });
         }
 
@@ -11951,16 +11958,19 @@
             resetPdZoom();
         }
 
-        // Thumbnail-driven view swap: fades the image out, swaps the crop, then
-        // fades it back in — never a hard cut.
+        // Thumbnail-driven view swap: fades the image out, swaps to that view's
+        // own real image file, then fades it back in — never a hard cut.
         function setPdView(view) {
             if (!pdMediaPhoto || pdCurrentView === view) return;
+            const images = PRODUCT_IMAGES[pdState.name] || {};
             pdCurrentView = view;
             resetPdZoom();
 
             window.clearTimeout(pdSwapTimer);
             pdMediaPhoto.classList.add('is-swapping');
             pdSwapTimer = window.setTimeout(() => {
+                pdMediaPhoto.src = images[view] || '';
+                pdMediaPhoto.alt = pdAltFor(pdState.name, view);
                 pdMediaPhoto.dataset.view = view;
                 pdMediaPhoto.classList.remove('is-swapping');
             }, 300);
