@@ -4855,6 +4855,53 @@
             transform: translateX(-3px);
         }
 
+        /* Browse the whole collection (not just the Sigil trio) from inside the
+           detail view — wraps around, reuses switchProductDetail()'s cinematic
+           fade/sweep so it never needs to close back to the grid. */
+        .pd-catalog-nav {
+            position: absolute;
+            top: 50%;
+            z-index: 4;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            background: rgba(10, 10, 10, 0.6);
+            color: var(--void-gold-soft);
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0.68;
+            transition: opacity 0.24s ease, border-color 0.24s ease, transform 0.24s ease;
+        }
+
+        .pd-catalog-prev {
+            left: 0.85rem;
+            transform: translateY(-50%);
+        }
+
+        .pd-catalog-next {
+            right: 0.85rem;
+            transform: translateY(-50%);
+        }
+
+        .pd-catalog-nav:hover,
+        .pd-catalog-nav:focus-visible {
+            opacity: 1;
+            border-color: rgba(199, 169, 108, 0.85);
+            box-shadow: 0 0 16px rgba(199, 169, 108, 0.22);
+        }
+
+        .pd-catalog-prev:hover,
+        .pd-catalog-prev:focus-visible {
+            transform: translateY(-50%) translateX(-3px);
+        }
+
+        .pd-catalog-next:hover,
+        .pd-catalog-next:focus-visible {
+            transform: translateY(-50%) translateX(3px);
+        }
+
         .pd-thumbs {
             display: flex;
             gap: 0.55rem;
@@ -5430,6 +5477,13 @@
                 padding: 0.85rem 0.9rem;
                 border-right: 0;
                 border-bottom: 1px solid rgba(199, 169, 108, 0.16);
+            }
+
+            /* Larger touch target + always visible (no hover state on touch). */
+            .pd-catalog-nav {
+                width: 44px;
+                height: 44px;
+                opacity: 0.82;
             }
         }
 
@@ -8790,16 +8844,16 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Sigil Aurum" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Sigil Electrum" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <img class="product-photo" src="/assets/ivory-gold-monogram.png" alt="Sigil Aurum — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <img class="product-photo" src="/assets/ivory-gold-monogram.png" alt="Sigil Electrum — front and back" width="1672" height="941" loading="lazy" decoding="async">
                         <span class="product-view-affordance" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                             <span data-i18n="viewDetails">View Details</span>
                         </span>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Sigil Aurum</h3>
+                        <h3 class="product-name">Sigil Electrum</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -8808,16 +8862,16 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Sigil Onyx" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Sigil Noir" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <img class="product-photo" src="/assets/ivory-black-gold-monogram.png" alt="Sigil Onyx — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <img class="product-photo" src="/assets/ivory-black-gold-monogram.png" alt="Sigil Noir — front and back" width="1672" height="941" loading="lazy" decoding="async">
                         <span class="product-view-affordance" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                             <span data-i18n="viewDetails">View Details</span>
                         </span>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Sigil Onyx</h3>
+                        <h3 class="product-name">Sigil Noir</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -8826,16 +8880,16 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Sigil Cobalt" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Sigil Azur" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <img class="product-photo" src="/assets/ivory-blue-monogram.png" alt="Sigil Cobalt — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <img class="product-photo" src="/assets/ivory-blue-monogram.png" alt="Sigil Azur — front and back" width="1672" height="941" loading="lazy" decoding="async">
                         <span class="product-view-affordance" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                             <span data-i18n="viewDetails">View Details</span>
                         </span>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Sigil Cobalt</h3>
+                        <h3 class="product-name">Sigil Azur</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -8962,17 +9016,17 @@
             <div class="pd-layout" id="pdLayout">
                 <div class="pd-switcher" id="pdSwitcher" role="group" aria-label="Switch Sigil colorway" data-i18n-aria-label="pdSwitcherLabel" hidden>
                     <span class="pd-switcher-indicator" id="pdSwitcherIndicator" aria-hidden="true"></span>
-                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Aurum" aria-pressed="false">
+                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Electrum" aria-pressed="false">
                         <span class="pd-switch-swatch"><img class="pd-switch-photo" src="" alt="" loading="lazy" decoding="async"></span>
-                        <span class="pd-switch-name">Sigil Aurum</span>
+                        <span class="pd-switch-name">Sigil Electrum</span>
                     </button>
-                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Onyx" aria-pressed="false">
+                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Noir" aria-pressed="false">
                         <span class="pd-switch-swatch"><img class="pd-switch-photo" src="" alt="" loading="lazy" decoding="async"></span>
-                        <span class="pd-switch-name">Sigil Onyx</span>
+                        <span class="pd-switch-name">Sigil Noir</span>
                     </button>
-                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Cobalt" aria-pressed="false">
+                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Azur" aria-pressed="false">
                         <span class="pd-switch-swatch"><img class="pd-switch-photo" src="" alt="" loading="lazy" decoding="async"></span>
-                        <span class="pd-switch-name">Sigil Cobalt</span>
+                        <span class="pd-switch-name">Sigil Azur</span>
                     </button>
                 </div>
                 <div class="pd-media">
@@ -8984,6 +9038,8 @@
                         <button type="button" class="pd-zoom-reset" id="pdZoomReset" aria-label="Reset zoom" data-i18n-aria-label="pdResetZoom">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 10h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                         </button>
+                        <button type="button" class="pd-catalog-nav pd-catalog-prev" id="pdCatalogPrev" aria-label="Previous piece" data-i18n-aria-label="pdPrevPiece">‹</button>
+                        <button type="button" class="pd-catalog-nav pd-catalog-next" id="pdCatalogNext" aria-label="Next piece" data-i18n-aria-label="pdNextPiece">›</button>
                     </div>
                     <div class="pd-thumbs" id="pdThumbs" role="group" aria-label="Product views" data-i18n-aria-label="pdThumbsLabel">
                         <button type="button" class="pd-thumb active" data-pd-view="both" aria-label="Front and back" aria-pressed="true" data-i18n-aria-label="pdViewBoth">
@@ -9688,6 +9744,8 @@
             pdClose: 'Close product',
             pdBack: 'Back to collection',
             pdSwitcherLabel: 'Switch Sigil colorway',
+            pdPrevPiece: 'Previous piece',
+            pdNextPiece: 'Next piece',
             pdSelectSize: 'Select your size',
             pdSizeChart: 'Size chart',
             pdAddToBag: 'Add to shopping bag',
@@ -11149,21 +11207,21 @@
                 L: '56666846364028',
                 XL: '56666846396796'
             },
-            'Sigil Aurum': {
+            'Sigil Electrum': {
                 XS: '56666871464316',
                 S: '56666871431548',
                 M: '56666871398780',
                 L: '56666871366012',
                 XL: '56666871333244'
             },
-            'Sigil Onyx': {
+            'Sigil Noir': {
                 XS: '56666873201020',
                 S: '56666873233788',
                 M: '56666873266556',
                 L: '56666873299324',
                 XL: '56666873332092'
             },
-            'Sigil Cobalt': {
+            'Sigil Azur': {
                 XS: '56666873528700',
                 S: '56666873495932',
                 M: '56666873463164',
@@ -11175,18 +11233,21 @@
         // cart already sitting in a shopper's localStorage (or a stale link)
         // from before the "Ivory"/"Oblique" renames still finds its Shopify variant.
         const SHOPIFY_PRODUCT_ALIASES = {
-            'Oblique Gold/White Tee': 'Sigil Aurum',
-            'Oblique Gold/White': 'Sigil Aurum',
-            'Oblique Gold/Black Tee': 'Sigil Onyx',
-            'Oblique Gold/Black': 'Sigil Onyx',
-            'Oblique Black/Gold Tee': 'Sigil Onyx',
-            'Oblique Black/Gold': 'Sigil Onyx',
-            'Oblique Blue/White Tee': 'Sigil Cobalt',
-            'Oblique Blue/White': 'Sigil Cobalt',
-            'Monogram Tee': 'Sigil Aurum',
-            'Ivory Gold Tee': 'Sigil Aurum',
-            'Ivory Black Tee': 'Sigil Onyx',
-            'Ivory Blue Tee': 'Sigil Cobalt'
+            'Oblique Gold/White Tee': 'Sigil Electrum',
+            'Oblique Gold/White': 'Sigil Electrum',
+            'Oblique Gold/Black Tee': 'Sigil Noir',
+            'Oblique Gold/Black': 'Sigil Noir',
+            'Oblique Black/Gold Tee': 'Sigil Noir',
+            'Oblique Black/Gold': 'Sigil Noir',
+            'Oblique Blue/White Tee': 'Sigil Azur',
+            'Oblique Blue/White': 'Sigil Azur',
+            'Monogram Tee': 'Sigil Electrum',
+            'Ivory Gold Tee': 'Sigil Electrum',
+            'Ivory Black Tee': 'Sigil Noir',
+            'Ivory Blue Tee': 'Sigil Azur',
+            'Sigil Aurum': 'Sigil Electrum',
+            'Sigil Onyx': 'Sigil Noir',
+            'Sigil Cobalt': 'Sigil Azur'
         };
 
         const CART_STORAGE_KEY = 'voidCart';
@@ -11961,6 +12022,8 @@
         const pdZoomLayer = document.getElementById('pdZoomLayer');
         const pdMediaPhoto = document.getElementById('pdMediaPhoto');
         const pdZoomReset = document.getElementById('pdZoomReset');
+        const pdCatalogPrev = document.getElementById('pdCatalogPrev');
+        const pdCatalogNext = document.getElementById('pdCatalogNext');
         const pdThumbs = document.getElementById('pdThumbs');
         const pdThumbButtons = pdThumbs ? Array.from(pdThumbs.querySelectorAll('[data-pd-view]')) : [];
         const pdLayout = document.getElementById('pdLayout');
@@ -11992,9 +12055,9 @@
         const PRODUCT_META = {
             'Levitate Tee': { code: 'EV·S1·LVT', description: 'A weightless ritual tee in heavyweight cotton. Dropped shoulder, wide silhouette and a dense hand-feel engineered for layered VOID© styling. Cut with an intentional oversized architecture that drapes rather than clings.' },
             'Endzustand Tee': { code: 'EV·S1·END', description: 'Boxy oversized volume with a structured chest and a blunt hem line. Couture-inspired proportions in a substantial jersey that holds its shape through movement — a quiet statement in monochrome tension.' },
-            'Sigil Aurum': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-ivory oblique signature, printed and finished for depth and permanence.' },
-            'Sigil Onyx': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
-            'Sigil Cobalt': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' }
+            'Sigil Electrum': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-ivory oblique signature, printed and finished for depth and permanence.' },
+            'Sigil Noir': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
+            'Sigil Azur': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' }
         };
 
         // Each product has three real files: the supplied front+back
@@ -12014,17 +12077,17 @@
                 front: '/assets/endzustand-black-front.png',
                 back: '/assets/endzustand-black-back.png'
             },
-            'Sigil Aurum': {
+            'Sigil Electrum': {
                 both: '/assets/ivory-gold-monogram.png',
                 front: '/assets/ivory-gold-monogram-front.png',
                 back: '/assets/ivory-gold-monogram-back.png'
             },
-            'Sigil Onyx': {
+            'Sigil Noir': {
                 both: '/assets/ivory-black-gold-monogram.png',
                 front: '/assets/ivory-black-gold-monogram-front.png',
                 back: '/assets/ivory-black-gold-monogram-back.png'
             },
-            'Sigil Cobalt': {
+            'Sigil Azur': {
                 both: '/assets/ivory-blue-monogram.png',
                 front: '/assets/ivory-blue-monogram-front.png',
                 back: '/assets/ivory-blue-monogram-back.png'
@@ -12188,6 +12251,43 @@
             if (!pdSwitcher || pdSwitcher.hidden) return;
             const activeItem = pdSwitchItems.find((item) => item.getAttribute('aria-pressed') === 'true');
             updatePdSwitcherIndicator(activeItem);
+        });
+
+        // ============== Product detail: whole-catalog prev/next ==============
+        // Separate from the Sigil-only switcher above — these two arrows cycle
+        // through every product card on the page (any category), wrapping
+        // around, so a visitor never has to close the detail view to browse.
+        // Reuses the same cinematic switchProductDetail() transition.
+        function navigatePdCatalog(direction) {
+            const cards = Array.from(document.querySelectorAll('.product-card'));
+            if (cards.length < 2) return;
+            const currentIndex = cards.findIndex((card) => card.dataset.productName === pdState.name);
+            const fromIndex = currentIndex === -1 ? 0 : currentIndex;
+            const nextIndex = (fromIndex + direction + cards.length) % cards.length;
+            switchProductDetail(cards[nextIndex]);
+        }
+
+        [[pdCatalogPrev, -1], [pdCatalogNext, 1]].forEach(([button, direction]) => {
+            if (!button) return;
+            const stop = (event) => event.stopPropagation();
+            button.addEventListener('pointerdown', stop);
+            button.addEventListener('pointerup', stop);
+            button.addEventListener('click', (event) => {
+                event.stopPropagation();
+                navigatePdCatalog(direction);
+            });
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (!productDetailOverlay || !productDetailOverlay.classList.contains('open')) return;
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+            // Don't hijack arrow keys while the visitor is adjusting the panned/
+            // zoomed image or typing anywhere inside the panel.
+            const active = document.activeElement;
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+            if (pdMediaStage && pdZoomScale > 1.001) return;
+            event.preventDefault();
+            navigatePdCatalog(event.key === 'ArrowLeft' ? -1 : 1);
         });
 
         function closeProductDetail() {
