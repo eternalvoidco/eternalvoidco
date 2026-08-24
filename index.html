@@ -4535,6 +4535,14 @@
             width: min(1180px, 100%);
             max-height: min(92vh, 940px);
             overflow: hidden;
+            /* Shared tokens for the panel's edge/utility buttons (close, back,
+               zoom reset, image-scroll arrows) — one hairline gold language,
+               one size per tier, so they read as quiet siblings of the seal. */
+            --pd-gold: #D4AF37;
+            --pd-gold-dim: rgba(212, 175, 55, 0.4);
+            --pd-gold-bright: #E8C766;
+            --pd-edge-fill: rgba(11, 11, 12, 0.72);
+            --pd-edge-size: 40px;
         }
 
         .style-guide-panel {
@@ -4551,25 +4559,186 @@
         }
 
         /* ---- Product detail layout ---- */
+        /* ---- Shared "quiet sibling" edge-button language: hairline gold ring,
+           charcoal fill, single-weight icon, soft glow on hover/focus — no
+           slide/scale/bounce. Applies to close, back, zoom-reset and the
+           image-scroll arrows below; the seal button alone gets the fuller
+           ornament, kept exclusive so it still reads as the special one. ---- */
         .pd-close {
             position: absolute;
             top: 0.85rem;
             right: 0.85rem;
             z-index: 5;
-            width: 38px;
-            height: 38px;
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            background: rgba(10, 10, 10, 0.7);
-            color: var(--void-white);
+            width: var(--pd-edge-size);
+            height: var(--pd-edge-size);
+            border-radius: 50%;
+            border: 1px solid var(--pd-gold-dim);
+            background: var(--pd-edge-fill);
+            color: var(--pd-gold);
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: border-color 0.22s ease, background 0.22s ease;
+            font-size: 0.8rem;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+            transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .pd-close:hover,
         .pd-close:focus-visible {
-            border-color: rgba(199, 169, 108, 0.85);
-            background: rgba(22, 17, 9, 0.9);
+            border-color: var(--pd-gold-bright);
+            color: var(--pd-gold-bright);
+            box-shadow: 0 0 14px 1px rgba(212, 175, 55, 0.26);
+        }
+
+        .pd-close:focus-visible {
+            outline: 1px solid var(--pd-gold);
+            outline-offset: 2px;
+        }
+
+        /* ---- Instant swap "seal" — a direct jump to ANY piece, distinct from
+           the sequential prev/next carousel arrows on the gallery. Sits astride
+           the panel's top-right corner like a wax seal on an envelope. ---- */
+        .pd-seal {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            z-index: 6;
+            width: 52px;
+            height: 52px;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: var(--pd-gold);
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .pd-seal::before {
+            content: '';
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.55) 0%, rgba(212, 175, 55, 0.12) 60%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .pd-seal-svg {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: block;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55));
+        }
+
+        .pd-seal-disk {
+            fill: #0B0B0C;
+            stroke: currentColor;
+            stroke-width: 1.2;
+        }
+
+        .pd-seal-dot {
+            fill: currentColor;
+        }
+
+        .pd-seal:hover,
+        .pd-seal:focus-visible,
+        .pd-seal[aria-expanded="true"] {
+            color: var(--pd-gold-bright);
+            transform: scale(1.04);
+        }
+
+        .pd-seal:hover::before,
+        .pd-seal:focus-visible::before,
+        .pd-seal[aria-expanded="true"]::before {
+            opacity: 1;
+        }
+
+        .pd-seal:focus-visible {
+            outline: 1px solid var(--pd-gold);
+            outline-offset: 3px;
+        }
+
+        .pd-seal-menu {
+            position: absolute;
+            top: 38px;
+            right: -18px;
+            z-index: 7;
+            width: 220px;
+            max-height: min(320px, 60vh);
+            overflow-y: auto;
+            padding: 0.5rem;
+            border: 1px solid var(--pd-gold-dim);
+            background: linear-gradient(165deg, rgba(14, 13, 11, 0.98), rgba(5, 5, 5, 0.99));
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+        }
+
+        .pd-seal-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .pd-seal-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid transparent;
+            background: none;
+            cursor: pointer;
+            text-align: left;
+            color: rgba(245, 242, 236, 0.75);
+            transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .pd-seal-item:hover,
+        .pd-seal-item:focus-visible {
+            background: rgba(212, 175, 55, 0.08);
+            border-color: var(--pd-gold-dim);
+            color: var(--void-white);
+        }
+
+        .pd-seal-item:focus-visible {
+            outline: 1px solid var(--pd-gold);
+            outline-offset: -1px;
+        }
+
+        .pd-seal-item.active {
+            border-color: rgba(212, 175, 55, 0.55);
+            color: var(--pd-gold);
+        }
+
+        .pd-seal-thumb {
+            width: 32px;
+            height: 40px;
+            flex: 0 0 auto;
+            overflow: hidden;
+            border: 1px solid var(--pd-gold-dim);
+            background: rgba(10, 10, 10, 0.6);
+        }
+
+        .pd-seal-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .pd-seal-item-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .pd-seal-item-price {
+            margin-left: auto;
+            font-size: 0.66rem;
+            color: rgba(245, 242, 236, 0.45);
         }
 
         .pd-layout {
@@ -4803,17 +4972,21 @@
             right: 0.85rem;
             bottom: 0.85rem;
             z-index: 4;
-            width: 36px;
-            height: 36px;
+            width: var(--pd-edge-size);
+            height: var(--pd-edge-size);
             border-radius: 50%;
-            border: 1px solid rgba(199, 169, 108, 0.4);
-            background: rgba(10, 10, 10, 0.72);
-            color: var(--void-gold-soft);
+            border: 1px solid var(--pd-gold-dim);
+            background: var(--pd-edge-fill);
+            color: var(--pd-gold);
             cursor: pointer;
             opacity: 0;
             transform: scale(0.85);
             pointer-events: none;
-            transition: opacity 0.28s ease, transform 0.28s ease, border-color 0.24s ease;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+            /* opacity/transform here are the appear-on-zoom state, not a hover
+               effect — kept quick and functional; the hover glow below is the
+               slow, restrained one. */
+            transition: opacity 0.28s ease, transform 0.28s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
         }
 
         .pd-zoom-reset svg {
@@ -4829,7 +5002,14 @@
 
         .pd-zoom-reset:hover,
         .pd-zoom-reset:focus-visible {
-            border-color: rgba(199, 169, 108, 0.85);
+            border-color: var(--pd-gold-bright);
+            color: var(--pd-gold-bright);
+            box-shadow: 0 0 14px 1px rgba(212, 175, 55, 0.26);
+        }
+
+        .pd-zoom-reset:focus-visible {
+            outline: 1px solid var(--pd-gold);
+            outline-offset: 2px;
         }
 
         .pd-back {
@@ -4837,22 +5017,29 @@
             top: 0.85rem;
             left: 0.85rem;
             z-index: 4;
-            width: 40px;
-            height: 40px;
+            width: var(--pd-edge-size);
+            height: var(--pd-edge-size);
             border-radius: 50%;
-            border: 1px solid rgba(199, 169, 108, 0.34);
-            background: rgba(10, 10, 10, 0.68);
-            color: var(--void-gold-soft);
-            font-size: 1.4rem;
+            border: 1px solid var(--pd-gold-dim);
+            background: var(--pd-edge-fill);
+            color: var(--pd-gold);
+            font-size: 1.3rem;
             line-height: 1;
             cursor: pointer;
-            transition: border-color 0.24s ease, transform 0.24s ease;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+            transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .pd-back:hover,
         .pd-back:focus-visible {
-            border-color: rgba(199, 169, 108, 0.85);
-            transform: translateX(-3px);
+            border-color: var(--pd-gold-bright);
+            color: var(--pd-gold-bright);
+            box-shadow: 0 0 14px 1px rgba(212, 175, 55, 0.26);
+        }
+
+        .pd-back:focus-visible {
+            outline: 1px solid var(--pd-gold);
+            outline-offset: 2px;
         }
 
         /* Browse the whole collection (not just the Sigil trio) from inside the
@@ -4861,45 +5048,95 @@
         .pd-catalog-nav {
             position: absolute;
             top: 50%;
+            transform: translateY(-50%);
             z-index: 4;
-            width: 40px;
-            height: 40px;
+            width: var(--pd-edge-size);
+            height: var(--pd-edge-size);
             border-radius: 50%;
-            border: 1px solid rgba(199, 169, 108, 0.3);
-            background: rgba(10, 10, 10, 0.6);
-            color: var(--void-gold-soft);
-            font-size: 1.5rem;
+            border: 1px solid var(--pd-gold-dim);
+            background: var(--pd-edge-fill);
+            color: var(--pd-gold);
+            font-size: 1.4rem;
             line-height: 1;
             cursor: pointer;
             opacity: 0.68;
-            transition: opacity 0.24s ease, border-color 0.24s ease, transform 0.24s ease;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+            transition: opacity 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .pd-catalog-prev {
             left: 0.85rem;
-            transform: translateY(-50%);
         }
 
         .pd-catalog-next {
             right: 0.85rem;
-            transform: translateY(-50%);
         }
 
         .pd-catalog-nav:hover,
         .pd-catalog-nav:focus-visible {
             opacity: 1;
-            border-color: rgba(199, 169, 108, 0.85);
-            box-shadow: 0 0 16px rgba(199, 169, 108, 0.22);
+            border-color: var(--pd-gold-bright);
+            color: var(--pd-gold-bright);
+            box-shadow: 0 0 14px 1px rgba(212, 175, 55, 0.26);
         }
 
-        .pd-catalog-prev:hover,
-        .pd-catalog-prev:focus-visible {
-            transform: translateY(-50%) translateX(-3px);
+        .pd-catalog-nav:focus-visible {
+            outline: 1px solid var(--pd-gold);
+            outline-offset: 2px;
         }
 
-        .pd-catalog-next:hover,
-        .pd-catalog-next:focus-visible {
-            transform: translateY(-50%) translateX(3px);
+        /* Position within the CURRENT piece's own image set (front/back/etc,
+           built to scale past 2). Overlaid at the bottom of the stage; a
+           larger invisible hit area sits behind each visible dot for touch. */
+        .pd-dots {
+            position: absolute;
+            left: 50%;
+            bottom: 0.6rem;
+            transform: translateX(-50%);
+            z-index: 4;
+            display: flex;
+            gap: 0.15rem;
+        }
+
+        .pd-dot {
+            position: relative;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        .pd-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            border: 1px solid var(--pd-gold-dim);
+            background: rgba(212, 175, 55, 0.15);
+            transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .pd-dot:hover::after,
+        .pd-dot:focus-visible::after {
+            border-color: var(--pd-gold-bright);
+        }
+
+        .pd-dot:focus-visible {
+            outline: 1px solid var(--pd-gold);
+            outline-offset: 1px;
+        }
+
+        .pd-dot.active::after {
+            background: var(--pd-gold);
+            border-color: var(--pd-gold);
+            box-shadow: 0 0 6px 1px rgba(212, 175, 55, 0.5);
+            transform: translate(-50%, -50%) scale(1.3);
         }
 
         .pd-thumbs {
@@ -5479,11 +5716,37 @@
                 border-bottom: 1px solid rgba(199, 169, 108, 0.16);
             }
 
-            /* Larger touch target + always visible (no hover state on touch). */
-            .pd-catalog-nav {
+            /* Larger touch target + always visible (no hover state on touch) —
+               applied uniformly across the whole edge-button family. */
+            .pd-catalog-nav,
+            .pd-close,
+            .pd-back,
+            .pd-zoom-reset {
                 width: 44px;
                 height: 44px;
+            }
+
+            .pd-catalog-nav {
                 opacity: 0.82;
+            }
+
+            /* The panel runs edge-to-edge on phones, so the seal moves to the
+               opposite (top-left) corner, fully on-panel, clear of the close
+               button — astride-the-corner only makes sense with visible margin
+               around the panel, which only exists on desktop. */
+            .pd-seal {
+                top: 0.5rem;
+                right: auto;
+                left: 0.5rem;
+                width: 44px;
+                height: 44px;
+            }
+
+            .pd-seal-menu {
+                top: 3.2rem;
+                right: auto;
+                left: 0.5rem;
+                width: min(240px, 64vw);
             }
         }
 
@@ -5509,7 +5772,11 @@
 
         html.reduce-motion .pd-media,
         html.reduce-motion .pd-info,
-        html.reduce-motion .pd-switcher-indicator {
+        html.reduce-motion .pd-switcher-indicator,
+        html.reduce-motion .pd-seal,
+        html.reduce-motion .pd-seal::before,
+        html.reduce-motion .pd-seal-menu,
+        html.reduce-motion .pd-dot::after {
             transition: none;
         }
 
@@ -9013,6 +9280,24 @@
         <section class="product-detail-panel" role="dialog" aria-modal="true" aria-labelledby="pdName">
             <span class="panel-frame" aria-hidden="true"></span>
             <button type="button" class="pd-close" id="pdClose" aria-label="Close product" data-i18n-aria-label="pdClose">✕</button>
+            <button type="button" class="pd-seal" id="pdSeal" aria-haspopup="true" aria-expanded="false" aria-controls="pdSealMenu" aria-label="Quick switch product" data-i18n-aria-label="pdSealLabel">
+                <svg class="pd-seal-svg" viewBox="-32 -32 64 64" aria-hidden="true" focusable="false">
+                    <circle class="pd-seal-disk" r="29"/>
+                    <circle r="22" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="0.8"/>
+                    <circle class="pd-seal-dot" cx="0" cy="-27" r="1.5"/>
+                    <circle class="pd-seal-dot" cx="0" cy="27" r="1.5"/>
+                    <circle class="pd-seal-dot" cx="-27" cy="0" r="1.5"/>
+                    <circle class="pd-seal-dot" cx="27" cy="0" r="1.5"/>
+                    <g class="pd-seal-fleur" fill="currentColor" transform="translate(0,1) scale(0.82)">
+                        <path d="M0,-14 C3,-9 4,-4 2,2 C1,4 -1,4 -2,2 C-4,-4 -3,-9 0,-14 Z"/>
+                        <path d="M-1,-6 C-6,-8 -10,-4 -9,2 C-8,6 -4,6 -2,3 C-3,0 -2,-3 -1,-6 Z"/>
+                        <path d="M1,-6 C6,-8 10,-4 9,2 C8,6 4,6 2,3 C3,0 2,-3 1,-6 Z"/>
+                        <rect x="-7" y="3" width="14" height="2" rx="1"/>
+                        <path d="M0,5 L3,9 L0,13 L-3,9 Z"/>
+                    </g>
+                </svg>
+            </button>
+            <div class="pd-seal-menu" id="pdSealMenu" role="menu" aria-label="All pieces" aria-hidden="true" hidden></div>
             <div class="pd-layout" id="pdLayout">
                 <div class="pd-switcher" id="pdSwitcher" role="group" aria-label="Switch Sigil colorway" data-i18n-aria-label="pdSwitcherLabel" hidden>
                     <span class="pd-switcher-indicator" id="pdSwitcherIndicator" aria-hidden="true"></span>
@@ -9040,6 +9325,7 @@
                         </button>
                         <button type="button" class="pd-catalog-nav pd-catalog-prev" id="pdCatalogPrev" aria-label="Previous piece" data-i18n-aria-label="pdPrevPiece">‹</button>
                         <button type="button" class="pd-catalog-nav pd-catalog-next" id="pdCatalogNext" aria-label="Next piece" data-i18n-aria-label="pdNextPiece">›</button>
+                        <div class="pd-dots" id="pdDots" role="tablist" aria-label="Image" hidden></div>
                     </div>
                     <div class="pd-thumbs" id="pdThumbs" role="group" aria-label="Product views" data-i18n-aria-label="pdThumbsLabel">
                         <button type="button" class="pd-thumb active" data-pd-view="both" aria-label="Front and back" aria-pressed="true" data-i18n-aria-label="pdViewBoth">
@@ -9744,6 +10030,7 @@
             pdClose: 'Close product',
             pdBack: 'Back to collection',
             pdSwitcherLabel: 'Switch Sigil colorway',
+            pdSealLabel: 'Quick switch product',
             pdPrevPiece: 'Previous piece',
             pdNextPiece: 'Next piece',
             pdSelectSize: 'Select your size',
@@ -12024,6 +12311,9 @@
         const pdZoomReset = document.getElementById('pdZoomReset');
         const pdCatalogPrev = document.getElementById('pdCatalogPrev');
         const pdCatalogNext = document.getElementById('pdCatalogNext');
+        const pdDots = document.getElementById('pdDots');
+        const pdSeal = document.getElementById('pdSeal');
+        const pdSealMenu = document.getElementById('pdSealMenu');
         const pdThumbs = document.getElementById('pdThumbs');
         const pdThumbButtons = pdThumbs ? Array.from(pdThumbs.querySelectorAll('[data-pd-view]')) : [];
         const pdLayout = document.getElementById('pdLayout');
@@ -12106,13 +12396,13 @@
         // Populates the detail panel's media/info from a product card. Shared
         // by openProductDetail() (first open) and switchProductDetail() (the
         // in-place swap driven by the sibling-product switcher below).
-        function applyProductDetailContent(productCard) {
+        function applyProductDetailContent(productCard, startView) {
             const name = productCard.dataset.productName || 'Product';
             const price = Number(productCard.dataset.productPrice || '0');
             const meta = PRODUCT_META[name] || {};
 
             pdState = { card: productCard, name, price, size: productCard.dataset.selectedSize || '' };
-            resetPdGallery(name);
+            resetPdGallery(name, startView);
 
             if (pdCode) pdCode.textContent = meta.code || 'EV·ATELIER';
             if (pdNameEl) pdNameEl.textContent = name;
@@ -12208,15 +12498,16 @@
         // Swaps the open product in place: the current media/info softly
         // fade out, content is replaced, then it fades back in under a brief
         // gold light sweep — roughly 500ms total, no modal close/reopen.
-        function switchProductDetail(productCard) {
+        function switchProductDetail(productCard, startView) {
             if (!productCard || !productDetailOverlay) return;
+            closePdSealMenu();
             const panel = productDetailOverlay.querySelector('.product-detail-panel');
 
             if (pdMediaEl) pdMediaEl.classList.add('pd-content-out');
             if (pdInfoEl) pdInfoEl.classList.add('pd-content-out');
 
             window.setTimeout(() => {
-                const name = applyProductDetailContent(productCard);
+                const name = applyProductDetailContent(productCard, startView);
                 trackAnalyticsEvent('switch_product_detail', { item_name: name });
                 productDetailOverlay.scrollTop = 0;
 
@@ -12253,18 +12544,36 @@
             updatePdSwitcherIndicator(activeItem);
         });
 
-        // ============== Product detail: whole-catalog prev/next ==============
-        // Separate from the Sigil-only switcher above — these two arrows cycle
-        // through every product card on the page (any category), wrapping
-        // around, so a visitor never has to close the detail view to browse.
-        // Reuses the same cinematic switchProductDetail() transition.
+        // ============== Product detail: one continuous carousel ==============
+        // The prev/next arrows step through the CURRENT piece's own images
+        // first (front/back/etc — built to scale past 2 via PD_VIEWS_FOR).
+        // Only once you're at that piece's first/last image does another
+        // click roll into the next/previous product's card, wrapping around
+        // the whole catalog. Reuses the same cinematic switchProductDetail()
+        // transition for the product-to-product crossing so it never feels
+        // jarring; in-product image steps use the lighter setPdView() fade.
         function navigatePdCatalog(direction) {
+            const views = pdViewsFor(pdState.name);
+            const viewIndex = views.indexOf(pdCurrentView);
+
+            if (direction > 0 && viewIndex !== -1 && viewIndex < views.length - 1) {
+                setPdView(views[viewIndex + 1]);
+                return;
+            }
+            if (direction < 0 && viewIndex > 0) {
+                setPdView(views[viewIndex - 1]);
+                return;
+            }
+
             const cards = Array.from(document.querySelectorAll('.product-card'));
             if (cards.length < 2) return;
             const currentIndex = cards.findIndex((card) => card.dataset.productName === pdState.name);
             const fromIndex = currentIndex === -1 ? 0 : currentIndex;
             const nextIndex = (fromIndex + direction + cards.length) % cards.length;
-            switchProductDetail(cards[nextIndex]);
+            const targetCard = cards[nextIndex];
+            const targetViews = pdViewsFor(targetCard.dataset.productName || '');
+            const targetStartView = direction > 0 ? targetViews[0] : targetViews[targetViews.length - 1];
+            switchProductDetail(targetCard, targetStartView);
         }
 
         [[pdCatalogPrev, -1], [pdCatalogNext, 1]].forEach(([button, direction]) => {
@@ -12290,9 +12599,82 @@
             navigatePdCatalog(event.key === 'ArrowLeft' ? -1 : 1);
         });
 
+        // ============== Product detail: instant-swap seal ==============
+        // A direct jump to ANY piece — separate from the sequential prev/next
+        // carousel above. Opens a compact popover anchored to the seal button
+        // listing every product; picking one reuses the same cinematic
+        // switchProductDetail() transition.
+        function closePdSealMenu() {
+            if (!pdSeal || !pdSealMenu || !pdSealMenu.classList.contains('open')) return;
+            pdSealMenu.classList.remove('open');
+            pdSealMenu.setAttribute('aria-hidden', 'true');
+            pdSeal.setAttribute('aria-expanded', 'false');
+            window.setTimeout(() => {
+                if (!pdSealMenu.classList.contains('open')) pdSealMenu.hidden = true;
+            }, 280);
+        }
+
+        function renderPdSealMenu() {
+            if (!pdSealMenu) return;
+            const cards = Array.from(document.querySelectorAll('.product-card'));
+            pdSealMenu.innerHTML = cards.map((card) => {
+                const name = card.dataset.productName || '';
+                const price = card.dataset.productPrice || '0';
+                const images = PRODUCT_IMAGES[name] || {};
+                const isActive = name === pdState.name;
+                const safeName = name.replace(/"/g, '&quot;');
+                return `<button type="button" class="pd-seal-item${isActive ? ' active' : ''}" data-product-name="${safeName}" role="menuitem" aria-current="${isActive}">` +
+                    `<span class="pd-seal-thumb"><img src="${images.both || ''}" alt="" loading="lazy" decoding="async"></span>` +
+                    `<span class="pd-seal-item-name">${name}</span>` +
+                    `<span class="pd-seal-item-price">€${price}</span>` +
+                    `</button>`;
+            }).join('');
+            pdSealMenu.querySelectorAll('[data-product-name]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const name = button.dataset.productName;
+                    closePdSealMenu();
+                    if (!name || name === pdState.name) return;
+                    const card = cards.find((c) => c.dataset.productName === name);
+                    if (card) switchProductDetail(card);
+                });
+            });
+        }
+
+        function openPdSealMenu() {
+            if (!pdSeal || !pdSealMenu) return;
+            renderPdSealMenu();
+            pdSealMenu.hidden = false;
+            void pdSealMenu.offsetWidth; // force layout so the .open transition plays
+            pdSealMenu.classList.add('open');
+            pdSealMenu.setAttribute('aria-hidden', 'false');
+            pdSeal.setAttribute('aria-expanded', 'true');
+        }
+
+        if (pdSeal) {
+            pdSeal.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (pdSealMenu && pdSealMenu.classList.contains('open')) closePdSealMenu();
+                else openPdSealMenu();
+            });
+        }
+
+        document.addEventListener('click', (event) => {
+            if (!pdSealMenu || !pdSealMenu.classList.contains('open')) return;
+            if (pdSealMenu.contains(event.target) || (pdSeal && pdSeal.contains(event.target))) return;
+            closePdSealMenu();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape' || !pdSealMenu || !pdSealMenu.classList.contains('open')) return;
+            closePdSealMenu();
+            if (pdSeal) pdSeal.focus();
+        });
+
         function closeProductDetail() {
             if (!productDetailOverlay || !productDetailOverlay.classList.contains('open')) return;
 
+            closePdSealMenu();
             productDetailOverlay.classList.remove('open');
             productDetailOverlay.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('product-detail-open');
@@ -12344,16 +12726,56 @@
 
         function setPdImages(name) {
             const images = PRODUCT_IMAGES[name] || {};
-            if (pdMediaPhoto) {
-                pdMediaPhoto.src = images.both || '';
-                pdMediaPhoto.alt = pdAltFor(name, 'both');
-            }
             pdThumbButtons.forEach((button) => {
                 const img = button.querySelector('.pd-thumb-photo');
                 if (!img) return;
                 const view = button.dataset.pdView;
                 img.src = images[view] || '';
                 img.alt = pdAltFor(name, view);
+            });
+        }
+
+        // The ordered list of real image "stops" a product actually has — read
+        // from the pd-thumb buttons' order, intersected with whichever views
+        // that product's PRODUCT_IMAGES entry defines. Today every product has
+        // both/front/back (3 stops); adding a 4th (e.g. a detail shot) is just
+        // one more PRODUCT_IMAGES key + one more pd-thumb button, no logic
+        // changes needed here or in navigatePdCatalog().
+        function pdViewsFor(name) {
+            const images = PRODUCT_IMAGES[name] || {};
+            return pdThumbButtons.map((button) => button.dataset.pdView).filter((view) => images[view]);
+        }
+
+        // Rebuilds the dot row for whichever product is now open (count varies
+        // per product), and marks the active one. Hidden entirely for a
+        // single-image product since a 1-dot indicator communicates nothing.
+        function renderPdDots(name, activeView) {
+            if (!pdDots) return;
+            const views = pdViewsFor(name);
+            if (views.length < 2) {
+                pdDots.hidden = true;
+                pdDots.innerHTML = '';
+                return;
+            }
+            pdDots.hidden = false;
+            pdDots.innerHTML = views.map((view, i) => `<button type="button" class="pd-dot${view === activeView ? ' active' : ''}" data-pd-view="${view}" aria-label="Image ${i + 1} of ${views.length}" aria-selected="${view === activeView}"></button>`).join('');
+            pdDots.querySelectorAll('[data-pd-view]').forEach((dot) => {
+                dot.addEventListener('pointerdown', (event) => event.stopPropagation());
+                dot.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    setPdView(dot.dataset.pdView);
+                });
+            });
+        }
+
+        // Cheap active-state sync for a view change within the SAME product
+        // (no rebuild, so dot focus/hover state isn't disturbed mid-interaction).
+        function syncPdDotsActive(view) {
+            if (!pdDots || pdDots.hidden) return;
+            pdDots.querySelectorAll('[data-pd-view]').forEach((dot) => {
+                const active = dot.dataset.pdView === view;
+                dot.classList.toggle('active', active);
+                dot.setAttribute('aria-selected', active ? 'true' : 'false');
             });
         }
 
@@ -12409,18 +12831,27 @@
 
         // Called once when the detail page opens for a product — an instant
         // reset, not the fading swap used for in-modal thumbnail clicks.
-        function resetPdGallery(name) {
+        // `startView` lets the whole-catalog carousel land on a specific image
+        // (e.g. the LAST image when stepping "prev" into the previous piece),
+        // rather than always defaulting to the first.
+        function resetPdGallery(name, startView) {
             setPdImages(name);
-            pdCurrentView = 'both';
+            const images = PRODUCT_IMAGES[name] || {};
+            const views = pdViewsFor(name);
+            const view = (startView && images[startView]) ? startView : (views[0] || 'both');
+            pdCurrentView = view;
             if (pdMediaPhoto) {
                 pdMediaPhoto.classList.remove('is-swapping');
-                pdMediaPhoto.dataset.view = 'both';
+                pdMediaPhoto.dataset.view = view;
+                pdMediaPhoto.src = images[view] || '';
+                pdMediaPhoto.alt = pdAltFor(name, view);
             }
             pdThumbButtons.forEach((button) => {
-                const active = button.dataset.pdView === 'both';
+                const active = button.dataset.pdView === view;
                 button.classList.toggle('active', active);
                 button.setAttribute('aria-pressed', active ? 'true' : 'false');
             });
+            renderPdDots(name, view);
             resetPdZoom();
         }
 
@@ -12446,6 +12877,7 @@
                 button.classList.toggle('active', active);
                 button.setAttribute('aria-pressed', active ? 'true' : 'false');
             });
+            syncPdDotsActive(view);
         }
 
         pdThumbButtons.forEach((button) => {
