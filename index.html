@@ -2064,13 +2064,22 @@
             align-items: center;
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
             border-bottom: 1px solid transparent;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            /* `backdrop-filter` is deliberately left out of this list — a fixed,
+               full-width bar samples/blurs everything scrolling underneath it on
+               every composited frame for as long as .scrolled is applied (i.e.
+               almost the entire session), so interpolating it in over 0.4s on
+               every threshold crossing was pure added cost with no visible
+               benefit; it now just switches instantly with the other properties. */
+            transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-bottom-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .nav.scrolled {
             background: rgba(5, 5, 5, 0.94);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            /* Lighter radius than before (20px -> 12px): still reads as a clear
+               frosted-glass bar, noticeably cheaper to keep re-sampling on every
+               scroll frame since this is active for nearly the whole session. */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             padding: 1.5rem 4rem;
             border-bottom-color: var(--void-border);
             box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(199, 169, 108, 0.08);
@@ -2082,8 +2091,8 @@
            an intentional frame — no padding change, so the bar doesn't jump. */
         .nav:not(.scrolled):hover {
             background: rgba(5, 5, 5, 0.94);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom-color: var(--void-border);
             box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(199, 169, 108, 0.08);
         }
@@ -3589,6 +3598,24 @@
             background: radial-gradient(120% 92% at 50% 42%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
         }
 
+        /* These loop the whole time the page is open, even when the Collection
+           section is scrolled far out of view. Paused by default; a small
+           IntersectionObserver (see initSectionAmbiencePause()) adds
+           .pa-in-view only while the section actually intersects the viewport. */
+        .pa-fog,
+        .pa-glow,
+        .pa-particles,
+        .pa-shimmer {
+            animation-play-state: paused;
+        }
+
+        .products-atmos.pa-in-view .pa-fog,
+        .products-atmos.pa-in-view .pa-glow,
+        .products-atmos.pa-in-view .pa-particles,
+        .products-atmos.pa-in-view .pa-shimmer {
+            animation-play-state: running;
+        }
+
         html.reduce-motion .pa-fog,
         html.reduce-motion .pa-glow,
         html.reduce-motion .pa-particles,
@@ -4550,6 +4577,151 @@
             grid-template-columns: 1.05fr 1fr;
         }
 
+        .pd-layout.has-switcher {
+            grid-template-columns: 84px 1.05fr 1fr;
+        }
+
+        /* ---- Product detail: sibling-product switcher ----
+           A slim rail beside the gallery so a shopper can jump between the
+           three Sigil colorways without leaving the detail view. Hidden by
+           default; revealed only when the open product is part of that
+           trio (see applyProductDetailContent()). */
+        .pd-switcher {
+            position: relative;
+            flex-direction: column;
+            gap: 0.65rem;
+            padding: 1.1rem 0.55rem;
+            border-right: 1px solid rgba(199, 169, 108, 0.16);
+            background:
+                radial-gradient(circle at 30% 10%, rgba(199, 169, 108, 0.1), rgba(9, 9, 9, 0.94) 60%),
+                linear-gradient(180deg, rgba(16, 16, 16, 0.92), rgba(4, 4, 4, 0.98));
+        }
+
+        .pd-switcher[hidden] {
+            display: none;
+        }
+
+        .pd-layout.has-switcher .pd-switcher {
+            display: flex;
+        }
+
+        .pd-switcher-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 0;
+            background: linear-gradient(180deg, var(--void-gold-soft), var(--void-gold-deep));
+            box-shadow: 0 0 10px 1px rgba(199, 169, 108, 0.5);
+            transition: transform 0.4s var(--ease-lux), width 0.4s var(--ease-lux), height 0.4s var(--ease-lux);
+            pointer-events: none;
+        }
+
+        .pd-switch-item {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 0.3rem;
+            border: 0;
+            background: none;
+            cursor: pointer;
+            color: rgba(245, 242, 236, 0.5);
+            transition: color 0.3s ease;
+        }
+
+        .pd-switch-swatch {
+            display: block;
+            width: 42px;
+            height: 52px;
+            overflow: hidden;
+            border: 1px solid rgba(199, 169, 108, 0.2);
+            background: linear-gradient(180deg, rgba(24, 24, 24, 0.9), rgba(6, 6, 6, 0.98));
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .pd-switch-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 4px;
+        }
+
+        .pd-switch-name {
+            font-size: 0.5rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .pd-switch-item:hover,
+        .pd-switch-item:focus-visible {
+            color: rgba(245, 242, 236, 0.88);
+        }
+
+        .pd-switch-item:hover .pd-switch-swatch,
+        .pd-switch-item:focus-visible .pd-switch-swatch {
+            border-color: rgba(199, 169, 108, 0.5);
+        }
+
+        .pd-switch-item:focus-visible {
+            outline: 1px solid rgba(199, 169, 108, 0.78);
+            outline-offset: 2px;
+        }
+
+        .pd-switch-item[aria-pressed="true"] {
+            color: var(--void-gold-soft);
+        }
+
+        .pd-switch-item[aria-pressed="true"] .pd-switch-swatch {
+            border-color: rgba(199, 169, 108, 0.85);
+            box-shadow: 0 0 18px 2px rgba(199, 169, 108, 0.28);
+        }
+
+        /* Cinematic content swap: the outgoing product softly fades/slides
+           down, then the incoming one fades in with a brief gold sweep
+           across the panel (see pd-sweep below). Driven by switchProductDetail(). */
+        .pd-media,
+        .pd-info {
+            transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+
+        .pd-media.pd-content-out,
+        .pd-info.pd-content-out {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        .pd-media.pd-content-in,
+        .pd-info.pd-content-in {
+            animation: pdContentIn 0.34s var(--ease-lux);
+        }
+
+        @keyframes pdContentIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .product-detail-panel.pd-sweep::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+            background: linear-gradient(100deg, transparent 30%, rgba(245, 232, 202, 0.16) 48%, rgba(199, 169, 108, 0.35) 50%, rgba(245, 232, 202, 0.16) 52%, transparent 70%);
+            background-size: 250% 100%;
+            background-position: 130% 0;
+            animation: pdSweep 0.5s var(--ease-lux);
+        }
+
+        @keyframes pdSweep {
+            from { background-position: 130% 0; opacity: 1; }
+            to { background-position: -30% 0; opacity: 0; }
+        }
+
         .pd-media {
             position: relative;
             background:
@@ -5228,7 +5400,8 @@
                 overflow: visible;
             }
 
-            .pd-layout {
+            .pd-layout,
+            .pd-layout.has-switcher {
                 grid-template-columns: 1fr;
             }
 
@@ -5244,6 +5417,19 @@
 
             .pd-info {
                 padding: 1.5rem 1.25rem 2rem;
+            }
+
+            /* On phones the switcher becomes a touch-friendly horizontal
+               strip above the gallery instead of a vertical rail. */
+            .pd-switcher {
+                flex-direction: row;
+                order: -1;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 0.55rem;
+                padding: 0.85rem 0.9rem;
+                border-right: 0;
+                border-bottom: 1px solid rgba(199, 169, 108, 0.16);
             }
         }
 
@@ -5265,6 +5451,18 @@
         html.reduce-motion .pd-zoom-reset,
         html.reduce-motion .product-photo {
             transition: none;
+        }
+
+        html.reduce-motion .pd-media,
+        html.reduce-motion .pd-info,
+        html.reduce-motion .pd-switcher-indicator {
+            transition: none;
+        }
+
+        html.reduce-motion .pd-media.pd-content-in,
+        html.reduce-motion .pd-info.pd-content-in,
+        html.reduce-motion .product-detail-panel.pd-sweep::after {
+            animation: none;
         }
 
         body.gallery-preview-open {
@@ -6019,6 +6217,31 @@
         .vc-typing span { box-shadow: 0 0 6px rgba(235, 232, 224, 0.35); }
 
         /* Reduced motion: keep the static depth, drop the non-essential animation. */
+        /* These five layers loop forever once the DOM exists, but the panel
+           itself is only visibility:hidden (not display:none) while closed —
+           so without this, the concierge's conic-gradient trace, mist blur
+           and particle drift would repaint on every frame for the entire
+           session, even for visitors who never open the chat. Pausing them
+           until `.vc-open` is set keeps the exact same look the moment the
+           panel opens (a paused animation resumes from where it left off). */
+        .vc-atmos-portal,
+        .vc-atmos-mist,
+        .vc-atmos-particles,
+        .vc-atmos-scan,
+        .vc-frame::before,
+        .vc-frame::after {
+            animation-play-state: paused;
+        }
+
+        .void-concierge.vc-open .vc-atmos-portal,
+        .void-concierge.vc-open .vc-atmos-mist,
+        .void-concierge.vc-open .vc-atmos-particles,
+        .void-concierge.vc-open .vc-atmos-scan,
+        .void-concierge.vc-open .vc-frame::before,
+        .void-concierge.vc-open .vc-frame::after {
+            animation-play-state: running;
+        }
+
         html.reduce-motion .vc-atmos-portal,
         html.reduce-motion .vc-atmos-mist,
         html.reduce-motion .vc-atmos-particles,
@@ -7922,8 +8145,11 @@
             background: linear-gradient(160deg, rgba(18, 16, 12, 0.92), rgba(6, 6, 6, 0.94));
             border: 1px solid rgba(199, 169, 108, 0.34);
             box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(245, 242, 236, 0.06), 0 0 30px rgba(199, 169, 108, 0.08);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            /* Small panel, but position:fixed and on-screen for the entire
+               session — lighter radius keeps the frosted look while cutting the
+               continuous re-sampling cost. */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
 
         .void-dock-item {
@@ -7940,7 +8166,8 @@
             color: var(--void-gold-soft);
             cursor: pointer;
             outline: none;
-            transition: width 0.18s cubic-bezier(0.22, 1, 0.36, 1), height 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+            transform-origin: 50% 100%;
+            transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
         }
 
         .void-dock-item:hover,
@@ -8563,16 +8790,16 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Ivory Gold Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Sigil Aurum" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <img class="product-photo" src="/assets/ivory-gold-monogram.png" alt="Ivory Gold Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <img class="product-photo" src="/assets/ivory-gold-monogram.png" alt="Sigil Aurum — front and back" width="1672" height="941" loading="lazy" decoding="async">
                         <span class="product-view-affordance" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                             <span data-i18n="viewDetails">View Details</span>
                         </span>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Ivory Gold Tee</h3>
+                        <h3 class="product-name">Sigil Aurum</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -8581,16 +8808,16 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Ivory Black Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Sigil Onyx" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <img class="product-photo" src="/assets/ivory-black-gold-monogram.png" alt="Ivory Black Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <img class="product-photo" src="/assets/ivory-black-gold-monogram.png" alt="Sigil Onyx — front and back" width="1672" height="941" loading="lazy" decoding="async">
                         <span class="product-view-affordance" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                             <span data-i18n="viewDetails">View Details</span>
                         </span>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Ivory Black Tee</h3>
+                        <h3 class="product-name">Sigil Onyx</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -8599,16 +8826,16 @@
                         <a href="#shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Ivory Blue Tee" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
+                <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Sigil Cobalt" data-product-price="200" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
-                        <img class="product-photo" src="/assets/ivory-blue-monogram.png" alt="Ivory Blue Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                        <img class="product-photo" src="/assets/ivory-blue-monogram.png" alt="Sigil Cobalt — front and back" width="1672" height="941" loading="lazy" decoding="async">
                         <span class="product-view-affordance" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                             <span data-i18n="viewDetails">View Details</span>
                         </span>
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">Ivory Blue Tee</h3>
+                        <h3 class="product-name">Sigil Cobalt</h3>
                         <span class="product-price">€200</span>
                     </div>
                     <div class="product-actions">
@@ -8732,7 +8959,22 @@
         <section class="product-detail-panel" role="dialog" aria-modal="true" aria-labelledby="pdName">
             <span class="panel-frame" aria-hidden="true"></span>
             <button type="button" class="pd-close" id="pdClose" aria-label="Close product" data-i18n-aria-label="pdClose">✕</button>
-            <div class="pd-layout">
+            <div class="pd-layout" id="pdLayout">
+                <div class="pd-switcher" id="pdSwitcher" role="group" aria-label="Switch Sigil colorway" data-i18n-aria-label="pdSwitcherLabel" hidden>
+                    <span class="pd-switcher-indicator" id="pdSwitcherIndicator" aria-hidden="true"></span>
+                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Aurum" aria-pressed="false">
+                        <span class="pd-switch-swatch"><img class="pd-switch-photo" src="" alt="" loading="lazy" decoding="async"></span>
+                        <span class="pd-switch-name">Sigil Aurum</span>
+                    </button>
+                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Onyx" aria-pressed="false">
+                        <span class="pd-switch-swatch"><img class="pd-switch-photo" src="" alt="" loading="lazy" decoding="async"></span>
+                        <span class="pd-switch-name">Sigil Onyx</span>
+                    </button>
+                    <button type="button" class="pd-switch-item" data-switch-product="Sigil Cobalt" aria-pressed="false">
+                        <span class="pd-switch-swatch"><img class="pd-switch-photo" src="" alt="" loading="lazy" decoding="async"></span>
+                        <span class="pd-switch-name">Sigil Cobalt</span>
+                    </button>
+                </div>
                 <div class="pd-media">
                     <button type="button" class="pd-back" id="pdBack" aria-label="Back to collection" data-i18n-aria-label="pdBack">‹</button>
                     <div class="pd-media-stage" id="pdMediaStage" role="button" tabindex="0" aria-label="View Details" data-i18n-aria-label="viewDetails">
@@ -9445,6 +9687,7 @@
             collectionEmpty: 'No pieces in this category yet.',
             pdClose: 'Close product',
             pdBack: 'Back to collection',
+            pdSwitcherLabel: 'Switch Sigil colorway',
             pdSelectSize: 'Select your size',
             pdSizeChart: 'Size chart',
             pdAddToBag: 'Add to shopping bag',
@@ -10650,13 +10893,21 @@
         // Exposed so the dock Home button can use the same cinematic scroll.
         window.voidSmoothScrollTo = smoothScrollToTarget;
 
-        // Nav scroll
-        window.addEventListener('scroll', () => {
+        // Nav scroll — coalesce rapid scroll events (trackpad/inertial scroll can
+        // fire many per frame) into one class check per animation frame.
+        (function () {
             const nav = document.getElementById('nav');
             if (!nav) return;
-
-            nav.classList.toggle('scrolled', window.scrollY > 50);
-        });
+            let navScrollTicking = false;
+            window.addEventListener('scroll', () => {
+                if (navScrollTicking) return;
+                navScrollTicking = true;
+                window.requestAnimationFrame(() => {
+                    nav.classList.toggle('scrolled', window.scrollY > 50);
+                    navScrollTicking = false;
+                });
+            }, { passive: true });
+        })();
 
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]:not([data-gallery-link])').forEach(anchor => {
@@ -10898,21 +11149,21 @@
                 L: '56666846364028',
                 XL: '56666846396796'
             },
-            'Ivory Gold Tee': {
+            'Sigil Aurum': {
                 XS: '56666871464316',
                 S: '56666871431548',
                 M: '56666871398780',
                 L: '56666871366012',
                 XL: '56666871333244'
             },
-            'Ivory Black Tee': {
+            'Sigil Onyx': {
                 XS: '56666873201020',
                 S: '56666873233788',
                 M: '56666873266556',
                 L: '56666873299324',
                 XL: '56666873332092'
             },
-            'Ivory Blue Tee': {
+            'Sigil Cobalt': {
                 XS: '56666873528700',
                 S: '56666873495932',
                 M: '56666873463164',
@@ -10922,17 +11173,20 @@
         };
         // Old display names resolve to the current canonical keys above, so a
         // cart already sitting in a shopper's localStorage (or a stale link)
-        // from before the "Ivory" rename still finds its Shopify variant.
+        // from before the "Ivory"/"Oblique" renames still finds its Shopify variant.
         const SHOPIFY_PRODUCT_ALIASES = {
-            'Oblique Gold/White Tee': 'Ivory Gold Tee',
-            'Oblique Gold/White': 'Ivory Gold Tee',
-            'Oblique Gold/Black Tee': 'Ivory Black Tee',
-            'Oblique Gold/Black': 'Ivory Black Tee',
-            'Oblique Black/Gold Tee': 'Ivory Black Tee',
-            'Oblique Black/Gold': 'Ivory Black Tee',
-            'Oblique Blue/White Tee': 'Ivory Blue Tee',
-            'Oblique Blue/White': 'Ivory Blue Tee',
-            'Monogram Tee': 'Ivory Gold Tee'
+            'Oblique Gold/White Tee': 'Sigil Aurum',
+            'Oblique Gold/White': 'Sigil Aurum',
+            'Oblique Gold/Black Tee': 'Sigil Onyx',
+            'Oblique Gold/Black': 'Sigil Onyx',
+            'Oblique Black/Gold Tee': 'Sigil Onyx',
+            'Oblique Black/Gold': 'Sigil Onyx',
+            'Oblique Blue/White Tee': 'Sigil Cobalt',
+            'Oblique Blue/White': 'Sigil Cobalt',
+            'Monogram Tee': 'Sigil Aurum',
+            'Ivory Gold Tee': 'Sigil Aurum',
+            'Ivory Black Tee': 'Sigil Onyx',
+            'Ivory Blue Tee': 'Sigil Cobalt'
         };
 
         const CART_STORAGE_KEY = 'voidCart';
@@ -11709,6 +11963,13 @@
         const pdZoomReset = document.getElementById('pdZoomReset');
         const pdThumbs = document.getElementById('pdThumbs');
         const pdThumbButtons = pdThumbs ? Array.from(pdThumbs.querySelectorAll('[data-pd-view]')) : [];
+        const pdLayout = document.getElementById('pdLayout');
+        const pdSwitcher = document.getElementById('pdSwitcher');
+        const pdSwitcherIndicator = document.getElementById('pdSwitcherIndicator');
+        const pdSwitchItems = pdSwitcher ? Array.from(pdSwitcher.querySelectorAll('[data-switch-product]')) : [];
+        const pdMediaEl = document.querySelector('.product-detail-panel .pd-media');
+        const pdInfoEl = document.querySelector('.product-detail-panel .pd-info');
+        const PD_SWITCH_PRODUCTS = pdSwitchItems.map((item) => item.dataset.switchProduct);
         let pdState = { card: null, name: '', price: 0, size: '' };
         let pdBagTouched = false;
         let lastProductDetailFocus = null;
@@ -11731,9 +11992,9 @@
         const PRODUCT_META = {
             'Levitate Tee': { code: 'EV·S1·LVT', description: 'A weightless ritual tee in heavyweight cotton. Dropped shoulder, wide silhouette and a dense hand-feel engineered for layered VOID© styling. Cut with an intentional oversized architecture that drapes rather than clings.' },
             'Endzustand Tee': { code: 'EV·S1·END', description: 'Boxy oversized volume with a structured chest and a blunt hem line. Couture-inspired proportions in a substantial jersey that holds its shape through movement — a quiet statement in monochrome tension.' },
-            'Ivory Gold Tee': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-ivory oblique signature, printed and finished for depth and permanence.' },
-            'Ivory Black Tee': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
-            'Ivory Blue Tee': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' }
+            'Sigil Aurum': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-ivory oblique signature, printed and finished for depth and permanence.' },
+            'Sigil Onyx': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
+            'Sigil Cobalt': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' }
         };
 
         // Each product has three real files: the supplied front+back
@@ -11753,17 +12014,17 @@
                 front: '/assets/endzustand-black-front.png',
                 back: '/assets/endzustand-black-back.png'
             },
-            'Ivory Gold Tee': {
+            'Sigil Aurum': {
                 both: '/assets/ivory-gold-monogram.png',
                 front: '/assets/ivory-gold-monogram-front.png',
                 back: '/assets/ivory-gold-monogram-back.png'
             },
-            'Ivory Black Tee': {
+            'Sigil Onyx': {
                 both: '/assets/ivory-black-gold-monogram.png',
                 front: '/assets/ivory-black-gold-monogram-front.png',
                 back: '/assets/ivory-black-gold-monogram-back.png'
             },
-            'Ivory Blue Tee': {
+            'Sigil Cobalt': {
                 both: '/assets/ivory-blue-monogram.png',
                 front: '/assets/ivory-blue-monogram-front.png',
                 back: '/assets/ivory-blue-monogram-back.png'
@@ -11779,12 +12040,10 @@
             });
         }
 
-        function openProductDetail(productCard) {
-            if (!productCard || !productDetailOverlay) return;
-
-            lastProductDetailFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-            closeCartPopup();
-
+        // Populates the detail panel's media/info from a product card. Shared
+        // by openProductDetail() (first open) and switchProductDetail() (the
+        // in-place swap driven by the sibling-product switcher below).
+        function applyProductDetailContent(productCard) {
             const name = productCard.dataset.productName || 'Product';
             const price = Number(productCard.dataset.productPrice || '0');
             const meta = PRODUCT_META[name] || {};
@@ -11812,6 +12071,19 @@
             productDetailOverlay.querySelectorAll('[data-accordion]').forEach((acc) => acc.classList.remove('open'));
             productDetailOverlay.querySelectorAll('[data-accordion-trigger]').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
 
+            updatePdSwitcher(name);
+
+            return name;
+        }
+
+        function openProductDetail(productCard) {
+            if (!productCard || !productDetailOverlay) return;
+
+            lastProductDetailFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            closeCartPopup();
+
+            const name = applyProductDetailContent(productCard);
+
             productDetailOverlay.classList.add('open');
             productDetailOverlay.scrollTop = 0;
             productDetailOverlay.setAttribute('aria-hidden', 'false');
@@ -11823,6 +12095,100 @@
                 focusElementSafely(pdClose);
             });
         }
+
+        // ============== Product detail: sibling-product switcher ==============
+        function setPdSwitchImages() {
+            pdSwitchItems.forEach((item) => {
+                const swatchName = item.dataset.switchProduct;
+                const images = PRODUCT_IMAGES[swatchName] || {};
+                const img = item.querySelector('.pd-switch-photo');
+                if (img) {
+                    img.src = images.both || '';
+                    img.alt = swatchName;
+                }
+            });
+        }
+
+        function updatePdSwitcherIndicator(activeItem) {
+            if (!pdSwitcherIndicator || !pdSwitcher || !activeItem) return;
+            const isRow = window.matchMedia('(max-width: 860px)').matches;
+            if (isRow) {
+                pdSwitcherIndicator.style.width = activeItem.offsetWidth + 'px';
+                pdSwitcherIndicator.style.height = '2px';
+                pdSwitcherIndicator.style.transform = `translateX(${activeItem.offsetLeft}px)`;
+            } else {
+                pdSwitcherIndicator.style.width = '2px';
+                pdSwitcherIndicator.style.height = activeItem.offsetHeight + 'px';
+                pdSwitcherIndicator.style.transform = `translateY(${activeItem.offsetTop}px)`;
+            }
+        }
+
+        // Shows/hides the switcher rail (only relevant for the three Sigil
+        // colorways) and syncs its active state + moving gold indicator.
+        function updatePdSwitcher(name) {
+            if (!pdSwitcher || !pdLayout) return;
+            const isSwitchable = PD_SWITCH_PRODUCTS.includes(name);
+            pdLayout.classList.toggle('has-switcher', isSwitchable);
+            pdSwitcher.hidden = !isSwitchable;
+            if (!isSwitchable) return;
+
+            setPdSwitchImages();
+            let activeItem = null;
+            pdSwitchItems.forEach((item) => {
+                const isActive = item.dataset.switchProduct === name;
+                item.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                if (isActive) activeItem = item;
+            });
+            updatePdSwitcherIndicator(activeItem);
+        }
+
+        // Swaps the open product in place: the current media/info softly
+        // fade out, content is replaced, then it fades back in under a brief
+        // gold light sweep — roughly 500ms total, no modal close/reopen.
+        function switchProductDetail(productCard) {
+            if (!productCard || !productDetailOverlay) return;
+            const panel = productDetailOverlay.querySelector('.product-detail-panel');
+
+            if (pdMediaEl) pdMediaEl.classList.add('pd-content-out');
+            if (pdInfoEl) pdInfoEl.classList.add('pd-content-out');
+
+            window.setTimeout(() => {
+                const name = applyProductDetailContent(productCard);
+                trackAnalyticsEvent('switch_product_detail', { item_name: name });
+                productDetailOverlay.scrollTop = 0;
+
+                if (pdMediaEl) {
+                    pdMediaEl.classList.remove('pd-content-out');
+                    pdMediaEl.classList.add('pd-content-in');
+                }
+                if (pdInfoEl) {
+                    pdInfoEl.classList.remove('pd-content-out');
+                    pdInfoEl.classList.add('pd-content-in');
+                }
+                if (panel) panel.classList.add('pd-sweep');
+
+                window.setTimeout(() => {
+                    if (pdMediaEl) pdMediaEl.classList.remove('pd-content-in');
+                    if (pdInfoEl) pdInfoEl.classList.remove('pd-content-in');
+                    if (panel) panel.classList.remove('pd-sweep');
+                }, 340);
+            }, 160);
+        }
+
+        pdSwitchItems.forEach((item) => {
+            item.addEventListener('click', () => {
+                const name = item.dataset.switchProduct;
+                if (!name || name === pdState.name) return;
+                const card = document.querySelector(`.product-card[data-product-name="${CSS.escape(name)}"]`);
+                if (card) switchProductDetail(card);
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (!pdSwitcher || pdSwitcher.hidden) return;
+            const activeItem = pdSwitchItems.find((item) => item.getAttribute('aria-pressed') === 'true');
+            updatePdSwitcherIndicator(activeItem);
+        });
 
         function closeProductDetail() {
             if (!productDetailOverlay || !productDetailOverlay.classList.contains('open')) return;
@@ -13027,25 +13393,43 @@
             const items = Array.prototype.slice.call(panel.querySelectorAll('.void-dock-item'));
             const reduce = () => document.documentElement.classList.contains('reduce-motion');
 
-            // macOS-style magnification (vanilla — no motion library).
+            // macOS-style magnification (vanilla — no motion library). Scales via
+            // `transform` (GPU-composited, no reflow) instead of width/height, and
+            // batches rapid mousemove events into one calc per animation frame —
+            // the previous version read getBoundingClientRect() + wrote layout
+            // width/height for every item on every raw mousemove.
             const BASE = window.matchMedia('(max-width: 600px)').matches ? 44 : 48;
             const MAG = 68;
             const DIST = 150;
-            function setSizes(clientX) {
-                items.forEach((it) => {
-                    const r = it.getBoundingClientRect();
+            const itemRects = () => items.map((it) => it.getBoundingClientRect());
+            function applyScales(clientX) {
+                const rects = itemRects();
+                items.forEach((it, i) => {
+                    const r = rects[i];
                     const center = r.left + r.width / 2;
                     const t = Math.max(0, 1 - Math.abs(clientX - center) / DIST);
-                    const size = BASE + (MAG - BASE) * t;
-                    it.style.width = size + 'px';
-                    it.style.height = size + 'px';
+                    const scale = (BASE + (MAG - BASE) * t) / BASE;
+                    it.style.transform = t > 0.001 ? `scale(${scale.toFixed(3)})` : '';
                 });
             }
-            function resetSizes() { items.forEach((it) => { it.style.width = BASE + 'px'; it.style.height = BASE + 'px'; }); }
+            function resetSizes() { items.forEach((it) => { it.style.transform = ''; }); }
             resetSizes();
             if (!reduce()) {
-                panel.addEventListener('mousemove', (e) => setSizes(e.clientX));
-                panel.addEventListener('mouseleave', resetSizes);
+                let pendingX = null;
+                let rafId = null;
+                function flush() {
+                    rafId = null;
+                    if (pendingX !== null) applyScales(pendingX);
+                }
+                panel.addEventListener('mousemove', (e) => {
+                    pendingX = e.clientX;
+                    if (rafId === null) rafId = window.requestAnimationFrame(flush);
+                }, { passive: true });
+                panel.addEventListener('mouseleave', () => {
+                    pendingX = null;
+                    if (rafId !== null) { window.cancelAnimationFrame(rafId); rafId = null; }
+                    resetSizes();
+                });
             }
 
             // ── Generic modal open/close ──
@@ -13788,6 +14172,26 @@ void main() {
             }
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) stop(); else start();
+            });
+        })();
+
+        // The Collection section's fog/glow/particle ambience (.pa-*) is CSS
+        // animation-play-state:paused by default (see .pa-in-view rules above)
+        // so it doesn't keep repainting for the whole session while scrolled
+        // out of view — only while the section is actually on-screen.
+        (function initSectionAmbiencePause() {
+            const atmos = document.querySelector('.products-atmos');
+            if (!atmos) return;
+            if (!('IntersectionObserver' in window)) {
+                atmos.classList.add('pa-in-view');
+                return;
+            }
+            new IntersectionObserver((entries) => {
+                const visible = entries.some((e) => e.isIntersecting);
+                atmos.classList.toggle('pa-in-view', visible && !document.hidden);
+            }, { rootMargin: '20% 0px', threshold: 0.01 }).observe(atmos);
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) atmos.classList.remove('pa-in-view');
             });
         })();
     </script>
