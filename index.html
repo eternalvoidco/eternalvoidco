@@ -4868,6 +4868,46 @@
             outline-offset: 2px;
         }
 
+        /* ---- Luxury chevron family: pd-back + the gallery prev/next arrows.
+           Same hairline-gold medallion as before, but with a polished inner
+           edge at rest and — on hover/focus — the same diagonal gold-sheen
+           light sweep already used on .collection-preorder-trigger, clipped
+           to the circle so it reads as light catching a coin rather than a
+           generic UI flash. ---- */
+        .pd-back,
+        .pd-catalog-nav {
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .pd-back svg,
+        .pd-catalog-nav svg {
+            position: relative;
+            width: 16px;
+            height: 16px;
+            display: block;
+            pointer-events: none;
+        }
+
+        .pd-back::after,
+        .pd-catalog-nav::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            z-index: -1;
+            background: var(--void-gold-sheen);
+            transform: translateX(-130%) skewX(-12deg);
+            transition: transform 0.9s var(--ease-lux);
+            pointer-events: none;
+        }
+
+        .pd-back:hover::after,
+        .pd-back:focus-visible::after,
+        .pd-catalog-nav:hover::after,
+        .pd-catalog-nav:focus-visible::after {
+            transform: translateX(130%) skewX(-12deg);
+        }
+
         .pd-back {
             position: absolute;
             top: 0.85rem;
@@ -4879,18 +4919,19 @@
             border: 1px solid var(--pd-gold-dim);
             background: var(--pd-edge-fill);
             color: var(--pd-gold);
-            font-size: 1.3rem;
-            line-height: 1;
+            display: grid;
+            place-items: center;
             cursor: pointer;
-            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
-            transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0), inset 0 1px 0 rgba(255, 248, 232, 0.08);
+            transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s var(--ease-lux);
         }
 
         .pd-back:hover,
         .pd-back:focus-visible {
             border-color: var(--pd-gold-bright);
             color: var(--pd-gold-bright);
-            box-shadow: 0 0 14px 1px rgba(212, 175, 55, 0.26);
+            box-shadow: 0 0 18px 2px rgba(212, 175, 55, 0.34), inset 0 1px 0 rgba(255, 248, 232, 0.16);
+            transform: scale(1.06);
         }
 
         .pd-back:focus-visible {
@@ -4912,12 +4953,12 @@
             border: 1px solid var(--pd-gold-dim);
             background: var(--pd-edge-fill);
             color: var(--pd-gold);
-            font-size: 1.4rem;
-            line-height: 1;
+            display: grid;
+            place-items: center;
             cursor: pointer;
             opacity: 0.68;
-            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
-            transition: opacity 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0), inset 0 1px 0 rgba(255, 248, 232, 0.08);
+            transition: opacity 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s var(--ease-lux);
         }
 
         .pd-catalog-prev {
@@ -4933,7 +4974,8 @@
             opacity: 1;
             border-color: var(--pd-gold-bright);
             color: var(--pd-gold-bright);
-            box-shadow: 0 0 14px 1px rgba(212, 175, 55, 0.26);
+            box-shadow: 0 0 18px 2px rgba(212, 175, 55, 0.34), inset 0 1px 0 rgba(255, 248, 232, 0.16);
+            transform: translateY(-50%) scale(1.06);
         }
 
         .pd-catalog-nav:focus-visible {
@@ -5610,7 +5652,11 @@
         html.reduce-motion .pd-media-zoom-layer,
         html.reduce-motion .pd-media-photo,
         html.reduce-motion .pd-zoom-reset,
-        html.reduce-motion .product-photo {
+        html.reduce-motion .product-photo,
+        html.reduce-motion .pd-back,
+        html.reduce-motion .pd-back::after,
+        html.reduce-motion .pd-catalog-nav,
+        html.reduce-motion .pd-catalog-nav::after {
             transition: none;
         }
 
@@ -9137,7 +9183,9 @@
                     </button>
                 </div>
                 <div class="pd-media">
-                    <button type="button" class="pd-back" id="pdBack" aria-label="Back to collection" data-i18n-aria-label="pdBack">‹</button>
+                    <button type="button" class="pd-back" id="pdBack" aria-label="Back to collection" data-i18n-aria-label="pdBack">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M14.5 6L9 12L14.5 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
                     <div class="pd-media-stage" id="pdMediaStage" role="button" tabindex="0" aria-label="View Details" data-i18n-aria-label="viewDetails">
                         <div class="pd-media-zoom-layer" id="pdZoomLayer">
                             <img class="pd-media-photo" id="pdMediaPhoto" data-view="both" src="" alt="" decoding="async">
@@ -9145,8 +9193,12 @@
                         <button type="button" class="pd-zoom-reset" id="pdZoomReset" aria-label="Reset zoom" data-i18n-aria-label="pdResetZoom">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 10h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                         </button>
-                        <button type="button" class="pd-catalog-nav pd-catalog-prev" id="pdCatalogPrev" aria-label="Previous piece" data-i18n-aria-label="pdPrevPiece">‹</button>
-                        <button type="button" class="pd-catalog-nav pd-catalog-next" id="pdCatalogNext" aria-label="Next piece" data-i18n-aria-label="pdNextPiece">›</button>
+                        <button type="button" class="pd-catalog-nav pd-catalog-prev" id="pdCatalogPrev" aria-label="Previous piece" data-i18n-aria-label="pdPrevPiece">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M14.5 6L9 12L14.5 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <button type="button" class="pd-catalog-nav pd-catalog-next" id="pdCatalogNext" aria-label="Next piece" data-i18n-aria-label="pdNextPiece">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M9.5 6L15 12L9.5 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
                         <div class="pd-dots" id="pdDots" role="tablist" aria-label="Image" hidden></div>
                     </div>
                     <div class="pd-thumbs" id="pdThumbs" role="group" aria-label="Product views" data-i18n-aria-label="pdThumbsLabel">
