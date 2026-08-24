@@ -667,7 +667,8 @@
         .product-detail-overlay.open .product-detail-panel .panel-frame,
         .style-guide-overlay.open .style-guide-panel .panel-frame,
         .void-auth.active .void-auth-panel .panel-frame,
-        .cart-popup.open .panel-frame {
+        .cart-popup.open .panel-frame,
+        .pd-seal-menu.open .panel-frame {
             opacity: 1;
         }
 
@@ -678,7 +679,8 @@
         .product-detail-overlay.open .product-detail-panel .panel-frame::before,
         .style-guide-overlay.open .style-guide-panel .panel-frame::before,
         .void-auth.active .void-auth-panel .panel-frame::before,
-        .cart-popup.open .panel-frame::before {
+        .cart-popup.open .panel-frame::before,
+        .pd-seal-menu.open .panel-frame::before {
             animation: voidFrameOrbit 5.5s linear infinite;
         }
 
@@ -3491,11 +3493,12 @@
         }
 
         /* ── Full-section cinematic atmosphere (CSS-only, behind the grid at z0) ──
-           Layered luxury depth: charcoal/blue-black base, slow moving fog, a soft
-           breathing glow, faint gold dust, fine grain and an occasional light
-           sweep. The whole layer is masked to fade at the top and bottom so the
-           section melts into the black above and the footer below — no hard cut.
-           Sits behind the near-opaque product cards, so text stays readable. */
+           Layered luxury depth: near-black base, two slow independent drifting
+           "fold" layers standing in for silk/fabric movement, a faint gold breathing
+           glow near one corner, and an occasional light sweep. The whole layer is
+           masked to fade at the top and bottom so the section melts into the black
+           above and the footer below — no hard cut. Sits behind the near-opaque
+           product cards, so text stays readable. */
         .products-atmos {
             position: absolute;
             inset: 0;
@@ -3508,9 +3511,7 @@
 
         .products-atmos > span { position: absolute; display: block; inset: 0; }
 
-        /* Near-black base matching the site shell. The warm brown pocket that
-           used to sit on the right is now barely tinted, so the section reads as
-           black with a dark-gold breath rather than a brown wash. */
+        /* Near-black base matching the site shell. Unchanged. */
         .pa-base {
             background:
                 radial-gradient(120% 82% at 50% 6%, rgba(184, 148, 58, 0.022), transparent 55%),
@@ -3519,70 +3520,66 @@
                 linear-gradient(180deg, #030302 0%, #050403 48%, #030302 100%);
         }
 
-        /* Soft moving light / fog */
-        .pa-fog {
-            inset: -25%;
-            /* Wider blur = a smoother falloff with no visible stepping. */
-            filter: blur(96px);
-            opacity: 0.4;
+        /* Fold A — the primary slow-moving "silk" layer. Three overlapping elongated
+           ellipses at different angles/aspects so the composite shape reads as
+           draped fabric rather than a single round blob. Wide blur removes all
+           edges; only shifts position/scale/rotation, never anything that could
+           band or step. */
+        .pa-fold-a {
+            inset: -30%;
+            filter: blur(100px);
+            opacity: 0.42;
             background:
-                radial-gradient(30% 42% at 26% 34%, rgba(107, 81, 29, 0.075), transparent 60%),
-                radial-gradient(34% 46% at 76% 66%, rgba(24, 21, 32, 0.42), transparent 62%),
-                radial-gradient(24% 30% at 58% 22%, rgba(184, 148, 58, 0.03), transparent 60%);
-            animation: paFog 54s ease-in-out infinite alternate;
+                radial-gradient(65% 30% at 22% 30%, rgba(20, 18, 15, 0.55), transparent 68%),
+                radial-gradient(50% 22% at 68% 20%, rgba(199, 169, 108, 0.05), transparent 64%),
+                radial-gradient(70% 26% at 40% 62%, rgba(14, 13, 12, 0.5), transparent 66%);
+            transform-origin: 40% 45%;
+            animation: paFoldA 26s ease-in-out infinite alternate;
         }
 
-        @keyframes paFog {
-            0% { transform: translate3d(-2%, -1.5%, 0) scale(1.06); }
-            100% { transform: translate3d(2.5%, 2%, 0) scale(1.14); }
+        @keyframes paFoldA {
+            0% { transform: translate3d(-2%, -1.5%, 0) rotate(-1.5deg) scale(1.05); }
+            100% { transform: translate3d(2.5%, 2%, 0) rotate(1.5deg) scale(1.12); }
         }
 
-        /* Slow breathing glow */
+        /* Fold B — second layer, offset phase and different duration/path so the
+           two folds never move in lockstep. Positioned toward the opposite side,
+           reinforcing depth via parallax rather than a single breathing mass. */
+        .pa-fold-b {
+            inset: -32% -20%;
+            filter: blur(110px);
+            opacity: 0.34;
+            background:
+                radial-gradient(60% 24% at 78% 68%, rgba(18, 17, 22, 0.5), transparent 66%),
+                radial-gradient(46% 20% at 30% 78%, rgba(199, 169, 108, 0.035), transparent 62%),
+                radial-gradient(66% 28% at 60% 40%, rgba(12, 11, 10, 0.42), transparent 68%);
+            transform-origin: 60% 55%;
+            animation: paFoldB 33s ease-in-out infinite alternate;
+            animation-delay: -9s;
+        }
+
+        @keyframes paFoldB {
+            0% { transform: translate3d(2%, 1.5%, 0) rotate(1.2deg) scale(1.08); }
+            100% { transform: translate3d(-2.5%, -2%, 0) rotate(-1.2deg) scale(1.15); }
+        }
+
+        /* Faint premium gold reflection, positioned toward the upper-left edge of
+           the grid rather than dead-center — reads as an atmospheric reflection
+           near the collection, never a glow "on" anything. */
         .pa-glow {
-            background: radial-gradient(46% 40% at 50% 56%, rgba(184, 148, 58, 0.038), transparent 66%);
-            animation: paBreathe 11s ease-in-out infinite;
+            background: radial-gradient(38% 34% at 22% 30%, rgba(199, 169, 108, 0.04), transparent 68%);
+            animation: paBreathe 21s ease-in-out infinite;
         }
 
         @keyframes paBreathe {
-            0%, 100% { opacity: 0.3; transform: scale(0.99); }
-            50% { opacity: 0.6; transform: scale(1.03); }
+            0%, 100% { opacity: 0.28; transform: scale(0.98); }
+            50% { opacity: 0.58; transform: scale(1.04); }
         }
 
-        /* Faint drifting gold dust (no bright dots) */
-        .pa-particles {
-            opacity: 0.24;
-            background-image:
-                radial-gradient(1.5px 1.5px at 12% 24%, rgba(184, 148, 58, 0.2), transparent),
-                radial-gradient(1.5px 1.5px at 32% 66%, rgba(107, 81, 29, 0.24), transparent),
-                radial-gradient(1.5px 1.5px at 54% 38%, rgba(184, 148, 58, 0.15), transparent),
-                radial-gradient(1.5px 1.5px at 72% 78%, rgba(107, 81, 29, 0.2), transparent),
-                radial-gradient(1.5px 1.5px at 86% 30%, rgba(184, 148, 58, 0.13), transparent),
-                radial-gradient(1.5px 1.5px at 22% 88%, rgba(107, 81, 29, 0.16), transparent),
-                radial-gradient(1.5px 1.5px at 64% 12%, rgba(184, 148, 58, 0.13), transparent),
-                radial-gradient(1px 1px at 44% 54%, rgba(184, 148, 58, 0.12), transparent);
-            animation: paDrift 70s linear infinite;
-        }
-
-        /* Same travel as before — only the brightness comes down. */
-        @keyframes paDrift {
-            0% { transform: translateY(14px); opacity: 0.13; }
-            50% { opacity: 0.24; }
-            100% { transform: translateY(-70px); opacity: 0.13; }
-        }
-
-        /* Kept only as a dither: at this strength it breaks up banding in the
-           large dark gradients without ever reading as grain or texture. */
-        .pa-grain {
-            opacity: 0.12;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.022) 0.5px, transparent 0.6px);
-            background-size: 3px 3px;
-            mix-blend-mode: overlay;
-        }
-
-        /* Occasional soft light sweep */
+        /* Occasional soft light sweep — retinted to the site's actual gold. */
         .pa-shimmer {
             inset: -40% -12%;
-            background: linear-gradient(115deg, transparent 43%, rgba(184, 148, 58, 0.022) 50%, transparent 57%);
+            background: linear-gradient(115deg, transparent 43%, rgba(199, 169, 108, 0.022) 50%, transparent 57%);
             transform: translateX(-62%);
             animation: paSweep 30s ease-in-out infinite;
         }
@@ -3593,7 +3590,7 @@
             100% { transform: translateX(62%); opacity: 0; }
         }
 
-        /* Cinematic vignette for depth */
+        /* Cinematic vignette for depth. Unchanged. */
         .pa-vignette {
             background: radial-gradient(120% 92% at 50% 42%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
         }
@@ -3602,32 +3599,35 @@
            section is scrolled far out of view. Paused by default; a small
            IntersectionObserver (see initSectionAmbiencePause()) adds
            .pa-in-view only while the section actually intersects the viewport. */
-        .pa-fog,
+        .pa-fold-a,
+        .pa-fold-b,
         .pa-glow,
-        .pa-particles,
         .pa-shimmer {
             animation-play-state: paused;
         }
 
-        .products-atmos.pa-in-view .pa-fog,
+        .products-atmos.pa-in-view .pa-fold-a,
+        .products-atmos.pa-in-view .pa-fold-b,
         .products-atmos.pa-in-view .pa-glow,
-        .products-atmos.pa-in-view .pa-particles,
         .products-atmos.pa-in-view .pa-shimmer {
             animation-play-state: running;
         }
 
-        html.reduce-motion .pa-fog,
+        html.reduce-motion .pa-fold-a,
+        html.reduce-motion .pa-fold-b,
         html.reduce-motion .pa-glow,
-        html.reduce-motion .pa-particles,
         html.reduce-motion .pa-shimmer { animation: none; }
 
         /* Lighter + calmer on phones (performance) */
         @media (max-width: 600px) {
-            .pa-fog { animation: none; filter: blur(68px); }
+            .pa-fold-a { animation: none; filter: blur(70px); }
+            /* `.products-atmos > span` (below) matches these same elements with
+               higher specificity (class + type selector), so a bare `.pa-fold-b`
+               class selector here would lose to it regardless of source order —
+               qualify with the same parent combinator to win outright. */
+            .products-atmos > .pa-fold-b { display: none; }
             .pa-glow { animation: none; }
-            .pa-particles { animation: none; }
-            .pa-grain { opacity: 0.1; }
-            .pa-shimmer { display: none; }
+            .products-atmos > .pa-shimmer { display: none; }
         }
 
         .products-inner {
@@ -4543,6 +4543,10 @@
             --pd-gold-bright: #E8C766;
             --pd-edge-fill: rgba(11, 11, 12, 0.72);
             --pd-edge-size: 40px;
+            /* Exit is deliberately a step down from the gallery-utility tier
+               above — smaller and quieter, so it never competes with the
+               Atelier seal for attention or thumb space. */
+            --pd-close-size: 32px;
         }
 
         .style-guide-panel {
@@ -4564,28 +4568,30 @@
            slide/scale/bounce. Applies to close, back, zoom-reset and the
            image-scroll arrows below; the seal button alone gets the fuller
            ornament, kept exclusive so it still reads as the special one. ---- */
+        /* Exit — isolated in the far corner, deliberately quiet: thinner ring,
+           no resting glow, smaller glyph. Nothing else anchors to this corner
+           any more, so there is no crowding and no misclick risk. */
         .pd-close {
             position: absolute;
             top: 0.85rem;
             right: 0.85rem;
             z-index: 5;
-            width: var(--pd-edge-size);
-            height: var(--pd-edge-size);
+            width: var(--pd-close-size);
+            height: var(--pd-close-size);
             border-radius: 50%;
-            border: 1px solid var(--pd-gold-dim);
+            border: 1px solid rgba(212, 175, 55, 0.24);
             background: var(--pd-edge-fill);
-            color: var(--pd-gold);
+            color: rgba(212, 175, 55, 0.7);
             cursor: pointer;
-            font-size: 0.8rem;
-            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+            font-size: 0.65rem;
             transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .pd-close:hover,
         .pd-close:focus-visible {
-            border-color: var(--pd-gold-bright);
+            border-color: var(--pd-gold);
             color: var(--pd-gold-bright);
-            box-shadow: 0 0 14px 1px rgba(212, 175, 55, 0.26);
+            box-shadow: 0 0 10px 0 rgba(212, 175, 55, 0.22);
         }
 
         .pd-close:focus-visible {
@@ -4593,13 +4599,15 @@
             outline-offset: 2px;
         }
 
-        /* ---- Instant swap "seal" — a direct jump to ANY piece, distinct from
-           the sequential prev/next carousel arrows on the gallery. Sits astride
-           the panel's top-right corner like a wax seal on an envelope. ---- */
+        /* ---- Atelier seal — the panel's one signature action (instant swap
+           to any piece), astride the top-LEFT corner. Moved off Exit's corner
+           entirely so the two controls can never crowd or be misclicked; a
+           faint resting ring keeps it reading as an engraved plaque rather
+           than a plain icon button even before it's touched. ---- */
         .pd-seal {
             position: absolute;
             top: -18px;
-            right: -18px;
+            left: -18px;
             z-index: 6;
             width: 52px;
             height: 52px;
@@ -4620,6 +4628,30 @@
             opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
+        }
+
+        /* A quiet, ever-present halo ring — distinct from the hover glow
+           above, which blooms brighter on top of this. */
+        .pd-seal::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: 50%;
+            border: 1px solid rgba(212, 175, 55, 0.22);
+            pointer-events: none;
+            transition: border-color 0.3s ease;
+        }
+
+        /* One-shot gold light tracing the halo when the panel first opens —
+           settles after a single pass, never loops. */
+        .product-detail-overlay.open .pd-seal::after {
+            animation: pdSealSweep 1.1s ease-out 0.25s 1;
+        }
+
+        @keyframes pdSealSweep {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); border-color: rgba(212, 175, 55, 0.22); }
+            35% { box-shadow: 0 0 10px 1px rgba(212, 175, 55, 0.4); border-color: rgba(212, 175, 55, 0.6); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); border-color: rgba(212, 175, 55, 0.22); }
         }
 
         .pd-seal-svg {
@@ -4644,7 +4676,7 @@
         .pd-seal:focus-visible,
         .pd-seal[aria-expanded="true"] {
             color: var(--pd-gold-bright);
-            transform: scale(1.04);
+            transform: translateY(-2px) scale(1.04);
         }
 
         .pd-seal:hover::before,
@@ -4653,33 +4685,124 @@
             opacity: 1;
         }
 
+        .pd-seal:hover::after,
+        .pd-seal:focus-visible::after,
+        .pd-seal[aria-expanded="true"]::after {
+            border-color: rgba(212, 175, 55, 0.6);
+        }
+
         .pd-seal:focus-visible {
             outline: 1px solid var(--pd-gold);
             outline-offset: 3px;
         }
 
+        /* The Atelier drawer — reuses the site's own .panel-frame motif (traveling
+           gold sweep + corner brackets, see ~line 606) at a smaller scale, so it
+           inherits the same "majestic but restrained" language as every other
+           overlay instead of inventing a new one. */
         .pd-seal-menu {
             position: absolute;
             top: 38px;
-            right: -18px;
+            left: -18px;
             z-index: 7;
-            width: 220px;
-            max-height: min(320px, 60vh);
-            overflow-y: auto;
-            padding: 0.5rem;
+            width: 236px;
+            max-height: min(360px, 60vh);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             border: 1px solid var(--pd-gold-dim);
-            background: linear-gradient(165deg, rgba(14, 13, 11, 0.98), rgba(5, 5, 5, 0.99));
+            background:
+                radial-gradient(140% 90% at 10% 0%, rgba(212, 175, 55, 0.05), transparent 55%),
+                linear-gradient(165deg, rgba(14, 13, 11, 0.98), rgba(5, 5, 5, 0.99));
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.1);
             opacity: 0;
             visibility: hidden;
-            transform: translateY(-6px);
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+            transform: translateY(-8px);
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1), visibility 0.4s ease;
         }
 
         .pd-seal-menu.open {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
+        }
+
+        .pd-seal-menu .panel-frame::after {
+            inset: 4px;
+            --vf-l: 11px;
+        }
+
+        .pd-seal-menu-head {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.7rem 0.5rem;
+            flex: 0 0 auto;
+        }
+
+        /* The real EV emblem, recolored gold via mask (not filter-guessing) so
+           it's a precise, quiet tint rather than a literal black/white mark —
+           "an ornamental seal, not a logo." */
+        .pd-seal-menu-emblem {
+            width: 15px;
+            height: 15px;
+            flex: 0 0 auto;
+            opacity: 0.6;
+            background: var(--pd-gold);
+            -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+            mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+        }
+
+        .pd-seal-menu-title {
+            flex: 1 1 auto;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.66rem;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: rgba(212, 175, 55, 0.75);
+            white-space: nowrap;
+        }
+
+        /* The drawer's own Exit — separate from the panel's Exit, isolated at
+           its far upper-right corner, quieter still than either. */
+        .pd-seal-menu-close {
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid transparent;
+            background: none;
+            color: rgba(245, 242, 236, 0.45);
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .pd-seal-menu-close:hover,
+        .pd-seal-menu-close:focus-visible {
+            border-color: var(--pd-gold-dim);
+            color: var(--pd-gold-bright);
+        }
+
+        .pd-seal-menu-close:focus-visible {
+            outline: 1px solid var(--pd-gold);
+            outline-offset: 1px;
+        }
+
+        .pd-seal-menu-divider {
+            flex: 0 0 auto;
+            height: 1px;
+            margin: 0 0.7rem;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.32), transparent);
+        }
+
+        .pd-seal-menu-items {
+            position: relative;
+            z-index: 2;
+            overflow-y: auto;
+            padding: 0.5rem;
         }
 
         .pd-seal-item {
@@ -5717,26 +5840,31 @@
             }
 
             /* Larger touch target + always visible (no hover state on touch) —
-               applied uniformly across the whole edge-button family. */
+               applied uniformly across the gallery-utility tier. Exit keeps
+               its own smaller, quieter size even on phones (still comfortably
+               tappable, isolated from everything else). */
             .pd-catalog-nav,
-            .pd-close,
             .pd-back,
             .pd-zoom-reset {
                 width: 44px;
                 height: 44px;
             }
 
+            .pd-close {
+                width: 38px;
+                height: 38px;
+            }
+
             .pd-catalog-nav {
                 opacity: 0.82;
             }
 
-            /* The panel runs edge-to-edge on phones, so the seal moves to the
-               opposite (top-left) corner, fully on-panel, clear of the close
-               button — astride-the-corner only makes sense with visible margin
-               around the panel, which only exists on desktop. */
+            /* The panel runs edge-to-edge on phones, so the seal tucks fully
+               on-panel instead of straddling the (now nonexistent) margin —
+               it already lives on the opposite corner from Exit on both
+               breakpoints, so there's no swap needed here any more. */
             .pd-seal {
                 top: 0.5rem;
-                right: auto;
                 left: 0.5rem;
                 width: 44px;
                 height: 44px;
@@ -5744,9 +5872,8 @@
 
             .pd-seal-menu {
                 top: 3.2rem;
-                right: auto;
                 left: 0.5rem;
-                width: min(240px, 64vw);
+                width: min(250px, 68vw);
             }
         }
 
@@ -5775,9 +5902,14 @@
         html.reduce-motion .pd-switcher-indicator,
         html.reduce-motion .pd-seal,
         html.reduce-motion .pd-seal::before,
+        html.reduce-motion .pd-seal::after,
         html.reduce-motion .pd-seal-menu,
         html.reduce-motion .pd-dot::after {
             transition: none;
+        }
+
+        html.reduce-motion .pd-seal::after {
+            animation: none;
         }
 
         html.reduce-motion .pd-media.pd-content-in,
@@ -9051,10 +9183,9 @@
     <section class="products" id="shop">
         <div class="products-atmos" aria-hidden="true">
             <span class="pa-base"></span>
-            <span class="pa-fog"></span>
+            <span class="pa-fold-a"></span>
+            <span class="pa-fold-b"></span>
             <span class="pa-glow"></span>
-            <span class="pa-particles"></span>
-            <span class="pa-grain"></span>
             <span class="pa-shimmer"></span>
             <span class="pa-vignette"></span>
         </div>
@@ -9297,7 +9428,16 @@
                     </g>
                 </svg>
             </button>
-            <div class="pd-seal-menu" id="pdSealMenu" role="menu" aria-label="All pieces" aria-hidden="true" hidden></div>
+            <div class="pd-seal-menu" id="pdSealMenu" role="menu" aria-label="All pieces" aria-hidden="true" hidden>
+                <span class="panel-frame" aria-hidden="true"></span>
+                <div class="pd-seal-menu-head">
+                    <span class="pd-seal-menu-emblem" aria-hidden="true"></span>
+                    <span class="pd-seal-menu-title" data-i18n="pdSealTitle">The Atelier</span>
+                    <button type="button" class="pd-seal-menu-close" id="pdSealMenuClose" aria-label="Close" data-i18n-aria-label="pdSealClose">✕</button>
+                </div>
+                <div class="pd-seal-menu-divider" aria-hidden="true"></div>
+                <div class="pd-seal-menu-items" id="pdSealMenuItems"></div>
+            </div>
             <div class="pd-layout" id="pdLayout">
                 <div class="pd-switcher" id="pdSwitcher" role="group" aria-label="Switch Sigil colorway" data-i18n-aria-label="pdSwitcherLabel" hidden>
                     <span class="pd-switcher-indicator" id="pdSwitcherIndicator" aria-hidden="true"></span>
@@ -10031,6 +10171,8 @@
             pdBack: 'Back to collection',
             pdSwitcherLabel: 'Switch Sigil colorway',
             pdSealLabel: 'Quick switch product',
+            pdSealTitle: 'The Atelier',
+            pdSealClose: 'Close',
             pdPrevPiece: 'Previous piece',
             pdNextPiece: 'Next piece',
             pdSelectSize: 'Select your size',
@@ -12314,6 +12456,8 @@
         const pdDots = document.getElementById('pdDots');
         const pdSeal = document.getElementById('pdSeal');
         const pdSealMenu = document.getElementById('pdSealMenu');
+        const pdSealMenuItems = document.getElementById('pdSealMenuItems');
+        const pdSealMenuClose = document.getElementById('pdSealMenuClose');
         const pdThumbs = document.getElementById('pdThumbs');
         const pdThumbButtons = pdThumbs ? Array.from(pdThumbs.querySelectorAll('[data-pd-view]')) : [];
         const pdLayout = document.getElementById('pdLayout');
@@ -12611,13 +12755,13 @@
             pdSeal.setAttribute('aria-expanded', 'false');
             window.setTimeout(() => {
                 if (!pdSealMenu.classList.contains('open')) pdSealMenu.hidden = true;
-            }, 280);
+            }, 400);
         }
 
         function renderPdSealMenu() {
-            if (!pdSealMenu) return;
+            if (!pdSealMenuItems) return;
             const cards = Array.from(document.querySelectorAll('.product-card'));
-            pdSealMenu.innerHTML = cards.map((card) => {
+            pdSealMenuItems.innerHTML = cards.map((card) => {
                 const name = card.dataset.productName || '';
                 const price = card.dataset.productPrice || '0';
                 const images = PRODUCT_IMAGES[name] || {};
@@ -12629,7 +12773,7 @@
                     `<span class="pd-seal-item-price">€${price}</span>` +
                     `</button>`;
             }).join('');
-            pdSealMenu.querySelectorAll('[data-product-name]').forEach((button) => {
+            pdSealMenuItems.querySelectorAll('[data-product-name]').forEach((button) => {
                 button.addEventListener('click', (event) => {
                     event.stopPropagation();
                     const name = button.dataset.productName;
@@ -12656,6 +12800,14 @@
                 event.stopPropagation();
                 if (pdSealMenu && pdSealMenu.classList.contains('open')) closePdSealMenu();
                 else openPdSealMenu();
+            });
+        }
+
+        if (pdSealMenuClose) {
+            pdSealMenuClose.addEventListener('click', (event) => {
+                event.stopPropagation();
+                closePdSealMenu();
+                if (pdSeal) pdSeal.focus();
             });
         }
 
