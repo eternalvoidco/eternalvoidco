@@ -84,6 +84,10 @@
     --fr-px: 0;
     --fr-py: 0;
     --fr-active: 0;
+    /* Manifesto section: ambient light position + crest specular strength */
+    --fr-mx: 0;
+    --fr-my: 0;
+    --fr-crest-lit: 0;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -456,75 +460,258 @@ body {
     mask-composite: intersect;
 }
 
-/* ── Editorial sections ── */
-.fr-section {
+/* ── The manifesto chamber ──────────────────────────────────
+   A 12-column editorial grid, deliberately off-axis: the statement sits
+   left of centre, the house marks and the atelier annotation sit right,
+   and hairlines run between them. No card, no box, no centred stack. */
+.fr-manifesto {
     position: relative;
     z-index: 1;
-    max-width: 680px;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    align-items: start;
+    row-gap: clamp(3rem, 9vh, 6rem);
+    max-width: 1180px;
     margin: 0 auto;
-    padding: clamp(4rem, 12vh, 8rem) clamp(1.2rem, 5vw, 2rem);
-    text-align: center;
+    padding: clamp(5rem, 16vh, 10rem) clamp(1.4rem, 6vw, 4rem) clamp(4rem, 12vh, 8rem);
+    /* The ghost wordmark is wider than the page on purpose. */
+    overflow: hidden;
 }
 
-.fr-statement {
+/* Large, dim warm pool that drifts with the cursor. Fades to nothing well
+   inside its own box, so there is never a visible gradient edge. */
+.fr-ambient {
+    position: absolute;
+    inset: -25%;
+    pointer-events: none;
+    background: radial-gradient(46% 38% at
+        calc(50% + var(--fr-mx, 0) * 9%)
+        calc(46% + var(--fr-my, 0) * 8%),
+        rgba(var(--fr-amber), 0.05) 0%,
+        rgba(var(--fr-amber), 0.018) 42%,
+        transparent 68%);
+}
+
+/* Black-on-black NÉANT. Sits behind everything, cropped by the section,
+   readable only once the eye adjusts. */
+.fr-ghost {
+    position: absolute;
+    left: 50%;
+    top: 47%;
+    z-index: 0;
+    white-space: nowrap;
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(1.5rem, 5vw, 2.5rem);
     font-weight: 500;
-    line-height: 1.4;
-    letter-spacing: 0.04em;
-    color: rgba(245, 242, 236, 0.86);
-    text-wrap: balance;
+    font-size: clamp(9rem, 27vw, 26rem);
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-indent: 0.16em;
+    color: #ffffff;
+    opacity: 0.028;
+    transform: translate3d(
+        calc(-50% + var(--fr-mx, 0) * 8px),
+        calc(-50% + var(--fr-my, 0) * 5px), 0);
+    pointer-events: none;
+    user-select: none;
 }
 
-.fr-rule {
+/* Architectural hairlines — the only "structure" in the section. */
+.fr-vline {
+    position: relative;
+    z-index: 1;
     width: 1px;
-    height: clamp(3rem, 8vh, 5rem);
-    margin: 0 auto;
-    background: linear-gradient(180deg, transparent, rgba(var(--fr-amber), 0.45), transparent);
+    justify-self: center;
+    background: linear-gradient(180deg, transparent, rgba(var(--fr-amber), 0.3) 22%, rgba(var(--fr-amber), 0.3) 78%, transparent);
+    transform-origin: 50% 0;
+    transform: scaleY(0);
+    transition: transform 1.3s var(--fr-ease);
 }
 
-.fr-label {
-    font-size: 0.56rem;
-    font-weight: 600;
-    letter-spacing: 0.44em;
-    text-indent: 0.44em;
-    text-transform: uppercase;
-    color: rgba(var(--fr-amber), 0.62);
+.fr-vline.is-in { transform: scaleY(1); }
+
+.fr-vline-a { grid-column: 7; height: clamp(3rem, 9vh, 6rem); }
+.fr-vline-b { grid-column: 7; height: clamp(4rem, 12vh, 8rem); }
+
+/* Registration index, like a plate number on a campaign sheet. */
+.fr-index {
+    grid-column: 2 / 4;
+    grid-row: 1;
+    position: relative;
+    z-index: 1;
+    align-self: center;
+    font-family: 'Cormorant SC', 'Cormorant Garamond', serif;
+    font-size: 0.66rem;
+    letter-spacing: 0.4em;
+    color: rgba(var(--fr-amber), 0.42);
 }
 
-.fr-note {
-    margin-top: 1.2rem;
+/* ── The statement ──
+   Two voices: an engraved capital line, then an italic answer set lower
+   and further right, so the phrase reads across the space rather than
+   sitting on one axis. */
+.fr-say {
+    grid-column: 2 / 8;
+    grid-row: 2;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    font-weight: 500;
+}
+
+.fr-say-lead {
+    display: block;
+    font-family: 'Cormorant SC', 'Cormorant Garamond', serif;
+    font-size: clamp(2.4rem, 7.2vw, 4.6rem);
+    line-height: 0.98;
+    letter-spacing: 0.1em;
+    background: linear-gradient(176deg, #f7ecd2 0%, #e3cd9e 38%, #c7a96c 72%, #96793d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--fr-gold-soft);
+}
+
+.fr-say-tail {
+    display: block;
+    margin-top: clamp(0.4rem, 1.4vw, 0.9rem);
+    margin-left: clamp(1.6rem, 9vw, 6.5rem);
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    font-size: clamp(0.95rem, 2.4vw, 1.1rem);
-    line-height: 1.8;
+    font-weight: 400;
+    font-size: clamp(1.35rem, 3.6vw, 2.3rem);
+    line-height: 1.1;
+    letter-spacing: 0.03em;
+    color: rgba(245, 242, 236, 0.62);
+}
+
+/* ── House mark, upper right ── */
+.fr-house {
+    grid-column: 9 / 12;
+    grid-row: 2;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding-top: clamp(0.4rem, 2vw, 1.4rem);
+}
+
+.fr-crest {
+    position: relative;
+    display: block;
+    width: clamp(46px, 5.4vw, 64px);
+    aspect-ratio: 1;
+    background-image: url('/assets/fragrance/neant-crest.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.9;
+}
+
+/* Specular pass over the metal — masked to the crest's own alpha so the
+   light only ever touches the gold, never the space around it. */
+.fr-crest-sweep {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: calc(var(--fr-crest-lit, 0) * 0.55);
+    background: linear-gradient(
+        calc(102deg + var(--fr-mx, 0) * -26deg),
+        transparent 34%,
+        rgba(255, 248, 232, 0.34) 50%,
+        transparent 66%);
+    -webkit-mask: url('/assets/fragrance/neant-crest.png') center / contain no-repeat;
+    mask: url('/assets/fragrance/neant-crest.png') center / contain no-repeat;
+}
+
+.fr-house-name,
+.fr-house-kind {
+    font-family: 'Cormorant SC', 'Cormorant Garamond', serif;
+    line-height: 1.3;
+}
+
+.fr-house-name {
+    font-size: 0.78rem;
+    letter-spacing: 0.34em;
+    color: rgba(245, 242, 236, 0.62);
+}
+
+.fr-house-kind {
+    font-size: 0.66rem;
+    letter-spacing: 0.4em;
+    color: rgba(var(--fr-amber), 0.5);
+}
+
+/* ── Atelier annotation, lower right ──
+   Set like a line on a perfumer's development sheet, not a status badge. */
+.fr-annotation {
+    grid-column: 8 / 12;
+    grid-row: 4;
+    position: relative;
+    z-index: 1;
+    text-align: right;
+}
+
+.fr-anno-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-indent: 0.2em;
+    color: rgba(245, 242, 236, 0.8);
+}
+
+.fr-anno-kind {
+    margin-top: 0.3rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(0.9rem, 2vw, 1.02rem);
+    letter-spacing: 0.06em;
     color: var(--fr-text-muted);
 }
 
-/* Status plate — intentional, not a dev placeholder. */
-.fr-status {
-    display: inline-flex;
+.fr-anno-rule {
+    display: block;
+    width: clamp(3rem, 7vw, 4.6rem);
+    height: 1px;
+    margin: clamp(1.1rem, 3vw, 1.7rem) 0 clamp(1.1rem, 3vw, 1.7rem) auto;
+    background: linear-gradient(90deg, transparent, rgba(var(--fr-amber), 0.55));
+}
+
+.fr-anno-status {
+    font-family: 'Cormorant SC', 'Cormorant Garamond', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.42em;
+    text-indent: 0.42em;
+    color: rgba(var(--fr-amber), 0.62);
+}
+
+/* ── Closing signature ── */
+.fr-signoff {
+    position: relative;
+    z-index: 1;
+    display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.9rem;
-    padding: clamp(1.8rem, 5vw, 2.6rem) clamp(2rem, 7vw, 3.4rem);
-    border: 1px solid rgba(var(--fr-amber), 0.18);
-    background: linear-gradient(180deg, rgba(16, 15, 12, 0.4), rgba(6, 6, 5, 0.5));
+    gap: clamp(1.2rem, 3vh, 1.8rem);
+    padding: clamp(2rem, 7vh, 4rem) 1.2rem 0;
 }
 
-.fr-status-mark {
-    width: 22px;
-    height: 22px;
-    background: var(--fr-gold);
-    opacity: 0.55;
-    -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
-    mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+.fr-signoff-rule {
+    width: 1px;
+    height: clamp(2.5rem, 7vh, 4rem);
+    background: linear-gradient(180deg, transparent, rgba(var(--fr-amber), 0.34));
 }
 
-.fr-status-line {
-    width: 44px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(var(--fr-amber), 0.5), transparent);
+.fr-signoff-name {
+    font-family: 'Cormorant SC', 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.46em;
+    text-indent: 0.46em;
+    color: rgba(245, 242, 236, 0.5);
 }
 
 .fr-footer {
@@ -535,15 +722,17 @@ body {
 }
 
 .fr-footer p {
-    font-size: 0.54rem;
-    font-weight: 500;
+    font-family: 'Cormorant SC', 'Cormorant Garamond', serif;
+    font-size: 0.6rem;
     letter-spacing: 0.34em;
-    text-transform: uppercase;
-    color: rgba(245, 242, 236, 0.24);
+    color: rgba(245, 242, 236, 0.22);
     line-height: 2.2;
 }
 
-/* ── Scroll reveal for the editorial blocks ── */
+/* ── Scroll reveal ──────────────────────────────────────────
+   Ceremonial rather than staggered: the hairline draws first, the capital
+   line rises, the italic answer follows, then the house marks and the
+   annotation settle last. Small offsets, nothing flies. */
 .fr-reveal {
     opacity: 0;
     transform: translateY(16px);
@@ -552,14 +741,52 @@ body {
 
 .fr-reveal.is-in { opacity: 1; transform: translateY(0); }
 
+/* The vertical rules scale instead of translating, so they draw downward. */
+.fr-vline.fr-reveal { transform: scaleY(0); }
+.fr-vline.fr-reveal.is-in { transform: scaleY(1); }
+
+.fr-index.is-in { transition-delay: 0.1s; }
+.fr-say-lead.is-in { transition-delay: 0.16s; }
+.fr-say-tail.is-in { transition-delay: 0.34s; }
+.fr-house.is-in { transition-delay: 0.46s; }
+.fr-annotation.is-in { transition-delay: 0.2s; }
+
 /* ── Small screens ──────────────────────────────────────────
-   Bottle scales down rather than cropping; nothing is clipped. */
+   Bottle scales down rather than cropping; the manifesto grid collapses
+   to a single column but keeps its asymmetry through indents rather than
+   centring everything. */
+@media (max-width: 860px) {
+    .fr-manifesto {
+        grid-template-columns: 1fr;
+        row-gap: clamp(2.2rem, 6vh, 3.4rem);
+        padding-top: clamp(4rem, 12vh, 7rem);
+    }
+
+    .fr-index,
+    .fr-say,
+    .fr-house,
+    .fr-annotation { grid-column: 1; }
+
+    .fr-index { grid-row: auto; }
+    .fr-say { grid-row: auto; }
+    .fr-house { grid-row: auto; }
+    .fr-annotation { grid-row: auto; text-align: left; }
+
+    .fr-anno-rule { margin-left: 0; margin-right: auto; }
+
+    .fr-vline { justify-self: start; margin-left: 0.2rem; }
+    .fr-vline-a, .fr-vline-b { grid-column: 1; height: clamp(2.4rem, 7vh, 4rem); }
+
+    .fr-ghost { font-size: clamp(7rem, 42vw, 14rem); opacity: 0.032; }
+}
+
 @media (max-width: 620px) {
     .fr-stage {
         width: min(400px, 94vw);
         height: clamp(320px, 52vh, 460px);
     }
     .fr-title { letter-spacing: 0.22em; text-indent: 0.22em; }
+    .fr-say-tail { margin-left: clamp(1.2rem, 12vw, 3rem); }
 }
 
 /* ── Reduced motion ─────────────────────────────────────────
@@ -587,11 +814,23 @@ html.reduce-motion .fr-reflection {
 html.reduce-motion .fr-glare,
 html.reduce-motion .fr-edge { opacity: 0; }
 
+/* The manifesto keeps its full composition — ghost wordmark, hairlines,
+   crest and annotation all stay; only the drift and the specular pass go. */
+html.reduce-motion .fr-ambient,
+html.reduce-motion .fr-ghost {
+    transform: translate3d(-50%, -50%, 0);
+}
+
+html.reduce-motion .fr-ambient { transform: none; }
+html.reduce-motion .fr-crest-sweep { opacity: 0; }
+
 html.reduce-motion .fr-eyebrow,
 html.reduce-motion .fr-title,
 html.reduce-motion .fr-sub,
 html.reduce-motion .fr-bottle,
 html.reduce-motion .fr-reflection,
-html.reduce-motion .fr-reveal {
+html.reduce-motion .fr-reveal,
+html.reduce-motion .fr-vline {
     transition-duration: 0.01ms;
+    transition-delay: 0s;
 }

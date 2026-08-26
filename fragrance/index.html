@@ -31,7 +31,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="image" href="/assets/fragrance/neant-bottle-transparent.webp">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Cormorant SC carries the engraved small-caps labels, matching the
+         classical lettering on the bottle itself. Same single request. -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant+SC:wght@400;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/void-fragrance.css">
 </head>
 <body>
@@ -74,23 +76,48 @@
             </div>
         </section>
 
-        <section class="fr-section">
-            <div class="fr-rule fr-reveal" aria-hidden="true"></div>
-            <p class="fr-statement fr-reveal">The Void has a scent.</p>
+        <!-- The second chamber. Composed on a 12-column editorial grid rather
+             than a centre axis: the statement sits left, the house marks sit
+             right, and a hairline runs between them. -->
+        <section class="fr-manifesto" id="frManifesto">
+            <span class="fr-ambient" aria-hidden="true"></span>
+            <span class="fr-ghost" aria-hidden="true">NÉANT</span>
+
+            <span class="fr-vline fr-vline-a fr-reveal" aria-hidden="true"></span>
+
+            <p class="fr-index fr-reveal" aria-hidden="true">01</p>
+
+            <h2 class="fr-say">
+                <span class="fr-say-lead fr-reveal">The Void</span>
+                <span class="fr-say-tail fr-reveal">has a scent.</span>
+            </h2>
+
+            <div class="fr-house fr-reveal">
+                <span class="fr-crest" aria-hidden="true">
+                    <span class="fr-crest-sweep"></span>
+                </span>
+                <span class="fr-house-name">Eternal Void</span>
+                <span class="fr-house-kind">Fragrance</span>
+            </div>
+
+            <div class="fr-annotation fr-reveal">
+                <p class="fr-anno-name">Néant</p>
+                <p class="fr-anno-kind">Extrait de Parfum</p>
+                <span class="fr-anno-rule" aria-hidden="true"></span>
+                <p class="fr-anno-status">Under Development</p>
+            </div>
+
+            <span class="fr-vline fr-vline-b fr-reveal" aria-hidden="true"></span>
         </section>
 
-        <section class="fr-section">
-            <div class="fr-status fr-reveal">
-                <span class="fr-status-mark" aria-hidden="true"></span>
-                <span class="fr-status-line" aria-hidden="true"></span>
-                <p class="fr-label">Under Development</p>
-                <p class="fr-note">A new expression of the Void is taking form.</p>
-            </div>
+        <!-- Closing signature — the last mark on a campaign, not a nav bar. -->
+        <section class="fr-signoff fr-reveal">
+            <span class="fr-signoff-rule" aria-hidden="true"></span>
+            <p class="fr-signoff-name">Eternal Void</p>
         </section>
     </main>
 
     <footer class="fr-footer">
-        <p>Eternal Void &mdash; Made in Italy</p>
         <p>&copy; 2026 Eternal Void</p>
     </footer>
 
@@ -237,6 +264,63 @@
                 reveals.forEach((el) => io.observe(el));
             } else {
                 reveals.forEach((el) => el.classList.add('is-in'));
+            }
+
+            // ── Manifesto ambient light ──────────────────────────────────
+            // One very large, very dim warm pool and a specular pass over the
+            // crest. Heavily damped and tiny in amplitude, so it reads as the
+            // room's light shifting rather than as a cursor effect. Shares the
+            // same "targets are plain numbers, one rAF writes the vars" shape
+            // as the bottle stage above.
+            const manifesto = document.getElementById('frManifesto');
+            if (manifesto) {
+                let mTx = 0, mTy = 0, mX = 0, mY = 0, mLit = 0, mTargetLit = 0;
+                let mRaf = null, mRunning = false, mOn = false;
+
+                function mFrame() {
+                    if (!mRunning) return;
+                    mX += (mTx - mX) * 0.045;
+                    mY += (mTy - mY) * 0.045;
+                    mLit += (mTargetLit - mLit) * 0.05;
+                    root.style.setProperty('--fr-mx', mX.toFixed(4));
+                    root.style.setProperty('--fr-my', mY.toFixed(4));
+                    root.style.setProperty('--fr-crest-lit', mLit.toFixed(4));
+                    if (Math.abs(mTx - mX) < 0.0005 && Math.abs(mTy - mY) < 0.0005
+                        && Math.abs(mTargetLit - mLit) < 0.0005) {
+                        mRunning = false; mRaf = null; return;
+                    }
+                    mRaf = window.requestAnimationFrame(mFrame);
+                }
+                function mKick() {
+                    if (mRunning || reduced() || !mOn || document.hidden) return;
+                    mRunning = true; mRaf = window.requestAnimationFrame(mFrame);
+                }
+                function mMove(e) {
+                    if (reduced()) return;
+                    const r = manifesto.getBoundingClientRect();
+                    if (!r.width || !r.height) return;
+                    mTx = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) * 2));
+                    mTy = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height - 0.5) * 2));
+                    mTargetLit = 1;
+                    mKick();
+                }
+                function mLeave() { mTx = 0; mTy = 0; mTargetLit = 0; mKick(); }
+
+                if (finePointer.matches) {
+                    manifesto.addEventListener('pointermove', mMove, { passive: true });
+                    manifesto.addEventListener('pointerleave', mLeave, { passive: true });
+                }
+
+                if ('IntersectionObserver' in window) {
+                    new IntersectionObserver((entries) => {
+                        mOn = entries.some((en) => en.isIntersecting);
+                        if (!mOn) mRunning = false;
+                    }, { threshold: 0.01 }).observe(manifesto);
+                } else { mOn = true; }
+
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) mRunning = false;
+                });
             }
         })();
     </script>
