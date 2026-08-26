@@ -8783,7 +8783,27 @@
                 // Sent here to sign in (protected page) or returning from an email
                 // confirmation link — either way, land inside, not on the gate.
                 var loginRequest = (location.search && (location.search.indexOf('login') !== -1 || location.search.indexOf('confirmed') !== -1));
-                if (gateDisabled || returning || oauthReturn || loginRequest) {
+                // Arriving from the /links page: those buttons are a direct
+                // promise ("Enter the Boutique", "The Collection", "Our Story"),
+                // so they must land on the real thing with nothing in the way —
+                // no gate, and no sign-in prompt either. The prompt is deferred
+                // until the visitor closes whatever they opened (see
+                // void-defer-auth / voidAuthRunDeferred below).
+                var fromLinks = false;
+                try {
+                    if (document.referrer) {
+                        var ref = new URL(document.referrer);
+                        fromLinks = ref.origin === location.origin
+                            && ref.pathname.replace(/\/+$/, '') === '/links';
+                    }
+                } catch (e) {}
+                if (fromLinks) {
+                    try {
+                        sessionStorage.setItem('void-entered', '1');
+                        sessionStorage.setItem('void-defer-auth', '1');
+                    } catch (e) {}
+                }
+                if (gateDisabled || returning || oauthReturn || loginRequest || fromLinks) {
                     document.body.classList.remove('gate-open');
                     // void-returning also hides the intro gate via CSS, so any skip
                     // path lands the visitor straight inside.
@@ -11240,6 +11260,10 @@
             }
 
             focusElementSafely(lastFocusedElement);
+
+            // Leaving the Story is the moment a sign-in prompt held back from a
+            // /links arrival is allowed to appear (no-op otherwise).
+            if (typeof window.voidAuthRunDeferred === 'function') window.voidAuthRunDeferred();
         }
 
         if (openStoryButton && storyOverlay) {
@@ -11271,8 +11295,11 @@
             // Lets an external link (e.g. the /links page) deep-link straight
             // into the story overlay via https://eternalvoid.co/#story —
             // previously this overlay had no URL of its own.
+            // setTimeout rather than requestAnimationFrame: rAF is suspended in
+            // background tabs, so opening this link in a new tab would leave the
+            // Story closed until the tab was focused.
             if (location.hash === '#story') {
-                window.requestAnimationFrame(() => handleStoryTrigger());
+                window.setTimeout(handleStoryTrigger, 60);
             }
         }
 
@@ -12491,6 +12518,11 @@
             if (pdBagTouched && cart.length > 0) {
                 pdBagTouched = false;
                 window.setTimeout(openCartPopup, 220);
+            } else if (typeof window.voidAuthRunDeferred === 'function') {
+                // Closing a piece is also a natural exit point for a sign-in
+                // prompt held back from a /links arrival — but never on top of
+                // the cart reveal above.
+                window.voidAuthRunDeferred();
             }
 
             pdPointers.clear();
@@ -13677,8 +13709,24 @@
                 }
                 openModal();
             }
-            window.voidAuthWillPrompt = function () { return !readLocalAuth() && !sessionStorage.getItem(GREETED_KEY); };
-            window.voidAuthOnEnter = function () { window.setTimeout(runGate, 1100); };
+            // True while the visitor arrived from /links and hasn't yet closed
+            // whatever they opened — the sign-in prompt is held back until then.
+            function authDeferred() {
+                try { return sessionStorage.getItem('void-defer-auth') === '1'; } catch (e) { return false; }
+            }
+
+            window.voidAuthWillPrompt = function () { return !authDeferred() && !readLocalAuth() && !sessionStorage.getItem(GREETED_KEY); };
+            window.voidAuthOnEnter = function () { if (!authDeferred()) window.setTimeout(runGate, 1100); };
+
+            // Called when the visitor closes an overlay they opened from /links
+            // (the Story, or a product's detail view). Releases the held-back
+            // sign-in prompt once, so it arrives on the way *out* of something
+            // rather than interrupting them on the way in.
+            window.voidAuthRunDeferred = function () {
+                if (!authDeferred()) return;
+                try { sessionStorage.removeItem('void-defer-auth'); } catch (e) {}
+                window.setTimeout(runGate, 650);
+            };
 
             // React to OAuth redirect completion + restore an existing session.
             ensureSupabase().then((c) => {
@@ -13716,7 +13764,7 @@
                 }
             } catch (e) {}
 
-            if (document.body.classList.contains('void-entered')) {
+            if (document.body.classList.contains('void-entered') && !authDeferred()) {
                 window.setTimeout(runGate, 700);
             }
         })();
