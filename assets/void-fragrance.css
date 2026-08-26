@@ -1,0 +1,551 @@
+/* ============================================================
+   VOID© — /fragrance · NÉANT, Extrait de Parfum
+   A layered 2.5D product stage: the bottle, its specular glass
+   lighting, rim light, amber core, contact shadow and floor
+   reflection are all separate layers so each can respond to the
+   pointer with its own weight (see PARALLAX in the JS below).
+   Everything animates on transform/opacity only.
+
+   All tunable values live in the :root block — nothing below
+   hard-codes a tilt, damping or opacity figure.
+   ============================================================ */
+
+:root {
+    /* ── Palette (matches the house tokens in index.html) ── */
+    --fr-black: #030302;
+    --fr-black-2: #050403;
+    --fr-gold: #c7a96c;
+    --fr-gold-soft: #d9bd81;
+    --fr-gold-bright: #f0dca8;
+    --fr-amber: 212, 175, 55;
+    --fr-text: rgba(245, 242, 236, 0.72);
+    --fr-text-muted: rgba(245, 242, 236, 0.4);
+    --fr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* ── TUNABLES ──────────────────────────────────────────
+       Rotation (deg). Kept under 6° — heavy glass, not a card. */
+    --fr-max-tilt-x: 3;
+    --fr-max-tilt-y: 4;
+    /* Bottle translation (px) */
+    --fr-translate-x: 7;
+    --fr-translate-y: 4;
+    /* Inertia: 0→1, lower = heavier/slower catch-up */
+    --fr-damping: 0.055;
+    /* Return-to-rest damping when the pointer leaves */
+    --fr-release-damping: 0.035;
+
+    /* Lighting */
+    --fr-glare-intensity: 0.4;
+    --fr-glare-size: 46%;
+    --fr-edge-intensity: 0.34;
+    --fr-amber-intensity: 0.5;
+
+    /* Shadow */
+    --fr-shadow-opacity: 0.62;
+    --fr-shadow-blur: 34px;
+    --fr-shadow-move: 14;
+
+    /* Reflection */
+    --fr-reflection-opacity: 0.3;
+    --fr-reflection-blur: 4px;
+    --fr-reflection-squash: 0.62;
+    --fr-reflection-fade: 46%;
+
+    /* Layer parallax weights (fraction of the bottle's own movement) */
+    --fr-w-glare: 0.8;
+    --fr-w-shadow: 0.3;
+    --fr-w-reflection: 0.28;
+    --fr-w-backglow: 0.15;
+    --fr-w-bg: 0.05;
+
+    /* Live pointer state, written by JS (-1 … 1) */
+    --fr-px: 0;
+    --fr-py: 0;
+    --fr-active: 0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+    background: var(--fr-black);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100dvh;
+    background: var(--fr-black);
+    color: var(--fr-text);
+    font-family: 'Jost', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+::selection { background: rgba(var(--fr-amber), 0.26); color: #fff7e8; }
+
+:focus-visible {
+    outline: 1px solid rgba(var(--fr-amber), 0.8);
+    outline-offset: 3px;
+}
+
+.fr-sr {
+    position: absolute; width: 1px; height: 1px; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap;
+}
+
+/* ── Atmosphere ─────────────────────────────────────────────
+   Three still gradient layers. No blur filter, no tiled noise —
+   both were measured problems elsewhere on this site. */
+.fr-atmos {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(80% 46% at 50% 34%, rgba(var(--fr-amber), 0.05), transparent 64%),
+        radial-gradient(120% 60% at 50% 108%, rgba(var(--fr-amber), 0.028), transparent 62%),
+        linear-gradient(180deg, #060605 0%, var(--fr-black) 42%, var(--fr-black-2) 100%);
+    transform: translate3d(calc(var(--fr-px) * var(--fr-w-bg) * 10px), calc(var(--fr-py) * var(--fr-w-bg) * 10px), 0);
+}
+
+.fr-atmos::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(130% 100% at 50% 45%, transparent 40%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+/* ── Minimal nav ── */
+.fr-nav {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.3rem, 3vw, 2rem) clamp(1.2rem, 5vw, 3rem);
+}
+
+.fr-nav a {
+    color: var(--fr-text-muted);
+    font-size: 0.58rem;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: color 0.45s var(--fr-ease);
+}
+
+.fr-nav a:hover, .fr-nav a:focus-visible { color: var(--fr-gold-soft); }
+
+.fr-nav-mark {
+    width: 20px;
+    height: 20px;
+    background: var(--fr-gold);
+    opacity: 0.5;
+    -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+    mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+}
+
+/* ── Hero ── */
+.fr-hero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: clamp(1rem, 3vh, 2rem) clamp(1.1rem, 5vw, 2rem) clamp(3rem, 8vh, 5rem);
+}
+
+.fr-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.44em;
+    text-transform: uppercase;
+    color: rgba(var(--fr-amber), 0.6);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.8s var(--fr-ease) 0.15s, transform 0.8s var(--fr-ease) 0.15s;
+}
+
+.fr-eyebrow::before, .fr-eyebrow::after {
+    content: '';
+    width: clamp(1rem, 4vw, 2rem);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--fr-amber), 0.5));
+}
+.fr-eyebrow::after { background: linear-gradient(90deg, rgba(var(--fr-amber), 0.5), transparent); }
+
+.is-ready .fr-eyebrow { opacity: 1; transform: translateY(0); }
+
+.fr-title {
+    margin-top: clamp(0.9rem, 2.5vw, 1.4rem);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.6rem, 11vw, 5.5rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+    text-transform: uppercase;
+    background: linear-gradient(178deg, #f7ecd2 0%, #e0c896 30%, #c7a96c 62%, #8a6c34 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--fr-gold-soft);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.9s var(--fr-ease) 0.25s, transform 0.9s var(--fr-ease) 0.25s;
+}
+
+.is-ready .fr-title { opacity: 1; transform: translateY(0); }
+
+.fr-sub {
+    margin-top: 0.9rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(0.92rem, 2.6vw, 1.1rem);
+    letter-spacing: 0.16em;
+    color: rgba(245, 242, 236, 0.55);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.9s var(--fr-ease) 0.35s, transform 0.9s var(--fr-ease) 0.35s;
+}
+
+.is-ready .fr-sub { opacity: 1; transform: translateY(0); }
+
+/* ── Product stage ──────────────────────────────────────────
+   Fixed aspect box so nothing reflows while the bottle moves. */
+.fr-stage {
+    position: relative;
+    width: min(560px, 92vw);
+    height: clamp(360px, 62vh, 660px);
+    margin-top: clamp(1.5rem, 4vh, 2.6rem);
+    perspective: 1400px;
+    perspective-origin: 50% 45%;
+    touch-action: pan-y;
+}
+
+/* Warm pool sitting behind the glass, separating it from the dark. */
+.fr-backglow {
+    position: absolute;
+    left: 50%;
+    top: 52%;
+    width: 78%;
+    height: 62%;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(var(--fr-amber), calc(0.16 * var(--fr-amber-intensity))) 0%,
+        rgba(var(--fr-amber), calc(0.06 * var(--fr-amber-intensity))) 42%,
+        transparent 72%);
+    transform: translate3d(
+        calc(-50% + var(--fr-px) * var(--fr-w-backglow) * var(--fr-translate-x) * 1px),
+        calc(-50% + var(--fr-py) * var(--fr-w-backglow) * var(--fr-translate-y) * 1px), 0);
+    opacity: 0;
+    transition: opacity 1.4s var(--fr-ease) 0.5s;
+    pointer-events: none;
+}
+
+.is-ready .fr-backglow { opacity: 1; }
+
+/* Floor light — the only hint that a surface exists at all. */
+.fr-floor {
+    position: absolute;
+    left: 50%;
+    bottom: 8%;
+    width: 82%;
+    height: 16%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse,
+        rgba(var(--fr-amber), 0.1) 0%,
+        rgba(var(--fr-amber), 0.035) 40%,
+        transparent 72%);
+    transform: translate3d(-50%, 0, 0);
+    opacity: 0;
+    transition: opacity 1.4s var(--fr-ease) 0.6s;
+    pointer-events: none;
+}
+
+.is-ready .fr-floor { opacity: 1; }
+
+/* Contact shadow — independent of the bottle, drifts opposite. */
+.fr-shadow {
+    position: absolute;
+    left: 50%;
+    bottom: 11.5%;
+    width: 46%;
+    height: 4.2%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 48%, transparent 74%);
+    filter: blur(var(--fr-shadow-blur));
+    opacity: 0;
+    transform: translate3d(
+        calc(-50% - var(--fr-px) * var(--fr-w-shadow) * var(--fr-shadow-move) * 1px), 0, 0);
+    transition: opacity 1.2s var(--fr-ease) 0.45s;
+    pointer-events: none;
+}
+
+.is-ready .fr-shadow { opacity: var(--fr-shadow-opacity); }
+
+/* ── Bottle ── */
+.fr-bottle-wrap {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 100%;
+    height: 78%;
+    transform-style: preserve-3d;
+    transform: translate3d(-50%, 0, 0);
+    pointer-events: none;
+}
+
+.fr-bottle {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+    transform:
+        translate3d(
+            calc(var(--fr-px) * var(--fr-translate-x) * 1px),
+            calc(var(--fr-py) * var(--fr-translate-y) * 1px), 0)
+        rotateX(calc(var(--fr-py) * var(--fr-max-tilt-x) * -1deg))
+        rotateY(calc(var(--fr-px) * var(--fr-max-tilt-y) * 1deg));
+    opacity: 0;
+    transition: opacity 1.6s var(--fr-ease) 0.35s;
+}
+
+.is-ready .fr-bottle { opacity: 1; }
+
+/* The supplied render carries its own dark backdrop, so the edges are
+   masked away radially — the artwork's own glow then blends into the
+   page instead of ending at a visible rectangle. Swapping in a true
+   cut-out asset only means dropping this mask. */
+.fr-bottle-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    -webkit-mask: radial-gradient(ellipse 62% 74% at 50% 48%, #000 58%, rgba(0,0,0,0.55) 76%, transparent 92%);
+    mask: radial-gradient(ellipse 62% 74% at 50% 48%, #000 58%, rgba(0,0,0,0.55) 76%, transparent 92%);
+}
+
+/* Specular travelling highlight, clipped to the bottle silhouette. */
+.fr-glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: calc(var(--fr-glare-intensity) * var(--fr-active));
+    /* `ellipse <pct> <pct>` rather than `circle <pct>` — a circle's radius
+       must be a length, so a percentage there invalidates the gradient. */
+    background: radial-gradient(
+        ellipse var(--fr-glare-size) var(--fr-glare-size) at
+            calc(50% + var(--fr-px) * 34%)
+            calc(42% + var(--fr-py) * 22%),
+        rgba(255, 246, 226, 0.3) 0%,
+        rgba(var(--fr-amber), 0.12) 34%,
+        transparent 68%);
+    -webkit-mask: radial-gradient(ellipse 54% 68% at 50% 48%, #000 52%, transparent 84%);
+    mask: radial-gradient(ellipse 54% 68% at 50% 48%, #000 52%, transparent 84%);
+    transition: opacity 0.7s var(--fr-ease);
+}
+
+/* Rim light on the leading edge; the opposite side dims. */
+.fr-edge {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: calc(var(--fr-edge-intensity) * var(--fr-active));
+    background: linear-gradient(
+        calc(90deg + var(--fr-px) * -40deg),
+        rgba(255, 244, 214, 0.22) 0%,
+        transparent 34%,
+        transparent 66%,
+        rgba(var(--fr-amber), 0.14) 100%);
+    -webkit-mask: radial-gradient(ellipse 56% 70% at 50% 48%, transparent 44%, #000 62%, transparent 88%);
+    mask: radial-gradient(ellipse 56% 70% at 50% 48%, transparent 44%, #000 62%, transparent 88%);
+    transition: opacity 0.7s var(--fr-ease);
+}
+
+/* ── Floor reflection ───────────────────────────────────────
+   The same asset, flipped, squashed, blurred, faded downward
+   and moving at a fraction of the bottle's own travel. */
+.fr-reflection {
+    position: absolute;
+    left: 50%;
+    top: 78%;
+    width: 100%;
+    height: 78%;
+    transform-origin: 50% 0;
+    transform:
+        translate3d(
+            calc(-50% + var(--fr-px) * var(--fr-w-reflection) * var(--fr-translate-x) * 1px), 0, 0)
+        scaleY(calc(var(--fr-reflection-squash) * -1));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.6s var(--fr-ease) 0.7s;
+}
+
+.is-ready .fr-reflection { opacity: var(--fr-reflection-opacity); }
+
+.fr-reflection img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: blur(var(--fr-reflection-blur)) brightness(0.5) saturate(1.15);
+    /* Combined: the bottle's own radial cut-out, then a vertical fade so
+       the reflection dies out well before the bottom of the stage.
+       (In flipped space "to top" reads as downward on screen.) */
+    -webkit-mask:
+        radial-gradient(ellipse 62% 74% at 50% 48%, #000 58%, transparent 90%),
+        linear-gradient(to top, transparent var(--fr-reflection-fade), #000 100%);
+    mask:
+        radial-gradient(ellipse 62% 74% at 50% 48%, #000 58%, transparent 90%),
+        linear-gradient(to top, transparent var(--fr-reflection-fade), #000 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+}
+
+/* ── Editorial sections ── */
+.fr-section {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: clamp(4rem, 12vh, 8rem) clamp(1.2rem, 5vw, 2rem);
+    text-align: center;
+}
+
+.fr-statement {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    color: rgba(245, 242, 236, 0.86);
+    text-wrap: balance;
+}
+
+.fr-rule {
+    width: 1px;
+    height: clamp(3rem, 8vh, 5rem);
+    margin: 0 auto;
+    background: linear-gradient(180deg, transparent, rgba(var(--fr-amber), 0.45), transparent);
+}
+
+.fr-label {
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.44em;
+    text-indent: 0.44em;
+    text-transform: uppercase;
+    color: rgba(var(--fr-amber), 0.62);
+}
+
+.fr-note {
+    margin-top: 1.2rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(0.95rem, 2.4vw, 1.1rem);
+    line-height: 1.8;
+    color: var(--fr-text-muted);
+}
+
+/* Status plate — intentional, not a dev placeholder. */
+.fr-status {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    padding: clamp(1.8rem, 5vw, 2.6rem) clamp(2rem, 7vw, 3.4rem);
+    border: 1px solid rgba(var(--fr-amber), 0.18);
+    background: linear-gradient(180deg, rgba(16, 15, 12, 0.4), rgba(6, 6, 5, 0.5));
+}
+
+.fr-status-mark {
+    width: 22px;
+    height: 22px;
+    background: var(--fr-gold);
+    opacity: 0.55;
+    -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+    mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+}
+
+.fr-status-line {
+    width: 44px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--fr-amber), 0.5), transparent);
+}
+
+.fr-footer {
+    position: relative;
+    z-index: 1;
+    padding: clamp(2rem, 6vh, 3rem) 1.2rem calc(clamp(1.6rem, 4vh, 2.4rem) + env(safe-area-inset-bottom, 0px));
+    text-align: center;
+}
+
+.fr-footer p {
+    font-size: 0.54rem;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: rgba(245, 242, 236, 0.24);
+    line-height: 2.2;
+}
+
+/* ── Scroll reveal for the editorial blocks ── */
+.fr-reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 1s var(--fr-ease), transform 1s var(--fr-ease);
+}
+
+.fr-reveal.is-in { opacity: 1; transform: translateY(0); }
+
+/* ── Small screens ──────────────────────────────────────────
+   Bottle scales down rather than cropping; nothing is clipped. */
+@media (max-width: 620px) {
+    .fr-stage {
+        width: min(400px, 94vw);
+        height: clamp(320px, 52vh, 460px);
+    }
+    .fr-title { letter-spacing: 0.22em; text-indent: 0.22em; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────
+   Per the house convention (see index.html), the OS signal is not
+   treated as a kill switch — html.reduce-motion is. Under it the
+   composition stays fully intact: bottle, shadow, reflection and
+   amber all remain, only the movement stops. */
+html.reduce-motion .fr-bottle,
+html.reduce-motion .fr-shadow,
+html.reduce-motion .fr-reflection,
+html.reduce-motion .fr-backglow,
+html.reduce-motion .fr-atmos {
+    transform: translate3d(-50%, 0, 0);
+}
+
+html.reduce-motion .fr-bottle { transform: none; }
+html.reduce-motion .fr-atmos { transform: none; }
+html.reduce-motion .fr-reflection {
+    transform: translate3d(-50%, 0, 0) scaleY(calc(var(--fr-reflection-squash) * -1));
+}
+
+html.reduce-motion .fr-glare,
+html.reduce-motion .fr-edge { opacity: 0; }
+
+html.reduce-motion .fr-eyebrow,
+html.reduce-motion .fr-title,
+html.reduce-motion .fr-sub,
+html.reduce-motion .fr-bottle,
+html.reduce-motion .fr-reflection,
+html.reduce-motion .fr-reveal {
+    transition-duration: 0.01ms;
+}

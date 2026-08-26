@@ -3710,6 +3710,72 @@
             filter: brightness(1.02);
         }
 
+        /* ---- Fragrance: a third, standalone entry sitting on its own line
+           beneath the two Collection controls. Deliberately quieter than both
+           — no fill, hairline border, wider tracking — so it reads as a door
+           into another chamber rather than a third competing CTA. ---- */
+        .collection-fragrance-trigger {
+            position: relative;
+            display: block;
+            width: fit-content;
+            margin: clamp(1.6rem, 4vw, 2.3rem) auto 0;
+            overflow: hidden;
+            isolation: isolate;
+            padding: 0.72rem 2.4rem;
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            background: linear-gradient(180deg, rgba(16, 15, 12, 0.5), rgba(6, 6, 5, 0.6));
+            color: var(--void-gold-soft);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 500;
+            letter-spacing: 0.42em;
+            text-indent: 0.42em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: border-color 0.5s var(--ease-lux), color 0.5s var(--ease-lux),
+                        letter-spacing 0.5s var(--ease-lux), background 0.5s var(--ease-lux),
+                        transform 0.5s var(--ease-lux), box-shadow 0.5s var(--ease-lux);
+        }
+
+        /* Slow gold sweep — the same sheen token the primary CTA uses, but
+           travelling further and fading, so it reads as light passing over. */
+        .collection-fragrance-trigger::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            z-index: -1;
+            background: linear-gradient(105deg, transparent 40%, rgba(212, 175, 55, 0.16) 50%, transparent 60%);
+            transform: translateX(-130%);
+            transition: transform 1.1s var(--ease-lux);
+            pointer-events: none;
+        }
+
+        .collection-fragrance-trigger:hover::before,
+        .collection-fragrance-trigger:focus-visible::before {
+            transform: translateX(130%);
+        }
+
+        .collection-fragrance-trigger:hover,
+        .collection-fragrance-trigger:focus-visible {
+            border-color: rgba(212, 175, 55, 0.72);
+            background: linear-gradient(180deg, rgba(26, 23, 16, 0.66), rgba(9, 8, 6, 0.72));
+            color: #f0dca8;
+            letter-spacing: 0.48em;
+            text-indent: 0.48em;
+            transform: translateY(-1px);
+            box-shadow: 0 0 26px rgba(212, 175, 55, 0.1);
+        }
+
+        .collection-fragrance-trigger:focus-visible {
+            outline: 1px solid rgba(212, 175, 55, 0.8);
+            outline-offset: 3px;
+        }
+
+        html.reduce-motion .collection-fragrance-trigger,
+        html.reduce-motion .collection-fragrance-trigger::before {
+            transition: none;
+        }
+
         .products-header h2 {
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(3rem, 6vw, 5rem);
@@ -8972,6 +9038,7 @@
                     <button type="button" class="collection-preorder-trigger" data-preorder-trigger data-i18n="preorderAccess">Pre-order Access</button>
                     <button type="button" class="size-guide-trigger" id="sizeGuideTrigger" data-i18n="sizeGuide">Size Guide</button>
                 </div>
+                <a href="/fragrance" class="collection-fragrance-trigger" data-i18n="fragrance">Fragrance</a>
             </div>
             <nav class="collection-nav fade-in-up" style="--delay: 60ms;" aria-label="Product categories">
                 <button type="button" class="collection-nav-tab active" data-collection-filter="all" data-i18n="catViewAll">View All</button>
@@ -9922,6 +9989,7 @@
             vcQ4: 'Pre-orders',
             vcQ5: 'Shipping & contact',
             collectionEmpty: 'No pieces in this category yet.',
+            fragrance: 'Fragrance',
             pdClose: 'Close product',
             pdBack: 'Back to collection',
             pdSwitcherLabel: 'Switch Sigil colorway',
