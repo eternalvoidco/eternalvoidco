@@ -34,22 +34,44 @@
     /* Return-to-rest damping when the pointer leaves */
     --fr-release-damping: 0.035;
 
+    /* The bottle artwork. Its own alpha is reused as the mask for the
+       lighting layers and the reflection, so every highlight is clipped
+       exactly to the glass silhouette. One line to swap the asset. */
+    --fr-bottle: url('/assets/fragrance/neant-bottle-transparent.webp');
+
     /* Lighting */
-    --fr-glare-intensity: 0.4;
-    --fr-glare-size: 46%;
-    --fr-edge-intensity: 0.34;
-    --fr-amber-intensity: 0.5;
+    --fr-glare-intensity: 0.3;
+    --fr-glare-size: 42%;
+    --fr-edge-intensity: 0.26;
+    --fr-amber-intensity: 0.46;
 
     /* Shadow */
-    --fr-shadow-opacity: 0.62;
-    --fr-shadow-blur: 34px;
-    --fr-shadow-move: 14;
+    --fr-shadow-opacity: 0.66;
+    --fr-shadow-blur: 26px;
+    --fr-shadow-move: 12;
 
     /* Reflection */
-    --fr-reflection-opacity: 0.3;
-    --fr-reflection-blur: 4px;
-    --fr-reflection-squash: 0.62;
-    --fr-reflection-fade: 46%;
+    --fr-reflection-opacity: 0.26;
+    --fr-reflection-blur: 5px;
+    --fr-reflection-squash: 0.58;
+    --fr-reflection-fade: 38%;
+
+    /* Where the bottle's base actually sits in the artwork, as a fraction of
+       image height — measured from the asset's alpha channel (opaque pixels
+       end at 96.55%, so there is 3.4% of empty padding beneath the glass).
+       Re-measure this if the artwork is ever re-exported. */
+    --fr-bottle-base: 0.9655;
+    /* Bottle box height as a share of the stage. The floor line — where the
+       glass meets the stone — is base × this, and the shadow, floor pool and
+       reflection all key off it so they can never drift apart. */
+    --fr-bottle-height: 78%;
+    --fr-floor-line: calc(var(--fr-bottle-base) * var(--fr-bottle-height));
+    /* The reflection mirrors about the box's bottom edge, so that padding is
+       doubled into a visible gap under the bottle. Lift it by exactly the gap:
+       (1 + squash·(1−base)) − base. Derived rather than eyeballed, so it stays
+       correct if --fr-reflection-squash is retuned. */
+    --fr-reflection-offset: calc(
+        (1 + var(--fr-reflection-squash) * (1 - var(--fr-bottle-base)) - var(--fr-bottle-base)) * -100%);
 
     /* Layer parallax weights (fraction of the bottle's own movement) */
     --fr-w-glare: 0.8;
@@ -223,7 +245,9 @@ body {
 .fr-stage {
     position: relative;
     width: min(560px, 92vw);
-    height: clamp(360px, 62vh, 660px);
+    /* Sized so the glass itself lands around 55vh — the stage is taller than
+       the bottle because the reflection needs room beneath the floor line. */
+    height: clamp(400px, 71vh, 720px);
     margin-top: clamp(1.5rem, 4vh, 2.6rem);
     perspective: 1400px;
     perspective-origin: 50% 45%;
@@ -256,15 +280,15 @@ body {
 .fr-floor {
     position: absolute;
     left: 50%;
-    bottom: 8%;
-    width: 82%;
-    height: 16%;
+    top: var(--fr-floor-line);
+    width: 84%;
+    height: 17%;
     border-radius: 50%;
     background: radial-gradient(ellipse,
-        rgba(var(--fr-amber), 0.1) 0%,
-        rgba(var(--fr-amber), 0.035) 40%,
+        rgba(var(--fr-amber), 0.09) 0%,
+        rgba(var(--fr-amber), 0.03) 42%,
         transparent 72%);
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(-50%, -46%, 0);
     opacity: 0;
     transition: opacity 1.4s var(--fr-ease) 0.6s;
     pointer-events: none;
@@ -273,18 +297,21 @@ body {
 .is-ready .fr-floor { opacity: 1; }
 
 /* Contact shadow — independent of the bottle, drifts opposite. */
+/* Sits on the floor line, drifting opposite the bottle so the light source
+   stays believable. Narrower than the glass so contact reads as a footprint
+   rather than a halo. */
 .fr-shadow {
     position: absolute;
     left: 50%;
-    bottom: 11.5%;
-    width: 46%;
-    height: 4.2%;
+    top: var(--fr-floor-line);
+    width: 42%;
+    height: 4.6%;
     border-radius: 50%;
-    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 48%, transparent 74%);
+    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.55) 46%, transparent 74%);
     filter: blur(var(--fr-shadow-blur));
     opacity: 0;
     transform: translate3d(
-        calc(-50% - var(--fr-px) * var(--fr-w-shadow) * var(--fr-shadow-move) * 1px), 0, 0);
+        calc(-50% - var(--fr-px) * var(--fr-w-shadow) * var(--fr-shadow-move) * 1px), -34%, 0);
     transition: opacity 1.2s var(--fr-ease) 0.45s;
     pointer-events: none;
 }
@@ -292,12 +319,15 @@ body {
 .is-ready .fr-shadow { opacity: var(--fr-shadow-opacity); }
 
 /* ── Bottle ── */
+/* Locked to the artwork's own aspect ratio so `contain` fits exactly with no
+   letterbox — that makes every percentage in the lighting gradients and the
+   reflection line up with the bottle instead of with empty space. */
 .fr-bottle-wrap {
     position: absolute;
     left: 50%;
     top: 0;
-    width: 100%;
-    height: 78%;
+    height: var(--fr-bottle-height);
+    aspect-ratio: 1024 / 1536;
     transform-style: preserve-3d;
     transform: translate3d(-50%, 0, 0);
     pointer-events: none;
@@ -325,14 +355,14 @@ body {
    masked away radially — the artwork's own glow then blends into the
    page instead of ending at a visible rectangle. Swapping in a true
    cut-out asset only means dropping this mask. */
+/* The asset is a true cut-out, so it needs no mask of its own — the glass
+   edge is the artwork's own alpha, untouched. */
 .fr-bottle-img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    -webkit-mask: radial-gradient(ellipse 62% 74% at 50% 48%, #000 58%, rgba(0,0,0,0.55) 76%, transparent 92%);
-    mask: radial-gradient(ellipse 62% 74% at 50% 48%, #000 58%, rgba(0,0,0,0.55) 76%, transparent 92%);
 }
 
 /* Specular travelling highlight, clipped to the bottle silhouette. */
@@ -351,8 +381,10 @@ body {
         rgba(255, 246, 226, 0.3) 0%,
         rgba(var(--fr-amber), 0.12) 34%,
         transparent 68%);
-    -webkit-mask: radial-gradient(ellipse 54% 68% at 50% 48%, #000 52%, transparent 84%);
-    mask: radial-gradient(ellipse 54% 68% at 50% 48%, #000 52%, transparent 84%);
+    /* Clipped to the glass by the artwork's own alpha, so light never
+       spills past the silhouette onto the background. */
+    -webkit-mask: var(--fr-bottle) center / contain no-repeat;
+    mask: var(--fr-bottle) center / contain no-repeat;
     transition: opacity 0.7s var(--fr-ease);
 }
 
@@ -363,30 +395,39 @@ body {
     pointer-events: none;
     mix-blend-mode: screen;
     opacity: calc(var(--fr-edge-intensity) * var(--fr-active));
+    /* Two narrow bands riding the outer contours of the glass. The layer box
+       is locked to the artwork's aspect ratio (below), so 0%/100% really are
+       the bottle's own edges rather than empty letterbox. */
     background: linear-gradient(
-        calc(90deg + var(--fr-px) * -40deg),
-        rgba(255, 244, 214, 0.22) 0%,
-        transparent 34%,
-        transparent 66%,
-        rgba(var(--fr-amber), 0.14) 100%);
-    -webkit-mask: radial-gradient(ellipse 56% 70% at 50% 48%, transparent 44%, #000 62%, transparent 88%);
-    mask: radial-gradient(ellipse 56% 70% at 50% 48%, transparent 44%, #000 62%, transparent 88%);
+        calc(90deg + var(--fr-px) * -34deg),
+        rgba(255, 244, 214, 0.26) 0%,
+        rgba(255, 244, 214, 0.1) 12%,
+        transparent 30%,
+        transparent 70%,
+        rgba(var(--fr-amber), 0.12) 88%,
+        rgba(var(--fr-amber), 0.24) 100%);
+    -webkit-mask: var(--fr-bottle) center / contain no-repeat;
+    mask: var(--fr-bottle) center / contain no-repeat;
     transition: opacity 0.7s var(--fr-ease);
 }
 
 /* ── Floor reflection ───────────────────────────────────────
    The same asset, flipped, squashed, blurred, faded downward
    and moving at a fraction of the bottle's own travel. */
+/* Occupies the same box as the bottle and mirrors about that box's BASE
+   line, so the reflection grows downward from the bottle's foot. (Flipping
+   about the top edge instead would throw it upward over the bottle.) */
 .fr-reflection {
     position: absolute;
     left: 50%;
-    top: 78%;
-    width: 100%;
-    height: 78%;
-    transform-origin: 50% 0;
+    top: 0;
+    height: var(--fr-bottle-height);
+    aspect-ratio: 1024 / 1536;
+    transform-origin: 50% 100%;
     transform:
         translate3d(
-            calc(-50% + var(--fr-px) * var(--fr-w-reflection) * var(--fr-translate-x) * 1px), 0, 0)
+            calc(-50% + var(--fr-px) * var(--fr-w-reflection) * var(--fr-translate-x) * 1px),
+            var(--fr-reflection-offset), 0)
         scaleY(calc(var(--fr-reflection-squash) * -1));
     opacity: 0;
     pointer-events: none;
@@ -399,16 +440,18 @@ body {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    filter: blur(var(--fr-reflection-blur)) brightness(0.5) saturate(1.15);
-    /* Combined: the bottle's own radial cut-out, then a vertical fade so
-       the reflection dies out well before the bottom of the stage.
-       (In flipped space "to top" reads as downward on screen.) */
+    filter: blur(var(--fr-reflection-blur)) brightness(0.42) saturate(1.1);
+    /* Two masks intersected: the bottle's own alpha (so the reflection has
+       the exact glass silhouette), and a vertical fade. Masks apply in the
+       element's own space, before the flip — the box's BOTTOM edge is the
+       pivot at the floor, so that edge stays opaque and the fade runs
+       toward the box top, which lands furthest from the floor on screen. */
     -webkit-mask:
-        radial-gradient(ellipse 62% 74% at 50% 48%, #000 58%, transparent 90%),
-        linear-gradient(to top, transparent var(--fr-reflection-fade), #000 100%);
+        var(--fr-bottle) center / contain no-repeat,
+        linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.5) 14%, transparent var(--fr-reflection-fade));
     mask:
-        radial-gradient(ellipse 62% 74% at 50% 48%, #000 58%, transparent 90%),
-        linear-gradient(to top, transparent var(--fr-reflection-fade), #000 100%);
+        var(--fr-bottle) center / contain no-repeat,
+        linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.5) 14%, transparent var(--fr-reflection-fade));
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
 }
@@ -524,18 +567,21 @@ body {
    treated as a kill switch — html.reduce-motion is. Under it the
    composition stays fully intact: bottle, shadow, reflection and
    amber all remain, only the movement stops. */
-html.reduce-motion .fr-bottle,
+/* Neutral pose: the composition stays whole — bottle, shadow, reflection and
+   amber all remain — only the pointer-driven movement is removed. */
 html.reduce-motion .fr-shadow,
-html.reduce-motion .fr-reflection,
-html.reduce-motion .fr-backglow,
-html.reduce-motion .fr-atmos {
-    transform: translate3d(-50%, 0, 0);
+html.reduce-motion .fr-backglow {
+    transform: translate3d(-50%, -50%, 0);
 }
 
+html.reduce-motion .fr-shadow { transform: translate3d(-50%, 0, 0); }
 html.reduce-motion .fr-bottle { transform: none; }
 html.reduce-motion .fr-atmos { transform: none; }
+
 html.reduce-motion .fr-reflection {
-    transform: translate3d(-50%, 0, 0) scaleY(calc(var(--fr-reflection-squash) * -1));
+    transform:
+        translate3d(-50%, var(--fr-reflection-offset), 0)
+        scaleY(calc(var(--fr-reflection-squash) * -1));
 }
 
 html.reduce-motion .fr-glare,
