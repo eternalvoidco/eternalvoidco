@@ -42,13 +42,14 @@
 
     <main class="links-wrap">
         <div class="links-card">
+            <h1 class="links-sr-heading">Eternal Void — Private Atelier</h1>
+
             <button type="button" class="links-emblem-btn" id="linksEmblem" aria-label="Eternal Void">
                 <img class="links-emblem-img" src="/assets/ev-emblem.png?v=20260714c" alt="Eternal Void" width="288" height="243" fetchpriority="high" decoding="async">
             </button>
 
-            <h1 class="links-title">Eternal Void</h1>
             <p class="links-subtitle">Private Atelier</p>
-            <p class="links-tagline">Enter the world of Eternal Void.</p>
+            <p class="links-tagline"><span class="links-tagline-mark" aria-hidden="true">&#10022;</span>Enter the world of Eternal Void<span class="links-tagline-mark" aria-hidden="true">&#10022;</span></p>
 
             <span class="links-divider" aria-hidden="true"></span>
 
@@ -60,6 +61,8 @@
             <p>&copy; 2026 Eternal Void</p>
         </footer>
     </main>
+
+    <div class="links-toast" id="linksToast" role="status" aria-live="polite"></div>
 
     <script>
         // ============================================================
@@ -80,8 +83,7 @@
 
             { group: 'Follow Eternal Void', label: 'Instagram', href: 'https://www.instagram.com/eternalvoid_official/', external: true, icon: 'instagram', enabled: true },
             { group: 'Follow Eternal Void', label: 'TikTok', href: 'https://www.tiktok.com/@eternalvoid_official', external: true, icon: 'tiktok', enabled: true },
-            // TODO: confirm the real YouTube handle below before launch.
-            { group: 'Follow Eternal Void', label: 'YouTube', href: 'https://www.youtube.com/@eternalvoid', external: true, icon: 'youtube', enabled: true },
+            { group: 'Follow Eternal Void', label: 'YouTube', href: 'https://www.youtube.com/@EternalVoid_Official', external: true, icon: 'youtube', enabled: true },
 
             // Both Contact entries currently route to the one confirmed inbox —
             // each includes a distinct mailto subject so replies are easy to
@@ -99,6 +101,41 @@
         };
 
         const ARROW = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+        let toastTimer = null;
+        function showToast(message) {
+            const toast = document.getElementById('linksToast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('is-visible');
+            window.clearTimeout(toastTimer);
+            toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
+        }
+
+        function legacyCopy(text) {
+            try {
+                const el = document.createElement('textarea');
+                el.value = text;
+                el.setAttribute('readonly', '');
+                el.style.position = 'fixed';
+                el.style.opacity = '0';
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                showToast(`Copied ${text}`);
+            } catch (e) {}
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast(`Copied ${text}`))
+                    .catch(() => legacyCopy(text));
+            } else {
+                legacyCopy(text);
+            }
+        }
 
         function renderLinks() {
             const mount = document.getElementById('linksGroups');
@@ -138,7 +175,7 @@
                         a.target = '_blank';
                         a.rel = 'noopener noreferrer';
                     }
-                    a.style.transitionDelay = `${0.45 + staggerIndex * 0.06}s`;
+                    a.style.transitionDelay = `${0.3 + staggerIndex * 0.045}s`;
                     staggerIndex += 1;
 
                     const main = document.createElement('span');
@@ -163,6 +200,18 @@
                     a.appendChild(main);
                     a.appendChild(arrow);
                     list.appendChild(a);
+
+                    // Many desktop browsers have no default mail client
+                    // registered, so a plain mailto: click can look like
+                    // "nothing happened." Copy the address as a courtesy
+                    // fallback alongside the normal mailto: navigation —
+                    // both fire; whichever the visitor's setup supports.
+                    if (link.href.startsWith('mailto:')) {
+                        a.addEventListener('click', () => {
+                            const address = link.href.slice('mailto:'.length).split('?')[0];
+                            copyToClipboard(address);
+                        });
+                    }
                 });
 
                 section.appendChild(list);
