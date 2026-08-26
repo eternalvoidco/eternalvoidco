@@ -1,0 +1,364 @@
+/* ============================================================
+   VOID© — /links (private atelier link-in-bio)
+   Loaded together with void-guide.css, which supplies the shared
+   tokens, static background, focus-visible ring and reduced-motion
+   kill-switch. This file only adds what's specific to this page:
+   the centered card, the entrance sequence, the luxury link buttons,
+   and one extra, very slow atmospheric drift layer.
+   ============================================================ */
+
+.links-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+/* ---- One extra, barely-visible moving layer on top of void-guide's
+   static background. Same "slow silk fold" technique already used on
+   the main site's Collection section: a softly blurred, elongated
+   gradient drifting via transform only, never filter/blur animation. ---- */
+.links-atmos {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.links-atmos::before {
+    content: '';
+    position: absolute;
+    inset: -30%;
+    filter: blur(90px);
+    opacity: 0.4;
+    background:
+        radial-gradient(60% 26% at 26% 30%, rgba(212, 175, 55, 0.05), transparent 66%),
+        radial-gradient(66% 30% at 72% 66%, rgba(16, 15, 12, 0.55), transparent 68%);
+    animation: linksAtmosDrift 28s ease-in-out infinite alternate;
+}
+
+@keyframes linksAtmosDrift {
+    0% { transform: translate3d(-2%, -1.5%, 0) scale(1.05); }
+    100% { transform: translate3d(2.5%, 2%, 0) scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .links-atmos::before {
+        animation: none;
+    }
+}
+
+.links-wrap {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: clamp(3rem, 10vh, 5.5rem) clamp(1.1rem, 5vw, 2rem) clamp(2rem, 6vh, 3rem);
+}
+
+.links-card {
+    width: 100%;
+    max-width: min(560px, 94vw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* ---- Emblem ---- */
+.links-emblem-btn {
+    display: inline-flex;
+    border: 0;
+    background: none;
+    padding: 0.4rem;
+    margin-bottom: 1.4rem;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.9s var(--ease-lux), transform 0.9s var(--ease-lux);
+}
+
+.is-ready .links-emblem-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.links-emblem-img {
+    display: block;
+    width: clamp(56px, 14vw, 72px);
+    height: auto;
+    filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0));
+    transition: filter 0.5s ease;
+}
+
+/* Easter egg: a brief, quiet gold shimmer on hover/press — not a loop. */
+.links-emblem-btn.is-lit .links-emblem-img {
+    animation: linksEmblemShimmer 1.1s ease;
+}
+
+@keyframes linksEmblemShimmer {
+    0% { filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0)) brightness(1); }
+    40% { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.45)) brightness(1.12); }
+    100% { filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0)) brightness(1); }
+}
+
+/* ---- Title block ---- */
+.links-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.9rem, 6vw, 2.6rem);
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    color: var(--void-white);
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.9s var(--ease-lux) 0.12s, transform 0.9s var(--ease-lux) 0.12s;
+}
+
+.is-ready .links-title {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.links-subtitle {
+    margin-top: 0.6rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--void-accent);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.9s var(--ease-lux) 0.22s, transform 0.9s var(--ease-lux) 0.22s;
+}
+
+.is-ready .links-subtitle {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.links-tagline {
+    max-width: 34ch;
+    margin: 1.1rem 0 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(0.92rem, 2.4vw, 1.02rem);
+    color: var(--void-text-muted);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.9s var(--ease-lux) 0.3s, transform 0.9s var(--ease-lux) 0.3s;
+}
+
+.is-ready .links-tagline {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.links-divider {
+    display: block;
+    width: 0;
+    height: 1px;
+    margin: clamp(1.8rem, 5vw, 2.4rem) 0;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.75), transparent);
+    transition: width 1.1s var(--ease-lux) 0.4s;
+}
+
+.is-ready .links-divider {
+    width: min(220px, 60%);
+}
+
+/* ---- Link groups ---- */
+.links-groups {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.7rem, 4vw, 2.2rem);
+}
+
+.link-group-label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: rgba(199, 169, 108, 0.62);
+    text-align: left;
+}
+
+.link-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+/* ---- The luxury button itself ---- */
+.link-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    width: 100%;
+    padding: 1rem 1.3rem;
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.16);
+    background: rgba(9, 9, 9, 0.55);
+    color: var(--void-white);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+        border-color 0.5s var(--ease-lux),
+        background 0.5s var(--ease-lux),
+        box-shadow 0.5s var(--ease-lux),
+        opacity 0.7s var(--ease-lux),
+        transform 0.7s var(--ease-lux);
+}
+
+.is-ready .link-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* A thin, rare diagonal glint — not the wide bright sheen used on primary
+   CTAs elsewhere; kept faint so it reads as a glimmer, not a flash. */
+.link-btn::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent 42%, rgba(212, 175, 55, 0.09) 50%, transparent 58%);
+    transform: translateX(-120%);
+    transition: transform 1s var(--ease-lux);
+}
+
+.link-btn:hover::before,
+.link-btn:focus-visible::before {
+    transform: translateX(120%);
+}
+
+.link-btn:hover,
+.link-btn:focus-visible {
+    border-color: rgba(212, 175, 55, 0.4);
+    background: rgba(15, 13, 9, 0.7);
+    box-shadow: 0 0 22px rgba(212, 175, 55, 0.07);
+}
+
+.link-btn:focus-visible {
+    outline: 1px solid rgba(212, 175, 55, 0.78);
+    outline-offset: 3px;
+}
+
+.link-btn-main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.link-btn-icon {
+    flex: 0 0 auto;
+    width: 15px;
+    height: 15px;
+    color: rgba(212, 175, 55, 0.85);
+}
+
+.link-btn-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.link-btn-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: transform 0.5s var(--ease-lux);
+}
+
+.link-btn:hover .link-btn-label,
+.link-btn:focus-visible .link-btn-label {
+    transform: translateX(3px);
+}
+
+.link-btn-arrow {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    color: rgba(212, 175, 55, 0.55);
+    opacity: 0.7;
+    transition: transform 0.5s var(--ease-lux), opacity 0.5s var(--ease-lux), color 0.5s var(--ease-lux);
+}
+
+.link-btn-arrow svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.link-btn:hover .link-btn-arrow,
+.link-btn:focus-visible .link-btn-arrow {
+    transform: translateX(5px);
+    opacity: 1;
+    color: rgba(212, 175, 55, 0.95);
+}
+
+/* ---- Footer ---- */
+.links-footer {
+    position: relative;
+    z-index: 1;
+    padding: clamp(2rem, 5vh, 3rem) 1.25rem calc(clamp(1.5rem, 4vh, 2.2rem) + env(safe-area-inset-bottom, 0px));
+    text-align: center;
+}
+
+.links-footer p {
+    max-width: none;
+    margin: 0;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(245, 242, 236, 0.32);
+    line-height: 1.9;
+}
+
+/* ---- Small screens: keep generous, honest spacing, never cramp it ---- */
+@media (max-width: 420px) {
+    .links-wrap {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .link-btn {
+        padding: 0.95rem 1.05rem;
+    }
+
+    .link-btn-label {
+        font-size: 0.74rem;
+    }
+}
+
+/* iOS safe-area: never let the card sit under the notch/home indicator. */
+@supports (padding: max(0px)) {
+    .links-wrap {
+        padding-left: max(clamp(1.1rem, 5vw, 2rem), env(safe-area-inset-left));
+        padding-right: max(clamp(1.1rem, 5vw, 2rem), env(safe-area-inset-right));
+    }
+}

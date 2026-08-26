@@ -9,7 +9,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "C:\\Users\\szede\\AppData\\Local\\Temp\\claude\\C--Eternalvoidco-Eternalvoidco\\d08fd252-488d-47ad-ac8e-71a21598bb4c\\scratchpad\\static-server.ps1"
+        "C:\\Users\\szede\\AppData\\Local\\Temp\\claude\\C--Eternalvoidco-Eternalvoidco\\3afe5fc2-f251-428b-8445-6f028c3f7294\\scratchpad\\static-server.ps1"
       ],
       "port": 8163,
       "autoPort": true

@@ -11266,6 +11266,13 @@
                     activateWithKeyboard(event, handleStoryExit);
                 });
             }
+
+            // Lets an external link (e.g. the /links page) deep-link straight
+            // into the story overlay via https://eternalvoid.co/#story —
+            // previously this overlay had no URL of its own.
+            if (location.hash === '#story') {
+                window.requestAnimationFrame(() => handleStoryTrigger());
+            }
         }
 
         // Cart logic

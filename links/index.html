@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0J10500JCQ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'G-0J10500JCQ');
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Eternal Void | Official Links</title>
+    <meta name="description" content="Enter the world of Eternal Void. Official boutique, collection, social channels and private enquiries.">
+    <link rel="canonical" href="https://www.eternalvoid.co/links">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#030302">
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg?v=20260713-ev">
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260713-ev">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png?v=20260713-ev">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Eternal Void | Official Links">
+    <meta property="og:description" content="Enter the world of Eternal Void. Official boutique, collection, social channels and private enquiries.">
+    <meta property="og:url" content="https://www.eternalvoid.co/links">
+    <meta property="og:image" content="https://www.eternalvoid.co/assets/icons/android-chrome-512x512.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Eternal Void | Official Links">
+    <meta name="twitter:description" content="Enter the world of Eternal Void. Official boutique, collection, social channels and private enquiries.">
+    <meta name="twitter:image" content="https://www.eternalvoid.co/assets/icons/android-chrome-512x512.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/void-guide.css">
+    <link rel="stylesheet" href="/assets/void-links.css">
+</head>
+<body class="links-page">
+    <div class="links-atmos" aria-hidden="true"></div>
+
+    <main class="links-wrap">
+        <div class="links-card">
+            <button type="button" class="links-emblem-btn" id="linksEmblem" aria-label="Eternal Void">
+                <img class="links-emblem-img" src="/assets/ev-emblem.png?v=20260714c" alt="Eternal Void" width="288" height="243" fetchpriority="high" decoding="async">
+            </button>
+
+            <h1 class="links-title">Eternal Void</h1>
+            <p class="links-subtitle">Private Atelier</p>
+            <p class="links-tagline">Enter the world of Eternal Void.</p>
+
+            <span class="links-divider" aria-hidden="true"></span>
+
+            <nav class="links-groups" id="linksGroups" aria-label="Eternal Void links"></nav>
+        </div>
+
+        <footer class="links-footer">
+            <p>Eternal Void &mdash; Made in Italy</p>
+            <p>&copy; 2026 Eternal Void</p>
+        </footer>
+    </main>
+
+    <script>
+        // ============================================================
+        // EDIT LINKS HERE. Each entry:
+        //   group    — section heading the link appears under
+        //   label    — visible text
+        //   href     — destination URL (mailto:, https://, or a same-site path)
+        //   external — true adds target="_blank" rel="noopener noreferrer"
+        //   icon     — optional key into ICONS below (omit for none)
+        //   enabled  — set false to hide a link without deleting it
+        // Reorder, add, remove, or disable entries freely — the page
+        // renders straight from this array, nothing else needs editing.
+        // ============================================================
+        const LINKS = [
+            { group: 'The House', label: 'Enter the Boutique', href: '/', external: false, enabled: true },
+            { group: 'The House', label: 'The Collection', href: '/#shop', external: false, enabled: true },
+            { group: 'The House', label: 'Our Story', href: '/#story', external: false, enabled: true },
+
+            { group: 'Follow Eternal Void', label: 'Instagram', href: 'https://www.instagram.com/eternalvoid_official/', external: true, icon: 'instagram', enabled: true },
+            { group: 'Follow Eternal Void', label: 'TikTok', href: 'https://www.tiktok.com/@eternalvoid_official', external: true, icon: 'tiktok', enabled: true },
+            // TODO: confirm the real YouTube handle below before launch.
+            { group: 'Follow Eternal Void', label: 'YouTube', href: 'https://www.youtube.com/@eternalvoid', external: true, icon: 'youtube', enabled: true },
+
+            // Both Contact entries currently route to the one confirmed inbox —
+            // each includes a distinct mailto subject so replies are easy to
+            // triage even while they share an address. Point either href at a
+            // separate address later with no other changes needed.
+            { group: 'Contact', label: 'Private Enquiries', href: 'mailto:support@eternalvoid.co?subject=Private%20Enquiry', external: false, icon: 'mail', enabled: true },
+            { group: 'Contact', label: 'Business & Collaboration', href: 'mailto:support@eternalvoid.co?subject=Business%20%26%20Collaboration', external: false, icon: 'mail', enabled: true }
+        ];
+
+        const ICONS = {
+            instagram: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.5"/><circle cx="17.1" cy="6.9" r="1" fill="currentColor"/></svg>',
+            tiktok: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M14 3.5c.5 2.3 2 3.9 4.3 4.1v2.6c-1.6.1-3-.4-4.3-1.3v6.3a5.4 5.4 0 1 1-5.4-5.4c.3 0 .6 0 .9.1v2.7a2.7 2.7 0 1 0 1.9 2.6V3.5H14Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+            youtube: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><rect x="3" y="6" width="18" height="12" rx="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 9.7 14.8 12l-4.3 2.3V9.7Z" fill="currentColor"/></svg>',
+            mail: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7 12 12.5 19.5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        };
+
+        const ARROW = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+        function renderLinks() {
+            const mount = document.getElementById('linksGroups');
+            if (!mount) return;
+
+            const groups = [];
+            LINKS.forEach((link) => {
+                if (!link.enabled) return;
+                let group = groups.find((g) => g.name === link.group);
+                if (!group) {
+                    group = { name: link.group, items: [] };
+                    groups.push(group);
+                }
+                group.items.push(link);
+            });
+
+            let staggerIndex = 0;
+            const fragment = document.createDocumentFragment();
+
+            groups.forEach((group) => {
+                const section = document.createElement('div');
+                section.className = 'link-group';
+
+                const heading = document.createElement('span');
+                heading.className = 'link-group-label';
+                heading.textContent = group.name;
+                section.appendChild(heading);
+
+                const list = document.createElement('div');
+                list.className = 'link-list';
+
+                group.items.forEach((link) => {
+                    const a = document.createElement('a');
+                    a.className = 'link-btn';
+                    a.href = link.href;
+                    if (link.external) {
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                    }
+                    a.style.transitionDelay = `${0.45 + staggerIndex * 0.06}s`;
+                    staggerIndex += 1;
+
+                    const main = document.createElement('span');
+                    main.className = 'link-btn-main';
+
+                    if (link.icon && ICONS[link.icon]) {
+                        const icon = document.createElement('span');
+                        icon.className = 'link-btn-icon';
+                        icon.innerHTML = ICONS[link.icon];
+                        main.appendChild(icon);
+                    }
+
+                    const label = document.createElement('span');
+                    label.className = 'link-btn-label';
+                    label.textContent = link.label;
+                    main.appendChild(label);
+
+                    const arrow = document.createElement('span');
+                    arrow.className = 'link-btn-arrow';
+                    arrow.innerHTML = ARROW;
+
+                    a.appendChild(main);
+                    a.appendChild(arrow);
+                    list.appendChild(a);
+                });
+
+                section.appendChild(list);
+                fragment.appendChild(section);
+            });
+
+            mount.appendChild(fragment);
+        }
+
+        renderLinks();
+
+        // Entrance sequence: everything is already in the DOM and clickable —
+        // this class just triggers the CSS opacity/transform reveal above.
+        window.requestAnimationFrame(() => {
+            document.body.classList.add('is-ready');
+        });
+
+        // Quiet Easter egg: a brief gold shimmer on hover or press, not a loop.
+        const emblemBtn = document.getElementById('linksEmblem');
+        if (emblemBtn) {
+            let shimmerTimer = null;
+            const lightUp = () => {
+                emblemBtn.classList.remove('is-lit');
+                void emblemBtn.offsetWidth;
+                emblemBtn.classList.add('is-lit');
+                window.clearTimeout(shimmerTimer);
+                shimmerTimer = window.setTimeout(() => emblemBtn.classList.remove('is-lit'), 1200);
+            };
+            emblemBtn.addEventListener('mouseenter', lightUp);
+            emblemBtn.addEventListener('pointerdown', lightUp);
+            emblemBtn.addEventListener('focus', lightUp);
+        }
+    </script>
+</body>
+</html>
