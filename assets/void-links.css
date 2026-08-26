@@ -1,54 +1,104 @@
 /* ============================================================
-   VOID© — /links (private atelier link-in-bio)
-   Loaded together with void-guide.css, which supplies the shared
-   tokens, static background, focus-visible ring and reduced-motion
-   kill-switch. This file only adds what's specific to this page:
-   the centered card, the entrance sequence, the luxury link buttons,
-   and one extra, very slow atmospheric drift layer.
+   VOID© — /links (Atelier link-in-bio)
+   Loaded after void-guide.css, which supplies the shared palette
+   tokens, focus-visible ring and reduced-motion kill-switch.
+   This file deliberately overrides void-guide's backdrop layers:
+   its 3px tiled grain reads as pixelation on a page this sparse,
+   and a blurred animated layer is the single most expensive thing
+   a phone can composite. Everything here is gradient + transform
+   only — no filter animation, no blur on moving elements.
    ============================================================ */
 
 .links-page {
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
+    background: #030302;
 }
 
-/* ---- One extra, barely-visible moving layer on top of void-guide's
-   static background. Same "slow silk fold" technique already used on
-   the main site's Collection section: a softly blurred, elongated
-   gradient drifting via transform only, never filter/blur animation. ---- */
+/* Kill the shared page's tiled grain + fixed wash — replaced below. */
+.links-page::before,
+.links-page::after {
+    content: none;
+}
+
+/* ---- Backdrop ----
+   Two still layers (deep base + vignette) and one slow-drifting warm
+   pool. The pool is a plain radial-gradient, already soft at the edges,
+   so it needs no blur filter to look atmospheric — it just translates. */
 .links-atmos {
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    overflow: hidden;
+    background:
+        radial-gradient(120% 70% at 50% -10%, rgba(212, 175, 55, 0.055), transparent 62%),
+        radial-gradient(90% 60% at 50% 110%, rgba(212, 175, 55, 0.03), transparent 65%),
+        linear-gradient(180deg, #060605 0%, #030302 45%, #050403 100%);
 }
 
 .links-atmos::before {
     content: '';
     position: absolute;
-    inset: -30%;
-    filter: blur(55px);
-    opacity: 0.4;
-    will-change: transform;
+    top: -25%;
+    left: -25%;
+    width: 150%;
+    height: 150%;
     background:
-        radial-gradient(60% 26% at 26% 30%, rgba(212, 175, 55, 0.05), transparent 66%),
-        radial-gradient(66% 30% at 72% 66%, rgba(16, 15, 12, 0.55), transparent 68%);
-    animation: linksAtmosDrift 28s ease-in-out infinite alternate;
+        radial-gradient(38% 24% at 30% 32%, rgba(212, 175, 55, 0.055), transparent 70%),
+        radial-gradient(42% 26% at 72% 64%, rgba(212, 175, 55, 0.032), transparent 72%);
+    will-change: transform;
+    animation: linksDrift 34s ease-in-out infinite alternate;
 }
 
-@keyframes linksAtmosDrift {
-    0% { transform: translate3d(-2%, -1.5%, 0) scale(1.05); }
-    100% { transform: translate3d(2.5%, 2%, 0) scale(1.12); }
+@keyframes linksDrift {
+    from { transform: translate3d(-1.5%, -1%, 0); }
+    to { transform: translate3d(2%, 1.5%, 0); }
 }
 
+/* Cinematic edge falloff — still, costs nothing. */
+.links-atmos::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(125% 95% at 50% 45%, transparent 46%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+/* void-guide.css blanket-kills all motion whenever the OS reports
+   prefers-reduced-motion. That's wrong for VOID: as the note at the top of
+   index.html records, Windows very commonly reports that setting as ON, which
+   would silently flatten this page's entrance for a large share of visitors.
+   The house convention is that cinematic motion shows on every platform and
+   "calm" is opt-in via the html.reduce-motion class. Restore motion here,
+   then let that class be the real kill switch below. */
 @media (prefers-reduced-motion: reduce) {
-    .links-atmos::before {
-        animation: none;
+    html:not(.reduce-motion) .links-atmos::before {
+        animation-duration: 34s !important;
+        animation-iteration-count: infinite !important;
+    }
+
+    html:not(.reduce-motion) .links-emblem-btn,
+    html:not(.reduce-motion) .links-emblem-halo,
+    html:not(.reduce-motion) .links-atelier,
+    html:not(.reduce-motion) .links-divider,
+    html:not(.reduce-motion) .link-btn,
+    html:not(.reduce-motion) .link-btn::before,
+    html:not(.reduce-motion) .link-btn::after,
+    html:not(.reduce-motion) .link-btn-icon,
+    html:not(.reduce-motion) .link-btn-label,
+    html:not(.reduce-motion) .link-btn-arrow,
+    html:not(.reduce-motion) .links-footer,
+    html:not(.reduce-motion) .links-toast {
+        transition-duration: 0.55s !important;
     }
 }
 
+/* The real calm switch, matching the rest of the site. */
+html.reduce-motion .links-atmos::before {
+    animation: none;
+}
+
+/* ---- Layout ---- */
 .links-wrap {
     position: relative;
     z-index: 1;
@@ -57,76 +107,32 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    padding: clamp(3rem, 10vh, 5.5rem) clamp(1.1rem, 5vw, 2rem) clamp(2rem, 6vh, 3rem);
+    padding: clamp(3rem, 9vh, 5rem) clamp(1.1rem, 5vw, 2rem) clamp(2rem, 6vh, 3rem);
 }
 
 .links-card {
     position: relative;
     width: 100%;
-    max-width: min(560px, 94vw);
+    max-width: min(520px, 94vw);
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: clamp(2.4rem, 6vw, 3.4rem) clamp(1.4rem, 5vw, 2.6rem) clamp(2rem, 5vw, 2.6rem);
-    border: 1px solid rgba(212, 175, 55, 0.14);
-    background:
-        radial-gradient(120% 70% at 50% 0%, rgba(212, 175, 55, 0.05), transparent 60%),
-        linear-gradient(180deg, rgba(14, 13, 11, 0.5), rgba(4, 4, 4, 0.62));
-    box-shadow: inset 0 1px 0 rgba(245, 242, 236, 0.03);
-}
-
-/* Small engraved corner marks — the same restrained "invitation card"
-   framing language as the main site's panel corner brackets, at a much
-   smaller, quieter scale here. Pure decoration, no motion, no cost. */
-.links-card::before,
-.links-card::after {
-    content: '';
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    pointer-events: none;
-}
-
-.links-card::before {
-    top: -1px;
-    left: -1px;
-    border-top: 1px solid rgba(212, 175, 55, 0.55);
-    border-left: 1px solid rgba(212, 175, 55, 0.55);
-}
-
-.links-card::after {
-    bottom: -1px;
-    right: -1px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.55);
-    border-right: 1px solid rgba(212, 175, 55, 0.55);
-}
-
-/* Visually hidden but present for SEO/screen readers — the visible mark
-   is the emblem + "Private Atelier", not a repeated wordmark. */
-.links-sr-heading {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
 }
 
 /* ---- Emblem ---- */
 .links-emblem-btn {
+    position: relative;
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 0;
     background: none;
-    padding: 0.4rem;
-    margin-bottom: 1.4rem;
+    padding: 0.5rem;
     cursor: pointer;
     opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.65s var(--ease-lux), transform 0.65s var(--ease-lux);
+    transform: translateY(8px);
+    transition: opacity 0.55s var(--ease-lux), transform 0.55s var(--ease-lux);
 }
 
 .is-ready .links-emblem-btn {
@@ -134,133 +140,139 @@
     transform: translateY(0);
 }
 
-.links-emblem-img {
-    display: block;
-    width: clamp(56px, 14vw, 72px);
-    height: auto;
-    filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0));
-    transition: filter 0.5s ease;
+/* A soft aura behind the mark — static radial, scales on the shimmer. */
+.links-emblem-halo {
+    position: absolute;
+    inset: -70%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.14) 0%, rgba(212, 175, 55, 0.04) 45%, transparent 70%);
+    opacity: 0.65;
+    transition: opacity 0.6s var(--ease-lux), transform 0.6s var(--ease-lux);
+    pointer-events: none;
 }
 
-/* Easter egg: a brief, quiet gold shimmer on hover/press — not a loop. */
+.links-emblem-btn:hover .links-emblem-halo,
+.links-emblem-btn:focus-visible .links-emblem-halo {
+    opacity: 1;
+    transform: scale(1.12);
+}
+
+.links-emblem-img {
+    position: relative;
+    display: block;
+    width: clamp(62px, 15vw, 80px);
+    height: auto;
+}
+
 .links-emblem-btn.is-lit .links-emblem-img {
-    animation: linksEmblemShimmer 1.1s ease;
+    animation: linksEmblemShimmer 1.2s var(--ease-lux);
 }
 
 @keyframes linksEmblemShimmer {
-    0% { filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0)) brightness(1); }
-    40% { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.45)) brightness(1.12); }
-    100% { filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0)) brightness(1); }
+    0% { transform: scale(1); opacity: 1; }
+    35% { transform: scale(1.04); opacity: 0.86; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-/* ---- Title block ----
-   No visible "Eternal Void" wordmark — the emblem already says that.
-   "Private Atelier" carries the visual weight of a heading instead,
-   flanked by hairlines so it reads as a house mark, not a menu label. */
-.links-subtitle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.85rem;
-    margin-top: 0.2rem;
-    font-family: 'Jost', sans-serif;
-    font-size: clamp(0.72rem, 2vw, 0.82rem);
-    font-weight: 600;
-    letter-spacing: 0.5em;
-    text-transform: uppercase;
-    color: var(--void-gold-soft);
-    text-shadow: 0 0 18px rgba(212, 175, 55, 0.18);
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.65s var(--ease-lux) 0.1s, transform 0.65s var(--ease-lux) 0.1s;
+.links-emblem-btn:focus-visible {
+    outline: 1px solid rgba(212, 175, 55, 0.7);
+    outline-offset: 6px;
 }
 
-.links-subtitle::before,
-.links-subtitle::after {
-    content: '';
-    width: clamp(1.1rem, 4vw, 1.8rem);
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6));
-}
-
-.links-subtitle::after {
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.6), transparent);
-}
-
-.is-ready .links-subtitle {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.links-tagline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.65rem;
-    max-width: 34ch;
-    margin: 1.3rem 0 0;
+/* ---- ATELIER ----
+   The single typographic statement on the page. Wide-tracked
+   Cormorant with a brushed-gold gradient fill, which is what
+   separates this from a generic centered heading. */
+.links-atelier {
+    margin: clamp(1.4rem, 4vw, 1.9rem) 0 0;
+    max-width: none;
     font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
+    font-size: clamp(2rem, 8vw, 3rem);
     font-weight: 500;
-    font-size: clamp(1rem, 2.6vw, 1.15rem);
-    letter-spacing: 0.01em;
-    color: rgba(245, 242, 236, 0.68);
+    line-height: 1;
+    letter-spacing: 0.44em;
+    /* Optical centering: the wide tracking adds a trailing gap. */
+    text-indent: 0.44em;
+    text-transform: uppercase;
+    background: linear-gradient(178deg, #f4e6c0 0%, #d9bd81 38%, #c7a96c 62%, #8f7136 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #d9bd81;
     opacity: 0;
     transform: translateY(8px);
-    transition: opacity 0.65s var(--ease-lux) 0.18s, transform 0.65s var(--ease-lux) 0.18s;
+    transition: opacity 0.6s var(--ease-lux) 0.08s, transform 0.6s var(--ease-lux) 0.08s;
 }
 
-.links-tagline-mark {
-    font-size: 0.6rem;
-    color: rgba(212, 175, 55, 0.55);
-    font-style: normal;
-}
-
-.is-ready .links-tagline {
+.is-ready .links-atelier {
     opacity: 1;
     transform: translateY(0);
 }
 
+/* ---- Divider: a hairline with a small centred lozenge ---- */
 .links-divider {
+    position: relative;
     display: block;
     width: 0;
     height: 1px;
-    margin: clamp(1.8rem, 5vw, 2.4rem) 0;
-    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.75), transparent);
-    transition: width 0.8s var(--ease-lux) 0.26s;
+    margin: clamp(1.6rem, 4.5vw, 2.1rem) 0 clamp(2rem, 5vw, 2.6rem);
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.5) 22%, rgba(212, 175, 55, 0.5) 78%, transparent);
+    transition: width 0.7s var(--ease-lux) 0.2s;
 }
 
 .is-ready .links-divider {
-    width: min(220px, 60%);
+    width: min(240px, 66%);
 }
 
-/* ---- Link groups ---- */
+.links-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: #d9bd81;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.55);
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* ---- Groups ---- */
 .links-groups {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: clamp(1.7rem, 4vw, 2.2rem);
+    gap: clamp(1.8rem, 4.5vw, 2.4rem);
 }
 
+/* Section label sitting on its own hairline rule. */
 .link-group-label {
-    display: block;
-    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.9rem;
     font-family: 'Jost', sans-serif;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     font-weight: 600;
-    letter-spacing: 0.36em;
+    letter-spacing: 0.4em;
     text-transform: uppercase;
-    color: rgba(199, 169, 108, 0.62);
-    text-align: left;
+    color: rgba(212, 175, 55, 0.6);
+    white-space: nowrap;
+}
+
+.link-group-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.22), transparent);
 }
 
 .link-list {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.55rem;
 }
 
-/* ---- The luxury button itself ---- */
+/* ---- The link plaque ---- */
 .link-btn {
     position: relative;
     display: flex;
@@ -268,22 +280,22 @@
     justify-content: space-between;
     gap: 0.9rem;
     width: 100%;
-    padding: 1rem 1.3rem;
+    padding: 1.05rem 1.35rem;
     overflow: hidden;
-    border: 1px solid rgba(212, 175, 55, 0.16);
-    background: linear-gradient(165deg, rgba(20, 18, 14, 0.6), rgba(6, 6, 5, 0.68));
-    box-shadow: inset 0 1px 0 rgba(245, 242, 236, 0.03);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    background: linear-gradient(168deg, rgba(23, 21, 17, 0.62) 0%, rgba(9, 8, 7, 0.72) 100%);
+    box-shadow: inset 0 1px 0 rgba(245, 232, 202, 0.045);
     color: var(--void-white);
     text-decoration: none;
     -webkit-tap-highlight-color: transparent;
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
     transition:
-        border-color 0.4s var(--ease-lux),
-        background 0.4s var(--ease-lux),
-        box-shadow 0.4s var(--ease-lux),
-        opacity 0.55s var(--ease-lux),
-        transform 0.55s var(--ease-lux);
+        border-color 0.45s var(--ease-lux),
+        background 0.45s var(--ease-lux),
+        box-shadow 0.45s var(--ease-lux),
+        opacity 0.5s var(--ease-lux),
+        transform 0.5s var(--ease-lux);
 }
 
 .is-ready .link-btn {
@@ -291,34 +303,56 @@
     transform: translateY(0);
 }
 
-/* A thin, rare diagonal glint — not the wide bright sheen used on primary
-   CTAs elsewhere; kept faint so it reads as a glimmer, not a flash. */
+/* Gold hairline that grows down the leading edge on hover — the
+   restrained "selected" cue, in place of any glow or scaling. */
+.link-btn::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 0;
+    background: linear-gradient(180deg, transparent, #d9bd81, transparent);
+    transform: translateY(-50%);
+    transition: height 0.5s var(--ease-lux);
+    pointer-events: none;
+}
+
+.link-btn:hover::after,
+.link-btn:focus-visible::after {
+    height: 78%;
+}
+
+/* Faint diagonal glint, clipped to the plaque. */
 .link-btn::before {
     content: '';
     position: absolute;
     inset: -1px;
-    z-index: 0;
+    background: linear-gradient(100deg, transparent 43%, rgba(245, 232, 202, 0.075) 50%, transparent 57%);
+    transform: translateX(-115%);
+    transition: transform 0.8s var(--ease-lux);
     pointer-events: none;
-    background: linear-gradient(100deg, transparent 42%, rgba(212, 175, 55, 0.09) 50%, transparent 58%);
-    transform: translateX(-120%);
-    transition: transform 0.75s var(--ease-lux);
 }
 
 .link-btn:hover::before,
 .link-btn:focus-visible::before {
-    transform: translateX(120%);
+    transform: translateX(115%);
 }
 
 .link-btn:hover,
 .link-btn:focus-visible {
-    border-color: rgba(212, 175, 55, 0.42);
-    background: linear-gradient(165deg, rgba(28, 25, 18, 0.72), rgba(9, 8, 6, 0.78));
-    box-shadow: inset 0 1px 0 rgba(245, 232, 202, 0.06), 0 0 22px rgba(212, 175, 55, 0.08);
+    border-color: rgba(212, 175, 55, 0.44);
+    background: linear-gradient(168deg, rgba(34, 30, 22, 0.75) 0%, rgba(12, 11, 8, 0.82) 100%);
+    box-shadow: inset 0 1px 0 rgba(245, 232, 202, 0.08), 0 6px 26px rgba(0, 0, 0, 0.45);
 }
 
 .link-btn:focus-visible {
-    outline: 1px solid rgba(212, 175, 55, 0.78);
+    outline: 1px solid rgba(212, 175, 55, 0.75);
     outline-offset: 3px;
+}
+
+.link-btn:active {
+    background: linear-gradient(168deg, rgba(40, 35, 25, 0.8) 0%, rgba(14, 12, 9, 0.86) 100%);
 }
 
 .link-btn-main {
@@ -326,7 +360,7 @@
     z-index: 1;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.8rem;
     min-width: 0;
 }
 
@@ -334,7 +368,8 @@
     flex: 0 0 auto;
     width: 15px;
     height: 15px;
-    color: rgba(212, 175, 55, 0.85);
+    color: rgba(212, 175, 55, 0.8);
+    transition: color 0.45s var(--ease-lux);
 }
 
 .link-btn-icon svg {
@@ -343,32 +378,38 @@
     height: 100%;
 }
 
+.link-btn:hover .link-btn-icon,
+.link-btn:focus-visible .link-btn-icon {
+    color: #e8c766;
+}
+
 .link-btn-label {
     font-family: 'Jost', sans-serif;
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 500;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
+    color: rgba(245, 242, 236, 0.9);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: transform 0.5s var(--ease-lux);
+    transition: transform 0.45s var(--ease-lux), color 0.45s var(--ease-lux);
 }
 
 .link-btn:hover .link-btn-label,
 .link-btn:focus-visible .link-btn-label {
-    transform: translateX(3px);
+    transform: translateX(4px);
+    color: #fdf6e6;
 }
 
 .link-btn-arrow {
     position: relative;
     z-index: 1;
     flex: 0 0 auto;
-    width: 14px;
-    height: 14px;
-    color: rgba(212, 175, 55, 0.55);
-    opacity: 0.7;
-    transition: transform 0.5s var(--ease-lux), opacity 0.5s var(--ease-lux), color 0.5s var(--ease-lux);
+    width: 13px;
+    height: 13px;
+    color: rgba(212, 175, 55, 0.45);
+    transition: transform 0.45s var(--ease-lux), color 0.45s var(--ease-lux);
 }
 
 .link-btn-arrow svg {
@@ -380,8 +421,7 @@
 .link-btn:hover .link-btn-arrow,
 .link-btn:focus-visible .link-btn-arrow {
     transform: translateX(5px);
-    opacity: 1;
-    color: rgba(212, 175, 55, 0.95);
+    color: #e8c766;
 }
 
 /* ---- Copy-to-clipboard courtesy toast (Contact links) ---- */
@@ -391,13 +431,15 @@
     bottom: calc(1.6rem + env(safe-area-inset-bottom, 0px));
     z-index: 10;
     transform: translate(-50%, 10px);
-    padding: 0.65rem 1.1rem;
-    border: 1px solid rgba(212, 175, 55, 0.32);
-    background: rgba(10, 9, 7, 0.94);
-    color: var(--void-white);
+    padding: 0.7rem 1.15rem;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    background: rgba(10, 9, 7, 0.96);
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.55);
+    color: rgba(245, 242, 236, 0.92);
     font-family: 'Jost', sans-serif;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
@@ -413,43 +455,51 @@
 .links-footer {
     position: relative;
     z-index: 1;
-    padding: clamp(2rem, 5vh, 3rem) 1.25rem calc(clamp(1.5rem, 4vh, 2.2rem) + env(safe-area-inset-bottom, 0px));
+    padding: clamp(2.4rem, 6vh, 3.4rem) 1.25rem calc(clamp(1.5rem, 4vh, 2.2rem) + env(safe-area-inset-bottom, 0px));
     text-align: center;
+    opacity: 0;
+    transition: opacity 0.7s var(--ease-lux) 0.5s;
+}
+
+.is-ready .links-footer {
+    opacity: 1;
 }
 
 .links-footer p {
     max-width: none;
     margin: 0;
     font-family: 'Jost', sans-serif;
-    font-size: 0.6rem;
-    letter-spacing: 0.22em;
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.34em;
     text-transform: uppercase;
-    color: rgba(245, 242, 236, 0.32);
-    line-height: 1.9;
+    color: rgba(245, 242, 236, 0.26);
+    line-height: 2.1;
 }
 
-/* ---- Small screens: keep generous, honest spacing, never cramp it ---- */
+/* ---- Small screens ---- */
 @media (max-width: 420px) {
     .links-wrap {
-        padding-left: 0.85rem;
-        padding-right: 0.85rem;
-    }
-
-    .links-card {
-        padding-left: 1.1rem;
-        padding-right: 1.1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 
     .link-btn {
-        padding: 0.95rem 1.05rem;
+        padding: 1rem 1.1rem;
     }
 
     .link-btn-label {
-        font-size: 0.74rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+    }
+
+    .links-atelier {
+        letter-spacing: 0.34em;
+        text-indent: 0.34em;
     }
 }
 
-/* iOS safe-area: never let the card sit under the notch/home indicator. */
+/* iOS safe-area: never let the card sit under the notch. */
 @supports (padding: max(0px)) {
     .links-wrap {
         padding-left: max(clamp(1.1rem, 5vw, 2rem), env(safe-area-inset-left));
