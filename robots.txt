@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.eternalvoid.co/sitemap.xml
+Sitemap: https://eternalvoid.co/sitemap.xml

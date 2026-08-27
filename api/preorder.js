@@ -32,7 +32,7 @@ export default async function handler(request, response) {
         return response.status(500).json({ message: 'Pre-order email service is not configured yet.' });
     }
 
-    const unsubscribeUrl = `https://www.eternalvoid.co/unsubscribe.html?email=${encodeURIComponent(email)}`;
+    const unsubscribeUrl = `https://eternalvoid.co/unsubscribe.html?email=${encodeURIComponent(email)}`;
 
     const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -106,8 +106,8 @@ a { color:#c7a96c; }
 <p class="void-muted" style="color:#8f8778;font-size:11px;margin:0;">Country: ${safeCountry}</p>
 <a class="void-muted" href="mailto:support@eternalvoid.co" style="color:#8f8778;text-decoration:none;font-size:11px;">support@eternalvoid.co</a>
 <div style="height:1px;background-color:#141414;line-height:1px;font-size:1px;margin:16px 0 12px;">&nbsp;</div>
-<p style="margin:0 0 8px;"><a class="void-gold" href="https://www.eternalvoid.co" style="color:#c7a96c;text-decoration:none;font-size:11px;">Return to eternalvoid.co</a></p>
-<p class="void-faint" style="color:#6f675b;font-size:10px;line-height:1.6;margin:0;">No longer want these emails? <a class="void-muted" href="${unsubscribeUrl}" style="color:#8f8778;text-decoration:underline;">Unsubscribe</a>. Read our <a class="void-muted" href="https://www.eternalvoid.co/privacy-policy.html" style="color:#8f8778;text-decoration:underline;">Privacy Policy</a>.</p>
+<p style="margin:0 0 8px;"><a class="void-gold" href="https://eternalvoid.co" style="color:#c7a96c;text-decoration:none;font-size:11px;">Return to eternalvoid.co</a></p>
+<p class="void-faint" style="color:#6f675b;font-size:10px;line-height:1.6;margin:0;">No longer want these emails? <a class="void-muted" href="${unsubscribeUrl}" style="color:#8f8778;text-decoration:underline;">Unsubscribe</a>. Read our <a class="void-muted" href="https://eternalvoid.co/privacy-policy.html" style="color:#8f8778;text-decoration:underline;">Privacy Policy</a>.</p>
 </td>
 </tr>
 </table>

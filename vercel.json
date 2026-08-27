@@ -1,4 +1,20 @@
 {
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.eternalvoid.co" }],
+      "destination": "https://eternalvoid.co/$1",
+      "permanent": true
+    },
+    { "source": "/collection", "destination": "/shop", "permanent": true },
+    { "source": "/index.html", "destination": "/", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/shop", "destination": "/index.html" },
+    { "source": "/story", "destination": "/index.html" },
+    { "source": "/newsletter", "destination": "/index.html" },
+    { "source": "/contact", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -14,7 +30,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.(mp4|mov|woff|woff2|ico|png|jpg|jpeg)",
+      "source": "/(.*)\\.(mp4|mov|woff|woff2|ico|png|jpg|jpeg|webp)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
