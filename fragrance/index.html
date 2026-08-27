@@ -85,7 +85,15 @@
              deliberately not repeated here. -->
         <section class="fr-manifesto" id="frManifesto">
             <span class="fr-ambient" aria-hidden="true"></span>
-            <span class="fr-ghost" aria-hidden="true">NÉANT</span>
+            <!-- SVG rather than a text node: textLength forces the wordmark to
+                 an exact width, so it scales with the container instead of
+                 being sized in vw against the viewport. Previously the two
+                 diverged above 1180px and the section clipped 250px off each
+                 side. Now it can never overflow. -->
+            <svg class="fr-ghost" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet"
+                 role="presentation" aria-hidden="true" focusable="false">
+                <text x="500" y="228" text-anchor="middle" textLength="1000" lengthAdjust="spacing">NÉANT</text>
+            </svg>
 
             <h2 class="fr-say">
                 <span class="fr-say-lead fr-reveal">The Void</span>

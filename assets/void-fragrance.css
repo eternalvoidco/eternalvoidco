@@ -501,27 +501,35 @@ body {
         transparent 68%);
 }
 
-/* Black-on-black NÉANT. Sits behind everything, cropped by the section,
-   readable only once the eye adjusts. */
+/* Black-on-black NÉANT sitting behind everything, readable only once the
+   eye adjusts. Width is a share of the CONTAINER, not of the viewport —
+   the container is max-width capped, so a vw-based size overflowed it and
+   the section clipped the N and the T clean off. The SVG's textLength
+   guarantees the wordmark is exactly this wide whatever the font metrics,
+   leaving a consistent margin on both sides at every width. */
 .fr-ghost {
     position: absolute;
     left: 50%;
     top: 47%;
     z-index: 0;
-    white-space: nowrap;
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 500;
-    font-size: clamp(9rem, 27vw, 26rem);
-    line-height: 1;
-    letter-spacing: 0.16em;
-    text-indent: 0.16em;
-    color: #ffffff;
+    width: min(84%, 1000px);
+    height: auto;
+    overflow: visible;
+    fill: #ffffff;
     opacity: 0.028;
     transform: translate3d(
         calc(-50% + var(--fr-mx, 0) * 8px),
         calc(-50% + var(--fr-my, 0) * 5px), 0);
     pointer-events: none;
     user-select: none;
+}
+
+.fr-ghost text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    /* Chosen so lengthAdjust distributes roughly the 0.16em tracking the
+       wordmark had before, rather than stretching or crowding the glyphs. */
+    font-size: 238px;
 }
 
 /* ── The statement ──
@@ -674,7 +682,9 @@ body {
         grid-row: auto;
     }
 
-    .fr-ghost { font-size: clamp(7rem, 42vw, 14rem); opacity: 0.032; }
+    /* Slightly wider share on narrow screens so the wordmark keeps presence,
+       still short of the edges. */
+    .fr-ghost { width: 90%; opacity: 0.034; }
 }
 
 @media (max-width: 620px) {
