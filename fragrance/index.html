@@ -46,13 +46,7 @@
     </nav>
 
     <main>
-        <h1 class="fr-sr">NÉANT — Extrait de Parfum by Eternal Void. Under development.</h1>
-
         <section class="fr-hero">
-            <p class="fr-eyebrow">Fragrance</p>
-            <p class="fr-title">Néant</p>
-            <p class="fr-sub">Extrait de Parfum</p>
-
             <!-- Product stage. Every layer is separate so each can respond to
                  the pointer with its own weight — see PARALLAX in the script. -->
             <div class="fr-stage" id="frStage">
@@ -74,46 +68,37 @@
                     <img src="/assets/fragrance/neant-bottle-transparent.webp" alt="" width="1024" height="1536" decoding="async">
                 </div>
             </div>
+
+            <!-- The identity sits directly under the glass, tight to it, so the
+                 bottle and its name read as one object rather than a product
+                 with a caption floating somewhere else on the page. -->
+            <div class="fr-identity">
+                <h1 class="fr-name">Néant</h1>
+                <p class="fr-kind">Extrait de Parfum</p>
+                <span class="fr-id-rule" aria-hidden="true"></span>
+                <p class="fr-maison">Eternal Void Fragrance</p>
+            </div>
         </section>
 
-        <!-- The second chamber. Composed on a 12-column editorial grid rather
-             than a centre axis: the statement sits left, the house marks sit
-             right, and a hairline runs between them. -->
+        <!-- The quiet chamber after the bottle. One statement, one seal.
+             Everything the hero already says (name, concentration, house) is
+             deliberately not repeated here. -->
         <section class="fr-manifesto" id="frManifesto">
             <span class="fr-ambient" aria-hidden="true"></span>
             <span class="fr-ghost" aria-hidden="true">NÉANT</span>
-
-            <span class="fr-vline fr-vline-a fr-reveal" aria-hidden="true"></span>
-
-            <p class="fr-index fr-reveal" aria-hidden="true">01</p>
 
             <h2 class="fr-say">
                 <span class="fr-say-lead fr-reveal">The Void</span>
                 <span class="fr-say-tail fr-reveal">has a scent.</span>
             </h2>
 
-            <div class="fr-house fr-reveal">
+            <div class="fr-seal fr-reveal">
                 <span class="fr-crest" aria-hidden="true">
                     <span class="fr-crest-sweep"></span>
                 </span>
-                <span class="fr-house-name">Eternal Void</span>
-                <span class="fr-house-kind">Fragrance</span>
+                <span class="fr-seal-rule" aria-hidden="true"></span>
+                <p class="fr-seal-status">Under Development</p>
             </div>
-
-            <div class="fr-annotation fr-reveal">
-                <p class="fr-anno-name">Néant</p>
-                <p class="fr-anno-kind">Extrait de Parfum</p>
-                <span class="fr-anno-rule" aria-hidden="true"></span>
-                <p class="fr-anno-status">Under Development</p>
-            </div>
-
-            <span class="fr-vline fr-vline-b fr-reveal" aria-hidden="true"></span>
-        </section>
-
-        <!-- Closing signature — the last mark on a campaign, not a nav bar. -->
-        <section class="fr-signoff fr-reveal">
-            <span class="fr-signoff-rule" aria-hidden="true"></span>
-            <p class="fr-signoff-name">Eternal Void</p>
         </section>
     </main>
 
