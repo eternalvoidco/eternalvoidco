@@ -4613,9 +4613,10 @@
             --pd-close-size: 32px;
         }
 
+        /* Wider than the product panel: the Codex is a spread, not a dialog. */
         .style-guide-panel {
-            width: min(880px, 100%);
-            max-height: min(90vh, 900px);
+            width: min(1240px, 100%);
+            max-height: min(92vh, 960px);
             overflow: hidden;
         }
 
@@ -5444,9 +5445,8 @@
             margin-top: 1.5rem;
         }
 
-        /* ---- Shared accordion (product detail + style guide) ---- */
-        .pd-accordion,
-        .sg-guide {
+        /* ---- Product detail accordion ---- */
+        .pd-accordion {
             border-top: 1px solid rgba(199, 169, 108, 0.18);
         }
 
@@ -5502,8 +5502,7 @@
             height: 14px;
         }
 
-        .pd-accordion.open .pd-accordion-icon::after,
-        .sg-guide.open .pd-accordion-icon::after {
+        .pd-accordion.open .pd-accordion-icon::after {
             transform: scaleY(0);
             opacity: 0;
         }
@@ -5514,8 +5513,7 @@
             transition: max-height 0.55s var(--ease-lux);
         }
 
-        .pd-accordion.open .pd-accordion-body,
-        .sg-guide.open .pd-accordion-body {
+        .pd-accordion.open .pd-accordion-body {
             max-height: 560px;
         }
 
@@ -5552,74 +5550,403 @@
             margin: 0.2rem 0;
         }
 
-        /* ---- Style guide overlay ---- */
-        .sg-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            padding: 1.4rem 1.6rem 1rem;
-            border-bottom: 1px solid rgba(199, 169, 108, 0.24);
+        /* ---- The Atelier Codex ---------------------------------------
+           An internal dossier rather than a list of guides: a chapter index
+           down one side, a single open chapter beside it, and a faint
+           drafting plate behind each entry. Every mark is CSS or inline SVG,
+           so the module adds no image weight and nothing animates on a
+           loop. */
+        .cdx {
+            --cdx-rule: rgba(199, 169, 108, 0.24);
+            --cdx-rule-soft: rgba(199, 169, 108, 0.1);
+            --cdx-ink: rgba(245, 242, 236, 0.74);
+            --cdx-ink-dim: rgba(245, 242, 236, 0.4);
+            position: relative;
         }
 
-        .sg-kicker {
-            margin: 0 0 0.35rem;
-            font-size: 0.58rem;
-            letter-spacing: 0.32em;
+        /* Header. The title carries the weight; the metadata sits opposite it
+           at a whisper so the two read as one line of a catalogue plate. */
+        .cdx-head {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            gap: clamp(1rem, 3vw, 2.5rem);
+            padding: clamp(2.2rem, 5vw, 3.6rem) clamp(1.5rem, 4.5vw, 3.6rem) clamp(1.5rem, 3vw, 2.2rem);
+        }
+
+        .cdx-eyebrow {
+            margin: 0 0 clamp(1rem, 2.2vw, 1.5rem);
+            font-size: 0.56rem;
+            font-weight: 600;
+            letter-spacing: 0.44em;
+            text-indent: 0.44em;
             text-transform: uppercase;
             color: var(--void-gold-soft);
         }
 
-        .sg-title {
+        .cdx-title {
             margin: 0;
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.5rem, 4.4vw, 2.4rem);
-            letter-spacing: 0.08em;
+            font-weight: 500;
+            font-size: clamp(1.9rem, 6vw, 3.8rem);
+            line-height: 1;
+            letter-spacing: 0.1em;
+            text-indent: 0.1em;
             text-transform: uppercase;
             color: var(--void-white);
         }
 
-        .sg-close {
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            background: rgba(12, 12, 12, 0.86);
-            color: var(--void-white);
-            width: 36px;
-            height: 36px;
-            cursor: pointer;
-            font-size: 0.88rem;
-            flex: 0 0 auto;
-            transition: border-color 0.22s ease, background 0.22s ease;
-        }
-
-        .sg-close:hover,
-        .sg-close:focus-visible {
-            border-color: rgba(199, 169, 108, 0.85);
-            background: rgba(22, 17, 9, 0.9);
-        }
-
-        .sg-body {
-            padding: 1.3rem 1.6rem 0.4rem;
-        }
-
-        .sg-intro {
-            margin: 0 0 1.2rem;
-            font-size: 0.8rem;
-            line-height: 1.75;
-            color: rgba(245, 242, 236, 0.76);
-        }
-
-        .sg-guide-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.15rem;
-            letter-spacing: 0.05em;
-            text-transform: none;
-        }
-
-        .sg-actions {
+        .cdx-head-meta {
             display: flex;
-            justify-content: center;
-            padding: 1.1rem 1.6rem 1.4rem;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.4rem;
+            font-size: 0.54rem;
+            font-weight: 500;
+            letter-spacing: 0.34em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.5);
+            white-space: nowrap;
         }
+
+        .cdx-head-meta span[aria-hidden] {
+            width: 18px;
+            height: 1px;
+            background: rgba(199, 169, 108, 0.35);
+        }
+
+        .cdx-head-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: clamp(1rem, 2.5vw, 1.8rem);
+        }
+
+        /* Exit, kept quiet and in the corner, matching the language of the
+           other panel edge buttons rather than inventing a new one. */
+        .cdx-close {
+            flex: 0 0 auto;
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            background: rgba(11, 11, 12, 0.72);
+            color: rgba(245, 242, 236, 0.72);
+            font-size: 0.78rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: border-color 0.35s var(--ease-lux), color 0.35s var(--ease-lux), background 0.35s var(--ease-lux);
+        }
+
+        .cdx-close:hover,
+        .cdx-close:focus-visible {
+            border-color: rgba(199, 169, 108, 0.8);
+            background: rgba(22, 17, 9, 0.88);
+            color: var(--void-gold-bright);
+        }
+
+        .cdx-intro {
+            max-width: 46ch;
+            margin: 0;
+            padding: 0 clamp(1.5rem, 4.5vw, 3.6rem) clamp(2rem, 4.5vw, 3.2rem);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1rem, 2.3vw, 1.28rem);
+            font-style: italic;
+            line-height: 1.75;
+            color: rgba(245, 242, 236, 0.62);
+        }
+
+        /* Index and stage. A fractional split rather than halves, so the
+           chapter has clearly more authority than its index. */
+        .cdx-body {
+            display: grid;
+            grid-template-columns: minmax(210px, 0.9fr) 2.4fr;
+            border-top: 1px solid var(--cdx-rule-soft);
+        }
+
+        .cdx-index {
+            display: flex;
+            flex-direction: column;
+            padding: clamp(1.2rem, 2.5vw, 2rem) 0 clamp(2rem, 4vw, 3rem);
+            border-right: 1px solid var(--cdx-rule-soft);
+        }
+
+        .cdx-tab {
+            position: relative;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: baseline;
+            gap: 0.85rem;
+            width: 100%;
+            padding: clamp(0.85rem, 1.9vw, 1.15rem) clamp(1.2rem, 2.5vw, 2rem);
+            background: none;
+            border: 0;
+            color: var(--cdx-ink-dim);
+            text-align: left;
+            cursor: pointer;
+            transition: color 0.5s var(--ease-lux);
+        }
+
+        /* The thin gold line that marks the open chapter. It grows from the
+           top rather than fading, so switching reads as a page being found. */
+        .cdx-tab::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: -1px;
+            width: 1px;
+            background: var(--void-gold-soft);
+            transform: scaleY(0);
+            transform-origin: 50% 0;
+            transition: transform 0.6s var(--ease-lux);
+        }
+
+        .cdx-tab:hover,
+        .cdx-tab:focus-visible { color: rgba(245, 242, 236, 0.78); }
+
+        .cdx-tab[aria-selected="true"] { color: var(--void-white); }
+        .cdx-tab[aria-selected="true"]::after { transform: scaleY(1); }
+
+        .cdx-tab-num {
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            color: rgba(199, 169, 108, 0.55);
+            transition: color 0.5s var(--ease-lux);
+        }
+
+        .cdx-tab[aria-selected="true"] .cdx-tab-num { color: var(--void-gold-bright); }
+
+        .cdx-tab-name {
+            font-size: 0.74rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .cdx-stage {
+            position: relative;
+            min-height: clamp(340px, 44vh, 500px);
+            padding: clamp(2rem, 4.5vw, 3.4rem) clamp(1.5rem, 4.5vw, 3.6rem) clamp(2.4rem, 4.5vw, 3.4rem);
+            overflow: hidden;
+        }
+
+        .cdx-panel[hidden] { display: none; }
+
+        /* The drafting plate. Sits far behind the copy at a few percent
+           opacity: discoverable, never competing with the text. */
+        .cdx-plate {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Centred with auto margins rather than a translate, so the transform
+           stays free for the entry animation and one keyframe serves every
+           breakpoint. Opacity is a variable so narrow viewports, where the
+           plate falls behind the copy, can dial it down without redefining
+           the animation. */
+        .cdx-plate svg {
+            --cdx-plate-op: 0.13;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: clamp(-40px, -2vw, 0px);
+            margin: auto 0;
+            width: clamp(260px, 42%, 460px);
+            height: auto;
+            color: var(--void-gold-soft);
+            opacity: var(--cdx-plate-op);
+        }
+
+        .cdx-chapter {
+            position: relative;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: clamp(1.2rem, 3vw, 2.6rem);
+            max-width: 62ch;
+        }
+
+        .cdx-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            font-size: clamp(2.6rem, 7vw, 4.6rem);
+            line-height: 0.82;
+            letter-spacing: 0.02em;
+            background: linear-gradient(176deg, #f4e6c6 0%, #cdb076 52%, #7d6330 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--void-gold-soft);
+        }
+
+        .cdx-cat {
+            margin: 0 0 clamp(0.7rem, 1.6vw, 1rem);
+            font-size: 0.58rem;
+            font-weight: 600;
+            letter-spacing: 0.4em;
+            text-indent: 0.4em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.62);
+        }
+
+        .cdx-name {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            font-size: clamp(1.6rem, 4.4vw, 2.6rem);
+            line-height: 1.1;
+            letter-spacing: 0.03em;
+            color: var(--void-white);
+        }
+
+        .cdx-name-rule {
+            display: block;
+            width: clamp(2.6rem, 7vw, 4.2rem);
+            height: 1px;
+            margin: clamp(1.1rem, 2.5vw, 1.6rem) 0;
+            background: linear-gradient(90deg, rgba(199, 169, 108, 0.7), transparent);
+            transform: scaleX(0);
+            transform-origin: 0 50%;
+        }
+
+        .cdx-copy {
+            margin: 0;
+            max-width: 48ch;
+            font-size: clamp(0.88rem, 1.9vw, 0.98rem);
+            line-height: 1.95;
+            color: var(--cdx-ink);
+        }
+
+        .cdx-note {
+            margin: clamp(1.6rem, 3.5vw, 2.4rem) 0 0;
+            padding-left: clamp(0.9rem, 2vw, 1.2rem);
+            border-left: 1px solid var(--cdx-rule);
+            max-width: 40ch;
+        }
+
+        .cdx-note-label {
+            display: block;
+            margin-bottom: 0.45rem;
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.38em;
+            text-indent: 0.38em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.5);
+        }
+
+        .cdx-note-copy {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: clamp(0.92rem, 2vw, 1.05rem);
+            line-height: 1.7;
+            color: rgba(245, 242, 236, 0.56);
+        }
+
+        .cdx-chapter-meta {
+            position: absolute;
+            top: clamp(2rem, 4.5vw, 3.4rem);
+            right: clamp(1.5rem, 4.5vw, 3.6rem);
+            font-size: 0.52rem;
+            font-weight: 600;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.42);
+        }
+
+        /* Footer. A closing line from the doctrine, then the way out. */
+        .cdx-foot {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: clamp(1.2rem, 3vw, 2rem);
+            padding: clamp(1.6rem, 3.5vw, 2.4rem) clamp(1.5rem, 4.5vw, 3.6rem) clamp(2rem, 4vw, 2.8rem);
+            border-top: 1px solid var(--cdx-rule-soft);
+        }
+
+        .cdx-creed {
+            margin: 0;
+            font-size: 0.54rem;
+            font-weight: 500;
+            letter-spacing: 0.34em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.28);
+        }
+
+        .cdx-return {
+            padding: 0.85rem 2.2rem;
+            border: 1px solid rgba(199, 169, 108, 0.4);
+            background: none;
+            color: var(--void-gold-soft);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.58rem;
+            font-weight: 600;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: border-color 0.4s var(--ease-lux), color 0.4s var(--ease-lux), background 0.4s var(--ease-lux);
+        }
+
+        .cdx-return:hover,
+        .cdx-return:focus-visible {
+            border-color: rgba(199, 169, 108, 0.85);
+            background: rgba(22, 17, 9, 0.7);
+            color: var(--void-gold-bright);
+        }
+
+        /* Entry choreography. Only the newly opened chapter animates, and only
+           on transform/opacity. Staggered so the eye lands on the number, then
+           the title, then the copy. */
+        @keyframes cdxRise {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        @keyframes cdxPlateIn {
+            from { opacity: 0; transform: translateX(14px); }
+            to { opacity: var(--cdx-plate-op); transform: translateX(0); }
+        }
+
+        /* Between the rail appearing and the panel reaching full width, the
+           plate sits behind the copy. Quieten and narrow it there so the text
+           is never read against linework. */
+        @media (min-width: 861px) and (max-width: 1180px) {
+            .cdx-plate svg {
+                --cdx-plate-op: 0.06;
+                width: clamp(200px, 32%, 300px);
+            }
+        }
+
+        @keyframes cdxRuleIn {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        .cdx-panel.is-entering .cdx-num,
+        .cdx-panel.is-entering .cdx-cat,
+        .cdx-panel.is-entering .cdx-name,
+        .cdx-panel.is-entering .cdx-copy,
+        .cdx-panel.is-entering .cdx-note {
+            animation: cdxRise 0.62s var(--ease-lux) both;
+        }
+
+        .cdx-panel.is-entering .cdx-num { animation-delay: 0.04s; }
+        .cdx-panel.is-entering .cdx-cat { animation-delay: 0.1s; }
+        .cdx-panel.is-entering .cdx-name { animation-delay: 0.17s; }
+        .cdx-panel.is-entering .cdx-copy { animation-delay: 0.27s; }
+        .cdx-panel.is-entering .cdx-note { animation-delay: 0.36s; }
+
+        .cdx-panel.is-entering .cdx-name-rule { animation: cdxRuleIn 0.72s var(--ease-lux) 0.24s both; }
+        .cdx-panel.is-entering .cdx-plate svg { animation: cdxPlateIn 0.9s var(--ease-lux) 0.06s both; }
+
+        /* Settled state for whatever is already open (no animation running). */
+        .cdx-panel:not(.is-entering) .cdx-name-rule { transform: scaleX(1); }
 
         @media (max-width: 860px) {
             /* On phones, scroll the whole overlay as a full-screen sheet instead of a
@@ -5700,6 +6027,87 @@
                 opacity: 0.82;
             }
 
+            /* ---- Codex on phones ----
+               The index stops being a rail and becomes a scroll-snapped strip
+               of numbered chapters above the entry. Labels stay legible rather
+               than shrinking, and the plate moves behind the copy instead of
+               fighting it for width. */
+            .cdx-body {
+                grid-template-columns: 1fr;
+            }
+
+            .cdx-index {
+                flex-direction: row;
+                padding: 0;
+                overflow-x: auto;
+                scroll-snap-type: x proximity;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior-x: contain;
+                border-right: 0;
+                border-bottom: 1px solid var(--cdx-rule-soft);
+                scrollbar-width: none;
+            }
+
+            .cdx-index::-webkit-scrollbar { display: none; }
+
+            /* Width must be reset: the desktop rail rule is width:100%, which
+               in a flex row would make every chapter a full-screen swipe. */
+            .cdx-tab {
+                flex: 0 0 auto;
+                width: auto;
+                grid-template-columns: auto;
+                gap: 0.35rem;
+                scroll-snap-align: start;
+                padding: 0.95rem 1.15rem;
+                min-height: 64px;
+            }
+
+            /* The marker moves to the underside so it reads with a horizontal
+               strip rather than a vertical rail. */
+            .cdx-tab::after {
+                top: auto;
+                right: 0;
+                bottom: -1px;
+                left: 0;
+                width: auto;
+                height: 1px;
+                transform: scaleX(0);
+                transform-origin: 0 50%;
+            }
+
+            .cdx-tab[aria-selected="true"]::after { transform: scaleX(1); }
+
+            .cdx-tab-num { font-size: 0.72rem; }
+            .cdx-tab-name { font-size: 0.7rem; letter-spacing: 0.16em; }
+
+            .cdx-stage {
+                min-height: 0;
+                padding: 2rem 1.25rem 2.4rem;
+            }
+
+            .cdx-chapter {
+                grid-template-columns: 1fr;
+                gap: 0.9rem;
+            }
+
+            .cdx-num { font-size: 2.6rem; line-height: 1; }
+
+            .cdx-plate svg {
+                --cdx-plate-op: 0.09;
+                top: auto;
+                bottom: -6%;
+                right: -12%;
+                margin: 0;
+                width: 68%;
+            }
+
+            /* The chapter counter would collide with the copy at this width. */
+            .cdx-chapter-meta { display: none; }
+
+            .cdx-head { grid-template-columns: 1fr auto; }
+            .cdx-foot { flex-direction: column; align-items: stretch; }
+            .cdx-creed { order: 2; text-align: center; }
+            .cdx-return { order: 1; width: 100%; }
         }
 
         /* Respect the site's reduced-motion switch */
@@ -5709,9 +6117,32 @@
             transform: none;
         }
 
+        /* The Codex keeps its full composition under reduced motion: the
+           chapter, the plate and the rules all still render, only the entry
+           choreography is dropped. */
+        html.reduce-motion .cdx-panel.is-entering .cdx-num,
+        html.reduce-motion .cdx-panel.is-entering .cdx-cat,
+        html.reduce-motion .cdx-panel.is-entering .cdx-name,
+        html.reduce-motion .cdx-panel.is-entering .cdx-copy,
+        html.reduce-motion .cdx-panel.is-entering .cdx-note,
+        html.reduce-motion .cdx-panel.is-entering .cdx-name-rule,
+        html.reduce-motion .cdx-panel.is-entering .cdx-plate svg {
+            animation: none;
+        }
+
+        html.reduce-motion .cdx-name-rule { transform: scaleX(1); }
+        html.reduce-motion .cdx-plate svg { opacity: 0.13; }
+
+        html.reduce-motion .cdx-tab,
+        html.reduce-motion .cdx-tab::after,
+        html.reduce-motion .cdx-tab-num,
+        html.reduce-motion .cdx-return,
+        html.reduce-motion .cdx-close {
+            transition: none;
+        }
+
         html.reduce-motion .collection-nav-tab::after,
-        html.reduce-motion .pd-accordion-body,
-        html.reduce-motion .sg-guide .pd-accordion-body {
+        html.reduce-motion .pd-accordion-body {
             transition: none;
         }
 
@@ -9382,67 +9813,235 @@
     </div>
 
     <!-- Style guide overlay -->
+    <!-- The Atelier Codex. An archive of house doctrine rather than styling
+         advice: a chapter index, one open chapter, and a faint drafting plate
+         behind each entry. Tabs follow the ARIA tabs pattern so the whole
+         thing is operable from the keyboard. -->
     <div class="style-guide-overlay" id="styleGuideOverlay" aria-hidden="true">
         <section class="style-guide-panel" role="dialog" aria-modal="true" aria-labelledby="styleGuideTitle">
             <span class="panel-frame" aria-hidden="true"></span>
-            <div class="sg-header">
-                <div>
-                    <p class="sg-kicker" data-i18n="sgKicker">The Atelier Codex</p>
-                    <h3 class="sg-title" id="styleGuideTitle" data-i18n-html="sgTitle">VOID<sup class="brand-copyright">©</sup> Style Guide</h3>
+
+            <div class="cdx" id="voidCodex">
+                <header class="cdx-head">
+                    <div>
+                        <p class="cdx-eyebrow" data-i18n="cdxEyebrow">The Atelier Codex</p>
+                        <h3 class="cdx-title" id="styleGuideTitle" data-i18n-html="cdxTitle">The Codes of VOID<sup class="brand-copyright">©</sup></h3>
+                    </div>
+                    <div class="cdx-head-right">
+                        <button type="button" class="cdx-close" id="styleGuideClose" aria-label="Close the codex" data-i18n-aria-label="cdxClose">✕</button>
+                        <p class="cdx-head-meta">
+                            <span data-i18n="cdxRef">Codex 001</span>
+                            <span aria-hidden="true"></span>
+                            <span data-i18n="cdxEst">Est. 2026</span>
+                        </p>
+                    </div>
+                </header>
+
+                <p class="cdx-intro" data-i18n="cdxIntro">Every house has its language. Ours is written in proportion, weight, restraint and insignia. These are the principles behind every piece bearing the VOID name.</p>
+
+                <div class="cdx-body">
+                    <div class="cdx-index" role="tablist" aria-orientation="vertical" aria-label="Codex chapters" data-i18n-aria-label="cdxChapters">
+                        <button type="button" class="cdx-tab" role="tab" id="cdxTab1" aria-controls="cdxPanel1" aria-selected="true" tabindex="0">
+                            <span class="cdx-tab-num">01</span><span class="cdx-tab-name" data-i18n="cdxC1Cat">Silhouette</span>
+                        </button>
+                        <button type="button" class="cdx-tab" role="tab" id="cdxTab2" aria-controls="cdxPanel2" aria-selected="false" tabindex="-1">
+                            <span class="cdx-tab-num">02</span><span class="cdx-tab-name" data-i18n="cdxC2Cat">Material</span>
+                        </button>
+                        <button type="button" class="cdx-tab" role="tab" id="cdxTab3" aria-controls="cdxPanel3" aria-selected="false" tabindex="-1">
+                            <span class="cdx-tab-num">03</span><span class="cdx-tab-name" data-i18n="cdxC3Nav">Insignia</span>
+                        </button>
+                        <button type="button" class="cdx-tab" role="tab" id="cdxTab4" aria-controls="cdxPanel4" aria-selected="false" tabindex="-1">
+                            <span class="cdx-tab-num">04</span><span class="cdx-tab-name" data-i18n="cdxC4Cat">Palette</span>
+                        </button>
+                        <button type="button" class="cdx-tab" role="tab" id="cdxTab5" aria-controls="cdxPanel5" aria-selected="false" tabindex="-1">
+                            <span class="cdx-tab-num">05</span><span class="cdx-tab-name" data-i18n="cdxC5Cat">Contrast</span>
+                        </button>
+                        <button type="button" class="cdx-tab" role="tab" id="cdxTab6" aria-controls="cdxPanel6" aria-selected="false" tabindex="-1">
+                            <span class="cdx-tab-num">06</span><span class="cdx-tab-name" data-i18n="cdxC6Cat">Craft</span>
+                        </button>
+                    </div>
+
+                    <div class="cdx-stage">
+                        <!-- 01 SILHOUETTE. Plate: garment outline with shoulder
+                             and length measurement marks. -->
+                        <div class="cdx-panel is-entering" role="tabpanel" id="cdxPanel1" aria-labelledby="cdxTab1" tabindex="0">
+                            <p class="cdx-chapter-meta"><span data-i18n="cdxChapterWord">Chapter</span> 01 / 06</p>
+                            <span class="cdx-plate" aria-hidden="true">
+                                <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linejoin="round">
+                                    <path d="M62 46 L86 36 Q100 47 114 36 L138 46 L152 72 L134 80 L134 168 L66 168 L66 80 L48 72 Z"/>
+                                    <path d="M66 80 L134 80" stroke-dasharray="3 4"/>
+                                    <path d="M40 36 L40 168" stroke-dasharray="2 5"/>
+                                    <path d="M36 36 L44 36 M36 168 L44 168"/>
+                                    <path d="M62 26 L138 26" stroke-dasharray="2 5"/>
+                                    <path d="M62 22 L62 30 M138 22 L138 30"/>
+                                    <path d="M48 72 L62 46 M152 72 L138 46" stroke-dasharray="2 4"/>
+                                </svg>
+                            </span>
+                            <div class="cdx-chapter">
+                                <p class="cdx-num">01</p>
+                                <div>
+                                    <p class="cdx-cat" data-i18n="cdxC1Cat">Silhouette</p>
+                                    <h4 class="cdx-name" data-i18n="cdxC1Name">Controlled Volume</h4>
+                                    <span class="cdx-name-rule" aria-hidden="true"></span>
+                                    <p class="cdx-copy" data-i18n="cdxC1Copy">VOID silhouettes are built around presence rather than excess. Dropped shoulders, substantial fabrics and deliberate proportions create volume while preserving structure. Oversized should never mean shapeless.</p>
+                                    <div class="cdx-note">
+                                        <span class="cdx-note-label" data-i18n="cdxNoteLabel">Atelier Note</span>
+                                        <p class="cdx-note-copy" data-i18n="cdxC1Note">Volume is drawn, never left over.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 02 MATERIAL. Plate: a weave, magnified. -->
+                        <div class="cdx-panel" role="tabpanel" id="cdxPanel2" aria-labelledby="cdxTab2" tabindex="0" hidden>
+                            <p class="cdx-chapter-meta"><span data-i18n="cdxChapterWord">Chapter</span> 02 / 06</p>
+                            <span class="cdx-plate" aria-hidden="true">
+                                <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="0.75">
+                                    <path d="M54 50 L54 150 M68 50 L68 150 M82 50 L82 150 M96 50 L96 150 M110 50 L110 150 M124 50 L124 150 M138 50 L138 150"/>
+                                    <path d="M54 60 L146 60 M54 76 L146 76 M54 92 L146 92 M54 108 L146 108 M54 124 L146 124 M54 140 L146 140" stroke-dasharray="7 7"/>
+                                    <rect x="54" y="50" width="92" height="100"/>
+                                    <circle cx="128" cy="128" r="26" stroke-dasharray="3 4"/>
+                                </svg>
+                            </span>
+                            <div class="cdx-chapter">
+                                <p class="cdx-num">02</p>
+                                <div>
+                                    <p class="cdx-cat" data-i18n="cdxC2Cat">Material</p>
+                                    <h4 class="cdx-name" data-i18n="cdxC2Name">Weight &amp; Substance</h4>
+                                    <span class="cdx-name-rule" aria-hidden="true"></span>
+                                    <p class="cdx-copy" data-i18n="cdxC2Copy">Material should be felt before it is understood. Heavyweight cottons, dense structures, tactile surfaces, embroidery and dimensional finishes give VOID garments their physical presence.</p>
+                                    <div class="cdx-note">
+                                        <span class="cdx-note-label" data-i18n="cdxNoteLabel">Atelier Note</span>
+                                        <p class="cdx-note-copy" data-i18n="cdxC2Note">The hand of the cloth arrives before the eye.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 03 THE INSIGNIA. Plate: emblem construction geometry. -->
+                        <div class="cdx-panel" role="tabpanel" id="cdxPanel3" aria-labelledby="cdxTab3" tabindex="0" hidden>
+                            <p class="cdx-chapter-meta"><span data-i18n="cdxChapterWord">Chapter</span> 03 / 06</p>
+                            <span class="cdx-plate" aria-hidden="true">
+                                <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="0.75">
+                                    <circle cx="100" cy="100" r="58"/>
+                                    <circle cx="100" cy="100" r="40" stroke-dasharray="2 4"/>
+                                    <rect x="60" y="60" width="80" height="80" stroke-dasharray="3 4"/>
+                                    <path d="M100 28 L100 172 M28 100 L172 100" stroke-dasharray="2 6"/>
+                                    <path d="M76 74 L100 130 L124 74"/>
+                                    <path d="M100 62 L100 142"/>
+                                    <path d="M92 70 L108 70" stroke-dasharray="2 3"/>
+                                </svg>
+                            </span>
+                            <div class="cdx-chapter">
+                                <p class="cdx-num">03</p>
+                                <div>
+                                    <p class="cdx-cat" data-i18n="cdxC3Cat">The Insignia</p>
+                                    <h4 class="cdx-name" data-i18n="cdxC3Name">Symbols of the House</h4>
+                                    <span class="cdx-name-rule" aria-hidden="true"></span>
+                                    <p class="cdx-copy" data-i18n="cdxC3Copy">The EV emblem, the monograms and the recurring symbols are treated as heraldry rather than branding. An insignia is placed to be permanent and recognisable, never decorative.</p>
+                                    <div class="cdx-note">
+                                        <span class="cdx-note-label" data-i18n="cdxNoteLabel">Atelier Note</span>
+                                        <p class="cdx-note-copy" data-i18n="cdxC3Note">A mark earns its place by repetition.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 04 PALETTE. Plate: tonal bands, darkness in layers. -->
+                        <div class="cdx-panel" role="tabpanel" id="cdxPanel4" aria-labelledby="cdxTab4" tabindex="0" hidden>
+                            <p class="cdx-chapter-meta"><span data-i18n="cdxChapterWord">Chapter</span> 04 / 06</p>
+                            <span class="cdx-plate" aria-hidden="true">
+                                <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="0.75">
+                                    <rect x="50" y="48" width="100" height="21"/>
+                                    <rect x="50" y="69" width="100" height="21"/>
+                                    <rect x="50" y="90" width="100" height="21"/>
+                                    <rect x="50" y="111" width="100" height="21"/>
+                                    <rect x="50" y="132" width="100" height="21"/>
+                                    <path d="M50 69 L71 48 M64 69 L85 48 M78 69 L99 48 M92 69 L113 48 M106 69 L127 48 M120 69 L141 48" stroke-width="0.5"/>
+                                    <path d="M50 132 L71 111 M78 132 L99 111 M106 132 L127 111" stroke-width="0.5" stroke-dasharray="2 3"/>
+                                    <path d="M158 48 L158 153" stroke-dasharray="2 5"/>
+                                    <path d="M154 48 L162 48 M154 153 L162 153"/>
+                                </svg>
+                            </span>
+                            <div class="cdx-chapter">
+                                <p class="cdx-num">04</p>
+                                <div>
+                                    <p class="cdx-cat" data-i18n="cdxC4Cat">Palette</p>
+                                    <h4 class="cdx-name" data-i18n="cdxC4Name">Darkness in Layers</h4>
+                                    <span class="cdx-name-rule" aria-hidden="true"></span>
+                                    <p class="cdx-copy" data-i18n="cdxC4Copy">The palette is black, ivory, restrained gold and muted metal. Darkness is built from texture, depth, lighting and material contrast rather than a single flat black.</p>
+                                    <div class="cdx-note">
+                                        <span class="cdx-note-label" data-i18n="cdxNoteLabel">Atelier Note</span>
+                                        <p class="cdx-note-copy" data-i18n="cdxC4Note">Black is a range, not a colour.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 05 CONTRAST. Plate: two opposing surfaces meeting. -->
+                        <div class="cdx-panel" role="tabpanel" id="cdxPanel5" aria-labelledby="cdxTab5" tabindex="0" hidden>
+                            <p class="cdx-chapter-meta"><span data-i18n="cdxChapterWord">Chapter</span> 05 / 06</p>
+                            <span class="cdx-plate" aria-hidden="true">
+                                <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="0.75">
+                                    <rect x="48" y="48" width="104" height="104"/>
+                                    <path d="M100 48 L100 152"/>
+                                    <path d="M48 62 L62 48 M48 78 L78 48 M48 94 L94 48 M48 110 L100 58 M48 126 L100 74 M48 142 L100 90 M56 152 L100 108 M72 152 L100 124 M88 152 L100 140" stroke-width="0.5"/>
+                                    <circle cx="126" cy="100" r="15" stroke-dasharray="3 4"/>
+                                    <path d="M48 40 L100 40 M100 40 L152 40" stroke-dasharray="2 5"/>
+                                    <path d="M48 36 L48 44 M100 36 L100 44 M152 36 L152 44"/>
+                                </svg>
+                            </span>
+                            <div class="cdx-chapter">
+                                <p class="cdx-num">05</p>
+                                <div>
+                                    <p class="cdx-cat" data-i18n="cdxC5Cat">Contrast</p>
+                                    <h4 class="cdx-name" data-i18n="cdxC5Name">Opposition Creates Identity</h4>
+                                    <span class="cdx-name-rule" aria-hidden="true"></span>
+                                    <p class="cdx-copy" data-i18n="cdxC5Copy">Matte against gloss. Restraint against ornament. Softness against structure. A minimal front against an expressive back, and classical reference against modern silhouette.</p>
+                                    <div class="cdx-note">
+                                        <span class="cdx-note-label" data-i18n="cdxNoteLabel">Atelier Note</span>
+                                        <p class="cdx-note-copy" data-i18n="cdxC5Note">Identity lives where two opposites meet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 06 CRAFT. Plate: seam, running stitch and label. -->
+                        <div class="cdx-panel" role="tabpanel" id="cdxPanel6" aria-labelledby="cdxTab6" tabindex="0" hidden>
+                            <p class="cdx-chapter-meta"><span data-i18n="cdxChapterWord">Chapter</span> 06 / 06</p>
+                            <span class="cdx-plate" aria-hidden="true">
+                                <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="0.75">
+                                    <path d="M46 66 L154 66"/>
+                                    <path d="M46 76 L154 76" stroke-dasharray="8 6"/>
+                                    <path d="M46 86 L154 86" stroke-dasharray="8 6" stroke-dashoffset="7"/>
+                                    <path d="M46 96 L154 96" stroke-dasharray="2 5"/>
+                                    <rect x="74" y="116" width="52" height="32"/>
+                                    <path d="M74 124 L126 124" stroke-dasharray="2 3"/>
+                                    <path d="M84 134 L116 134 M84 141 L106 141" stroke-width="0.5"/>
+                                    <path d="M60 116 L60 148 M140 116 L140 148" stroke-dasharray="2 4"/>
+                                </svg>
+                            </span>
+                            <div class="cdx-chapter">
+                                <p class="cdx-num">06</p>
+                                <div>
+                                    <p class="cdx-cat" data-i18n="cdxC6Cat">Craft</p>
+                                    <h4 class="cdx-name" data-i18n="cdxC6Name">Details Reward Proximity</h4>
+                                    <span class="cdx-name-rule" aria-hidden="true"></span>
+                                    <p class="cdx-copy" data-i18n="cdxC6Copy">Construction, stitching, labels, embroidery, raised applications and finishing are resolved for the closest viewer. The garment should give more the nearer somebody stands.</p>
+                                    <div class="cdx-note">
+                                        <span class="cdx-note-label" data-i18n="cdxNoteLabel">Atelier Note</span>
+                                        <p class="cdx-note-copy" data-i18n="cdxC6Note">The last centimetre is the one that convinces.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <button type="button" class="sg-close" id="styleGuideClose" aria-label="Close style guide" data-i18n-aria-label="sgClose">✕</button>
-            </div>
-            <div class="sg-body">
-                <p class="sg-intro" data-i18n="sgIntro">Field notes from the atelier — how to wear the darkness. Four studies in silhouette, restraint and contrast to help you build the fit before the drop.</p>
-                <div class="sg-guides">
-                    <article class="sg-guide" data-accordion>
-                        <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
-                            <span class="sg-guide-title" data-i18n="sgGuide1Title">Luxury Streetwear Guide</span>
-                            <span class="pd-accordion-icon" aria-hidden="true"></span>
-                        </button>
-                        <div class="pd-accordion-body">
-                            <div class="pd-accordion-inner">
-                                <p data-i18n="sgGuide1Body">Luxury streetwear lives in the tension between discipline and ease. Lead with heavyweight fabric, precise shoulders and a monochrome base, then let one elevated piece carry the look. Quality of cloth and cleanliness of silhouette matter more than logos.</p>
-                            </div>
-                        </div>
-                    </article>
-                    <article class="sg-guide" data-accordion>
-                        <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
-                            <span class="sg-guide-title" data-i18n="sgGuide2Title">Designer Aesthetic Guide</span>
-                            <span class="pd-accordion-icon" aria-hidden="true"></span>
-                        </button>
-                        <div class="pd-accordion-body">
-                            <div class="pd-accordion-inner">
-                                <p data-i18n="sgGuide2Body">A designer aesthetic is a point of view, not a price tag. Choose a restrained palette, commit to proportion, and repeat two or three signatures until they read as yours. Consistency is what turns clothing into a code.</p>
-                            </div>
-                        </div>
-                    </article>
-                    <article class="sg-guide" data-accordion>
-                        <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
-                            <span class="sg-guide-title" data-i18n="sgGuide3Title">Oversized Tee Fit Guide</span>
-                            <span class="pd-accordion-icon" aria-hidden="true"></span>
-                        </button>
-                        <div class="pd-accordion-body">
-                            <div class="pd-accordion-inner">
-                                <p data-i18n="sgGuide3Body">The oversized tee should drape, not drown. Aim for a dropped shoulder that lands mid-upper-arm and a hem that breaks at mid-hip. Size to your chest, then trust the cut — when in doubt, size down for a cleaner line. See the Size Guide for exact measurements.</p>
-                            </div>
-                        </div>
-                    </article>
-                    <article class="sg-guide" data-accordion>
-                        <button type="button" class="pd-accordion-trigger" data-accordion-trigger aria-expanded="false">
-                            <span class="sg-guide-title" data-i18n="sgGuide4Title">Monochrome Streetwear Guide</span>
-                            <span class="pd-accordion-icon" aria-hidden="true"></span>
-                        </button>
-                        <div class="pd-accordion-body">
-                            <div class="pd-accordion-inner">
-                                <p data-i18n="sgGuide4Body">All-black is built from texture and tone, not a single flat colour. Layer matte against sheen, heavy knit against fine jersey, and let depth do the work light usually would. Contrast in material is what keeps monochrome from going quiet.</p>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-            </div>
-            <div class="sg-actions">
-                <button type="button" class="size-guide-return" id="styleGuideReturn" data-i18n-html="sizeGuideReturn">Return to VOID<sup class="brand-copyright">©</sup></button>
+
+                <footer class="cdx-foot">
+                    <p class="cdx-creed" data-i18n="cdxCreed">The house is defined by what it repeats.</p>
+                    <button type="button" class="cdx-return" id="styleGuideReturn" data-i18n-html="sizeGuideReturn">Return to VOID<sup class="brand-copyright">©</sup></button>
+                </footer>
             </div>
         </section>
     </div>
@@ -10020,18 +10619,42 @@
             pdReturnsCopy: 'Free returns and exchanges within 14 days on all orders, excluding personalised items.',
             pdPackaging: 'Packaging',
             pdPackagingCopy: `Signature ${brandMarkup} wrapping, considered for the ritual of the unboxing.`,
-            sgKicker: 'The Atelier Codex',
-            sgTitle: `${brandMarkup} Style Guide`,
-            sgClose: 'Close style guide',
-            sgIntro: 'Field notes from the atelier — how to wear the darkness. Four studies in silhouette, restraint and contrast to help you build the fit before the drop.',
-            sgGuide1Title: 'Luxury Streetwear Guide',
-            sgGuide1Body: 'Luxury streetwear lives in the tension between discipline and ease. Lead with heavyweight fabric, precise shoulders and a monochrome base, then let one elevated piece carry the look. Quality of cloth and cleanliness of silhouette matter more than logos.',
-            sgGuide2Title: 'Designer Aesthetic Guide',
-            sgGuide2Body: 'A designer aesthetic is a point of view, not a price tag. Choose a restrained palette, commit to proportion, and repeat two or three signatures until they read as yours. Consistency is what turns clothing into a code.',
-            sgGuide3Title: 'Oversized Tee Fit Guide',
-            sgGuide3Body: 'The oversized tee should drape, not drown. Aim for a dropped shoulder that lands mid-upper-arm and a hem that breaks at mid-hip. Size to your chest, then trust the cut — when in doubt, size down for a cleaner line. See the Size Guide for exact measurements.',
-            sgGuide4Title: 'Monochrome Streetwear Guide',
-            sgGuide4Body: 'All-black is built from texture and tone, not a single flat colour. Layer matte against sheen, heavy knit against fine jersey, and let depth do the work light usually would. Contrast in material is what keeps monochrome from going quiet.'
+            // ---- The Atelier Codex ----
+            cdxEyebrow: 'The Atelier Codex',
+            cdxTitle: `The Codes of ${brandMarkup}`,
+            cdxClose: 'Close the codex',
+            cdxRef: 'Codex 001',
+            cdxEst: 'Est. 2026',
+            cdxChapters: 'Codex chapters',
+            cdxChapterWord: 'Chapter',
+            cdxNoteLabel: 'Atelier Note',
+            cdxIntro: 'Every house has its language. Ours is written in proportion, weight, restraint and insignia. These are the principles behind every piece bearing the VOID name.',
+            cdxCreed: 'The house is defined by what it repeats.',
+            cdxC1Cat: 'Silhouette',
+            cdxC1Name: 'Controlled Volume',
+            cdxC1Copy: 'VOID silhouettes are built around presence rather than excess. Dropped shoulders, substantial fabrics and deliberate proportions create volume while preserving structure. Oversized should never mean shapeless.',
+            cdxC1Note: 'Volume is drawn, never left over.',
+            cdxC2Cat: 'Material',
+            cdxC2Name: 'Weight & Substance',
+            cdxC2Copy: 'Material should be felt before it is understood. Heavyweight cottons, dense structures, tactile surfaces, embroidery and dimensional finishes give VOID garments their physical presence.',
+            cdxC2Note: 'The hand of the cloth arrives before the eye.',
+            cdxC3Cat: 'The Insignia',
+            cdxC3Nav: 'Insignia',
+            cdxC3Name: 'Symbols of the House',
+            cdxC3Copy: 'The EV emblem, the monograms and the recurring symbols are treated as heraldry rather than branding. An insignia is placed to be permanent and recognisable, never decorative.',
+            cdxC3Note: 'A mark earns its place by repetition.',
+            cdxC4Cat: 'Palette',
+            cdxC4Name: 'Darkness in Layers',
+            cdxC4Copy: 'The palette is black, ivory, restrained gold and muted metal. Darkness is built from texture, depth, lighting and material contrast rather than a single flat black.',
+            cdxC4Note: 'Black is a range, not a colour.',
+            cdxC5Cat: 'Contrast',
+            cdxC5Name: 'Opposition Creates Identity',
+            cdxC5Copy: 'Matte against gloss. Restraint against ornament. Softness against structure. A minimal front against an expressive back, and classical reference against modern silhouette.',
+            cdxC5Note: 'Identity lives where two opposites meet.',
+            cdxC6Cat: 'Craft',
+            cdxC6Name: 'Details Reward Proximity',
+            cdxC6Copy: 'Construction, stitching, labels, embroidery, raised applications and finishing are resolved for the closest viewer. The garment should give more the nearer somebody stands.',
+            cdxC6Note: 'The last centimetre is the one that convinces.'
         });
 
         function t(key, replacements = {}) {
@@ -13069,6 +13692,7 @@
             document.body.classList.add('style-guide-open');
             trackAnalyticsEvent('open_style_guide', {});
             startEdgeAmbience(styleGuideOverlay.querySelector('.style-guide-panel'));
+            if (typeof window.voidCodexReset === 'function') window.voidCodexReset();
 
             window.requestAnimationFrame(() => {
                 focusElementSafely(styleGuideClose);
@@ -13099,6 +13723,71 @@
                 if (event.target === styleGuideOverlay) closeStyleGuide();
             });
         }
+
+        // ---- The Atelier Codex: turning through chapters ----
+        // Standard ARIA tabs: one panel visible at a time, arrows/Home/End move
+        // between chapters, and the entry choreography is replayed on each
+        // switch so it reads as a page being turned rather than a tab flipping.
+        (function initCodex() {
+            const codex = document.getElementById('voidCodex');
+            if (!codex) return;
+
+            const strip = codex.querySelector('.cdx-index');
+            const tabs = Array.from(codex.querySelectorAll('[role="tab"]'));
+            const panels = tabs.map((tab) => document.getElementById(tab.getAttribute('aria-controls')));
+            if (!tabs.length) return;
+
+            function showChapter(index, moveFocus) {
+                tabs.forEach((tab, i) => {
+                    const isOpen = i === index;
+                    const panel = panels[i];
+                    tab.setAttribute('aria-selected', isOpen ? 'true' : 'false');
+                    tab.tabIndex = isOpen ? 0 : -1;
+                    if (!panel) return;
+
+                    panel.hidden = !isOpen;
+                    // Removing the class, forcing a reflow, then re-adding it is
+                    // what restarts the CSS animation on every switch.
+                    panel.classList.remove('is-entering');
+                    if (isOpen) {
+                        void panel.offsetWidth;
+                        panel.classList.add('is-entering');
+                    }
+                });
+
+                if (moveFocus) focusElementSafely(tabs[index]);
+
+                // On phones the index is a horizontal strip. Scroll only the
+                // strip, never the overlay, so the chapter never jumps away.
+                if (strip && strip.scrollWidth > strip.clientWidth + 1) {
+                    const tab = tabs[index];
+                    strip.scrollTo({
+                        left: Math.max(0, tab.offsetLeft - (strip.clientWidth - tab.offsetWidth) / 2),
+                        behavior: document.documentElement.classList.contains('reduce-motion') ? 'auto' : 'smooth'
+                    });
+                }
+            }
+
+            tabs.forEach((tab, i) => {
+                tab.addEventListener('click', () => showChapter(i, false));
+                tab.addEventListener('keydown', (event) => {
+                    const last = tabs.length - 1;
+                    let next = null;
+
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next = i === last ? 0 : i + 1;
+                    else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') next = i === 0 ? last : i - 1;
+                    else if (event.key === 'Home') next = 0;
+                    else if (event.key === 'End') next = last;
+
+                    if (next === null) return;
+                    event.preventDefault();
+                    showChapter(next, true);
+                });
+            });
+
+            // The archive always opens at the first chapter.
+            window.voidCodexReset = () => showChapter(0, false);
+        })();
 
         // Escape closes the product detail / style guide overlays. If the
         // product image is zoomed, the first Escape backs out of the zoom
