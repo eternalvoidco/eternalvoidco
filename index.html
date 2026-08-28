@@ -4613,11 +4613,15 @@
             --pd-close-size: 32px;
         }
 
-        /* Wider than the product panel: the Codex is a spread, not a dialog. */
+        /* Wider than the product panel: the Codex is a spread, not a dialog.
+           Column flex so the body can take the remaining height and scroll
+           inside the frame rather than dragging it along. */
         .style-guide-panel {
             width: min(1240px, 100%);
             max-height: min(92vh, 960px);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .product-detail-overlay.open .product-detail-panel,
@@ -4625,6 +4629,16 @@
             overflow: auto;
             transform: scaleY(1) scaleX(1) translateY(0);
             opacity: 1;
+        }
+
+        /* The Codex keeps the panel itself fixed and scrolls its body instead.
+           .panel-frame is absolute/inset:0, and inside a scroll container that
+           resolves against the whole scrollable content, so the corner
+           brackets and the travelling light would sit at the top and bottom of
+           the content rather than of the visible panel. Scrolling the body
+           leaves the frame pinned to the edges the visitor can actually see. */
+        .style-guide-overlay.open .style-guide-panel {
+            overflow: hidden;
         }
 
         /* ---- Product detail layout ---- */
@@ -5562,6 +5576,13 @@
             --cdx-ink: rgba(245, 242, 236, 0.74);
             --cdx-ink-dim: rgba(245, 242, 236, 0.4);
             position: relative;
+            /* This, not the panel, is the scroller (see .style-guide-panel).
+               min-height:0 is what lets a flex child actually shrink and
+               scroll rather than stretching its parent. */
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
         }
 
         /* Header. The title carries the weight; the metadata sits opposite it
@@ -6032,6 +6053,15 @@
                of numbered chapters above the entry. Labels stay legible rather
                than shrinking, and the plate moves behind the copy instead of
                fighting it for width. */
+            /* Phones keep the existing full-sheet behaviour: the overlay
+               scrolls, not the body, so hand back the scrolling the desktop
+               rule took over. */
+            .cdx {
+                flex: none;
+                min-height: auto;
+                overflow: visible;
+            }
+
             .cdx-body {
                 grid-template-columns: 1fr;
             }
@@ -13688,6 +13718,9 @@
 
             styleGuideOverlay.classList.add('open');
             styleGuideOverlay.scrollTop = 0;
+            // On desktop the body is the scroller, not the overlay.
+            const codexBody = styleGuideOverlay.querySelector('.cdx');
+            if (codexBody) codexBody.scrollTop = 0;
             styleGuideOverlay.setAttribute('aria-hidden', 'false');
             document.body.classList.add('style-guide-open');
             trackAnalyticsEvent('open_style_guide', {});
