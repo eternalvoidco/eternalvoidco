@@ -269,7 +269,16 @@
            swap animation, the travelling marker and the hover transitions
            stop; the blueprint, the figures and the marker position all
            still render. */
-        html.reduce-motion .sga-swap { animation: none !important; }
+        /* Under reduced motion the specification changes instantly: no
+           dissolve, no pause, no inscription. The JS skips the sequence too,
+           so the figures are never left mid-transition. */
+        html.reduce-motion .sga-dyn.is-dissolving,
+        html.reduce-motion .sga-dyn.is-inscribing {
+            animation: none !important;
+            opacity: 1 !important;
+            filter: none !important;
+            transform: none !important;
+        }
 
         html.reduce-motion .sga-marker,
         html.reduce-motion .sga-size,
@@ -4977,22 +4986,67 @@
             transform-origin: 0 50%;
         }
 
-        /* ---- Size change choreography ----
-           The figures mask upward as they change so the sheet reads as being
-           re-typed rather than re-rendered. Transform and opacity only. */
-        @keyframes sgaSwap {
-            from { opacity: 0; transform: translateY(7px); }
-            to { opacity: 1; transform: none; }
+        /* ---- Size change choreography --------------------------------
+           Two phases, one moment. Everything size-dependent (the size letter,
+           its classification and the four figures) dissolves into the dark
+           together, then is inscribed back in from the top down. The labels
+           and the A to D keys never move: they are the fixed architecture of
+           the sheet, and the specification is written into them.
+
+           Ordering is shared by both phases through --sga-d, so the exit and
+           the entrance read as the same gesture rather than two systems. The
+           exit compresses that stagger (x0.35) so the old state leaves almost
+           as one, and the entrance uses it in full so the new state arrives
+           line by line. */
+        .sga-dyn {
+            --sga-d: 0ms;
+            display: inline-block;
+            will-change: opacity, transform;
         }
 
-        .sga-swap {
-            animation: sgaSwap 0.42s var(--ease-lux) both;
+        .sga-dyn[data-order="0"] { --sga-d: 0ms; }
+        .sga-dyn[data-order="1"] { --sga-d: 40ms; }
+        .sga-dyn[data-order="2"] { --sga-d: 90ms; }
+        .sga-dyn[data-order="3"] { --sga-d: 130ms; }
+        .sga-dyn[data-order="4"] { --sga-d: 170ms; }
+        .sga-dyn[data-order="5"] { --sga-d: 210ms; }
+
+        /* Losing contrast into the background rather than simply fading: the
+           slight lift and blur read as ink dispersing. */
+        @keyframes sgaDissolveOut {
+            from { opacity: 1; transform: translateY(0); filter: blur(0); }
+            to { opacity: 0; transform: translateY(-4px); filter: blur(1.6px); }
         }
 
-        .sga-measure:nth-child(1) .sga-swap { animation-delay: 0.02s; }
-        .sga-measure:nth-child(2) .sga-swap { animation-delay: 0.06s; }
-        .sga-measure:nth-child(3) .sga-swap { animation-delay: 0.1s; }
-        .sga-measure:nth-child(4) .sga-swap { animation-delay: 0.14s; }
+        /* Resolving out of the drafting field, settling downward onto the line. */
+        @keyframes sgaInscribeIn {
+            from { opacity: 0; transform: translateY(6px); filter: blur(2.2px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        .sga-dyn.is-dissolving {
+            animation: sgaDissolveOut 240ms ease-in calc(var(--sga-d) * 0.35) both;
+        }
+
+        .sga-dyn.is-inscribing {
+            animation: sgaInscribeIn 460ms var(--ease-lux) var(--sga-d) both;
+        }
+
+        /* The headline pair carries the moment, so it is given a longer, more
+           deliberate entrance while staying on the same curve as the figures. */
+        .sga-current-size.is-inscribing,
+        .sga-current-fit.is-inscribing {
+            animation-duration: 620ms;
+        }
+
+        .sga-current-size.is-inscribing {
+            animation-name: sgaInscribeLead;
+        }
+
+        @keyframes sgaInscribeLead {
+            from { opacity: 0; transform: translateY(8px) scale(0.965); filter: blur(3px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
 
         /* ===== Collection category menu (View All / T-Shirts) ===== */
         .collection-nav {
@@ -10351,31 +10405,35 @@
                         <p class="sga-field-label" id="sgaSizeLabel" data-i18n="sgaSelect">Select Size</p>
                         <div class="sga-sizes" role="radiogroup" aria-labelledby="sgaSizeLabel" id="sgaSizes"></div>
 
+                        <!-- Everything marked sga-dyn is size-dependent and
+                             takes part in the dissolve/inscribe sequence. The
+                             A to D keys and the measurement names deliberately
+                             do not: they are the fixed architecture. -->
                         <div class="sga-current">
-                            <span class="sga-current-size" id="sgaCurrentSize">M</span>
-                            <span class="sga-current-fit" id="sgaCurrentFit" data-i18n="fitSignatureOversized">Signature Oversized</span>
+                            <span class="sga-current-size sga-dyn" data-order="0" id="sgaCurrentSize">M</span>
+                            <span class="sga-current-fit sga-dyn" data-order="1" id="sgaCurrentFit" data-i18n="fitSignatureOversized">Signature Oversized</span>
                         </div>
 
                         <div class="sga-measures" id="sgaMeasures" aria-live="polite">
                             <div class="sga-measure" data-dim="chest">
                                 <span class="sga-measure-key" aria-hidden="true">A</span>
                                 <span class="sga-measure-name" data-i18n="tableChestWidth">Chest Width</span>
-                                <span class="sga-measure-val"><b data-val="chest">60</b><small data-i18n="sgaCm">cm</small></span>
+                                <span class="sga-measure-val sga-dyn" data-order="2"><b data-val="chest">60</b><small data-i18n="sgaCm">cm</small></span>
                             </div>
                             <div class="sga-measure" data-dim="length">
                                 <span class="sga-measure-key" aria-hidden="true">B</span>
                                 <span class="sga-measure-name" data-i18n="tableBodyLength">Body Length</span>
-                                <span class="sga-measure-val"><b data-val="length">73</b><small data-i18n="sgaCm">cm</small></span>
+                                <span class="sga-measure-val sga-dyn" data-order="3"><b data-val="length">73</b><small data-i18n="sgaCm">cm</small></span>
                             </div>
                             <div class="sga-measure" data-dim="shoulder">
                                 <span class="sga-measure-key" aria-hidden="true">C</span>
                                 <span class="sga-measure-name" data-i18n="tableShoulderWidth">Shoulder Width</span>
-                                <span class="sga-measure-val"><b data-val="shoulder">57</b><small data-i18n="sgaCm">cm</small></span>
+                                <span class="sga-measure-val sga-dyn" data-order="4"><b data-val="shoulder">57</b><small data-i18n="sgaCm">cm</small></span>
                             </div>
                             <div class="sga-measure" data-dim="sleeve">
                                 <span class="sga-measure-key" aria-hidden="true">D</span>
                                 <span class="sga-measure-name" data-i18n="tableSleeveLength">Sleeve Length</span>
-                                <span class="sga-measure-val"><b data-val="sleeve">24</b><small data-i18n="sgaCm">cm</small></span>
+                                <span class="sga-measure-val sga-dyn" data-order="5"><b data-val="sleeve">24</b><small data-i18n="sgaCm">cm</small></span>
                             </div>
                         </div>
 
@@ -13240,30 +13298,41 @@
                 });
             }
 
+            // Phase lengths. The exit is short because it is a dissolve; the
+            // gap is the beat between the old specification leaving and the
+            // new one being written. Keep in step with the CSS durations.
+            const OUT_MS = 240;      // sgaDissolveOut
+            const OUT_LAST = 74;     // longest exit delay: 210ms x 0.35
+            const PAUSE_MS = 70;
+            const SWAP_AT = OUT_MS + OUT_LAST + PAUSE_MS;
+
+            let swapTimer = null;
+
+            function writeSpec(spec) {
+                currentSize.textContent = spec.size;
+                currentFit.textContent = t(spec.fitKey);
+                currentFit.dataset.i18n = spec.fitKey;
+                DIMS.forEach((dim) => {
+                    const el = measuresEl.querySelector('[data-val="' + dim + '"]');
+                    if (el) el.textContent = spec[dim];
+                });
+            }
+
             function select(index, moveFocus) {
+                const changed = index !== active;
                 active = index;
                 const spec = VOID_FIT_SPEC[index];
+                const dynamic = Array.from(archive.querySelectorAll('.sga-dyn'));
+                const reduced = document.documentElement.classList.contains('reduce-motion');
 
+                // Selection state, the marker and the comparison table update
+                // immediately. Only the written specification waits for the
+                // choreography, so the control never feels unresponsive.
                 Array.from(sizesEl.children).forEach((btn, i) => {
                     btn.setAttribute('aria-checked', i === index ? 'true' : 'false');
                     btn.tabIndex = i === index ? 0 : -1;
                 });
                 if (moveFocus) focusElementSafely(sizesEl.children[index]);
-
-                currentSize.textContent = spec.size;
-                currentFit.textContent = t(spec.fitKey);
-                currentFit.dataset.i18n = spec.fitKey;
-
-                // Re-triggering the class restarts the swap animation so the
-                // figures read as being re-typed rather than silently changing.
-                DIMS.forEach((dim) => {
-                    const el = measuresEl.querySelector('[data-val="' + dim + '"]');
-                    if (!el) return;
-                    el.textContent = spec[dim];
-                    el.classList.remove('sga-swap');
-                    void el.offsetWidth;
-                    el.classList.add('sga-swap');
-                });
 
                 archive.style.setProperty('--sga-i', String(index));
                 if (scaleNamesEl) {
@@ -13272,6 +13341,35 @@
                     });
                 }
                 renderTable();
+
+                window.clearTimeout(swapTimer);
+
+                // First render, an unchanged selection, or reduced motion: just
+                // write it. Nothing should be left mid-dissolve.
+                if (!changed || reduced) {
+                    dynamic.forEach((el) => el.classList.remove('is-dissolving', 'is-inscribing'));
+                    writeSpec(spec);
+                    return;
+                }
+
+                // Phase 1: the whole active specification dissolves together.
+                dynamic.forEach((el) => {
+                    el.classList.remove('is-inscribing');
+                    void el.offsetWidth;
+                    el.classList.add('is-dissolving');
+                });
+
+                // Phases 2 and 3: a beat, then the new specification is
+                // inscribed from the size letter downward. Re-selecting mid
+                // sequence clears this timer, so rapid clicks cannot interleave.
+                swapTimer = window.setTimeout(() => {
+                    writeSpec(VOID_FIT_SPEC[active]);
+                    dynamic.forEach((el) => {
+                        el.classList.remove('is-dissolving');
+                        void el.offsetWidth;
+                        el.classList.add('is-inscribing');
+                    });
+                }, SWAP_AT);
             }
 
             // Hovering or focusing a measurement lifts its line on the drawing.
