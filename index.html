@@ -265,6 +265,27 @@
             transition: none !important;
         }
 
+        /* The fit archive keeps every mark under reduced motion. Only the
+           swap animation, the travelling marker and the hover transitions
+           stop; the blueprint, the figures and the marker position all
+           still render. */
+        html.reduce-motion .sga-swap { animation: none !important; }
+
+        html.reduce-motion .sga-marker,
+        html.reduce-motion .sga-size,
+        html.reduce-motion .sga-size::after,
+        html.reduce-motion .sga-return,
+        html.reduce-motion .sga-return i,
+        html.reduce-motion .sga-return::after,
+        html.reduce-motion .sga-full-toggle i,
+        html.reduce-motion .sga-scale-name,
+        html.reduce-motion .sga-measure-key,
+        html.reduce-motion .sga-measure-name,
+        html.reduce-motion .sga-draft .sga-dim,
+        html.reduce-motion .sga-draft .sga-dim-label {
+            transition: none !important;
+        }
+
         .scroll-transit-veil {
             position: fixed;
             inset: 0;
@@ -2034,8 +2055,14 @@
             }
 
             .size-popup-close,
-            .size-guide-close,
             .preorder-modal-close {
+                width: 44px;
+                height: 44px;
+            }
+
+            /* The fit archive's exit is a label plus a mark; the mark is what
+               gets the touch target. */
+            .sga-close span[aria-hidden] {
                 width: 44px;
                 height: 44px;
             }
@@ -4298,11 +4325,16 @@
             pointer-events: auto;
         }
 
+        /* Column flex, like the Codex: the panel holds still and its body
+           scrolls, so .panel-frame's corner brackets stay pinned to the edges
+           the visitor can see rather than to the full scroll height. */
         .size-guide-panel {
             position: relative;
-            width: min(980px, 100%);
-            max-height: min(90vh, 900px);
+            width: min(1180px, 100%);
+            max-height: min(92vh, 940px);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
             border: 1px solid rgba(199, 169, 108, var(--void-border-alpha, 0.42));
             background: linear-gradient(165deg, rgba(12, 12, 12, 0.98), rgba(5, 5, 5, 0.98));
             box-shadow: 0 28px 64px rgba(0, 0, 0, 0.62), 0 0 48px 4px rgba(199, 169, 108, var(--void-glow-alpha, 0.14));
@@ -4313,139 +4345,654 @@
         }
 
         .size-guide-overlay.open .size-guide-panel {
-            overflow: auto;
+            overflow: hidden;
             transform: scaleY(1) scaleX(1) translateY(0);
             opacity: 1;
         }
 
-        .size-guide-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            padding: 1rem 1rem 0.65rem;
-            border-bottom: 1px solid rgba(199, 169, 108, 0.26);
+        /* ---- Size guide: the fit archive -----------------------------
+           A specification sheet, not a table in a frame. The garment
+           blueprint sits on the left, the selected size's measurements on
+           the right, and the full five-size comparison folds away behind a
+           disclosure. Every mark is inline SVG or a CSS rule: no images, no
+           looping animation. */
+        .sga {
+            --sga-rule: rgba(199, 169, 108, 0.22);
+            --sga-rule-soft: rgba(199, 169, 108, 0.09);
+            --sga-ink: rgba(245, 242, 236, 0.74);
+            --sga-ink-dim: rgba(245, 242, 236, 0.42);
+            --sga-i: 2;              /* active size index, written by JS */
+            position: relative;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
         }
 
-        .size-guide-title {
+        /* Drafting field. A 40px grid at roughly 2% so it reads as paper
+           tooth rather than as a grid, plus nothing else. */
+        .sga::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(199, 169, 108, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(199, 169, 108, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+        }
+
+        .sga > * { position: relative; }
+
+        /* ---- Header ---- */
+        .sga-head {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            gap: clamp(1rem, 3vw, 2.5rem);
+            padding: clamp(1.8rem, 4vw, 3rem) clamp(1.4rem, 4vw, 3.2rem) clamp(1.2rem, 2.5vw, 1.8rem);
+        }
+
+        .sga-eyebrow {
+            margin: 0 0 clamp(0.8rem, 2vw, 1.2rem);
+            font-size: 0.54rem;
+            font-weight: 600;
+            letter-spacing: 0.42em;
+            text-indent: 0.42em;
+            text-transform: uppercase;
+            color: var(--void-gold-soft);
+        }
+
+        .sga-title {
             margin: 0;
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.45rem, 4.5vw, 2.3rem);
+            font-weight: 500;
+            font-size: clamp(1.8rem, 5.4vw, 3.4rem);
+            line-height: 1;
             letter-spacing: 0.1em;
+            text-indent: 0.1em;
             text-transform: uppercase;
             color: var(--void-white);
         }
 
-        .size-guide-subtitle {
-            margin: 0.24rem 0 0;
-            font-size: 0.62rem;
+        .sga-subtitle {
+            margin: clamp(0.8rem, 2vw, 1.1rem) 0 0;
+            font-size: 0.58rem;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.44);
+            line-height: 2;
+        }
+
+        .sga-head-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: clamp(1rem, 2.5vw, 1.6rem);
+        }
+
+        /* Exit reads as a label with a mark, not a square button. */
+        .sga-close {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 0;
+            border: 0;
+            background: none;
+            color: rgba(245, 242, 236, 0.5);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.54rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.4s var(--ease-lux);
+        }
+
+        .sga-close span[aria-hidden] {
+            display: grid;
+            place-items: center;
+            width: 26px;
+            height: 26px;
+            border: 1px solid rgba(199, 169, 108, 0.3);
+            font-size: 0.72rem;
+            letter-spacing: 0;
+            transition: border-color 0.4s var(--ease-lux), color 0.4s var(--ease-lux);
+        }
+
+        .sga-close:hover,
+        .sga-close:focus-visible { color: var(--void-gold-bright); }
+
+        .sga-close:hover span[aria-hidden],
+        .sga-close:focus-visible span[aria-hidden] { border-color: rgba(199, 169, 108, 0.8); }
+
+        .sga-doc {
+            display: grid;
+            gap: 0.4rem;
+            justify-items: end;
+            font-size: 0.5rem;
+            font-weight: 500;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.42);
+            white-space: nowrap;
+        }
+
+        .sga-intro {
+            max-width: 52ch;
+            margin: 0;
+            padding: 0 clamp(1.4rem, 4vw, 3.2rem) clamp(1.6rem, 3.5vw, 2.4rem);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(0.98rem, 2.1vw, 1.18rem);
+            font-style: italic;
+            line-height: 1.8;
+            color: rgba(245, 242, 236, 0.6);
+        }
+
+        /* ---- Body: blueprint beside specification ---- */
+        .sga-body {
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: clamp(1.5rem, 4vw, 3.5rem);
+            padding: 0 clamp(1.4rem, 4vw, 3.2rem);
+            border-top: 1px solid var(--sga-rule-soft);
+            padding-top: clamp(1.8rem, 4vw, 2.8rem);
+        }
+
+        /* Below this the two columns each get too narrow to hold their own
+           composition, so the blueprint moves above the specification rather
+           than beside it. Its own breakpoint, because it depends on the
+           panel's width rather than on the phone layout. */
+        @media (max-width: 900px) {
+            .sga-body {
+                grid-template-columns: 1fr;
+                gap: clamp(1.6rem, 4vw, 2.4rem);
+            }
+
+            .sga-draft { max-height: 34vh; }
+        }
+
+        /* ---- Left: the garment blueprint ---- */
+        .sga-plate {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sga-plate-label {
+            font-size: 0.52rem;
+            font-weight: 600;
+            letter-spacing: 0.36em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.5);
+        }
+
+        .sga-draft {
+            width: 100%;
+            height: auto;
+            max-height: 46vh;
+            color: var(--void-gold-soft);
+        }
+
+        /* The garment itself sits brighter than its annotation, so the
+           silhouette reads first and the dimensions second. */
+        .sga-draft .sga-garment { stroke: rgba(245, 242, 236, 0.5); }
+        .sga-draft .sga-seam { stroke: rgba(245, 242, 236, 0.16); }
+        .sga-draft .sga-axis { stroke: rgba(199, 169, 108, 0.22); }
+        .sga-draft .sga-tick { stroke: rgba(199, 169, 108, 0.28); }
+        .sga-draft .sga-mark { fill: rgba(199, 169, 108, 0.42); }
+
+        /* Measurement groups. Dim by default, lifted when the matching
+           specification row is hovered or focused. */
+        .sga-draft .sga-dim {
+            stroke: rgba(199, 169, 108, 0.34);
+            transition: stroke 0.45s var(--ease-lux), opacity 0.45s var(--ease-lux);
+        }
+
+        .sga-draft .sga-dim-label {
+            fill: rgba(199, 169, 108, 0.5);
+            font-family: 'Jost', sans-serif;
+            font-size: 13px;
+            letter-spacing: 0.1em;
+            transition: fill 0.45s var(--ease-lux);
+        }
+
+        .sga-draft g[data-dim].is-lit .sga-dim { stroke: var(--void-gold-bright); }
+        .sga-draft g[data-dim].is-lit .sga-dim-label { fill: var(--void-gold-bright); }
+
+        /* ---- Right: specification ---- */
+        .sga-spec {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sga-field-label {
+            margin: 0 0 clamp(0.9rem, 2vw, 1.2rem);
+            font-size: 0.52rem;
+            font-weight: 600;
+            letter-spacing: 0.36em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.5);
+        }
+
+        /* Size selection. A row of specimens on a hairline, not chips. */
+        .sga-sizes {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            border-top: 1px solid var(--sga-rule);
+            border-bottom: 1px solid var(--sga-rule);
+        }
+
+        .sga-size {
+            position: relative;
+            padding: clamp(0.9rem, 2.2vw, 1.2rem) 0;
+            border: 0;
+            background: none;
+            color: var(--sga-ink-dim);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: rgba(245, 242, 236, 0.72);
-        }
-
-        .size-guide-close {
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            background: rgba(12, 12, 12, 0.86);
-            color: var(--void-white);
-            width: 36px;
-            height: 36px;
             cursor: pointer;
-            font-size: 0.88rem;
-            transition: border-color 0.22s ease, background 0.22s ease;
+            transition: color 0.45s var(--ease-lux);
         }
 
-        .size-guide-close:hover,
-        .size-guide-close:focus-visible {
-            border-color: rgba(199, 169, 108, 0.85);
-            background: rgba(22, 17, 9, 0.9);
+        .sga-size + .sga-size { border-left: 1px solid var(--sga-rule-soft); }
+
+        .sga-size::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 1px;
+            background: var(--void-gold-soft);
+            transform: scaleX(0);
+            transition: transform 0.5s var(--ease-lux);
         }
 
-        .size-guide-body {
-            padding: 0.95rem 1rem 1.05rem;
-        }
+        .sga-size:hover, .sga-size:focus-visible { color: rgba(245, 242, 236, 0.8); }
+        .sga-size[aria-checked="true"] { color: var(--void-white); }
+        .sga-size[aria-checked="true"]::after { transform: scaleX(1); }
 
-        .size-guide-copy {
-            margin: 0 0 0.95rem;
-            font-size: 0.73rem;
-            letter-spacing: 0.11em;
-            text-transform: uppercase;
-            color: rgba(245, 242, 236, 0.78);
-            line-height: 1.6;
-        }
-
-        .size-guide-table-wrap {
-            border: 1px solid rgba(199, 169, 108, 0.26);
-            overflow: auto;
-            background: rgba(8, 8, 8, 0.76);
-        }
-
-        .size-guide-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 620px;
-        }
-
-        .size-guide-table th,
-        .size-guide-table td {
-            border-bottom: 1px solid rgba(199, 169, 108, 0.18);
-            padding: 0.72rem 0.75rem;
-            text-align: left;
-            font-size: 0.7rem;
-            letter-spacing: 0.11em;
-            text-transform: uppercase;
-        }
-
-        .size-guide-table th {
-            color: #f4e7ca;
-            background: rgba(16, 13, 8, 0.82);
-            font-weight: 700;
-        }
-
-        .size-guide-table td {
-            color: rgba(245, 242, 236, 0.86);
-        }
-
-        .size-guide-table tbody tr:last-child td {
-            border-bottom: 0;
-        }
-
-        .size-guide-note {
-            margin: 0.92rem 0 0;
-            font-size: 0.62rem;
-            letter-spacing: 0.13em;
-            text-transform: uppercase;
-            color: rgba(245, 242, 236, 0.66);
-            line-height: 1.68;
-        }
-
-        .size-guide-actions {
+        /* The chosen specimen, set as a headline. */
+        .sga-current {
             display: flex;
-            justify-content: center;
-            padding: 0 1rem 1.1rem;
+            align-items: baseline;
+            gap: clamp(0.9rem, 2.5vw, 1.6rem);
+            padding: clamp(1.4rem, 3vw, 2rem) 0 clamp(1.2rem, 2.5vw, 1.6rem);
         }
 
-        .size-guide-return {
-            min-height: 40px;
-            border: 1px solid rgba(199, 169, 108, 0.56);
-            background: rgba(14, 12, 8, 0.82);
-            color: #f7ebd2;
-            font-family: 'Jost', sans-serif;
-            font-size: 0.62rem;
+        .sga-current-size {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            font-size: clamp(2.4rem, 6vw, 3.6rem);
+            line-height: 0.85;
+            letter-spacing: 0.04em;
+            background: linear-gradient(176deg, #f4e6c6 0%, #cdb076 52%, #7d6330 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--void-gold-soft);
+        }
+
+        .sga-current-fit {
+            font-size: 0.6rem;
             font-weight: 600;
-            letter-spacing: 0.21em;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
-            padding: 0.58rem 1.3rem;
-            cursor: pointer;
-            transition: border-color 0.24s ease, background 0.24s ease, transform 0.24s ease;
+            color: rgba(245, 242, 236, 0.56);
         }
 
-        .size-guide-return:hover,
-        .size-guide-return:focus-visible {
-            border-color: rgba(199, 169, 108, 0.92);
-            background: rgba(24, 19, 10, 0.9);
-            transform: translateY(-2px);
+        /* Measurements. Label left, figure right, one hairline between: the
+           rhythm of a specification sheet rather than four cards. */
+        .sga-measures {
+            border-top: 1px solid var(--sga-rule-soft);
         }
+
+        .sga-measure {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: baseline;
+            gap: 0.9rem;
+            padding: clamp(0.85rem, 2vw, 1.1rem) 0;
+            border-bottom: 1px solid var(--sga-rule-soft);
+            cursor: default;
+        }
+
+        .sga-measure-key {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.9rem;
+            font-style: italic;
+            color: rgba(199, 169, 108, 0.55);
+            transition: color 0.45s var(--ease-lux);
+        }
+
+        .sga-measure-name {
+            font-size: 0.6rem;
+            font-weight: 500;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: var(--sga-ink);
+            transition: color 0.45s var(--ease-lux);
+        }
+
+        .sga-measure-val {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+            letter-spacing: 0.04em;
+            color: var(--void-white);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sga-measure-val small {
+            margin-left: 0.4rem;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.52rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            color: rgba(245, 242, 236, 0.36);
+        }
+
+        .sga-measure:hover .sga-measure-key,
+        .sga-measure:hover .sga-measure-name,
+        .sga-measure.is-lit .sga-measure-key,
+        .sga-measure.is-lit .sga-measure-name { color: var(--void-gold-bright); }
+
+        /* ---- Fit character ---- */
+        .sga-scale {
+            padding: clamp(1.6rem, 3.5vw, 2.4rem) 0 0;
+        }
+
+        .sga-scale-ends {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.9rem;
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.32);
+        }
+
+        .sga-track {
+            position: relative;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.32) 12%, rgba(199, 169, 108, 0.32) 88%, transparent);
+        }
+
+        .sga-ticks {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .sga-tick-mark {
+            justify-self: center;
+            width: 1px;
+            height: 7px;
+            background: rgba(199, 169, 108, 0.3);
+        }
+
+        /* The marker travels in fifths, so it lands on a tick rather than
+           sliding continuously like a range input. */
+        .sga-marker {
+            position: absolute;
+            top: -4px;
+            left: 0;
+            width: 20%;
+            display: grid;
+            place-items: center;
+            transform: translateX(calc(var(--sga-i) * 100%));
+            transition: transform 0.55s var(--ease-lux);
+            pointer-events: none;
+        }
+
+        .sga-marker span {
+            width: 7px;
+            height: 7px;
+            background: var(--void-gold-bright);
+            transform: rotate(45deg);
+        }
+
+        .sga-scale-names {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            margin-top: 0.85rem;
+        }
+
+        .sga-scale-name {
+            justify-self: center;
+            font-size: 0.52rem;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.3);
+            transition: color 0.45s var(--ease-lux);
+        }
+
+        .sga-scale-name[data-on="true"] { color: var(--void-gold-bright); }
+
+        /* ---- Atelier note ---- */
+        .sga-note {
+            margin-top: clamp(1.8rem, 4vw, 2.6rem);
+            padding-left: clamp(0.9rem, 2vw, 1.2rem);
+            border-left: 1px solid var(--sga-rule);
+            max-width: 46ch;
+        }
+
+        .sga-note-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.36em;
+            text-indent: 0.36em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.5);
+        }
+
+        .sga-note-copy {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: clamp(0.92rem, 2vw, 1.02rem);
+            line-height: 1.75;
+            color: rgba(245, 242, 236, 0.55);
+        }
+
+        /* ---- Full specification, secondary by design ---- */
+        .sga-full {
+            margin: clamp(2rem, 4.5vw, 3.2rem) 0 0;
+            padding: clamp(1.4rem, 3vw, 2rem) clamp(1.4rem, 4vw, 3.2rem) 0;
+            border-top: 1px solid var(--sga-rule-soft);
+        }
+
+        .sga-full-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border: 0;
+            background: none;
+            color: rgba(199, 169, 108, 0.66);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.54rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.4s var(--ease-lux);
+        }
+
+        .sga-full-toggle:hover,
+        .sga-full-toggle:focus-visible { color: var(--void-gold-bright); }
+
+        .sga-full-toggle i {
+            width: 9px;
+            height: 9px;
+            border-right: 1px solid currentColor;
+            border-bottom: 1px solid currentColor;
+            transform: rotate(45deg) translate(-2px, -2px);
+            transition: transform 0.45s var(--ease-lux);
+        }
+
+        .sga-full-toggle[aria-expanded="true"] i { transform: rotate(-135deg) translate(-3px, -3px); }
+
+        .sga-full-panel[hidden] { display: none; }
+
+        .sga-table {
+            width: 100%;
+            margin-top: 1.2rem;
+            border-collapse: collapse;
+        }
+
+        .sga-table caption {
+            margin-bottom: 0.9rem;
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.3);
+            text-align: left;
+        }
+
+        .sga-table th,
+        .sga-table td {
+            padding: 0.85rem 0.6rem;
+            text-align: right;
+            font-size: 0.66rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--sga-rule-soft);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sga-table th:first-child,
+        .sga-table td:first-child { text-align: left; }
+
+        .sga-table thead th {
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.24em;
+            color: rgba(199, 169, 108, 0.55);
+            border-bottom-color: var(--sga-rule);
+        }
+
+        .sga-table td { color: var(--sga-ink); }
+
+        .sga-table tbody th {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            color: var(--void-white);
+        }
+
+        /* The row matching the current selection stays legible without a fill. */
+        .sga-table tbody tr[data-on="true"] th,
+        .sga-table tbody tr[data-on="true"] td { color: var(--void-gold-bright); }
+
+        .sga-tolerance {
+            margin: 1.1rem 0 0;
+            font-size: 0.52rem;
+            font-weight: 500;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.3);
+        }
+
+        /* ---- Footer ---- */
+        .sga-foot {
+            display: flex;
+            justify-content: flex-start;
+            padding: clamp(1.8rem, 4vw, 2.6rem) clamp(1.4rem, 4vw, 3.2rem) clamp(2rem, 4vw, 2.8rem);
+        }
+
+        /* Editorial navigation, not a CTA: a line that draws under the label
+           and an arrow that steps back toward it. */
+        .sga-return {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.5rem 0;
+            border: 0;
+            background: none;
+            color: rgba(245, 242, 236, 0.62);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.58rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.4s var(--ease-lux);
+        }
+
+        .sga-return i {
+            position: relative;
+            display: block;
+            width: 18px;
+            height: 1px;
+            background: currentColor;
+            transition: transform 0.45s var(--ease-lux);
+        }
+
+        .sga-return i::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 6px;
+            height: 6px;
+            border-left: 1px solid currentColor;
+            border-bottom: 1px solid currentColor;
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .sga-return::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 1px;
+            background: var(--void-gold-soft);
+            transform: scaleX(0);
+            transform-origin: 100% 50%;
+            transition: transform 0.5s var(--ease-lux);
+        }
+
+        .sga-return:hover,
+        .sga-return:focus-visible { color: var(--void-gold-bright); }
+
+        .sga-return:hover i,
+        .sga-return:focus-visible i { transform: translateX(-4px); }
+
+        .sga-return:hover::after,
+        .sga-return:focus-visible::after {
+            transform: scaleX(1);
+            transform-origin: 0 50%;
+        }
+
+        /* ---- Size change choreography ----
+           The figures mask upward as they change so the sheet reads as being
+           re-typed rather than re-rendered. Transform and opacity only. */
+        @keyframes sgaSwap {
+            from { opacity: 0; transform: translateY(7px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .sga-swap {
+            animation: sgaSwap 0.42s var(--ease-lux) both;
+        }
+
+        .sga-measure:nth-child(1) .sga-swap { animation-delay: 0.02s; }
+        .sga-measure:nth-child(2) .sga-swap { animation-delay: 0.06s; }
+        .sga-measure:nth-child(3) .sga-swap { animation-delay: 0.1s; }
+        .sga-measure:nth-child(4) .sga-swap { animation-delay: 0.14s; }
 
         /* ===== Collection category menu (View All / T-Shirts) ===== */
         .collection-nav {
@@ -7766,10 +8313,6 @@
                 max-height: min(92vh, 920px);
             }
 
-            .size-guide-body {
-                padding: 0.85rem 0.85rem 0.95rem;
-            }
-
             .size-options {
                 gap: 0.45rem;
             }
@@ -7967,25 +8510,109 @@
                 width: min(100%, 260px);
             }
 
-            .size-guide-header {
-                padding: 0.85rem 0.8rem 0.55rem;
+            /* ---- Fit archive on phones ----
+               Its own composition, not the desktop one shrunk: the document
+               metadata drops, sizes become full-width tap targets, and the
+               comparison becomes one stacked block per size so nothing has to
+               be scrolled sideways. */
+            .sga-head {
+                grid-template-columns: 1fr auto;
+                padding: 1.6rem 1.15rem 1.1rem;
             }
 
-            .size-guide-body {
-                padding: 0.75rem 0.8rem 0.9rem;
+            .sga-doc { display: none; }
+
+            .sga-close span:not([aria-hidden]) {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip-path: inset(50%);
+                white-space: nowrap;
             }
 
-            .size-guide-actions {
-                padding: 0 0.8rem 0.95rem;
+            .sga-close span[aria-hidden] { width: 44px; height: 44px; font-size: 0.95rem; }
+
+            .sga-intro { padding: 0 1.15rem 1.4rem; }
+
+            /* Phone type floor. The desktop micro-labels are legible at arm's
+               length on a monitor but not in the hand, so every label here is
+               lifted rather than scaled down with the layout. */
+            .sga-field-label { font-size: 0.64rem; letter-spacing: 0.28em; }
+            .sga-plate-label { font-size: 0.64rem; letter-spacing: 0.28em; }
+            .sga-scale-ends { font-size: 0.58rem; letter-spacing: 0.22em; }
+            .sga-note-label { font-size: 0.58rem; letter-spacing: 0.28em; text-indent: 0.28em; }
+            .sga-tolerance { font-size: 0.58rem; letter-spacing: 0.18em; }
+            .sga-subtitle { font-size: 0.62rem; letter-spacing: 0.22em; }
+            .sga-current-fit { font-size: 0.64rem; letter-spacing: 0.22em; }
+            .sga-full-toggle { font-size: 0.68rem; letter-spacing: 0.22em; min-height: 44px; }
+            .sga-return { font-size: 0.64rem; letter-spacing: 0.24em; min-height: 44px; }
+            .sga-table tbody td::before { font-size: 0.58rem; letter-spacing: 0.16em; }
+
+            .sga-body {
+                padding: 1.4rem 1.15rem 0;
+                gap: 1.6rem;
             }
 
-            .size-guide-table {
-                min-width: 540px;
+            .sga-draft { max-height: 30vh; }
+
+            .sga-size {
+                padding: 1.05rem 0;
+                font-size: 0.86rem;
+                min-height: 52px;
             }
 
-            .size-guide-return {
-                width: min(100%, 260px);
+            .sga-measure { grid-template-columns: auto 1fr auto; gap: 0.7rem; }
+            .sga-measure-name { font-size: 0.7rem; letter-spacing: 0.16em; }
+
+            .sga-scale-name { font-size: 0.68rem; letter-spacing: 0.1em; }
+
+            .sga-full { padding: 1.4rem 1.15rem 0; }
+
+            /* Table becomes stacked records: each size is a small block with
+               label/value pairs, so there is no horizontal scrolling. */
+            .sga-table,
+            .sga-table tbody,
+            .sga-table tr,
+            .sga-table td,
+            .sga-table th { display: block; }
+
+            .sga-table thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip-path: inset(50%);
             }
+
+            .sga-table tbody tr {
+                padding: 1.1rem 0;
+                border-bottom: 1px solid var(--sga-rule-soft);
+            }
+
+            .sga-table tbody th {
+                padding: 0 0 0.6rem;
+                border: 0;
+                font-size: 1.5rem;
+            }
+
+            .sga-table tbody td {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 1rem;
+                padding: 0.4rem 0;
+                border: 0;
+                text-align: left;
+            }
+
+            .sga-table tbody td::before {
+                content: attr(data-label);
+                font-size: 0.52rem;
+                letter-spacing: 0.2em;
+                color: rgba(199, 169, 108, 0.5);
+            }
+
+            .sga-foot { padding: 1.8rem 1.15rem 2rem; }
 
             .footer-content {
                 padding: 0 1rem 2.5rem;
@@ -9636,75 +10263,177 @@
     <div class="size-guide-overlay" id="sizeGuideOverlay" aria-hidden="true">
         <section class="size-guide-panel" role="dialog" aria-modal="true" aria-labelledby="sizeGuideTitle">
             <span class="panel-frame" aria-hidden="true"></span>
-            <div class="size-guide-header">
-                <div>
-                    <h3 class="size-guide-title" id="sizeGuideTitle" data-i18n-html="sizeGuideTitle">VOID<sup class="brand-copyright">©</sup> Size Guide</h3>
-                    <p class="size-guide-subtitle" data-i18n="sizeGuideSubtitle">Measured in centimeters · Oversized baseline fit</p>
+            <div class="sga" id="voidFitArchive">
+                <header class="sga-head">
+                    <div>
+                        <p class="sga-eyebrow" data-i18n="sgaEyebrow">Atelier / Fit Archive</p>
+                        <h3 class="sga-title" id="sizeGuideTitle" data-i18n="sgaTitle">The Void Silhouette</h3>
+                        <p class="sga-subtitle" data-i18n="sgaSubtitle">Oversized architecture, measured in centimetres</p>
+                    </div>
+                    <div class="sga-head-right">
+                        <button type="button" class="sga-close" id="sizeGuideClose" aria-label="Close size guide" data-i18n-aria-label="closeSizeGuide">
+                            <span data-i18n="sgaCloseLabel">Close</span>
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <p class="sga-doc">
+                            <span data-i18n="sgaDoc">Document / Fit-001</span>
+                            <span data-i18n="sgaUnit">Unit / CM</span>
+                        </p>
+                    </div>
+                </header>
+
+                <p class="sga-intro" data-i18n="sgaIntro">VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.</p>
+                <div class="sga-body">
+                    <!-- Left: the garment as a pattern drawing. Each dimension
+                         is its own group so hovering a specification row can
+                         lift the matching line on the drawing. -->
+                    <div class="sga-plate">
+                        <p class="sga-plate-label" data-i18n="sgaArchitecture">Garment Architecture</p>
+                        <svg class="sga-draft" viewBox="0 0 440 500" fill="none" stroke-width="1"
+                             role="img" aria-labelledby="sgaDraftTitle">
+                            <title id="sgaDraftTitle" data-i18n="sgaDraftAlt">Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.</title>
+
+                            <!-- construction field -->
+                            <path class="sga-axis" d="M210 44 L210 452" stroke-dasharray="2 7"/>
+                            <path class="sga-tick" d="M60 462 L380 462" stroke-dasharray="1 9"/>
+
+                            <!-- garment -->
+                            <path class="sga-garment" d="M176 74 C188 64 232 64 244 74 L296 88 L344 170 L308 190 L282 158 L286 430 L134 430 L138 158 L112 190 L76 170 L124 88 Z" stroke-linejoin="round"/>
+                            <path class="sga-garment" d="M176 74 C190 93 230 93 244 74"/>
+
+                            <!-- seam and construction references -->
+                            <path class="sga-seam" d="M138 158 L112 190 M286 158 L308 190" stroke-dasharray="3 4"/>
+                            <path class="sga-seam" d="M134 418 L286 418" stroke-dasharray="3 4"/>
+                            <path class="sga-seam" d="M124 88 L138 158 M296 88 L282 158" stroke-dasharray="3 4"/>
+                            <path class="sga-tick" d="M204 68 L216 68"/>
+
+                            <!-- C, shoulder width -->
+                            <g data-dim="shoulder">
+                                <path class="sga-dim" d="M124 48 L296 48"/>
+                                <path class="sga-dim" d="M124 42 L124 54 M296 42 L296 54"/>
+                                <path class="sga-dim" d="M132 44 L124 48 L132 52 M288 44 L296 48 L288 52"/>
+                                <text class="sga-dim-label" x="210" y="34" text-anchor="middle">C</text>
+                            </g>
+
+                            <!-- A, chest width -->
+                            <g data-dim="chest">
+                                <path class="sga-dim" d="M138 250 L286 250"/>
+                                <path class="sga-dim" d="M138 244 L138 256 M286 244 L286 256"/>
+                                <path class="sga-dim" d="M146 246 L138 250 L146 254 M278 246 L286 250 L278 254"/>
+                                <text class="sga-dim-label" x="212" y="240" text-anchor="middle">A</text>
+                            </g>
+
+                            <!-- B, body length -->
+                            <g data-dim="length">
+                                <path class="sga-dim" d="M396 74 L396 430"/>
+                                <path class="sga-dim" d="M390 74 L402 74 M390 430 L402 430"/>
+                                <path class="sga-dim" d="M392 82 L396 74 L400 82 M392 422 L396 430 L400 422"/>
+                                <text class="sga-dim-label" x="412" y="256">B</text>
+                            </g>
+
+                            <!-- D, sleeve length -->
+                            <g data-dim="sleeve">
+                                <path class="sga-dim" d="M307 80 L355 162"/>
+                                <path class="sga-dim" d="M302 83 L312 77 M350 165 L360 159"/>
+                                <path class="sga-dim" d="M310 89 L307 80 L316 84 M352 153 L355 162 L346 158"/>
+                                <text class="sga-dim-label" x="372" y="120">D</text>
+                            </g>
+
+                            <!-- registration marks -->
+                            <path class="sga-tick" d="M44 44 L44 58 M37 51 L51 51"/>
+                            <path class="sga-tick" d="M396 462 L396 476 M389 469 L403 469"/>
+                            <circle class="sga-mark" cx="210" cy="462" r="1.5"/>
+                        </svg>
+                    </div>
+
+                    <!-- Right: the specification for the chosen size. -->
+                    <div class="sga-spec">
+                        <p class="sga-field-label" id="sgaSizeLabel" data-i18n="sgaSelect">Select Size</p>
+                        <div class="sga-sizes" role="radiogroup" aria-labelledby="sgaSizeLabel" id="sgaSizes"></div>
+
+                        <div class="sga-current">
+                            <span class="sga-current-size" id="sgaCurrentSize">M</span>
+                            <span class="sga-current-fit" id="sgaCurrentFit" data-i18n="fitSignatureOversized">Signature Oversized</span>
+                        </div>
+
+                        <div class="sga-measures" id="sgaMeasures" aria-live="polite">
+                            <div class="sga-measure" data-dim="chest">
+                                <span class="sga-measure-key" aria-hidden="true">A</span>
+                                <span class="sga-measure-name" data-i18n="tableChestWidth">Chest Width</span>
+                                <span class="sga-measure-val"><b data-val="chest">60</b><small data-i18n="sgaCm">cm</small></span>
+                            </div>
+                            <div class="sga-measure" data-dim="length">
+                                <span class="sga-measure-key" aria-hidden="true">B</span>
+                                <span class="sga-measure-name" data-i18n="tableBodyLength">Body Length</span>
+                                <span class="sga-measure-val"><b data-val="length">73</b><small data-i18n="sgaCm">cm</small></span>
+                            </div>
+                            <div class="sga-measure" data-dim="shoulder">
+                                <span class="sga-measure-key" aria-hidden="true">C</span>
+                                <span class="sga-measure-name" data-i18n="tableShoulderWidth">Shoulder Width</span>
+                                <span class="sga-measure-val"><b data-val="shoulder">57</b><small data-i18n="sgaCm">cm</small></span>
+                            </div>
+                            <div class="sga-measure" data-dim="sleeve">
+                                <span class="sga-measure-key" aria-hidden="true">D</span>
+                                <span class="sga-measure-name" data-i18n="tableSleeveLength">Sleeve Length</span>
+                                <span class="sga-measure-val"><b data-val="sleeve">24</b><small data-i18n="sgaCm">cm</small></span>
+                            </div>
+                        </div>
+
+                        <!-- Fit character: a classification scale, not a slider. -->
+                        <div class="sga-scale">
+                            <p class="sga-field-label" data-i18n="sgaFitCharacter">Fit Character</p>
+                            <div class="sga-scale-ends" aria-hidden="true">
+                                <span data-i18n="sgaRestrained">Restrained</span>
+                                <span data-i18n="sgaVolume">Volume</span>
+                            </div>
+                            <div class="sga-track">
+                                <div class="sga-ticks" aria-hidden="true">
+                                    <span class="sga-tick-mark"></span><span class="sga-tick-mark"></span><span class="sga-tick-mark"></span><span class="sga-tick-mark"></span><span class="sga-tick-mark"></span>
+                                </div>
+                                <div class="sga-marker" aria-hidden="true"><span></span></div>
+                            </div>
+                            <div class="sga-scale-names" id="sgaScaleNames" aria-hidden="true"></div>
+                        </div>
+
+                        <div class="sga-note">
+                            <span class="sga-note-label" data-i18n="sgaNoteLabel">Atelier Note</span>
+                            <p class="sga-note-copy" data-i18n="sgaNote">The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.</p>
+                        </div>
+                    </div>
                 </div>
-                <button type="button" class="size-guide-close" id="sizeGuideClose" aria-label="Close size guide" data-i18n-aria-label="closeSizeGuide">✕</button>
-            </div>
-            <div class="size-guide-body">
-                <p class="size-guide-copy" data-i18n="sizeGuideCopy">Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.</p>
-                <div class="size-guide-table-wrap">
-                    <table class="size-guide-table" aria-describedby="sizeGuideNote">
-                        <thead>
-                            <tr>
-                                <th scope="col" data-i18n="tableSize">Size</th>
-                                <th scope="col" data-i18n="tableChestWidth">Chest Width</th>
-                                <th scope="col" data-i18n="tableBodyLength">Body Length</th>
-                                <th scope="col" data-i18n="tableShoulderWidth">Shoulder Width</th>
-                                <th scope="col" data-i18n="tableSleeveLength">Sleeve Length</th>
-                                <th scope="col" data-i18n="tableFitDirection">Fit Direction</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>XS</td>
-                                <td>56</td>
-                                <td>69</td>
-                                <td>53</td>
-                                <td>22</td>
-                                <td data-i18n="fitTrimOversized">Trim Oversized</td>
-                            </tr>
-                            <tr>
-                                <td>S</td>
-                                <td>58</td>
-                                <td>71</td>
-                                <td>55</td>
-                                <td>23</td>
-                                <td data-i18n="fitBalancedOversized">Balanced Oversized</td>
-                            </tr>
-                            <tr>
-                                <td>M</td>
-                                <td>60</td>
-                                <td>73</td>
-                                <td>57</td>
-                                <td>24</td>
-                                <td data-i18n="fitSignatureOversized">Signature Oversized</td>
-                            </tr>
-                            <tr>
-                                <td>L</td>
-                                <td>62</td>
-                                <td>75</td>
-                                <td>59</td>
-                                <td>25</td>
-                                <td data-i18n="fitDeepOversized">Deep Oversized</td>
-                            </tr>
-                            <tr>
-                                <td>XL</td>
-                                <td>64</td>
-                                <td>77</td>
-                                <td>61</td>
-                                <td>26</td>
-                                <td data-i18n="fitMaxOversized">Max Oversized</td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                <!-- Secondary: the whole range at once, for comparing sizes. -->
+                <div class="sga-full">
+                    <button type="button" class="sga-full-toggle" id="sgaFullToggle" aria-expanded="false" aria-controls="sgaFullPanel">
+                        <span data-i18n="sgaViewFull">View Full Specification</span>
+                        <i aria-hidden="true"></i>
+                    </button>
+                    <div class="sga-full-panel" id="sgaFullPanel" hidden>
+                        <table class="sga-table" aria-describedby="sizeGuideNote">
+                            <thead>
+                                <tr>
+                                    <th scope="col" data-i18n="tableSize">Size</th>
+                                    <th scope="col" data-i18n="tableChestWidth">Chest Width</th>
+                                    <th scope="col" data-i18n="tableBodyLength">Body Length</th>
+                                    <th scope="col" data-i18n="tableShoulderWidth">Shoulder Width</th>
+                                    <th scope="col" data-i18n="tableSleeveLength">Sleeve Length</th>
+                                    <th scope="col" data-i18n="tableFitDirection">Fit Direction</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sgaTableBody"></tbody>
+                        </table>
+                        <p class="sga-tolerance" id="sizeGuideNote" data-i18n="sizeGuideNote">All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.</p>
+                    </div>
                 </div>
-                <p class="size-guide-note" id="sizeGuideNote" data-i18n="sizeGuideNote">All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.</p>
-            </div>
-            <div class="size-guide-actions">
-                <button type="button" class="size-guide-return" id="sizeGuideReturn" data-i18n-html="sizeGuideReturn">Return to VOID<sup class="brand-copyright">©</sup></button>
+
+                <div class="sga-foot">
+                    <!-- The label is its own element: data-i18n-html replaces
+                         innerHTML, which would otherwise delete the arrow. -->
+                    <button type="button" class="sga-return" id="sizeGuideReturn">
+                        <i aria-hidden="true"></i>
+                        <span data-i18n-html="sizeGuideReturn">Return to VOID<sup class="brand-copyright">©</sup></span>
+                    </button>
+                </div>
             </div>
         </section>
     </div>
@@ -10580,7 +11309,7 @@
         let refreshCartTranslations = () => {};
         const translations = {
             en: {
-                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Full campaign imagery for this piece is currently in production. Check back soon for the complete atelier gallery.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}'
+                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Full campaign imagery for this piece is currently in production. Check back soon for the complete atelier gallery.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}', sgaEyebrow: 'Atelier / Fit Archive', sgaTitle: 'The Void Silhouette', sgaSubtitle: 'Oversized architecture, measured in centimetres', sgaIntro: 'VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.', sgaCloseLabel: 'Close', sgaDoc: 'Document / Fit-001', sgaUnit: 'Unit / CM', sgaArchitecture: 'Garment Architecture', sgaDraftAlt: 'Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.', sgaSelect: 'Select Size', sgaCm: 'cm', sgaFitCharacter: 'Fit Character', sgaRestrained: 'Restrained', sgaVolume: 'Volume', sgaNoteLabel: 'Atelier Note', sgaNote: 'The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.', sgaViewFull: 'View Full Specification', sgaHideFull: 'Hide Full Specification'
             },
             fr: {
                 navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
@@ -10942,6 +11671,9 @@
 
             applyTranslations();
             refreshCartTranslations();
+            // The fit archive renders its table and fit names from JS, so it
+            // has to be re-rendered rather than re-labelled in place.
+            if (typeof window.voidFitArchiveRefresh === 'function') window.voidFitArchiveRefresh();
         }
 
         function getPreferredLanguage() {
@@ -12416,6 +13148,160 @@
             stopEdgeAmbience();
             focusElementSafely(lastSizeGuideFocus);
         }
+
+        // ---- The fit archive ----------------------------------------------
+        // One source of truth for the pattern measurements. The selector, the
+        // specification, the fit scale and the full comparison table are all
+        // rendered from this, so a figure can never disagree with itself.
+        // Centimetres, tolerance +/- 1 (see sizeGuideNote).
+        const VOID_FIT_SPEC = [
+            { size: 'XS', chest: 56, length: 69, shoulder: 53, sleeve: 22, fitKey: 'fitTrimOversized' },
+            { size: 'S',  chest: 58, length: 71, shoulder: 55, sleeve: 23, fitKey: 'fitBalancedOversized' },
+            { size: 'M',  chest: 60, length: 73, shoulder: 57, sleeve: 24, fitKey: 'fitSignatureOversized' },
+            { size: 'L',  chest: 62, length: 75, shoulder: 59, sleeve: 25, fitKey: 'fitDeepOversized' },
+            { size: 'XL', chest: 64, length: 77, shoulder: 61, sleeve: 26, fitKey: 'fitMaxOversized' }
+        ];
+
+        (function initFitArchive() {
+            const archive = document.getElementById('voidFitArchive');
+            if (!archive) return;
+
+            const sizesEl = document.getElementById('sgaSizes');
+            const scaleNamesEl = document.getElementById('sgaScaleNames');
+            const tableBody = document.getElementById('sgaTableBody');
+            const currentSize = document.getElementById('sgaCurrentSize');
+            const currentFit = document.getElementById('sgaCurrentFit');
+            const measuresEl = document.getElementById('sgaMeasures');
+            const fullToggle = document.getElementById('sgaFullToggle');
+            const fullPanel = document.getElementById('sgaFullPanel');
+            if (!sizesEl || !measuresEl) return;
+
+            const DIMS = ['chest', 'length', 'shoulder', 'sleeve'];
+            const COLS = { chest: 'tableChestWidth', length: 'tableBodyLength', shoulder: 'tableShoulderWidth', sleeve: 'tableSleeveLength' };
+            let active = 2; // M
+
+            // Size selector, built as a radio group so arrow keys behave the
+            // way a keyboard user expects from a set of exclusive choices.
+            VOID_FIT_SPEC.forEach((spec, i) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'sga-size';
+                btn.setAttribute('role', 'radio');
+                btn.setAttribute('aria-checked', i === active ? 'true' : 'false');
+                btn.tabIndex = i === active ? 0 : -1;
+                btn.textContent = spec.size;
+                btn.addEventListener('click', () => select(i, false));
+                btn.addEventListener('keydown', (event) => {
+                    const last = VOID_FIT_SPEC.length - 1;
+                    let next = null;
+                    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = i === last ? 0 : i + 1;
+                    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = i === 0 ? last : i - 1;
+                    else if (event.key === 'Home') next = 0;
+                    else if (event.key === 'End') next = last;
+                    if (next === null) return;
+                    event.preventDefault();
+                    select(next, true);
+                });
+                sizesEl.appendChild(btn);
+
+                // The scale is labelled with the size letters, matching the
+                // ticks. The classification itself ("Signature Oversized")
+                // reads once, above, rather than five times across a row too
+                // narrow to hold it.
+                const name = document.createElement('span');
+                name.className = 'sga-scale-name';
+                name.textContent = spec.size;
+                if (scaleNamesEl) scaleNamesEl.appendChild(name);
+            });
+
+            function renderTable() {
+                if (!tableBody) return;
+                tableBody.textContent = '';
+                VOID_FIT_SPEC.forEach((spec, i) => {
+                    const tr = document.createElement('tr');
+                    tr.dataset.on = i === active ? 'true' : 'false';
+                    const th = document.createElement('th');
+                    th.scope = 'row';
+                    th.textContent = spec.size;
+                    tr.appendChild(th);
+                    DIMS.forEach((dim) => {
+                        const td = document.createElement('td');
+                        // data-label drives the stacked phone layout, where the
+                        // header row is visually hidden.
+                        td.dataset.label = t(COLS[dim]);
+                        td.textContent = spec[dim];
+                        tr.appendChild(td);
+                    });
+                    const fit = document.createElement('td');
+                    fit.dataset.label = t('tableFitDirection');
+                    fit.textContent = t(spec.fitKey);
+                    tr.appendChild(fit);
+                    tableBody.appendChild(tr);
+                });
+            }
+
+            function select(index, moveFocus) {
+                active = index;
+                const spec = VOID_FIT_SPEC[index];
+
+                Array.from(sizesEl.children).forEach((btn, i) => {
+                    btn.setAttribute('aria-checked', i === index ? 'true' : 'false');
+                    btn.tabIndex = i === index ? 0 : -1;
+                });
+                if (moveFocus) focusElementSafely(sizesEl.children[index]);
+
+                currentSize.textContent = spec.size;
+                currentFit.textContent = t(spec.fitKey);
+                currentFit.dataset.i18n = spec.fitKey;
+
+                // Re-triggering the class restarts the swap animation so the
+                // figures read as being re-typed rather than silently changing.
+                DIMS.forEach((dim) => {
+                    const el = measuresEl.querySelector('[data-val="' + dim + '"]');
+                    if (!el) return;
+                    el.textContent = spec[dim];
+                    el.classList.remove('sga-swap');
+                    void el.offsetWidth;
+                    el.classList.add('sga-swap');
+                });
+
+                archive.style.setProperty('--sga-i', String(index));
+                if (scaleNamesEl) {
+                    Array.from(scaleNamesEl.children).forEach((el, i) => {
+                        el.dataset.on = i === index ? 'true' : 'false';
+                    });
+                }
+                renderTable();
+            }
+
+            // Hovering or focusing a measurement lifts its line on the drawing.
+            // The letters A to D carry the same information without hover, so
+            // nothing is conveyed by pointer alone.
+            measuresEl.querySelectorAll('.sga-measure').forEach((row) => {
+                const dim = row.dataset.dim;
+                const group = archive.querySelector('g[data-dim="' + dim + '"]');
+                const lit = (on) => {
+                    if (group) group.classList.toggle('is-lit', on);
+                    row.classList.toggle('is-lit', on);
+                };
+                row.addEventListener('pointerenter', () => lit(true));
+                row.addEventListener('pointerleave', () => lit(false));
+            });
+
+            if (fullToggle && fullPanel) {
+                fullToggle.addEventListener('click', () => {
+                    const open = fullToggle.getAttribute('aria-expanded') === 'true';
+                    fullToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+                    fullPanel.hidden = open;
+                    const label = fullToggle.querySelector('span');
+                    if (label) label.textContent = t(open ? 'sgaViewFull' : 'sgaHideFull');
+                });
+            }
+
+            // Language switches re-render the fit names and table labels.
+            window.voidFitArchiveRefresh = () => select(active, false);
+            select(active, false);
+        })();
 
         function openSizePopup(productCard, addButton) {
             if (!productCard || !sizePopupBackdrop) return;
