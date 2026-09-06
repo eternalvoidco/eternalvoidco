@@ -7876,10 +7876,26 @@
 
         .cart-item {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
             gap: 0.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             padding-bottom: 0.55rem;
+        }
+
+        /* Vectorized garment mark — frameless, sits directly on the panel so it
+           reads as part of the line rather than a thumbnail tile. */
+        .cart-item-mark {
+            display: block;
+            width: clamp(22px, 5.6vw, 27px);
+            height: auto;
+            color: var(--void-accent);
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+
+        .cart-item:hover .cart-item-mark {
+            opacity: 0.85;
         }
 
         .cart-item-name {
@@ -13462,6 +13478,10 @@
                 const listItem = document.createElement('li');
                 listItem.className = 'cart-item';
                 listItem.innerHTML = `
+                    <svg class="cart-item-mark" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M11.5 4.6C12.9 8.4 19.1 8.4 20.5 4.6L25.2 6.3L28.9 8.9L26.3 14.9L23.1 13.6V27.4H8.9V13.6L5.7 14.9L3.1 8.9L6.8 6.3Z"/>
+                        <path d="M11.5 4.6C13 9.1 19 9.1 20.5 4.6" opacity="0.55"/>
+                    </svg>
                     <div>
                         <span class="cart-item-name">${safeName}</span>
                         <span class="cart-item-meta">${safeSize} · ${item.quantity} x ${formatEuro(item.price)}</span>
