@@ -2176,18 +2176,34 @@
         }
 
         /* ---- Site menu: MENU/CLOSE trigger + left-anchored drawer ----------
-           The trigger is the last item of .nav-left at every width, and the
-           drawer it opens is anchored to the LEFT edge so the panel grows out
-           of the same corner the trigger sits in. Class names keep the
-           historical `mobile-menu` prefix — the drawer began as a phones-only
-           sheet and is now the site-wide menu. ------------------------------ */
+           The trigger leads .nav-left at every width, and the drawer it opens is
+           anchored to the LEFT edge. MENU and CLOSE are one object: on open the
+           control physically travels from the head of the rail out to the
+           drawer's top-right corner, changing its glyph and its letterforms in
+           flight. Class names keep the historical `mobile-menu` prefix — the
+           drawer began as a phones-only sheet. --------------------------------
+
+           Journey budget (open):
+             0ms    bars begin collapsing — the icon reacts before anything moves
+             40ms   control gathers, then departs
+             60ms   MENU wipes out behind a clip edge
+             ~110ms gold ignition + trailing smear
+             340ms  CLOSE wipes in — the swap happens mid-flight, not at an end
+             820ms  control settles into the drawer corner
+           Closing runs the same beats in reverse over 880ms.               */
         :root {
             --drawer-w: min(86vw, 360px);
+            /* Gathering, then release — used for the departure. */
+            --ease-launch: cubic-bezier(0.62, 0, 0.2, 1);
+            /* Long glide onto a precise stop, no overshoot of its own. */
+            --ease-arrive: cubic-bezier(0.16, 0.84, 0.24, 1);
         }
 
         /* Typography comes from the shared .nav-left a group further down; only
-           the button reset and the glyph belong to the trigger itself. */
+           the button reset, the glyph and the journey belong to the trigger. */
         .nav-menu-toggle {
+            /* Set by the FLIP measurement in initMenuTravel(). */
+            --nmt-x: 0px;
             display: inline-flex;
             align-items: center;
             gap: 0.6rem;
@@ -2196,6 +2212,77 @@
             background: transparent;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
+            transform: translate3d(0, 0, 0);
+        }
+
+        /* Beats the `transition: all .3s ease` the shared nav group hands every
+           link — the journey is owned by keyframes, and this transition exists
+           only so a re-measure (resize, language swap) eases instead of jumps. */
+        .nav-left .nav-menu-toggle {
+            transition: transform 0.4s var(--ease-lux), color 0.3s ease;
+        }
+
+        /* Settled destination. The keyframes below land on exactly this value,
+           so when they finish the property hands back without a flicker. */
+        body.mobile-menu-open .nav-menu-toggle {
+            transform: translate3d(var(--nmt-x), 0, 0);
+            /* `backwards`, never `forwards`: the rule already holds the landed
+               value, so handing back at the end costs nothing visually and
+               leaves a re-measure free to ease the control to a new mark. */
+            animation: nmtDepart 820ms backwards;
+        }
+
+        body.mobile-menu-open.mobile-menu-closing .nav-menu-toggle {
+            transform: translate3d(0, 0, 0);
+            animation: nmtReturn 880ms backwards;
+        }
+
+        /* Per-keyframe easing: the control gathers against the direction of
+           travel, releases, glides, then decelerates onto its mark and takes up
+           the last 2px on its own. The 0.4deg of roll is there to be felt, not
+           seen — it reads as mass, not as a spin. */
+        @keyframes nmtDepart {
+            0% {
+                transform: translate3d(0, 0, 0) rotateZ(0deg) scaleX(1);
+                animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.2);
+            }
+            9% {
+                transform: translate3d(-3px, 0, 0) rotateZ(0.22deg) scaleX(0.955);
+                animation-timing-function: var(--ease-launch);
+            }
+            52% {
+                transform: translate3d(calc(var(--nmt-x) * 0.56), 0, 0) rotateZ(-0.4deg) scaleX(0.985);
+                animation-timing-function: var(--ease-arrive);
+            }
+            89% {
+                transform: translate3d(calc(var(--nmt-x) + 2px), 0, 0) rotateZ(0.12deg) scaleX(1.002);
+                animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
+            }
+            100% {
+                transform: translate3d(var(--nmt-x), 0, 0) rotateZ(0deg) scaleX(1);
+            }
+        }
+
+        @keyframes nmtReturn {
+            0% {
+                transform: translate3d(var(--nmt-x), 0, 0) rotateZ(0deg) scaleX(1);
+                animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.2);
+            }
+            10% {
+                transform: translate3d(calc(var(--nmt-x) + 3px), 0, 0) rotateZ(-0.22deg) scaleX(0.955);
+                animation-timing-function: var(--ease-launch);
+            }
+            54% {
+                transform: translate3d(calc(var(--nmt-x) * 0.42), 0, 0) rotateZ(0.4deg) scaleX(0.985);
+                animation-timing-function: var(--ease-arrive);
+            }
+            90% {
+                transform: translate3d(-2px, 0, 0) rotateZ(-0.12deg) scaleX(1.002);
+                animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
+            }
+            100% {
+                transform: translate3d(0, 0, 0) rotateZ(0deg) scaleX(1);
+            }
         }
 
         /* Thumb-sized hit area without padding the button — padding would drag
@@ -2210,12 +2297,66 @@
             transform: translate(-50%, -50%);
         }
 
+        /* A short warm smear off the trailing edge. It is the motion-blur
+           illusion and the "energy through the interface" in one: it exists
+           only while the control is in flight and leaves nothing behind. */
+        .nav-menu-toggle-trace {
+            position: absolute;
+            top: 50%;
+            right: calc(100% + 5px);
+            width: 44px;
+            height: 1px;
+            transform: translateY(-50%) scaleX(0);
+            transform-origin: 100% 50%;
+            background: linear-gradient(270deg, rgba(199, 169, 108, 0.5), rgba(199, 169, 108, 0));
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        body.mobile-menu-open .nav-menu-toggle-trace {
+            animation: nmtTrace 700ms ease-out 90ms;
+        }
+
+        /* Mirrored: on the way back the smear trails the other edge. */
+        body.mobile-menu-open.mobile-menu-closing .nav-menu-toggle-trace {
+            right: auto;
+            left: calc(100% + 5px);
+            transform-origin: 0 50%;
+            background: linear-gradient(90deg, rgba(199, 169, 108, 0.5), rgba(199, 169, 108, 0));
+            animation: nmtTrace 740ms ease-out 120ms;
+        }
+
+        @keyframes nmtTrace {
+            0%   { opacity: 0; transform: translateY(-50%) scaleX(0); }
+            18%  { opacity: 1; transform: translateY(-50%) scaleX(1); }
+            60%  { opacity: 0.45; transform: translateY(-50%) scaleX(0.72); }
+            100% { opacity: 0; transform: translateY(-50%) scaleX(0); }
+        }
+
         .nav-menu-toggle-glyph {
             position: relative;
             display: block;
             flex: none;
             width: 14px;
             height: 9px;
+            color: inherit;
+        }
+
+        /* The ignition. Gold arrives in the icon only — the letterforms stay
+           ivory throughout — and it is gone before the control lands. */
+        body.mobile-menu-open .nav-menu-toggle-glyph {
+            animation: nmtIgnite 900ms ease-out;
+        }
+
+        body.mobile-menu-open.mobile-menu-closing .nav-menu-toggle-glyph {
+            animation: nmtIgnite 940ms ease-out;
+        }
+
+        @keyframes nmtIgnite {
+            0%   { color: var(--void-white); }
+            16%  { color: var(--void-gold-soft, #d4b678); }
+            58%  { color: var(--void-gold-soft, #d4b678); }
+            100% { color: var(--void-white); }
         }
 
         .nav-menu-toggle-bar {
@@ -2224,18 +2365,65 @@
             width: 100%;
             height: 1px;
             background: currentColor;
-            transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .nav-menu-toggle-bar:nth-child(1) { top: 0; }
         .nav-menu-toggle-bar:nth-child(2) { bottom: 0; }
 
+        /* Settled geometry. The keyframes land on exactly these values. */
         .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-bar:nth-child(1) {
             transform: translateY(4px) rotate(45deg);
         }
 
         .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-bar:nth-child(2) {
             transform: translateY(-4px) rotate(-45deg);
+        }
+
+        /* The lines move before anything else does: they draw in to a stub,
+           meet in the middle, then open out into the cross as the control
+           crosses the header. */
+        body.mobile-menu-open .nav-menu-toggle-bar:nth-child(1) {
+            animation: nmtBarTopIn 660ms var(--ease-arrive) backwards;
+        }
+
+        body.mobile-menu-open .nav-menu-toggle-bar:nth-child(2) {
+            animation: nmtBarBottomIn 660ms var(--ease-arrive) backwards;
+        }
+
+        body.mobile-menu-open.mobile-menu-closing .nav-menu-toggle-bar:nth-child(1) {
+            animation: nmtBarTopOut 640ms var(--ease-arrive) backwards;
+        }
+
+        body.mobile-menu-open.mobile-menu-closing .nav-menu-toggle-bar:nth-child(2) {
+            animation: nmtBarBottomOut 640ms var(--ease-arrive) backwards;
+        }
+
+        @keyframes nmtBarTopIn {
+            0%   { transform: translateY(0) rotate(0deg) scaleX(1); }
+            18%  { transform: translateY(1.5px) rotate(0deg) scaleX(0.4); }
+            42%  { transform: translateY(4px) rotate(14deg) scaleX(0.58); }
+            100% { transform: translateY(4px) rotate(45deg) scaleX(1); }
+        }
+
+        @keyframes nmtBarBottomIn {
+            0%   { transform: translateY(0) rotate(0deg) scaleX(1); }
+            18%  { transform: translateY(-1.5px) rotate(0deg) scaleX(0.4); }
+            42%  { transform: translateY(-4px) rotate(-14deg) scaleX(0.58); }
+            100% { transform: translateY(-4px) rotate(-45deg) scaleX(1); }
+        }
+
+        @keyframes nmtBarTopOut {
+            0%   { transform: translateY(4px) rotate(45deg) scaleX(1); }
+            34%  { transform: translateY(4px) rotate(16deg) scaleX(0.55); }
+            62%  { transform: translateY(1.5px) rotate(0deg) scaleX(0.4); }
+            100% { transform: translateY(0) rotate(0deg) scaleX(1); }
+        }
+
+        @keyframes nmtBarBottomOut {
+            0%   { transform: translateY(-4px) rotate(-45deg) scaleX(1); }
+            34%  { transform: translateY(-4px) rotate(-16deg) scaleX(0.55); }
+            62%  { transform: translateY(-1.5px) rotate(0deg) scaleX(0.4); }
+            100% { transform: translateY(0) rotate(0deg) scaleX(1); }
         }
 
         /* Both words share one grid cell, so the trigger is sized by whichever
@@ -2245,27 +2433,56 @@
             display: grid;
         }
 
+        /* The letterforms change by wipe, not by cross-fade, and the wipes are
+           timed to land in the middle of the journey — MENU is consumed on the
+           way out and CLOSE is written on the way in. The vertical bleed keeps
+           ascenders and descenders clear of the clip edge. */
         .nav-menu-toggle-word {
             grid-area: 1 / 1;
-            transition: opacity 0.28s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), filter 0.28s ease;
+            clip-path: inset(-30% 0 -30% 0);
         }
 
         .nav-menu-toggle-word.is-close {
             opacity: 0;
-            transform: translateX(-7px);
-            filter: blur(2px);
+            clip-path: inset(-30% 100% -30% 0);
         }
 
         .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-word.is-open {
             opacity: 0;
-            transform: translateX(7px);
-            filter: blur(2px);
+            clip-path: inset(-30% 0 -30% 100%);
         }
 
         .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-word.is-close {
             opacity: 1;
-            transform: translateX(0);
-            filter: blur(0);
+            clip-path: inset(-30% 0 -30% 0);
+        }
+
+        body.mobile-menu-open .nav-menu-toggle-word.is-open {
+            animation: nmtWordConsume 300ms var(--ease-launch) 60ms both;
+        }
+
+        body.mobile-menu-open .nav-menu-toggle-word.is-close {
+            animation: nmtWordWrite 340ms var(--ease-arrive) 340ms both;
+        }
+
+        body.mobile-menu-open.mobile-menu-closing .nav-menu-toggle-word.is-close {
+            animation: nmtWordConsume 300ms var(--ease-launch) 60ms both;
+        }
+
+        body.mobile-menu-open.mobile-menu-closing .nav-menu-toggle-word.is-open {
+            animation: nmtWordWrite 360ms var(--ease-arrive) 360ms both;
+        }
+
+        @keyframes nmtWordConsume {
+            0%   { opacity: 1; clip-path: inset(-30% 0 -30% 0); filter: blur(0); }
+            55%  { opacity: 1; filter: blur(0.9px); }
+            100% { opacity: 0; clip-path: inset(-30% 0 -30% 100%); filter: blur(0); }
+        }
+
+        @keyframes nmtWordWrite {
+            0%   { opacity: 0; clip-path: inset(-30% 100% -30% 0); filter: blur(1.4px); }
+            60%  { opacity: 1; filter: blur(0.5px); }
+            100% { opacity: 1; clip-path: inset(-30% 0 -30% 0); filter: blur(0); }
         }
 
         /* COLLECTION / STYLE GUIDE dismissal. The resting rule carries the
@@ -2279,10 +2496,12 @@
             opacity: 1;
             transform: none;
             filter: none;
+            /* Held until the control is most of the way home, so the rail
+               rebuilds around the arriving MENU rather than ahead of it. */
             transition:
-                opacity 0.42s ease calc(240ms + (1 - var(--nd-i)) * 45ms),
-                transform 0.52s var(--ease-lux) calc(220ms + (1 - var(--nd-i)) * 45ms),
-                filter 0.38s ease calc(260ms + (1 - var(--nd-i)) * 45ms);
+                opacity 0.46s ease calc(420ms + (1 - var(--nd-i)) * 90ms),
+                transform 0.56s var(--ease-lux) calc(400ms + (1 - var(--nd-i)) * 90ms),
+                filter 0.42s ease calc(440ms + (1 - var(--nd-i)) * 90ms);
         }
 
         body.mobile-menu-open .nav-left li.nav-dismissable {
@@ -2292,10 +2511,12 @@
             filter: blur(2.2px) brightness(0.42);
             transform: translateX(-11px);
             pointer-events: none;
+            /* Staggered wide enough that each entry recedes roughly as the
+               travelling control reaches it, rather than both going at once. */
             transition:
-                filter 0.26s ease calc(var(--nd-i) * 45ms),
-                transform 0.44s cubic-bezier(0.4, 0, 0.2, 1) calc(var(--nd-i) * 45ms),
-                opacity 0.32s ease calc(120ms + var(--nd-i) * 45ms);
+                filter 0.26s ease calc(var(--nd-i) * 120ms),
+                transform 0.44s cubic-bezier(0.4, 0, 0.2, 1) calc(var(--nd-i) * 120ms),
+                opacity 0.32s ease calc(120ms + var(--nd-i) * 120ms);
         }
 
         /* The trigger has to outrank the backdrop while the drawer is open, and
@@ -2744,9 +2965,20 @@
         html.reduce-motion .mobile-menu-edge,
         html.reduce-motion .mobile-menu-lumen,
         html.reduce-motion .nav-left li.nav-dismissable,
+        html.reduce-motion .nav-left .nav-menu-toggle,
         html.reduce-motion .nav-menu-toggle-bar,
         html.reduce-motion .nav-menu-toggle-word {
             transition: none !important;
+        }
+
+        /* The control still takes its place at the drawer corner — it is the
+           journey that is dropped, not the destination. */
+        html.reduce-motion .nav-menu-toggle,
+        html.reduce-motion .nav-menu-toggle-glyph,
+        html.reduce-motion .nav-menu-toggle-bar,
+        html.reduce-motion .nav-menu-toggle-word,
+        html.reduce-motion .nav-menu-toggle-trace {
+            animation: none !important;
         }
 
         .nav-left a,
@@ -10436,10 +10668,9 @@
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <ul class="nav-left">
-            <li class="nav-dismissable" style="--nd-i: 0;"><a href="/shop" data-i18n="navCollection">Collection</a></li>
-            <li class="nav-style-guide nav-dismissable" style="--nd-i: 1;"><a href="#" data-style-guide-trigger data-i18n="navStyleGuide">Style Guide</a></li>
             <li class="nav-menu-item">
                 <button type="button" class="nav-menu-toggle" id="navMenuToggle" aria-controls="mobileMenu" aria-expanded="false">
+                    <span class="nav-menu-toggle-trace" aria-hidden="true"></span>
                     <span class="nav-menu-toggle-glyph" aria-hidden="true">
                         <span class="nav-menu-toggle-bar"></span>
                         <span class="nav-menu-toggle-bar"></span>
@@ -10450,6 +10681,8 @@
                     </span>
                 </button>
             </li>
+            <li class="nav-dismissable" style="--nd-i: 0;"><a href="/shop" data-i18n="navCollection">Collection</a></li>
+            <li class="nav-style-guide nav-dismissable" style="--nd-i: 1;"><a href="#" data-style-guide-trigger data-i18n="navStyleGuide">Style Guide</a></li>
         </ul>
         <div class="logo">VOID<sup class="brand-copyright">©</sup></div>
         <ul class="nav-right">
@@ -13107,7 +13340,7 @@
             // stagger and the light contracts while `.mobile-menu-open` is
             // still applied, and only then is the open state dropped. Must
             // outlast the slowest closing transition (the header rebuild).
-            const CLOSE_MS = 620;
+            const CLOSE_MS = 900;
             const menuWords = navMenuToggle.querySelectorAll('.nav-menu-toggle-word');
             const menuGroups = Array.prototype.slice.call(mobileMenu.querySelectorAll('.mm-group'));
             let menuCloseTimer = null;
@@ -13120,11 +13353,31 @@
 
             const collapseGroups = () => menuGroups.forEach((g) => setGroup(g, false));
 
+            // FLIP for the MENU -> CLOSE journey. FIRST is the control's resting
+            // rect, read off its <li> because the li is never transformed and so
+            // reports the untransformed geometry even mid-flight. LAST is the
+            // drawer's top-right inset. Only the delta is published, as a custom
+            // property the keyframes interpolate — no layout property is ever
+            // animated, and nothing is measured per frame.
+            const measureMenuTravel = () => {
+                const host = navMenuToggle.parentElement;
+                if (!host) return;
+                const first = host.getBoundingClientRect();
+                if (!first.width) return;
+                const panel = getComputedStyle(mobileMenu);
+                const last = parseFloat(panel.width) - parseFloat(panel.paddingRight) - first.width;
+                navMenuToggle.style.setProperty('--nmt-x', Math.round(last - first.left) + 'px');
+            };
+
             const setMobileMenu = (open) => {
                 const body = document.body;
                 window.clearTimeout(menuCloseTimer);
 
                 if (open) {
+                    // Measured while the control is still at rest, so the
+                    // journey starts from a mark taken this frame — correct
+                    // across breakpoints, languages and font loading alike.
+                    measureMenuTravel();
                     body.classList.remove('mobile-menu-closing');
                     body.classList.add('mobile-menu-open');
                 } else if (body.classList.contains('mobile-menu-open')) {
@@ -13214,6 +13467,18 @@
                     setMobileMenu(false);
                     focusElementSafely(navMenuToggle);
                 }
+            });
+
+            // A resize moves the destination; a language swap changes the
+            // control's own width. Either way the landed transform is stale, so
+            // re-publish the delta and let the base rule's transition ease it
+            // across rather than leave CLOSE parked off its corner.
+            window.addEventListener('resize', () => {
+                if (document.body.classList.contains('mobile-menu-open')) measureMenuTravel();
+            });
+
+            mobileMenu.querySelectorAll('.language-option').forEach((el) => {
+                el.addEventListener('click', () => window.setTimeout(measureMenuTravel, 0));
             });
         }
 
