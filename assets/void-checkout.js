@@ -244,7 +244,7 @@ async function refreshQuote() {
     }
 
     if (!data.ok) {
-        if (data.error === 'empty_cart') { renderEmpty(); return null; }
+        if (data.error === 'empty_cart') { setCartState('empty'); return null; }
         showBlocker('Selection unavailable', describeIssues(data.issues || []));
         state.quote = null;
         renderSummary();
@@ -259,16 +259,13 @@ async function refreshQuote() {
 }
 
 // ── rendering ────────────────────────────────────────────────────────────────
-function renderEmpty() {
-    $('ckEmpty').hidden = false;
-    $('ckMain').hidden = true;
-    $('ckSummary').hidden = true;
+// The one place cart state becomes visible. 'loading' shows neither branch, so
+// the empty state can never appear before the bag has actually been read.
+function setCartState(next) {
+    document.getElementById('ckShell').dataset.cart = next;
 }
 
 function renderSummary() {
-    const summary = $('ckSummary');
-    summary.hidden = false;
-
     const lines = (state.quote && state.quote.lines) || [];
     const list = $('ckLines');
     list.textContent = '';
@@ -675,12 +672,14 @@ function buildCountries() {
 
 async function init() {
     loadProgress();
+
+    // Reading the bag is synchronous localStorage, so this resolves in the same
+    // task the module starts in — the shell goes straight from loading to its
+    // real state without an intermediate paint.
     state.cart = readCart();
 
-    if (state.cart.length === 0) { renderEmpty(); return; }
-
-    $('ckMain').hidden = false;
-    $('ckEmpty').hidden = true;
+    if (state.cart.length === 0) { setCartState('empty'); return; }
+    setCartState('ready');
 
     bindField('ckEmail', state.details, 'email');
     bindField('ckFirstName', state.details, 'firstName');

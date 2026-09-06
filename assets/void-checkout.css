@@ -680,15 +680,31 @@ a { color: inherit; }
     color: var(--void-text-faint);
 }
 
-/* ── Empty / blocked states ─────────────────────────────────────────────── */
+/* ── Cart states ────────────────────────────────────────────────────────────
+   Exactly one branch of the shell is ever laid out, and which one is decided by
+   a single attribute rather than by `hidden` on three separate elements. That
+   matters here: .ck-empty needs `display: grid` to lay out, and an author
+   `display` beats the UA sheet's `[hidden] { display: none }` — so the empty
+   state rendered permanently, underneath which the real checkout also rendered.
+
+   Default is hidden for all three, so `loading` shows nothing at all and the
+   empty state cannot appear before the bag has been read. */
+#ckMain,
+.ck-summary,
+.ck-empty { display: none; }
+
+.ck-shell[data-cart="ready"] #ckMain { display: block; }
+.ck-shell[data-cart="ready"] .ck-summary { display: block; }
+
 .ck-empty {
     grid-column: 1 / -1;
-    display: grid;
     place-items: center;
     gap: 1.6rem;
     min-height: 46svh;
     text-align: center;
 }
+
+.ck-shell[data-cart="empty"] .ck-empty { display: grid; }
 
 .ck-empty-title {
     font-family: 'Cormorant Garamond', Georgia, serif;

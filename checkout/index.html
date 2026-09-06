@@ -31,15 +31,18 @@
         </span>
     </header>
 
-    <main class="ck-shell" id="ckShell">
+    <!-- data-cart is the single switch between the three states: loading (the
+         default, showing nothing), empty, and ready. Visibility is not managed
+         per element, so the empty state and the form cannot both appear. -->
+    <main class="ck-shell" id="ckShell" data-cart="loading">
         <!-- Empty bag. Rendered instead of the form, never alongside it. -->
-        <section class="ck-empty" id="ckEmpty" hidden>
+        <section class="ck-empty" id="ckEmpty">
             <h1 class="ck-empty-title">Your selection is empty</h1>
             <p class="ck-empty-note">Nothing has been placed in your bag yet. The season one pieces are in the collection.</p>
             <a class="ck-cta" href="/shop" style="display:grid;place-items:center;text-decoration:none;">Return to Collection</a>
         </section>
 
-        <div id="ckMain" hidden>
+        <div id="ckMain">
             <ol class="ck-progress" id="ckProgress" aria-label="Checkout progress">
                 <li class="ck-step" data-step="details" data-state="active"><span class="ck-step-n">01</span><span class="ck-step-label">Details</span></li>
                 <li class="ck-step" data-step="delivery"><span class="ck-step-n">02</span><span class="ck-step-label">Delivery</span></li>
@@ -191,7 +194,7 @@
         </div>
 
         <!-- Order manifest ───────────────────────────────────────────────── -->
-        <aside class="ck-summary" id="ckSummary" aria-label="Your selection" hidden>
+        <aside class="ck-summary" id="ckSummary" aria-label="Your selection">
             <div class="ck-summary-head">
                 <h2 class="ck-summary-title">Your Selection</h2>
                 <button type="button" class="ck-summary-toggle" id="ckSummaryToggle" aria-expanded="false" aria-controls="ckSummaryBody">
