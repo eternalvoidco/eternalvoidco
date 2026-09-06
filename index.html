@@ -4915,6 +4915,7 @@
             --sga-ink: rgba(245, 242, 236, 0.74);
             --sga-ink-dim: rgba(245, 242, 236, 0.42);
             --sga-i: 2;              /* active size index, written by JS */
+            --sga-count: 5;          /* sizes in the active run, written by JS */
             position: relative;
             flex: 1 1 auto;
             min-height: 0;
@@ -5082,11 +5083,63 @@
             color: rgba(199, 169, 108, 0.5);
         }
 
+        /* Every garment's plate lives in the document; only the one belonging
+           to the active guide is laid out, so switching guides costs nothing
+           and never shows a drawing being replaced. */
         .sga-draft {
+            display: none;
             width: 100%;
             height: auto;
             max-height: 46vh;
             color: var(--void-gold-soft);
+        }
+
+        .sga-draft.is-active {
+            display: block;
+        }
+
+        /* The ensemble plate carries two flats side by side, so it is allowed
+           more height than a single garment needs. */
+        .sga-draft[data-diagram="ensemble"] {
+            max-height: 40vh;
+        }
+
+        /* Garment heading inside a multi-part specification (the ensemble). */
+        .sga-measure-group {
+            margin: 1.5rem 0 0;
+            padding-bottom: 0.5rem;
+            font-size: 0.52rem;
+            font-weight: 600;
+            letter-spacing: 0.34em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.62);
+        }
+
+        .sga-measure-group:first-child {
+            margin-top: 0;
+        }
+
+        .sga-table-title {
+            margin: 1.6rem 0 0.7rem;
+            font-size: 0.52rem;
+            font-weight: 600;
+            letter-spacing: 0.34em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.62);
+        }
+
+        .sga-table-title:first-child {
+            margin-top: 0;
+        }
+
+        /* Shown only while a garment's pattern figures are still outstanding,
+           so an em dash is never left to explain itself. */
+        .sga-pending {
+            margin-top: 1rem;
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            line-height: 1.7;
+            color: rgba(245, 242, 236, 0.42);
         }
 
         /* The garment itself sits brighter than its annotation, so the
@@ -5133,7 +5186,7 @@
         /* Size selection. A row of specimens on a hairline, not chips. */
         .sga-sizes {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(var(--sga-count), 1fr);
             border-top: 1px solid var(--sga-rule);
             border-bottom: 1px solid var(--sga-rule);
         }
@@ -5279,7 +5332,7 @@
 
         .sga-ticks {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(var(--sga-count), 1fr);
         }
 
         .sga-tick-mark {
@@ -5289,13 +5342,14 @@
             background: rgba(199, 169, 108, 0.3);
         }
 
-        /* The marker travels in fifths, so it lands on a tick rather than
-           sliding continuously like a range input. */
+        /* The marker travels one size-step at a time, so it lands on a tick
+           rather than sliding continuously like a range input. The step is a
+           fraction of the run, so a four-size garment still lands true. */
         .sga-marker {
             position: absolute;
             top: -4px;
             left: 0;
-            width: 20%;
+            width: calc(100% / var(--sga-count));
             display: grid;
             place-items: center;
             transform: translateX(calc(var(--sga-i) * 100%));
@@ -5312,7 +5366,7 @@
 
         .sga-scale-names {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(var(--sga-count), 1fr);
             margin-top: 0.85rem;
         }
 
@@ -11070,20 +11124,24 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                         <p class="sga-doc">
-                            <span data-i18n="sgaDoc">Document / Fit-001</span>
+                            <span id="sgaDocCode" data-i18n="sgaDoc">Document / Fit-001</span>
                             <span data-i18n="sgaUnit">Unit / CM</span>
                         </p>
                     </div>
                 </header>
 
-                <p class="sga-intro" data-i18n="sgaIntro">VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.</p>
+                <p class="sga-intro" id="sgaIntro" data-i18n="sgaIntro">VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.</p>
                 <div class="sga-body">
                     <!-- Left: the garment as a pattern drawing. Each dimension
                          is its own group so hovering a specification row can
                          lift the matching line on the drawing. -->
                     <div class="sga-plate">
                         <p class="sga-plate-label" data-i18n="sgaArchitecture">Garment Architecture</p>
-                        <svg class="sga-draft" viewBox="0 0 440 500" fill="none" stroke-width="1"
+                        <!-- One plate per garment. Only the one matching the
+                             active guide is displayed, and the guide is set
+                             before the overlay opens, so no drawing is ever
+                             seen being replaced. -->
+                        <svg class="sga-draft is-active" data-diagram="tshirt" viewBox="0 0 440 500" fill="none" stroke-width="1"
                              role="img" aria-labelledby="sgaDraftTitle">
                             <title id="sgaDraftTitle" data-i18n="sgaDraftAlt">Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.</title>
 
@@ -11138,6 +11196,232 @@
                             <path class="sga-tick" d="M396 462 L396 476 M389 469 L403 469"/>
                             <circle class="sga-mark" cx="210" cy="462" r="1.5"/>
                         </svg>
+
+                        <!-- Hooded sweatshirt. Same drafting language as the
+                             tee: hood, set sleeves to ribbed cuffs, ribbed hem
+                             and a pouch, with the shoulder dimension carried
+                             above the hood on extension lines. -->
+                        <svg class="sga-draft" data-diagram="sweatshirt" viewBox="0 0 440 500" fill="none" stroke-width="1"
+                             role="img" aria-labelledby="sgaDraftSweatshirtTitle">
+                            <title id="sgaDraftSweatshirtTitle" data-i18n="sgaDraftAltSweatshirt">Technical drawing of the hooded sweatshirt showing where chest width, body length, shoulder width, sleeve length, hem width and cuff width are measured.</title>
+
+                            <path class="sga-axis" d="M210 26 L210 452" stroke-dasharray="2 7"/>
+                            <path class="sga-tick" d="M60 476 L380 476" stroke-dasharray="1 9"/>
+
+                            <path class="sga-seam" d="M120 36 L120 122 M300 36 L300 122" stroke-dasharray="2 6"/>
+
+                            <path class="sga-garment" d="M170 112 C162 46 258 46 250 112" stroke-linejoin="round"/>
+                            <path class="sga-seam" d="M180 112 C174 62 246 62 240 112" stroke-dasharray="3 4"/>
+
+                            <path class="sga-garment" d="M170 112 L120 122 L82 176 L68 322 L114 330 L136 196 L132 412 L288 412 L284 196 L306 330 L352 322 L338 176 L300 122 L250 112 Z" stroke-linejoin="round"/>
+
+                            <path class="sga-garment" d="M132 384 L288 384"/>
+                            <path class="sga-seam" d="M156 386 L156 410 M180 386 L180 410 M204 386 L204 410 M228 386 L228 410 M252 386 L252 410 M272 386 L272 410"/>
+                            <path class="sga-garment" d="M70 296 L112 304 M308 304 L350 296"/>
+                            <path class="sga-seam" d="M156 268 L156 348 L264 348 L264 268" stroke-dasharray="3 4"/>
+                            <path class="sga-seam" d="M120 122 L136 196 M300 122 L284 196" stroke-dasharray="3 4"/>
+                            <path class="sga-seam" d="M196 118 L196 152 M224 118 L224 152"/>
+                            <circle class="sga-mark" cx="196" cy="116" r="1.6"/>
+                            <circle class="sga-mark" cx="224" cy="116" r="1.6"/>
+
+                            <g data-dim="shoulder">
+                                <path class="sga-dim" d="M120 30 L300 30"/>
+                                <path class="sga-dim" d="M120 24 L120 36 M300 24 L300 36"/>
+                                <path class="sga-dim" d="M128 26 L120 30 L128 34 M292 26 L300 30 L292 34"/>
+                                <text class="sga-dim-label" x="210" y="18" text-anchor="middle">C</text>
+                            </g>
+                            <g data-dim="chest">
+                                <path class="sga-dim" d="M136 246 L284 246"/>
+                                <path class="sga-dim" d="M136 240 L136 252 M284 240 L284 252"/>
+                                <path class="sga-dim" d="M144 242 L136 246 L144 250 M276 242 L284 246 L276 250"/>
+                                <text class="sga-dim-label" x="212" y="236" text-anchor="middle">A</text>
+                            </g>
+                            <g data-dim="length">
+                                <path class="sga-dim" d="M396 112 L396 412"/>
+                                <path class="sga-dim" d="M390 112 L402 112 M390 412 L402 412"/>
+                                <path class="sga-dim" d="M392 120 L396 112 L400 120 M392 404 L396 412 L400 404"/>
+                                <text class="sga-dim-label" x="412" y="266">B</text>
+                            </g>
+                            <g data-dim="sleeve">
+                                <path class="sga-dim" d="M304 128 L350 316"/>
+                                <path class="sga-dim" d="M298 130 L310 126 M344 318 L356 314"/>
+                                <path class="sga-dim" d="M306 137 L304 128 L312 133 M348 307 L350 316 L342 311"/>
+                                <text class="sga-dim-label" x="366" y="224">D</text>
+                            </g>
+                            <g data-dim="hem">
+                                <path class="sga-dim" d="M132 440 L288 440"/>
+                                <path class="sga-dim" d="M132 434 L132 446 M288 434 L288 446"/>
+                                <path class="sga-dim" d="M140 436 L132 440 L140 444 M280 436 L288 440 L280 444"/>
+                                <text class="sga-dim-label" x="210" y="458" text-anchor="middle">E</text>
+                            </g>
+                            <g data-dim="cuff">
+                                <path class="sga-dim" d="M308 352 L352 344"/>
+                                <path class="sga-dim" d="M306 346 L310 358 M350 338 L354 350"/>
+                                <text class="sga-dim-label" x="336" y="374">F</text>
+                            </g>
+
+                            <path class="sga-tick" d="M44 30 L44 44 M37 37 L51 37"/>
+                            <path class="sga-tick" d="M396 468 L396 482 M389 475 L403 475"/>
+                            <circle class="sga-mark" cx="210" cy="476" r="1.5"/>
+                        </svg>
+
+                        <!-- Track pants. Rise and inseam share a single
+                             extension line on the left, so they read as the
+                             two halves of the outseam opposite them. -->
+                        <svg class="sga-draft" data-diagram="trackpants" viewBox="0 0 440 500" fill="none" stroke-width="1"
+                             role="img" aria-labelledby="sgaDraftTrackpantsTitle">
+                            <title id="sgaDraftTrackpantsTitle" data-i18n="sgaDraftAltTrackpants">Technical drawing of the track pants showing where waist width, hip width, front rise, thigh width, inseam, outseam and leg opening are measured.</title>
+
+                            <path class="sga-axis" d="M210 40 L210 232" stroke-dasharray="2 7"/>
+                            <path class="sga-tick" d="M60 484 L380 484" stroke-dasharray="1 9"/>
+
+                            <path class="sga-garment" d="M140 62 L280 62 L292 168 L286 452 L222 452 L210 232 L198 452 L134 452 L128 168 Z" stroke-linejoin="round"/>
+                            <path class="sga-garment" d="M138 92 L282 92"/>
+                            <path class="sga-seam" d="M186 66 L186 90 M234 66 L234 90"/>
+                            <path class="sga-seam" d="M196 94 L204 128 M224 94 L216 128"/>
+                            <circle class="sga-mark" cx="196" cy="94" r="1.6"/>
+                            <circle class="sga-mark" cx="224" cy="94" r="1.6"/>
+                            <path class="sga-seam" d="M210 92 L210 232" stroke-dasharray="3 4"/>
+                            <path class="sga-garment" d="M136 424 L199 424 M221 424 L287 424"/>
+                            <path class="sga-seam" d="M148 426 L148 450 M166 426 L166 450 M184 426 L184 450 M236 426 L236 450 M256 426 L256 450 M274 426 L274 450"/>
+
+                            <g data-dim="waist">
+                                <path class="sga-dim" d="M140 44 L280 44"/>
+                                <path class="sga-dim" d="M140 38 L140 50 M280 38 L280 50"/>
+                                <path class="sga-dim" d="M148 40 L140 44 L148 48 M272 40 L280 44 L272 48"/>
+                                <text class="sga-dim-label" x="210" y="32" text-anchor="middle">A</text>
+                            </g>
+                            <g data-dim="hip">
+                                <path class="sga-dim" d="M128 158 L292 158"/>
+                                <path class="sga-dim" d="M128 152 L128 164 M292 152 L292 164"/>
+                                <path class="sga-dim" d="M136 154 L128 158 L136 162 M284 154 L292 158 L284 162"/>
+                                <text class="sga-dim-label" x="210" y="148" text-anchor="middle">B</text>
+                            </g>
+                            <g data-dim="rise">
+                                <path class="sga-dim" d="M100 62 L100 232"/>
+                                <path class="sga-dim" d="M94 62 L106 62 M94 232 L106 232"/>
+                                <path class="sga-dim" d="M96 70 L100 62 L104 70 M96 224 L100 232 L104 224"/>
+                                <text class="sga-dim-label" x="82" y="150">C</text>
+                            </g>
+                            <g data-dim="thigh">
+                                <path class="sga-dim" d="M218 272 L288 272"/>
+                                <path class="sga-dim" d="M218 266 L218 278 M288 266 L288 278"/>
+                                <path class="sga-dim" d="M226 268 L218 272 L226 276 M280 268 L288 272 L280 276"/>
+                                <text class="sga-dim-label" x="253" y="262" text-anchor="middle">D</text>
+                            </g>
+                            <g data-dim="inseam">
+                                <path class="sga-dim" d="M100 232 L100 452"/>
+                                <path class="sga-dim" d="M94 452 L106 452"/>
+                                <path class="sga-dim" d="M96 240 L100 232 L104 240 M96 444 L100 452 L104 444"/>
+                                <text class="sga-dim-label" x="82" y="346">E</text>
+                            </g>
+                            <g data-dim="outseam">
+                                <path class="sga-dim" d="M400 62 L400 452"/>
+                                <path class="sga-dim" d="M394 62 L406 62 M394 452 L406 452"/>
+                                <path class="sga-dim" d="M396 70 L400 62 L404 70 M396 444 L400 452 L404 444"/>
+                                <text class="sga-dim-label" x="416" y="262">F</text>
+                            </g>
+                            <g data-dim="opening">
+                                <path class="sga-dim" d="M222 468 L286 468"/>
+                                <path class="sga-dim" d="M222 462 L222 474 M286 462 L286 474"/>
+                                <path class="sga-dim" d="M230 464 L222 468 L230 472 M278 464 L286 468 L278 472"/>
+                                <text class="sga-dim-label" x="254" y="486" text-anchor="middle">G</text>
+                            </g>
+
+                            <path class="sga-tick" d="M44 44 L44 58 M37 51 L51 51"/>
+                            <path class="sga-tick" d="M396 476 L396 490 M389 483 L403 483"/>
+                            <circle class="sga-mark" cx="210" cy="484" r="1.5"/>
+                        </svg>
+
+                        <!-- The set, drawn as one document: both flats to the
+                             same scale on a shared baseline, dimensioned A-D
+                             above and E-K alongside. -->
+                        <svg class="sga-draft" data-diagram="ensemble" viewBox="0 0 680 500" fill="none" stroke-width="1"
+                             role="img" aria-labelledby="sgaDraftEnsembleTitle">
+                            <title id="sgaDraftEnsembleTitle" data-i18n="sgaDraftAltEnsemble">Technical drawing of the ensemble showing the hooded sweatshirt and the track pants together, with the measurement points of both garments.</title>
+
+                            <path class="sga-tick" d="M40 476 L640 476" stroke-dasharray="1 9"/>
+                            <path class="sga-tick" d="M44 30 L44 44 M37 37 L51 37"/>
+
+                            <g transform="translate(-24 44) scale(0.74)" stroke-width="1.35">
+                                <path class="sga-axis" d="M210 40 L210 452" stroke-dasharray="3 9"/>
+                                <path class="sga-garment" d="M170 112 C162 46 258 46 250 112" stroke-linejoin="round"/>
+                                <path class="sga-seam" d="M180 112 C174 62 246 62 240 112" stroke-dasharray="4 5"/>
+                                <path class="sga-garment" d="M170 112 L120 122 L82 176 L68 322 L114 330 L136 196 L132 412 L288 412 L284 196 L306 330 L352 322 L338 176 L300 122 L250 112 Z" stroke-linejoin="round"/>
+                                <path class="sga-garment" d="M132 384 L288 384"/>
+                                <path class="sga-seam" d="M156 386 L156 410 M180 386 L180 410 M204 386 L204 410 M228 386 L228 410 M252 386 L252 410 M272 386 L272 410"/>
+                                <path class="sga-garment" d="M70 296 L112 304 M308 304 L350 296"/>
+                                <path class="sga-seam" d="M156 268 L156 348 L264 348 L264 268" stroke-dasharray="4 5"/>
+                                <path class="sga-seam" d="M196 118 L196 152 M224 118 L224 152"/>
+
+                                <g data-dim="chest">
+                                    <path class="sga-dim" d="M136 246 L284 246"/>
+                                    <path class="sga-dim" d="M136 238 L136 254 M284 238 L284 254"/>
+                                    <text class="sga-dim-label" x="212" y="232" text-anchor="middle">A</text>
+                                </g>
+                                <g data-dim="length">
+                                    <path class="sga-dim" d="M386 112 L386 412"/>
+                                    <path class="sga-dim" d="M378 112 L394 112 M378 412 L394 412"/>
+                                    <text class="sga-dim-label" x="404" y="268">B</text>
+                                </g>
+                                <g data-dim="shoulder">
+                                    <path class="sga-dim" d="M120 26 L300 26"/>
+                                    <path class="sga-dim" d="M120 18 L120 34 M300 18 L300 34"/>
+                                    <text class="sga-dim-label" x="210" y="12" text-anchor="middle">C</text>
+                                </g>
+                                <g data-dim="sleeve">
+                                    <path class="sga-dim" d="M312 132 L356 314"/>
+                                    <path class="sga-dim" d="M304 134 L320 130 M348 316 L364 312"/>
+                                    <text class="sga-dim-label" x="376" y="228">D</text>
+                                </g>
+                            </g>
+
+                            <g transform="translate(352 34) scale(0.74)" stroke-width="1.35">
+                                <path class="sga-axis" d="M210 40 L210 232" stroke-dasharray="3 9"/>
+                                <path class="sga-garment" d="M140 62 L280 62 L292 168 L286 452 L222 452 L210 232 L198 452 L134 452 L128 168 Z" stroke-linejoin="round"/>
+                                <path class="sga-garment" d="M138 92 L282 92"/>
+                                <path class="sga-seam" d="M196 94 L204 128 M224 94 L216 128"/>
+                                <path class="sga-seam" d="M210 92 L210 232" stroke-dasharray="4 5"/>
+                                <path class="sga-garment" d="M136 424 L199 424 M221 424 L287 424"/>
+                                <path class="sga-seam" d="M148 426 L148 450 M166 426 L166 450 M184 426 L184 450 M236 426 L236 450 M256 426 L256 450 M274 426 L274 450"/>
+
+                                <g data-dim="waist">
+                                    <path class="sga-dim" d="M140 40 L280 40"/>
+                                    <path class="sga-dim" d="M140 32 L140 48 M280 32 L280 48"/>
+                                    <text class="sga-dim-label" x="210" y="26" text-anchor="middle">E</text>
+                                </g>
+                                <g data-dim="hip">
+                                    <path class="sga-dim" d="M128 158 L292 158"/>
+                                    <path class="sga-dim" d="M128 150 L128 166 M292 150 L292 166"/>
+                                    <text class="sga-dim-label" x="210" y="144" text-anchor="middle">F</text>
+                                </g>
+                                <g data-dim="rise">
+                                    <path class="sga-dim" d="M96 62 L96 232"/>
+                                    <path class="sga-dim" d="M88 62 L104 62 M88 232 L104 232"/>
+                                    <text class="sga-dim-label" x="72" y="152">G</text>
+                                </g>
+                                <g data-dim="thigh">
+                                    <path class="sga-dim" d="M218 272 L288 272"/>
+                                    <path class="sga-dim" d="M218 264 L218 280 M288 264 L288 280"/>
+                                    <text class="sga-dim-label" x="253" y="258" text-anchor="middle">H</text>
+                                </g>
+                                <g data-dim="inseam">
+                                    <path class="sga-dim" d="M96 232 L96 452"/>
+                                    <path class="sga-dim" d="M88 452 L104 452"/>
+                                    <text class="sga-dim-label" x="72" y="350">I</text>
+                                </g>
+                                <g data-dim="outseam">
+                                    <path class="sga-dim" d="M394 62 L394 452"/>
+                                    <path class="sga-dim" d="M386 62 L402 62 M386 452 L402 452"/>
+                                    <text class="sga-dim-label" x="414" y="262">J</text>
+                                </g>
+                                <g data-dim="opening">
+                                    <path class="sga-dim" d="M222 470 L286 470"/>
+                                    <path class="sga-dim" d="M222 462 L222 478 M286 462 L286 478"/>
+                                    <text class="sga-dim-label" x="254" y="492" text-anchor="middle">K</text>
+                                </g>
+                            </g>
+                        </svg>
                     </div>
 
                     <!-- Right: the specification for the chosen size. -->
@@ -11154,28 +11438,11 @@
                             <span class="sga-current-fit sga-dyn" data-order="1" id="sgaCurrentFit" data-i18n="fitSignatureOversized">Signature Oversized</span>
                         </div>
 
-                        <div class="sga-measures" id="sgaMeasures" aria-live="polite">
-                            <div class="sga-measure" data-dim="chest">
-                                <span class="sga-measure-key" aria-hidden="true">A</span>
-                                <span class="sga-measure-name" data-i18n="tableChestWidth">Chest Width</span>
-                                <span class="sga-measure-val sga-dyn" data-order="2"><b data-val="chest">60</b><small data-i18n="sgaCm">cm</small></span>
-                            </div>
-                            <div class="sga-measure" data-dim="length">
-                                <span class="sga-measure-key" aria-hidden="true">B</span>
-                                <span class="sga-measure-name" data-i18n="tableBodyLength">Body Length</span>
-                                <span class="sga-measure-val sga-dyn" data-order="3"><b data-val="length">73</b><small data-i18n="sgaCm">cm</small></span>
-                            </div>
-                            <div class="sga-measure" data-dim="shoulder">
-                                <span class="sga-measure-key" aria-hidden="true">C</span>
-                                <span class="sga-measure-name" data-i18n="tableShoulderWidth">Shoulder Width</span>
-                                <span class="sga-measure-val sga-dyn" data-order="4"><b data-val="shoulder">57</b><small data-i18n="sgaCm">cm</small></span>
-                            </div>
-                            <div class="sga-measure" data-dim="sleeve">
-                                <span class="sga-measure-key" aria-hidden="true">D</span>
-                                <span class="sga-measure-name" data-i18n="tableSleeveLength">Sleeve Length</span>
-                                <span class="sga-measure-val sga-dyn" data-order="5"><b data-val="sleeve">24</b><small data-i18n="sgaCm">cm</small></span>
-                            </div>
-                        </div>
+                        <!-- Rendered from the active guide: the row set, the
+                             keys and the grouping all come from its
+                             configuration, so a garment can never be shown
+                             another garment's dimensions. -->
+                        <div class="sga-measures" id="sgaMeasures" aria-live="polite"></div>
 
                         <!-- Fit character: a classification scale, not a slider. -->
                         <div class="sga-scale">
@@ -11195,7 +11462,7 @@
 
                         <div class="sga-note">
                             <span class="sga-note-label" data-i18n="sgaNoteLabel">Atelier Note</span>
-                            <p class="sga-note-copy" data-i18n="sgaNote">The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.</p>
+                            <p class="sga-note-copy" id="sgaNoteCopy" data-i18n="sgaNote">The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.</p>
                         </div>
                     </div>
                 </div>
@@ -11207,19 +11474,10 @@
                         <i aria-hidden="true"></i>
                     </button>
                     <div class="sga-full-panel" id="sgaFullPanel" hidden>
-                        <table class="sga-table" aria-describedby="sizeGuideNote">
-                            <thead>
-                                <tr>
-                                    <th scope="col" data-i18n="tableSize">Size</th>
-                                    <th scope="col" data-i18n="tableChestWidth">Chest Width</th>
-                                    <th scope="col" data-i18n="tableBodyLength">Body Length</th>
-                                    <th scope="col" data-i18n="tableShoulderWidth">Shoulder Width</th>
-                                    <th scope="col" data-i18n="tableSleeveLength">Sleeve Length</th>
-                                    <th scope="col" data-i18n="tableFitDirection">Fit Direction</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sgaTableBody"></tbody>
-                        </table>
+                        <!-- One table per measurement group, so the ensemble
+                             compares its two garments side by side instead of
+                             running thirteen columns off the page. -->
+                        <div id="sgaTables"></div>
                         <p class="sga-tolerance" id="sizeGuideNote" data-i18n="sizeGuideNote">All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.</p>
                     </div>
                 </div>
@@ -12107,16 +12365,16 @@
         let refreshCartTranslations = () => {};
         const translations = {
             en: {
-                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', navMenu: 'Menu', navClose: 'Close', navAtelier: 'The Atelier', navNeant: 'Néant', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Full campaign imagery for this piece is currently in production. Check back soon for the complete atelier gallery.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}', sgaEyebrow: 'Atelier / Fit Archive', sgaTitle: 'The Void Silhouette', sgaSubtitle: 'Oversized architecture, measured in centimetres', sgaIntro: 'VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.', sgaCloseLabel: 'Close', sgaDoc: 'Document / Fit-001', sgaUnit: 'Unit / CM', sgaArchitecture: 'Garment Architecture', sgaDraftAlt: 'Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.', sgaSelect: 'Select Size', sgaCm: 'cm', sgaFitCharacter: 'Fit Character', sgaRestrained: 'Restrained', sgaVolume: 'Volume', sgaNoteLabel: 'Atelier Note', sgaNote: 'The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.', sgaViewFull: 'View Full Specification', sgaHideFull: 'Hide Full Specification'
+                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', navMenu: 'Menu', navClose: 'Close', sgaDocLabel: 'Document', tableHemWidth: 'Hem Width', tableCuffWidth: 'Cuff Width', tableWaistWidth: 'Waist Width', tableHipWidth: 'Hip Width', tableFrontRise: 'Front Rise', tableThighWidth: 'Thigh Width', tableInseam: 'Inseam', tableOutseam: 'Outseam', tableLegOpening: 'Leg Opening', sgaIntroSweatshirt: 'The sweatshirt is drafted around structured volume: a dropped shoulder, a deep body and ribbed hem and cuffs that hold the silhouette. Select your usual size for the intended weight, or size down for a closer line.', sgaIntroTrackpants: 'The track pants are drafted around a relaxed leg and a high, unrestrictive waist. Proportion is held through the rise and thigh rather than the hem, so the line stays clean over the full length.', sgaIntroEnsemble: 'The ensemble is drafted as one proportion: the sweatshirt volume and the leg line are graded together. One size governs both halves, so the set reads as a single silhouette.', sgaNoteSweatshirt: 'Volume is held by the hem and cuff ribs, not by the body width alone. For the house fit, select your usual size. For a cleaner line through the body, select one size down.', sgaNoteTrackpants: 'Measure against a pair you already trust, comparing the rise and the inseam before the waist. The waistband is cut to sit without tension at the stated width.', sgaNoteEnsemble: 'Both pieces are cut to the same grade, so a single selection keeps the upper and lower proportions in balance. Size down only if you want the whole set closer to the body.', sgaPending: 'Pattern measurements for this garment are being finalised in the atelier. The architecture is confirmed; the figures follow.', sgaDraftAltSweatshirt: 'Technical drawing of the hooded sweatshirt showing where chest width, body length, shoulder width, sleeve length, hem width and cuff width are measured.', sgaDraftAltTrackpants: 'Technical drawing of the track pants showing where waist width, hip width, front rise, thigh width, inseam, outseam and leg opening are measured.', sgaDraftAltEnsemble: 'Technical drawing of the ensemble showing the hooded sweatshirt and the track pants together, with the measurement points of both garments.', navAtelier: 'The Atelier', navNeant: 'Néant', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Full campaign imagery for this piece is currently in production. Check back soon for the complete atelier gallery.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}', sgaEyebrow: 'Atelier / Fit Archive', sgaTitle: 'The Void Silhouette', sgaSubtitle: 'Oversized architecture, measured in centimetres', sgaIntro: 'VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.', sgaCloseLabel: 'Close', sgaDoc: 'Document / Fit-001', sgaUnit: 'Unit / CM', sgaArchitecture: 'Garment Architecture', sgaDraftAlt: 'Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.', sgaSelect: 'Select Size', sgaCm: 'cm', sgaFitCharacter: 'Fit Character', sgaRestrained: 'Restrained', sgaVolume: 'Volume', sgaNoteLabel: 'Atelier Note', sgaNote: 'The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.', sgaViewFull: 'View Full Specification', sgaHideFull: 'Hide Full Specification'
             },
             fr: {
-                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', navMenu: 'Menu', navClose: 'Fermer', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Voir Tout', catTshirts: 'T-Shirts', catSweatshirts: 'Sweat-shirts', catTrackPants: 'Pantalons de Survêtement', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Aucune pièce dans cette catégorie pour l’instant.', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
+                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', navMenu: 'Menu', navClose: 'Fermer', sgaDocLabel: 'Document', tableHemWidth: 'Largeur Ourlet', tableCuffWidth: 'Largeur Poignet', tableWaistWidth: 'Tour de Taille', tableHipWidth: 'Largeur Hanches', tableFrontRise: 'Montant Avant', tableThighWidth: 'Largeur Cuisse', tableInseam: 'Entrejambe', tableOutseam: 'Couture Extérieure', tableLegOpening: 'Bas de Jambe', sgaIntroSweatshirt: 'Le sweat-shirt est construit autour d’un volume structuré : épaule tombante, corps profond, ourlet et poignets côtelés qui tiennent la silhouette. Choisissez votre taille habituelle pour le tombé prévu, ou une taille en dessous pour une ligne plus près du corps.', sgaIntroTrackpants: 'Le pantalon est construit autour d’une jambe ample et d’une taille haute sans contrainte. La proportion se tient par le montant et la cuisse plutôt que par le bas, pour une ligne nette sur toute la longueur.', sgaIntroEnsemble: 'L’ensemble est construit comme une seule proportion : le volume du sweat-shirt et la ligne de jambe sont gradés ensemble. Une seule taille régit les deux pièces, pour une silhouette unique.', sgaNoteSweatshirt: 'Le volume est tenu par les côtes d’ourlet et de poignet, non par la seule largeur du corps. Pour la coupe maison, choisissez votre taille habituelle. Pour une ligne plus nette, choisissez une taille en dessous.', sgaNoteTrackpants: 'Comparez avec un pantalon qui vous convient déjà, en regardant le montant et l’entrejambe avant la taille. La ceinture est coupée pour se poser sans tension à la largeur indiquée.', sgaNoteEnsemble: 'Les deux pièces suivent la même gradation : une seule sélection garde les proportions haut et bas en équilibre. Ne descendez d’une taille que pour rapprocher l’ensemble du corps.', sgaPending: 'Les mesures de patronage de cette pièce sont en cours de finalisation à l’atelier. L’architecture est confirmée ; les chiffres suivront.', sgaDraftAltSweatshirt: 'Dessin technique du sweat-shirt à capuche indiquant où sont mesurées la largeur de poitrine, la longueur du corps, la largeur d’épaules, la longueur de manche, la largeur d’ourlet et la largeur de poignet.', sgaDraftAltTrackpants: 'Dessin technique du pantalon indiquant où sont mesurés le tour de taille, la largeur de hanches, le montant avant, la largeur de cuisse, l’entrejambe, la couture extérieure et le bas de jambe.', sgaDraftAltEnsemble: 'Dessin technique de l’ensemble présentant le sweat-shirt à capuche et le pantalon réunis, avec les points de mesure des deux pièces.', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Voir Tout', catTshirts: 'T-Shirts', catSweatshirts: 'Sweat-shirts', catTrackPants: 'Pantalons de Survêtement', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Aucune pièce dans cette catégorie pour l’instant.', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
             },
             it: {
-                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', navMenu: 'Menu', navClose: 'Chiudi', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Vedi Tutto', catTshirts: 'T-Shirt', catSweatshirts: 'Felpe', catTrackPants: 'Pantaloni Sportivi', catEnsembles: 'Completi', fragrance: 'Profumo', collectionEmpty: 'Nessun pezzo in questa categoria per ora.', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', viewDetails: 'Vedi Dettagli', pdResetZoom: 'Reimposta zoom', pdThumbsLabel: 'Viste del prodotto', pdViewBoth: 'Fronte e retro', pdViewFront: 'Fronte', pdViewBack: 'Retro', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
+                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', navMenu: 'Menu', navClose: 'Chiudi', sgaDocLabel: 'Documento', tableHemWidth: 'Larghezza Orlo', tableCuffWidth: 'Larghezza Polsino', tableWaistWidth: 'Girovita', tableHipWidth: 'Larghezza Fianchi', tableFrontRise: 'Cavallo Anteriore', tableThighWidth: 'Larghezza Coscia', tableInseam: 'Interno Gamba', tableOutseam: 'Esterno Gamba', tableLegOpening: 'Fondo Gamba', sgaIntroSweatshirt: 'La felpa è costruita attorno a un volume strutturato: spalla scesa, corpo profondo, orlo e polsini a costine che sostengono la silhouette. Scegli la tua taglia abituale per la vestibilità prevista, o una taglia in meno per una linea più aderente.', sgaIntroTrackpants: 'I pantaloni sono costruiti attorno a una gamba morbida e a una vita alta e non costrittiva. La proporzione si regge sul cavallo e sulla coscia più che sul fondo, per una linea pulita per tutta la lunghezza.', sgaIntroEnsemble: 'Il completo è costruito come un’unica proporzione: il volume della felpa e la linea della gamba sono sviluppati insieme. Una sola taglia governa entrambi i capi, per una silhouette unica.', sgaNoteSweatshirt: 'Il volume è tenuto dalle costine di orlo e polsino, non dalla sola larghezza del corpo. Per la vestibilità della maison scegli la tua taglia abituale. Per una linea più pulita, scegli una taglia in meno.', sgaNoteTrackpants: 'Confronta con un pantalone che già ti convince, guardando il cavallo e l’interno gamba prima della vita. La cintura è tagliata per appoggiarsi senza tensione alla misura indicata.', sgaNoteEnsemble: 'I due capi seguono la stessa gradazione: una sola scelta mantiene in equilibrio le proporzioni sopra e sotto. Scendi di una taglia solo se vuoi il completo più aderente.', sgaPending: 'Le misure di modellistica di questo capo sono in fase di definizione in atelier. L’architettura è confermata; i valori seguiranno.', sgaDraftAltSweatshirt: 'Disegno tecnico della felpa con cappuccio che mostra dove si misurano larghezza petto, lunghezza corpo, larghezza spalle, lunghezza manica, larghezza orlo e larghezza polsino.', sgaDraftAltTrackpants: 'Disegno tecnico dei pantaloni che mostra dove si misurano girovita, larghezza fianchi, cavallo anteriore, larghezza coscia, interno gamba, esterno gamba e fondo gamba.', sgaDraftAltEnsemble: 'Disegno tecnico del completo che mostra insieme la felpa con cappuccio e i pantaloni, con i punti di misura di entrambi i capi.', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Vedi Tutto', catTshirts: 'T-Shirt', catSweatshirts: 'Felpe', catTrackPants: 'Pantaloni Sportivi', catEnsembles: 'Completi', fragrance: 'Profumo', collectionEmpty: 'Nessun pezzo in questa categoria per ora.', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', viewDetails: 'Vedi Dettagli', pdResetZoom: 'Reimposta zoom', pdThumbsLabel: 'Viste del prodotto', pdViewBoth: 'Fronte e retro', pdViewFront: 'Fronte', pdViewBack: 'Retro', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
             },
             de: {
-                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', navMenu: 'Menü', navClose: 'Schließen', navAtelier: 'Das Atelier', navNeant: 'Néant', catViewAll: 'Alle Ansehen', catTshirts: 'T-Shirts', catSweatshirts: 'Sweatshirts', catTrackPants: 'Trainingshosen', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Noch keine Stücke in dieser Kategorie.', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', viewDetails: 'Details ansehen', pdResetZoom: 'Zoom zurücksetzen', pdThumbsLabel: 'Produktansichten', pdViewBoth: 'Vorder- und Rückseite', pdViewFront: 'Vorderseite', pdViewBack: 'Rückseite', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
+                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', navMenu: 'Menü', navClose: 'Schließen', sgaDocLabel: 'Dokument', tableHemWidth: 'Saumweite', tableCuffWidth: 'Bündchenweite', tableWaistWidth: 'Bundweite', tableHipWidth: 'Hüftweite', tableFrontRise: 'Vordere Leibhöhe', tableThighWidth: 'Oberschenkelweite', tableInseam: 'Innenbeinlänge', tableOutseam: 'Außenbeinlänge', tableLegOpening: 'Beinöffnung', sgaIntroSweatshirt: 'Das Sweatshirt ist um ein strukturiertes Volumen konstruiert: tiefe Schulter, langer Körper, Rippsaum und Rippbündchen, die die Silhouette halten. Wähle deine gewohnte Größe für den vorgesehenen Fall, oder eine Größe kleiner für eine klarere Linie.', sgaIntroTrackpants: 'Die Hose ist um ein lockeres Bein und einen hohen, uneingeschränkten Bund konstruiert. Die Proportion trägt über Leibhöhe und Oberschenkel statt über den Saum, damit die Linie über die gesamte Länge klar bleibt.', sgaIntroEnsemble: 'Das Ensemble ist als eine Proportion konstruiert: Sweatshirt-Volumen und Beinlinie sind gemeinsam gradiert. Eine Größe bestimmt beide Teile, damit das Set als eine Silhouette liest.', sgaNoteSweatshirt: 'Das Volumen wird von Saum- und Bündchenrippen gehalten, nicht allein von der Körperweite. Für den Hausschnitt wähle deine gewohnte Größe. Für eine klarere Linie am Körper eine Größe kleiner.', sgaNoteTrackpants: 'Vergleiche mit einer Hose, der du bereits vertraust, und sieh dabei zuerst auf Leibhöhe und Innenbeinlänge, dann auf den Bund. Der Bund ist so geschnitten, dass er bei der angegebenen Weite spannungsfrei sitzt.', sgaNoteEnsemble: 'Beide Teile folgen derselben Gradierung, eine Auswahl hält Ober- und Unterteil im Gleichgewicht. Geh nur eine Größe kleiner, wenn das ganze Set enger sitzen soll.', sgaPending: 'Die Schnittmaße dieses Stücks werden im Atelier finalisiert. Die Architektur steht; die Werte folgen.', sgaDraftAltSweatshirt: 'Technische Zeichnung des Kapuzensweatshirts mit den Messpunkten für Brustweite, Körperlänge, Schulterbreite, Ärmellänge, Saumweite und Bündchenweite.', sgaDraftAltTrackpants: 'Technische Zeichnung der Trainingshose mit den Messpunkten für Bundweite, Hüftweite, vordere Leibhöhe, Oberschenkelweite, Innenbeinlänge, Außenbeinlänge und Beinöffnung.', sgaDraftAltEnsemble: 'Technische Zeichnung des Ensembles mit Kapuzensweatshirt und Trainingshose zusammen, mit den Messpunkten beider Teile.', navAtelier: 'Das Atelier', navNeant: 'Néant', catViewAll: 'Alle Ansehen', catTshirts: 'T-Shirts', catSweatshirts: 'Sweatshirts', catTrackPants: 'Trainingshosen', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Noch keine Stücke in dieser Kategorie.', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', viewDetails: 'Details ansehen', pdResetZoom: 'Zoom zurücksetzen', pdThumbsLabel: 'Produktansichten', pdViewBoth: 'Vorder- und Rückseite', pdViewFront: 'Vorderseite', pdViewBack: 'Rückseite', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
             }
         };
 
@@ -14023,8 +14281,15 @@
             });
         }
 
-        function openSizeGuide() {
+        // `guideKey` decides which garment's archive is rendered. It is applied
+        // before the overlay is shown, so the correct plate is already in place
+        // when the opening animation starts — no flash of the previous garment.
+        function openSizeGuide(guideKey) {
             if (!sizeGuideOverlay) return;
+
+            if (typeof window.voidFitArchiveSetGuide === 'function') {
+                window.voidFitArchiveSetGuide(guideKey || 'tshirt');
+            }
 
             lastSizeGuideFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
@@ -14069,92 +14334,399 @@
         // specification, the fit scale and the full comparison table are all
         // rendered from this, so a figure can never disagree with itself.
         // Centimetres, tolerance +/- 1 (see sizeGuideNote).
-        const VOID_FIT_SPEC = [
-            { size: 'XS', chest: 56, length: 69, shoulder: 53, sleeve: 22, fitKey: 'fitTrimOversized' },
-            { size: 'S',  chest: 58, length: 71, shoulder: 55, sleeve: 23, fitKey: 'fitBalancedOversized' },
-            { size: 'M',  chest: 60, length: 73, shoulder: 57, sleeve: 24, fitKey: 'fitSignatureOversized' },
-            { size: 'L',  chest: 62, length: 75, shoulder: 59, sleeve: 25, fitKey: 'fitDeepOversized' },
-            { size: 'XL', chest: 64, length: 77, shoulder: 61, sleeve: 26, fitKey: 'fitMaxOversized' }
-        ];
+        // One entry per garment architecture. The selector, the specification,
+        // the fit scale, the comparison tables and the plate that is shown are
+        // all rendered from the active entry, so a garment can never be
+        // annotated with another garment's dimensions.
+        //
+        // `groups` orders the measurement rows and owns their drafting letters,
+        // which must match the `data-dim` groups on that garment's SVG plate.
+        // A `spec` row without a value for a dimension renders as an em dash
+        // rather than a number.
+        const VOID_FIT_GUIDES = {
+            tshirt: {
+                doc: 'Fit-001',
+                diagram: 'tshirt',
+                introKey: 'sgaIntro',
+                noteKey: 'sgaNote',
+                groups: [{
+                    titleKey: null,
+                    dims: [
+                        { key: 'chest', mark: 'A', labelKey: 'tableChestWidth' },
+                        { key: 'length', mark: 'B', labelKey: 'tableBodyLength' },
+                        { key: 'shoulder', mark: 'C', labelKey: 'tableShoulderWidth' },
+                        { key: 'sleeve', mark: 'D', labelKey: 'tableSleeveLength' }
+                    ]
+                }],
+                spec: [
+                    { size: 'XS', fitKey: 'fitTrimOversized', chest: 56, length: 69, shoulder: 53, sleeve: 22 },
+                    { size: 'S',  fitKey: 'fitBalancedOversized', chest: 58, length: 71, shoulder: 55, sleeve: 23 },
+                    { size: 'M',  fitKey: 'fitSignatureOversized', chest: 60, length: 73, shoulder: 57, sleeve: 24 },
+                    { size: 'L',  fitKey: 'fitDeepOversized', chest: 62, length: 75, shoulder: 59, sleeve: 25 },
+                    { size: 'XL', fitKey: 'fitMaxOversized', chest: 64, length: 77, shoulder: 61, sleeve: 26 }
+                ]
+            },
 
+            // ---- Measurements pending -----------------------------------
+            // No sweatshirt, track-pant or ensemble pattern measurements exist
+            // anywhere in the project, so none are guessed here. The structure
+            // is complete and every row is one number away from publishing:
+            // add the dimension keys to each `spec` entry below.
+            sweatshirt: {
+                doc: 'Fit-002',
+                diagram: 'sweatshirt',
+                introKey: 'sgaIntroSweatshirt',
+                noteKey: 'sgaNoteSweatshirt',
+                groups: [{
+                    titleKey: null,
+                    dims: [
+                        { key: 'chest', mark: 'A', labelKey: 'tableChestWidth' },
+                        { key: 'length', mark: 'B', labelKey: 'tableBodyLength' },
+                        { key: 'shoulder', mark: 'C', labelKey: 'tableShoulderWidth' },
+                        { key: 'sleeve', mark: 'D', labelKey: 'tableSleeveLength' },
+                        { key: 'hem', mark: 'E', labelKey: 'tableHemWidth' },
+                        { key: 'cuff', mark: 'F', labelKey: 'tableCuffWidth' }
+                    ]
+                }],
+                spec: [
+                    { size: 'S',  fitKey: 'fitBalancedOversized' },
+                    { size: 'M',  fitKey: 'fitSignatureOversized' },
+                    { size: 'L',  fitKey: 'fitDeepOversized' },
+                    { size: 'XL', fitKey: 'fitMaxOversized' }
+                ]
+            },
+            trackpants: {
+                doc: 'Fit-003',
+                diagram: 'trackpants',
+                introKey: 'sgaIntroTrackpants',
+                noteKey: 'sgaNoteTrackpants',
+                groups: [{
+                    titleKey: null,
+                    dims: [
+                        { key: 'waist', mark: 'A', labelKey: 'tableWaistWidth' },
+                        { key: 'hip', mark: 'B', labelKey: 'tableHipWidth' },
+                        { key: 'rise', mark: 'C', labelKey: 'tableFrontRise' },
+                        { key: 'thigh', mark: 'D', labelKey: 'tableThighWidth' },
+                        { key: 'inseam', mark: 'E', labelKey: 'tableInseam' },
+                        { key: 'outseam', mark: 'F', labelKey: 'tableOutseam' },
+                        { key: 'opening', mark: 'G', labelKey: 'tableLegOpening' }
+                    ]
+                }],
+                spec: [
+                    { size: 'S',  fitKey: 'fitBalancedOversized' },
+                    { size: 'M',  fitKey: 'fitSignatureOversized' },
+                    { size: 'L',  fitKey: 'fitDeepOversized' },
+                    { size: 'XL', fitKey: 'fitMaxOversized' }
+                ]
+            },
+            // Sold as a matching set, so one size drives both halves: the two
+            // groups read from the same selected spec row.
+            ensemble: {
+                doc: 'Fit-004',
+                diagram: 'ensemble',
+                introKey: 'sgaIntroEnsemble',
+                noteKey: 'sgaNoteEnsemble',
+                groups: [
+                    {
+                        titleKey: 'catSweatshirts',
+                        dims: [
+                            { key: 'chest', mark: 'A', labelKey: 'tableChestWidth' },
+                            { key: 'length', mark: 'B', labelKey: 'tableBodyLength' },
+                            { key: 'shoulder', mark: 'C', labelKey: 'tableShoulderWidth' },
+                            { key: 'sleeve', mark: 'D', labelKey: 'tableSleeveLength' }
+                        ]
+                    },
+                    {
+                        titleKey: 'catTrackPants',
+                        dims: [
+                            { key: 'waist', mark: 'E', labelKey: 'tableWaistWidth' },
+                            { key: 'hip', mark: 'F', labelKey: 'tableHipWidth' },
+                            { key: 'rise', mark: 'G', labelKey: 'tableFrontRise' },
+                            { key: 'thigh', mark: 'H', labelKey: 'tableThighWidth' },
+                            { key: 'inseam', mark: 'I', labelKey: 'tableInseam' },
+                            { key: 'outseam', mark: 'J', labelKey: 'tableOutseam' },
+                            { key: 'opening', mark: 'K', labelKey: 'tableLegOpening' }
+                        ]
+                    }
+                ],
+                spec: [
+                    { size: 'S',  fitKey: 'fitBalancedOversized' },
+                    { size: 'M',  fitKey: 'fitSignatureOversized' },
+                    { size: 'L',  fitKey: 'fitDeepOversized' },
+                    { size: 'XL', fitKey: 'fitMaxOversized' }
+                ]
+            }
+        };
+
+        // Product categories map onto guides by their stable filter id, which
+        // every card already carries — no display-name matching.
+        const CATEGORY_GUIDES = {
+            tshirts: 'tshirt',
+            sweatshirts: 'sweatshirt',
+            trackpants: 'trackpants',
+            ensembles: 'ensemble'
+        };
+
+        function guideKeyForCategory(category) {
+            return CATEGORY_GUIDES[category] || 'tshirt';
+        }
+
+        function guideSizes(key) {
+            return (VOID_FIT_GUIDES[key] || VOID_FIT_GUIDES.tshirt).spec.map((row) => row.size);
+        }
+
+        // The fit archive renders whichever guide is active. Everything that
+        // varies between garments — the plate, the row set, the letters, the
+        // sizes, the copy and the document code — is driven from that one
+        // choice, so there is a single component rather than four.
         (function initFitArchive() {
             const archive = document.getElementById('voidFitArchive');
             if (!archive) return;
 
             const sizesEl = document.getElementById('sgaSizes');
             const scaleNamesEl = document.getElementById('sgaScaleNames');
-            const tableBody = document.getElementById('sgaTableBody');
+            const tablesEl = document.getElementById('sgaTables');
             const currentSize = document.getElementById('sgaCurrentSize');
             const currentFit = document.getElementById('sgaCurrentFit');
             const measuresEl = document.getElementById('sgaMeasures');
+            const introEl = document.getElementById('sgaIntro');
+            const noteEl = document.getElementById('sgaNoteCopy');
+            const docEl = document.getElementById('sgaDocCode');
             const fullToggle = document.getElementById('sgaFullToggle');
             const fullPanel = document.getElementById('sgaFullPanel');
             if (!sizesEl || !measuresEl) return;
 
-            const DIMS = ['chest', 'length', 'shoulder', 'sleeve'];
-            const COLS = { chest: 'tableChestWidth', length: 'tableBodyLength', shoulder: 'tableShoulderWidth', sleeve: 'tableSleeveLength' };
-            let active = 2; // M
+            let guideKey = 'tshirt';
+            let guide = VOID_FIT_GUIDES.tshirt;
+            let dims = [];      // flattened { key, mark, labelKey } across groups
+            let active = 0;
+            let plate = null;
 
-            // Size selector, built as a radio group so arrow keys behave the
-            // way a keyboard user expects from a set of exclusive choices.
-            VOID_FIT_SPEC.forEach((spec, i) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'sga-size';
-                btn.setAttribute('role', 'radio');
-                btn.setAttribute('aria-checked', i === active ? 'true' : 'false');
-                btn.tabIndex = i === active ? 0 : -1;
-                btn.textContent = spec.size;
-                btn.addEventListener('click', () => select(i, false));
-                btn.addEventListener('keydown', (event) => {
-                    const last = VOID_FIT_SPEC.length - 1;
-                    let next = null;
-                    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = i === last ? 0 : i + 1;
-                    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = i === 0 ? last : i - 1;
-                    else if (event.key === 'Home') next = 0;
-                    else if (event.key === 'End') next = last;
-                    if (next === null) return;
-                    event.preventDefault();
-                    select(next, true);
-                });
-                sizesEl.appendChild(btn);
+            const EM_DASH = '—';
+            const valueOf = (row, key) => (row && row[key] != null ? String(row[key]) : EM_DASH);
+            const hasPendingValues = () => guide.spec.some((row) => dims.some((d) => row[d.key] == null));
 
-                // The scale is labelled with the size letters, matching the
-                // ticks. The classification itself ("Signature Oversized")
-                // reads once, above, rather than five times across a row too
-                // narrow to hold it.
-                const name = document.createElement('span');
-                name.className = 'sga-scale-name';
-                name.textContent = spec.size;
-                if (scaleNamesEl) scaleNamesEl.appendChild(name);
-            });
+            // ---- Rendering the active guide -------------------------------
 
-            function renderTable() {
-                if (!tableBody) return;
-                tableBody.textContent = '';
-                VOID_FIT_SPEC.forEach((spec, i) => {
-                    const tr = document.createElement('tr');
-                    tr.dataset.on = i === active ? 'true' : 'false';
-                    const th = document.createElement('th');
-                    th.scope = 'row';
-                    th.textContent = spec.size;
-                    tr.appendChild(th);
-                    DIMS.forEach((dim) => {
-                        const td = document.createElement('td');
-                        // data-label drives the stacked phone layout, where the
-                        // header row is visually hidden.
-                        td.dataset.label = t(COLS[dim]);
-                        td.textContent = spec[dim];
-                        tr.appendChild(td);
+            function renderSizes() {
+                sizesEl.textContent = '';
+                if (scaleNamesEl) scaleNamesEl.textContent = '';
+
+                guide.spec.forEach((row, i) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'sga-size';
+                    btn.setAttribute('role', 'radio');
+                    btn.setAttribute('aria-checked', i === active ? 'true' : 'false');
+                    btn.tabIndex = i === active ? 0 : -1;
+                    btn.textContent = row.size;
+                    btn.addEventListener('click', () => select(i, false));
+                    btn.addEventListener('keydown', (event) => {
+                        const last = guide.spec.length - 1;
+                        let next = null;
+                        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = i === last ? 0 : i + 1;
+                        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = i === 0 ? last : i - 1;
+                        else if (event.key === 'Home') next = 0;
+                        else if (event.key === 'End') next = last;
+                        if (next === null) return;
+                        event.preventDefault();
+                        select(next, true);
                     });
-                    const fit = document.createElement('td');
-                    fit.dataset.label = t('tableFitDirection');
-                    fit.textContent = t(spec.fitKey);
-                    tr.appendChild(fit);
-                    tableBody.appendChild(tr);
+                    sizesEl.appendChild(btn);
+
+                    // The scale is labelled with the size letters, matching the
+                    // ticks. The classification itself ("Signature Oversized")
+                    // reads once, above, rather than across a row too narrow
+                    // to hold it.
+                    if (scaleNamesEl) {
+                        const name = document.createElement('span');
+                        name.className = 'sga-scale-name';
+                        name.textContent = row.size;
+                        scaleNamesEl.appendChild(name);
+                    }
+                });
+
+                // The fit scale has a fixed number of ticks in the markup;
+                // match them to however many sizes this garment is cut in.
+                const ticks = archive.querySelector('.sga-ticks');
+                if (ticks) {
+                    ticks.textContent = '';
+                    guide.spec.forEach(() => {
+                        const tick = document.createElement('span');
+                        tick.className = 'sga-tick-mark';
+                        ticks.appendChild(tick);
+                    });
+                }
+                archive.style.setProperty('--sga-count', String(guide.spec.length));
+            }
+
+            // Rows carry their own dissolve order, so the choreography covers
+            // however many dimensions this garment has.
+            function renderMeasures() {
+                measuresEl.textContent = '';
+                let order = 2;   // 0 is the size letter, 1 the fit classification
+
+                guide.groups.forEach((group) => {
+                    if (group.titleKey) {
+                        const heading = document.createElement('p');
+                        heading.className = 'sga-measure-group';
+                        heading.dataset.i18n = group.titleKey;
+                        heading.textContent = t(group.titleKey);
+                        measuresEl.appendChild(heading);
+                    }
+                    group.dims.forEach((dim) => {
+                        const row = document.createElement('div');
+                        row.className = 'sga-measure';
+                        row.dataset.dim = dim.key;
+
+                        const key = document.createElement('span');
+                        key.className = 'sga-measure-key';
+                        key.setAttribute('aria-hidden', 'true');
+                        key.textContent = dim.mark;
+
+                        const name = document.createElement('span');
+                        name.className = 'sga-measure-name';
+                        name.dataset.i18n = dim.labelKey;
+                        name.textContent = t(dim.labelKey);
+
+                        const val = document.createElement('span');
+                        val.className = 'sga-measure-val sga-dyn';
+                        val.dataset.order = String(order);
+                        order += 1;
+                        const num = document.createElement('b');
+                        num.dataset.val = dim.key;
+                        const unit = document.createElement('small');
+                        unit.dataset.i18n = 'sgaCm';
+                        unit.textContent = t('sgaCm');
+                        val.append(num, unit);
+
+                        row.append(key, name, val);
+                        measuresEl.appendChild(row);
+                    });
+                });
+
+                bindMeasureHovers();
+            }
+
+            // Hovering or focusing a measurement lifts its line on the drawing.
+            // The drafting letters carry the same information without hover, so
+            // nothing is conveyed by pointer alone. Scoped to the active plate,
+            // since every garment's plate is in the document at once.
+            function bindMeasureHovers() {
+                measuresEl.querySelectorAll('.sga-measure').forEach((row) => {
+                    const groups = plate ? Array.from(plate.querySelectorAll('g[data-dim="' + row.dataset.dim + '"]')) : [];
+                    const lit = (on) => {
+                        groups.forEach((g) => g.classList.toggle('is-lit', on));
+                        row.classList.toggle('is-lit', on);
+                    };
+                    row.addEventListener('pointerenter', () => lit(true));
+                    row.addEventListener('pointerleave', () => lit(false));
                 });
             }
 
+            function renderTables() {
+                if (!tablesEl) return;
+                tablesEl.textContent = '';
+
+                guide.groups.forEach((group) => {
+                    if (group.titleKey) {
+                        const caption = document.createElement('p');
+                        caption.className = 'sga-table-title';
+                        caption.dataset.i18n = group.titleKey;
+                        caption.textContent = t(group.titleKey);
+                        tablesEl.appendChild(caption);
+                    }
+
+                    const table = document.createElement('table');
+                    table.className = 'sga-table';
+                    table.setAttribute('aria-describedby', 'sizeGuideNote');
+
+                    const head = document.createElement('tr');
+                    const sizeTh = document.createElement('th');
+                    sizeTh.scope = 'col';
+                    sizeTh.textContent = t('tableSize');
+                    head.appendChild(sizeTh);
+                    group.dims.forEach((dim) => {
+                        const th = document.createElement('th');
+                        th.scope = 'col';
+                        th.textContent = t(dim.labelKey);
+                        head.appendChild(th);
+                    });
+                    const fitTh = document.createElement('th');
+                    fitTh.scope = 'col';
+                    fitTh.textContent = t('tableFitDirection');
+                    head.appendChild(fitTh);
+                    const thead = document.createElement('thead');
+                    thead.appendChild(head);
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement('tbody');
+                    guide.spec.forEach((row, i) => {
+                        const tr = document.createElement('tr');
+                        tr.dataset.on = i === active ? 'true' : 'false';
+                        const th = document.createElement('th');
+                        th.scope = 'row';
+                        th.textContent = row.size;
+                        tr.appendChild(th);
+                        group.dims.forEach((dim) => {
+                            const td = document.createElement('td');
+                            // data-label drives the stacked phone layout, where
+                            // the header row is visually hidden.
+                            td.dataset.label = t(dim.labelKey);
+                            td.textContent = valueOf(row, dim.key);
+                            tr.appendChild(td);
+                        });
+                        const fit = document.createElement('td');
+                        fit.dataset.label = t('tableFitDirection');
+                        fit.textContent = t(row.fitKey);
+                        tr.appendChild(fit);
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+                    tablesEl.appendChild(table);
+                });
+            }
+
+            function renderCopy() {
+                if (introEl) {
+                    introEl.dataset.i18n = guide.introKey;
+                    introEl.textContent = t(guide.introKey);
+                }
+                if (noteEl) {
+                    noteEl.dataset.i18n = guide.noteKey;
+                    noteEl.textContent = t(guide.noteKey);
+                }
+                if (docEl) {
+                    // Composed rather than four translated strings differing
+                    // only by a serial number.
+                    docEl.removeAttribute('data-i18n');
+                    docEl.textContent = t('sgaDocLabel') + ' / ' + guide.doc;
+                }
+                // Say plainly that a figure is missing rather than showing a
+                // dash with no explanation.
+                let pending = archive.querySelector('.sga-pending');
+                if (hasPendingValues()) {
+                    if (!pending) {
+                        pending = document.createElement('p');
+                        pending.className = 'sga-pending';
+                        measuresEl.insertAdjacentElement('afterend', pending);
+                    }
+                    pending.dataset.i18n = 'sgaPending';
+                    pending.textContent = t('sgaPending');
+                } else if (pending) {
+                    pending.remove();
+                }
+            }
+
+            function showPlate() {
+                archive.querySelectorAll('.sga-draft').forEach((svg) => {
+                    const on = svg.dataset.diagram === guide.diagram;
+                    svg.classList.toggle('is-active', on);
+                    if (on) plate = svg;
+                });
+            }
+
+            // ---- The size choreography ------------------------------------
             // Phase lengths. The exit is short because it is a dissolve; the
             // gap is the beat between the old specification leaving and the
             // new one being written. Keep in step with the CSS durations.
@@ -14165,24 +14737,24 @@
 
             let swapTimer = null;
 
-            function writeSpec(spec) {
-                currentSize.textContent = spec.size;
-                currentFit.textContent = t(spec.fitKey);
-                currentFit.dataset.i18n = spec.fitKey;
-                DIMS.forEach((dim) => {
-                    const el = measuresEl.querySelector('[data-val="' + dim + '"]');
-                    if (el) el.textContent = spec[dim];
+            function writeSpec(row) {
+                currentSize.textContent = row.size;
+                currentFit.textContent = t(row.fitKey);
+                currentFit.dataset.i18n = row.fitKey;
+                dims.forEach((dim) => {
+                    const el = measuresEl.querySelector('[data-val="' + dim.key + '"]');
+                    if (el) el.textContent = valueOf(row, dim.key);
                 });
             }
 
             function select(index, moveFocus) {
                 const changed = index !== active;
                 active = index;
-                const spec = VOID_FIT_SPEC[index];
+                const row = guide.spec[index];
                 const dynamic = Array.from(archive.querySelectorAll('.sga-dyn'));
                 const reduced = document.documentElement.classList.contains('reduce-motion');
 
-                // Selection state, the marker and the comparison table update
+                // Selection state, the marker and the comparison tables update
                 // immediately. Only the written specification waits for the
                 // choreography, so the control never feels unresponsive.
                 Array.from(sizesEl.children).forEach((btn, i) => {
@@ -14197,7 +14769,7 @@
                         el.dataset.on = i === index ? 'true' : 'false';
                     });
                 }
-                renderTable();
+                renderTables();
 
                 window.clearTimeout(swapTimer);
 
@@ -14205,7 +14777,7 @@
                 // write it. Nothing should be left mid-dissolve.
                 if (!changed || reduced) {
                     dynamic.forEach((el) => el.classList.remove('is-dissolving', 'is-inscribing'));
-                    writeSpec(spec);
+                    writeSpec(row);
                     return;
                 }
 
@@ -14220,7 +14792,7 @@
                 // inscribed from the size letter downward. Re-selecting mid
                 // sequence clears this timer, so rapid clicks cannot interleave.
                 swapTimer = window.setTimeout(() => {
-                    writeSpec(VOID_FIT_SPEC[active]);
+                    writeSpec(guide.spec[active]);
                     dynamic.forEach((el) => {
                         el.classList.remove('is-dissolving');
                         void el.offsetWidth;
@@ -14229,19 +14801,30 @@
                 }, SWAP_AT);
             }
 
-            // Hovering or focusing a measurement lifts its line on the drawing.
-            // The letters A to D carry the same information without hover, so
-            // nothing is conveyed by pointer alone.
-            measuresEl.querySelectorAll('.sga-measure').forEach((row) => {
-                const dim = row.dataset.dim;
-                const group = archive.querySelector('g[data-dim="' + dim + '"]');
-                const lit = (on) => {
-                    if (group) group.classList.toggle('is-lit', on);
-                    row.classList.toggle('is-lit', on);
-                };
-                row.addEventListener('pointerenter', () => lit(true));
-                row.addEventListener('pointerleave', () => lit(false));
-            });
+            // ---- Public surface -------------------------------------------
+            // Called before the overlay opens, never while it is opening, so a
+            // garment is never seen replacing another one.
+            function setGuide(key) {
+                const next = VOID_FIT_GUIDES[key] ? key : 'tshirt';
+                const same = next === guideKey;
+                guideKey = next;
+                guide = VOID_FIT_GUIDES[next];
+                dims = guide.groups.reduce((all, group) => all.concat(group.dims), []);
+
+                // Default to the house middle size, or as near as the run gets.
+                if (!same) active = Math.min(Math.floor(guide.spec.length / 2), guide.spec.length - 1);
+                active = Math.min(active, guide.spec.length - 1);
+
+                showPlate();
+                renderCopy();
+                renderSizes();
+                renderMeasures();
+
+                // No dissolve when the whole document has just been rebuilt.
+                window.clearTimeout(swapTimer);
+                archive.querySelectorAll('.sga-dyn').forEach((el) => el.classList.remove('is-dissolving', 'is-inscribing'));
+                select(active, false);
+            }
 
             if (fullToggle && fullPanel) {
                 fullToggle.addEventListener('click', () => {
@@ -14253,9 +14836,10 @@
                 });
             }
 
-            // Language switches re-render the fit names and table labels.
-            window.voidFitArchiveRefresh = () => select(active, false);
-            select(active, false);
+            // Language switches re-render the copy, fit names and table labels.
+            window.voidFitArchiveRefresh = () => setGuide(guideKey);
+            window.voidFitArchiveSetGuide = setGuide;
+            setGuide('tshirt');
         })();
 
         function openSizePopup(productCard, addButton) {
@@ -14741,7 +15325,10 @@
 
         if (sizeGuideTrigger) {
             sizeGuideTrigger.addEventListener('click', () => {
-                openSizeGuide();
+                // Opened from the collection header rather than from a piece,
+                // so the active category tab is the closest thing to context.
+                const tab = document.querySelector('.collection-nav-tab.active');
+                openSizeGuide(guideKeyForCategory(tab && tab.dataset.collectionFilter));
             });
         }
 
@@ -14839,11 +15426,13 @@
         // Size ranges are per product; anything not listed keeps the house
         // XS–XL run. Both the detail panel and the card size picker read this,
         // so a range lives in exactly one place.
-        const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL'];
+        // Read from the fit archive so a purchase selector can never offer a
+        // size the garment's own specification does not document.
+        const DEFAULT_SIZES = guideSizes('tshirt');
         const PRODUCT_SIZES = {
-            'Sweatshirt': ['S', 'M', 'L', 'XL'],
-            'Track Pants': ['S', 'M', 'L', 'XL'],
-            'Ensemble': ['S', 'M', 'L', 'XL']
+            'Sweatshirt': guideSizes('sweatshirt'),
+            'Track Pants': guideSizes('trackpants'),
+            'Ensemble': guideSizes('ensemble')
         };
 
         function sizesFor(name) {
@@ -15482,7 +16071,10 @@
 
         if (pdSizeChart) {
             pdSizeChart.addEventListener('click', () => {
-                openSizeGuide();
+                // The archive belongs to the piece being viewed, not to the
+                // overlay, so it is resolved from the open card's category.
+                const category = pdState.card && pdState.card.dataset.category;
+                openSizeGuide(guideKeyForCategory(category));
             });
         }
 
