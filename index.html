@@ -4355,17 +4355,27 @@
         }
 
         .products-grid {
+            --pg-gap-x: 2.1rem;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(232px, 296px));
             justify-content: center;
-            gap: 3.6rem 2.1rem;
+            gap: 3.6rem var(--pg-gap-x);
         }
 
-        /* Wide screens fit all five pieces on one row — distribute them evenly,
+        /* Wide screens fit all the pieces on one row — distribute them evenly,
            equidistant from each other and from both edges. */
         @media (min-width: 1280px) {
             .products-grid {
                 justify-content: space-evenly;
+            }
+
+            /* …unless the active category holds only one or two pieces, where
+               spreading them across the full row reads as a broken layout
+               rather than a distribution. They sit centred at the normal gap
+               instead. Driven by the visible count, so it keeps working as
+               categories fill up. */
+            .products-grid.is-sparse {
+                justify-content: center;
             }
         }
 
@@ -8757,7 +8767,8 @@
             }
 
             .products-grid {
-                gap: 2.2rem 1.4rem;
+                --pg-gap-x: 1.4rem;
+                gap: 2.2rem var(--pg-gap-x);
             }
         }
 
@@ -8784,8 +8795,9 @@
             }
 
             .products-grid {
+                --pg-gap-x: 1.2rem;
                 grid-template-columns: repeat(auto-fit, minmax(150px, 200px));
-                gap: 2rem 1.2rem;
+                gap: 2rem var(--pg-gap-x);
             }
 
             .footer-content {
@@ -8913,8 +8925,17 @@
             }
 
             .products-grid {
+                --pg-gap-x: 1rem;
                 grid-template-columns: repeat(2, 1fr);
-                gap: 1.6rem 1rem;
+                gap: 1.6rem var(--pg-gap-x);
+            }
+
+            /* Two fixed columns can't centre a lone card, so collapse to a
+               single track cut to exactly one column's width and centre that.
+               The card keeps the dimensions it has beside a sibling. */
+            .products-grid.is-single {
+                grid-template-columns: minmax(0, calc(50% - var(--pg-gap-x) / 2));
+                justify-content: center;
             }
 
             .products-header {
@@ -9138,7 +9159,8 @@
             }
 
             .products-grid {
-                gap: 1.1rem 0.7rem;
+                --pg-gap-x: 0.7rem;
+                gap: 1.1rem var(--pg-gap-x);
             }
 
             .product-card {
@@ -10950,7 +10972,6 @@
                         <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
-            </div>
                 <div class="product-card fade-in-up" style="--delay: 380ms;" data-category="sweatshirts" data-price-pending="true" data-product-name="Sweatshirt" data-product-price="0" data-fit-title="Oversized Atelier Fit" data-fit-note="Deep black sweatshirt with the VOID© emblem in gold across the chest and a plain black back.">
                     <div class="product-image">
                         <img class="product-photo" src="/assets/SWEATSHIRT/eternalvoid-sweatshirt-front-back.png" alt="Sweatshirt — front and back" width="1536" height="1024" loading="lazy" decoding="async">
@@ -10999,6 +11020,7 @@
                         <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
+            </div>
         </div>
     </section>
 
@@ -15575,6 +15597,12 @@
             if (collectionEmpty) {
                 collectionEmpty.classList.toggle('is-visible', visibleCount === 0);
             }
+            // Layout hooks for thinly-populated categories. Cards keep their
+            // normal size in every case — only the row's alignment changes.
+            if (collectionGrid) {
+                collectionGrid.classList.toggle('is-sparse', visibleCount > 0 && visibleCount <= 2);
+                collectionGrid.classList.toggle('is-single', visibleCount === 1);
+            }
         }
 
         collectionTabs.forEach((tab) => {
@@ -15588,6 +15616,12 @@
                 applyCollectionFilter(tab.dataset.collectionFilter || 'all');
             });
         });
+
+        // Seed the layout hooks from the tab that starts active, so the grid is
+        // never briefly misaligned before the first click.
+        applyCollectionFilter(
+            (document.querySelector('.collection-nav-tab.active') || {}).dataset?.collectionFilter || 'all'
+        );
 
         // ---- Style guide overlay ----
         const styleGuideOverlay = document.getElementById('styleGuideOverlay');
