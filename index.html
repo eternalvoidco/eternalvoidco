@@ -6398,6 +6398,13 @@
             font-weight: 700;
         }
 
+        /* Sizes a piece is not cut in are removed from both pickers rather than
+           shown struck through — the run is the run. */
+        .pd-size[hidden],
+        .size-option[hidden] {
+            display: none;
+        }
+
         .pd-add {
             width: 100%;
             min-height: 54px;
@@ -6413,6 +6420,13 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: transform 0.24s ease, box-shadow 0.24s ease, filter 0.24s ease;
+        }
+
+        /* Held closed until the piece has a confirmed price. */
+        .pd-add:disabled {
+            filter: grayscale(0.55) brightness(0.62);
+            cursor: default;
+            transform: none;
         }
 
         .pd-add:hover,
@@ -10725,7 +10739,7 @@
                 <button type="button" class="mm-cat" aria-expanded="false" aria-controls="mmSubSweatshirts" data-i18n="catSweatshirts">Sweatshirts</button>
                 <div class="mm-sub" id="mmSubSweatshirts">
                     <div class="mm-sub-inner">
-                        <ul><li><span class="mm-sub-empty" data-i18n="collectionEmpty">No pieces in this category yet.</span></li></ul>
+                        <ul><li><a href="#" data-open-product="Sweatshirt">Sweatshirt</a></li></ul>
                     </div>
                 </div>
             </li>
@@ -10733,7 +10747,7 @@
                 <button type="button" class="mm-cat" aria-expanded="false" aria-controls="mmSubTrackPants" data-i18n="catTrackPants">Track Pants</button>
                 <div class="mm-sub" id="mmSubTrackPants">
                     <div class="mm-sub-inner">
-                        <ul><li><span class="mm-sub-empty" data-i18n="collectionEmpty">No pieces in this category yet.</span></li></ul>
+                        <ul><li><a href="#" data-open-product="Track Pants">Track Pants</a></li></ul>
                     </div>
                 </div>
             </li>
@@ -10741,7 +10755,7 @@
                 <button type="button" class="mm-cat" aria-expanded="false" aria-controls="mmSubEnsembles" data-i18n="catEnsembles">Ensembles</button>
                 <div class="mm-sub" id="mmSubEnsembles">
                     <div class="mm-sub-inner">
-                        <ul><li><span class="mm-sub-empty" data-i18n="collectionEmpty">No pieces in this category yet.</span></li></ul>
+                        <ul><li><a href="#" data-open-product="Ensemble">Ensemble</a></li></ul>
                     </div>
                 </div>
             </li>
@@ -10937,6 +10951,54 @@
                     </div>
                 </div>
             </div>
+                <div class="product-card fade-in-up" style="--delay: 380ms;" data-category="sweatshirts" data-price-pending="true" data-product-name="Sweatshirt" data-product-price="0" data-fit-title="Oversized Atelier Fit" data-fit-note="Deep black sweatshirt with the VOID© emblem in gold across the chest and a plain black back.">
+                    <div class="product-image">
+                        <img class="product-photo" src="/assets/SWEATSHIRT/eternalvoid-sweatshirt-front-back.png" alt="Sweatshirt — front and back" width="1536" height="1024" loading="lazy" decoding="async">
+                        <span class="product-view-affordance" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            <span data-i18n="viewDetails">View Details</span>
+                        </span>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Sweatshirt</h3>
+                        <span class="product-price" data-i18n="comingSoon">Coming Soon</span>
+                    </div>
+                    <div class="product-actions">
+                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
+                    </div>
+                </div>
+                <div class="product-card fade-in-up" style="--delay: 440ms;" data-category="trackpants" data-price-pending="true" data-product-name="Track Pants" data-product-price="0" data-fit-title="Oversized Atelier Fit" data-fit-note="Black track pants from the season one lineup, shown front and back.">
+                    <div class="product-image">
+                        <img class="product-photo" src="/assets/TRACKPANTS/eternalvoid-trackpants-front-back.png" alt="Track Pants — front and back" width="1374" height="1145" loading="lazy" decoding="async">
+                        <span class="product-view-affordance" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            <span data-i18n="viewDetails">View Details</span>
+                        </span>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Track Pants</h3>
+                        <span class="product-price" data-i18n="comingSoon">Coming Soon</span>
+                    </div>
+                    <div class="product-actions">
+                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
+                    </div>
+                </div>
+                <div class="product-card fade-in-up" style="--delay: 500ms;" data-category="ensembles" data-price-pending="true" data-product-name="Ensemble" data-product-price="0" data-fit-title="Oversized Atelier Fit" data-fit-note="The sweatshirt and track pants worn as a set, shown front and back.">
+                    <div class="product-image">
+                        <img class="product-photo" src="/assets/ENSEMBLES/eternalvoid-ensembles-front-back.png" alt="Ensemble — front and back" width="1374" height="1145" loading="lazy" decoding="async">
+                        <span class="product-view-affordance" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            <span data-i18n="viewDetails">View Details</span>
+                        </span>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Ensemble</h3>
+                        <span class="product-price" data-i18n="comingSoon">Coming Soon</span>
+                    </div>
+                    <div class="product-actions">
+                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
+                    </div>
+                </div>
         </div>
     </section>
 
@@ -13906,9 +13968,14 @@
         }
 
         function updateSizeOptionsUI(activeSize) {
+            // sizePopupState.productCard is assigned before this runs, so the
+            // picker offers the same range the detail panel does.
+            const offered = sizesFor(sizePopupState.productCard?.dataset.productName || '');
             sizeOptionButtons.forEach((optionButton) => {
                 const sizeValue = optionButton.getAttribute('data-size-option') || '';
-                const isActive = sizeValue === activeSize;
+                const available = offered.includes(sizeValue);
+                optionButton.hidden = !available;
+                const isActive = available && sizeValue === activeSize;
                 optionButton.classList.toggle('active', isActive);
                 optionButton.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
@@ -14733,8 +14800,33 @@
             'Endzustand Tee': { code: 'EV·S1·END', description: 'Boxy oversized volume with a structured chest and a blunt hem line. Couture-inspired proportions in a substantial jersey that holds its shape through movement — a quiet statement in monochrome tension.' },
             'Insigne Ivoire': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-ivory oblique signature, printed and finished for depth and permanence.' },
             'Insigne Noir': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
-            'Insigne Azure': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' }
+            'Insigne Azure': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' },
+
+            // ---- Pending specification -------------------------------------
+            // No style code, price, fabric or care copy exists for these three
+            // yet, and none is invented here. `code` is deliberately absent so
+            // pdCode falls back to the generic EV·ATELIER mark, and the
+            // descriptions state only what is visible in the supplied artwork.
+            // To publish: add `code`, set data-product-price on the card and
+            // drop its data-price-pending attribute.
+            'Sweatshirt': { description: 'Deep black sweatshirt with the VOID© emblem in gold across the chest and a plain black back. Gold hardware at the drawcord. Full specification to follow.' },
+            'Track Pants': { description: 'Black track pants from the season one lineup, shown front and back. Full specification to follow.' },
+            'Ensemble': { description: 'The sweatshirt and track pants worn as a set, shown front and back. Full specification to follow.' }
         };
+
+        // Size ranges are per product; anything not listed keeps the house
+        // XS–XL run. Both the detail panel and the card size picker read this,
+        // so a range lives in exactly one place.
+        const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL'];
+        const PRODUCT_SIZES = {
+            'Sweatshirt': ['S', 'M', 'L', 'XL'],
+            'Track Pants': ['S', 'M', 'L', 'XL'],
+            'Ensemble': ['S', 'M', 'L', 'XL']
+        };
+
+        function sizesFor(name) {
+            return PRODUCT_SIZES[name] || DEFAULT_SIZES;
+        }
 
         // Each product has three real files: the supplied front+back
         // composite (the card's default image), and a front-only / back-only
@@ -14767,13 +14859,32 @@
                 both: '/assets/ivory-blue-monogram.png',
                 front: '/assets/ivory-blue-monogram-front.png',
                 back: '/assets/ivory-blue-monogram-back.png'
+            },
+            'Sweatshirt': {
+                both: '/assets/SWEATSHIRT/eternalvoid-sweatshirt-front-back.png',
+                front: '/assets/SWEATSHIRT/eternalvoid-sweatshirt-front.png',
+                back: '/assets/SWEATSHIRT/eternalvoid-sweatshirt-back.png'
+            },
+            'Track Pants': {
+                both: '/assets/TRACKPANTS/eternalvoid-trackpants-front-back.png',
+                front: '/assets/TRACKPANTS/eternalvoid-trackpants-front.png',
+                back: '/assets/TRACKPANTS/eternalvoid-trackpants-back.png'
+            },
+            'Ensemble': {
+                both: '/assets/ENSEMBLES/eternalvoid-ensembles-front-back.png',
+                front: '/assets/ENSEMBLES/eternalvoid-ensembles-front.png',
+                back: '/assets/ENSEMBLES/eternalvoid-ensembles-back.png'
             }
         };
 
         function updatePdSizes(activeSize) {
             if (!pdSizes) return;
+            const offered = sizesFor(pdState.name);
             pdSizes.querySelectorAll('[data-pd-size]').forEach((button) => {
-                const isActive = button.dataset.pdSize === activeSize;
+                const size = button.dataset.pdSize;
+                const available = offered.includes(size);
+                button.hidden = !available;
+                const isActive = available && size === activeSize;
                 button.classList.toggle('active', isActive);
                 button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
@@ -14790,9 +14901,14 @@
             pdState = { card: productCard, name, price, size: productCard.dataset.selectedSize || '' };
             resetPdGallery(name, startView);
 
+            // A piece with no confirmed price is shown and browsed like any
+            // other, but cannot be bagged — a placeholder figure would be a
+            // fabricated fact on a commerce surface.
+            const pricePending = productCard.dataset.pricePending === 'true';
+
             if (pdCode) pdCode.textContent = meta.code || 'EV·ATELIER';
             if (pdNameEl) pdNameEl.textContent = name;
-            if (pdPriceEl) pdPriceEl.textContent = '€' + price;
+            if (pdPriceEl) pdPriceEl.textContent = pricePending ? t('comingSoon') : '€' + price;
             if (pdDesc) {
                 const copy = meta.description || productCard.dataset.fitNote || '';
                 pdDesc.innerHTML = formatBrandMarkup(copy);
@@ -14800,7 +14916,8 @@
             }
             if (pdSeeMore) pdSeeMore.textContent = t('pdSeeMore');
             if (pdAdd) {
-                pdAdd.dataset.defaultLabel = t('pdAddToBag');
+                pdAdd.dataset.defaultLabel = pricePending ? t('comingSoon') : t('pdAddToBag');
+                pdAdd.disabled = pricePending;
                 resetAddButtonState(pdAdd);
             }
             pdBagTouched = false;
