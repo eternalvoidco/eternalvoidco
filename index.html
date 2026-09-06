@@ -12251,7 +12251,7 @@
                 <span data-i18n="total">Total</span>
                 <strong id="cartTotal">€0</strong>
             </div>
-            <a href="https://shop.eternalvoid.co" class="cart-checkout" id="cartCheckout" target="_blank" rel="noopener" data-i18n="checkout">Checkout</a>
+            <a href="/checkout" class="cart-checkout" id="cartCheckout" data-i18n="checkout">Checkout</a>
         </div>
     </aside>
 
@@ -15258,26 +15258,15 @@
                     return;
                 }
 
-                const { url, missingItems } = buildShopifyCheckoutUrl(cart);
-
-                if (missingItems.length > 0) {
-                    console.warn('Missing Shopify variant mapping for items:', missingItems);
-                    alert(t('checkoutMissingAlert'));
-                    return;
-                }
-
-                if (!url) {
-                    alert(t('checkoutBuildAlert'));
-                    return;
-                }
-
-                const checkoutUrl = url;
+                // The bag travels in localStorage; /checkout revalidates every
+                // line against the server catalogue before any figure is shown,
+                // so nothing about price or availability is carried across.
                 const cartValue = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 trackAnalyticsEvent('begin_checkout', {
                     currency: 'EUR',
                     value: cartValue
                 });
-                window.location.href = checkoutUrl;
+                window.location.href = '/checkout';
             });
         }
 

@@ -15,6 +15,9 @@ export default function handler(request, response) {
 
     return response.status(200).json({
         supabaseUrl: process.env.SUPABASE_URL || '',
-        supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ''
+        supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+        // Publishable by design — it is the key Stripe.js is meant to run with.
+        // STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET are never read here.
+        stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || ''
     });
 }

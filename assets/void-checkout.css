@@ -1,0 +1,881 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   ETERNAL VOID — checkout
+
+   The house tokens are redeclared here because checkout is its own document and
+   index.html keeps its system in an inline <style>. The values are copied, not
+   reinvented: same gold, same ivory, same easing curves. When those move to a
+   shared stylesheet this block is the only thing to delete.
+
+   The room is quieter than the boutique on purpose. There is one gold rule per
+   region, gold marks state rather than decorating, and nothing glows.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+    --void-black: #080808;
+    --void-obsidian: #050505;
+    --void-white: #f5f2ec;
+    --void-accent: #c7a96c;
+    --void-gold-soft: #d8c08a;
+    --void-gold-bright: #f2e2bd;
+    --void-gold-gradient: linear-gradient(135deg, #e7d4a6 0%, #c7a96c 46%, #9c7c46 100%);
+
+    --void-text: #f5f2ec;
+    --void-text-soft: rgba(245, 242, 236, 0.7);
+    --void-text-muted: rgba(245, 242, 236, 0.44);
+    --void-text-faint: rgba(245, 242, 236, 0.26);
+
+    --ck-rule: rgba(245, 242, 236, 0.1);
+    --ck-rule-soft: rgba(245, 242, 236, 0.06);
+    --ck-gold-line: rgba(199, 169, 108, 0.3);
+    --ck-danger: #d99a86;
+
+    --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+    --ck-stage-in: 560ms;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+    background: #000;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(199, 169, 108, 0.4) #060606;
+}
+
+body {
+    min-height: 100svh;
+    background: #000;
+    color: var(--void-text);
+    font-family: 'Jost', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* A single, very soft warm source at the top-left of the room. It is the only
+   ambient treatment in the whole page. */
+.ck-atmos {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(60% 44% at 12% 0%, rgba(199, 169, 108, 0.055), transparent 68%),
+        linear-gradient(180deg, #050505 0%, #000 62%);
+}
+
+img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+
+.ck-sr {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+:focus-visible {
+    outline: 1px solid rgba(199, 169, 108, 0.7);
+    outline-offset: 3px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.ck-head {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 1.6rem clamp(1.1rem, 4vw, 3rem);
+    border-bottom: 1px solid var(--ck-rule-soft);
+}
+
+.ck-back {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    border: 0;
+    background: transparent;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--void-text-muted);
+    cursor: pointer;
+    transition: color 0.4s ease, transform 0.42s var(--ease-lux);
+}
+
+.ck-back:hover { color: var(--void-text); transform: translateX(-3px); }
+.ck-back i { width: 14px; height: 1px; background: currentColor; font-style: normal; }
+
+.ck-mark {
+    justify-self: center;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    text-decoration: none;
+    color: var(--void-text);
+}
+
+.ck-mark sup { font-size: 0.36em; margin-left: 0.04em; vertical-align: super; }
+
+.ck-secure {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--void-text-faint);
+}
+
+.ck-secure svg { width: 11px; height: 11px; }
+
+/* ── Shell ──────────────────────────────────────────────────────────────── */
+.ck-shell {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: clamp(2rem, 5vw, 3.6rem) clamp(1.1rem, 4vw, 3rem) 5rem;
+}
+
+/* ── Progress ───────────────────────────────────────────────────────────── */
+.ck-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+    list-style: none;
+}
+
+.ck-step {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--void-text-faint);
+    transition: color 0.5s var(--ease-lux);
+}
+
+.ck-step::after {
+    content: '';
+    width: clamp(14px, 3vw, 40px);
+    height: 1px;
+    background: var(--ck-rule);
+    transition: background 0.5s var(--ease-lux);
+}
+
+.ck-step:last-child::after { display: none; }
+.ck-step[data-state="done"] { color: var(--void-text-muted); }
+.ck-step[data-state="done"]::after { background: rgba(199, 169, 108, 0.28); }
+.ck-step[data-state="active"] { color: var(--void-accent); }
+.ck-step-n { font-variant-numeric: tabular-nums; }
+.ck-step-label { display: none; }
+.ck-step[data-state="active"] .ck-step-label { display: inline; }
+
+/* ── Stages ─────────────────────────────────────────────────────────────── */
+.ck-stage { display: none; }
+.ck-stage.is-active { display: block; }
+
+/* The stage arrives behind a thin rule that draws across first, so the section
+   reads as being set rather than swapped. */
+.ck-stage.is-entering { animation: ckStageIn var(--ck-stage-in) var(--ease-lux) backwards; }
+.ck-stage.is-leaving { animation: ckStageOut 260ms var(--ease-inout) forwards; }
+
+@keyframes ckStageIn {
+    0% { opacity: 0; transform: translateY(14px); clip-path: inset(0 0 100% 0); }
+    45% { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+}
+
+@keyframes ckStageOut {
+    from { opacity: 1; transform: translateY(0); filter: blur(0); }
+    to { opacity: 0; transform: translateY(-8px); filter: blur(1.6px); }
+}
+
+.ck-stage-index {
+    font-size: 0.58rem;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    color: var(--void-accent);
+}
+
+.ck-stage-title {
+    margin: 0.5rem 0 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.9rem, 4.4vw, 2.7rem);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+}
+
+.ck-stage-note {
+    margin-top: 0.8rem;
+    max-width: 46ch;
+    font-size: 0.82rem;
+    line-height: 1.8;
+    color: var(--void-text-muted);
+}
+
+.ck-stage-rule {
+    height: 1px;
+    margin: clamp(1.6rem, 3vw, 2.2rem) 0;
+    background: linear-gradient(90deg, var(--ck-gold-line), rgba(199, 169, 108, 0));
+    transform-origin: 0 50%;
+}
+
+.ck-stage.is-entering .ck-stage-rule { animation: ckRuleIn 620ms var(--ease-lux) backwards; }
+
+@keyframes ckRuleIn {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+/* ── Fields ─────────────────────────────────────────────────────────────── */
+.ck-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1.4rem;
+}
+
+.ck-field { display: flex; flex-direction: column; }
+.ck-field.is-wide { grid-column: 1 / -1; }
+
+.ck-label {
+    margin-bottom: 0.5rem;
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--void-text-muted);
+    transition: color 0.35s ease;
+}
+
+.ck-label .ck-opt {
+    margin-left: 0.5rem;
+    letter-spacing: 0.18em;
+    color: var(--void-text-faint);
+}
+
+/* A ruled line, not a box. Focus lifts the rule to gold and nothing else. */
+.ck-input,
+.ck-select {
+    width: 100%;
+    padding: 0.6rem 0 0.55rem;
+    border: 0;
+    border-bottom: 1px solid var(--ck-rule);
+    border-radius: 0;
+    background: transparent;
+    color: var(--void-text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    transition: border-color 0.4s var(--ease-lux), color 0.3s ease;
+}
+
+.ck-input::placeholder { color: var(--void-text-faint); }
+.ck-input:focus,
+.ck-select:focus { outline: none; border-bottom-color: rgba(199, 169, 108, 0.65); }
+.ck-field:focus-within .ck-label { color: var(--void-gold-soft); }
+
+.ck-select {
+    appearance: none;
+    padding-right: 1.6rem;
+    background-image: linear-gradient(45deg, transparent 50%, var(--void-text-muted) 50%),
+                      linear-gradient(135deg, var(--void-text-muted) 50%, transparent 50%);
+    background-position: right 8px center, right 3px center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.ck-select option { background: #0a0a0a; color: var(--void-text); }
+
+.ck-error {
+    margin-top: 0.45rem;
+    min-height: 0;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    color: var(--ck-danger);
+}
+
+.ck-field.is-invalid .ck-input,
+.ck-field.is-invalid .ck-select { border-bottom-color: rgba(217, 154, 134, 0.7); }
+
+/* ── Shipping methods ───────────────────────────────────────────────────── */
+.ck-methods { display: flex; flex-direction: column; }
+
+.ck-method {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.05rem 0;
+    border-bottom: 1px solid var(--ck-rule-soft);
+    cursor: pointer;
+}
+
+.ck-method input { position: absolute; opacity: 0; pointer-events: none; }
+
+/* The indicator is the only gold in the list, and only when chosen. */
+.ck-method-mark {
+    width: 1px;
+    height: 22px;
+    background: var(--ck-rule);
+    transition: background 0.45s var(--ease-lux), height 0.45s var(--ease-lux);
+}
+
+.ck-method:has(input:checked) .ck-method-mark { background: var(--void-accent); height: 30px; }
+.ck-method:has(input:checked) .ck-method-name { color: var(--void-text); }
+.ck-method:has(input:focus-visible) { outline: 1px solid rgba(199, 169, 108, 0.6); outline-offset: 4px; }
+
+.ck-method-name {
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--void-text-muted);
+    transition: color 0.4s ease;
+}
+
+.ck-method-note {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: none;
+    color: var(--void-text-faint);
+}
+
+.ck-method-price {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.05rem;
+    color: var(--void-text-soft);
+}
+
+/* ── Checkbox ───────────────────────────────────────────────────────────── */
+.ck-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 1.4rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--void-text-muted);
+    cursor: pointer;
+}
+
+.ck-check input { position: absolute; opacity: 0; pointer-events: none; }
+
+.ck-check-box {
+    width: 13px;
+    height: 13px;
+    flex: none;
+    border: 1px solid var(--ck-rule);
+    transition: border-color 0.35s ease, background 0.35s ease;
+}
+
+.ck-check input:checked + .ck-check-box {
+    border-color: var(--void-accent);
+    background: linear-gradient(135deg, rgba(199, 169, 108, 0.9), rgba(156, 124, 70, 0.9));
+}
+
+.ck-check input:focus-visible + .ck-check-box { outline: 1px solid rgba(199, 169, 108, 0.7); outline-offset: 3px; }
+
+/* ── Actions ────────────────────────────────────────────────────────────── */
+.ck-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.6rem;
+    margin-top: clamp(2rem, 4vw, 2.8rem);
+}
+
+.ck-cta {
+    position: relative;
+    min-width: min(300px, 100%);
+    min-height: 54px;
+    padding: 0 1.6rem;
+    border: 1px solid rgba(199, 169, 108, 0.55);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--void-text);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.45s var(--ease-lux), color 0.45s ease, background 0.45s var(--ease-lux);
+}
+
+.ck-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--void-gold-gradient);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 0.5s var(--ease-lux);
+}
+
+.ck-cta:hover:not(:disabled) { border-color: rgba(226, 199, 138, 0.9); background: rgba(199, 169, 108, 0.08); }
+
+/* The final commitment is the one solid gold surface in the checkout. */
+.ck-cta.is-final { background: var(--void-gold-gradient); border-color: transparent; color: #120d05; }
+.ck-cta.is-final:hover:not(:disabled) { filter: brightness(1.06); background: var(--void-gold-gradient); }
+
+.ck-cta:disabled { opacity: 0.45; cursor: default; }
+
+.ck-cta.is-busy { color: transparent; }
+
+/* A line that travels rather than a spinner. */
+.ck-cta.is-busy::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 34%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(245, 232, 202, 0.9), transparent);
+    animation: ckTravel 1.15s var(--ease-inout) infinite;
+}
+
+@keyframes ckTravel {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(330%); }
+}
+
+.ck-back-link {
+    border: 0;
+    background: transparent;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--void-text-faint);
+    cursor: pointer;
+    transition: color 0.35s ease;
+}
+
+.ck-back-link:hover { color: var(--void-text-muted); }
+
+/* ── Notices ────────────────────────────────────────────────────────────── */
+.ck-notice {
+    margin-top: 1.6rem;
+    padding: 1.1rem 1.2rem;
+    border-left: 1px solid rgba(217, 154, 134, 0.55);
+    background: rgba(217, 154, 134, 0.05);
+    font-size: 0.78rem;
+    line-height: 1.75;
+    color: rgba(245, 242, 236, 0.78);
+}
+
+.ck-notice[hidden] { display: none; }
+.ck-notice-title {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--ck-danger);
+}
+
+.ck-notice.is-neutral {
+    border-left-color: var(--ck-gold-line);
+    background: rgba(199, 169, 108, 0.04);
+}
+
+.ck-notice.is-neutral .ck-notice-title { color: var(--void-accent); }
+
+/* ── Payment ────────────────────────────────────────────────────────────── */
+.ck-pay-label {
+    margin-bottom: 1rem;
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--void-text-muted);
+}
+
+.ck-express { margin-bottom: 2rem; }
+.ck-express[hidden] { display: none; }
+
+.ck-express-rule {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0;
+    font-size: 0.54rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--void-text-faint);
+}
+
+.ck-express-rule::before,
+.ck-express-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--ck-rule-soft);
+}
+
+/* Stripe mounts inside this; its own fields are themed through the supported
+   appearance API in void-checkout.js, never by reaching into the iframe. */
+#ckPaymentElement { min-height: 220px; }
+
+.ck-legal {
+    margin-top: 1.8rem;
+    font-size: 0.66rem;
+    line-height: 1.9;
+    color: var(--void-text-faint);
+}
+
+.ck-legal a { color: var(--void-text-muted); text-decoration: none; border-bottom: 1px solid var(--ck-rule); }
+.ck-legal a:hover { color: var(--void-text-soft); }
+
+/* ── Summary ────────────────────────────────────────────────────────────── */
+.ck-summary {
+    position: sticky;
+    top: 2rem;
+    padding: 1.7rem 0 0;
+    border-top: 1px solid var(--ck-gold-line);
+}
+
+.ck-summary-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+}
+
+.ck-summary-title {
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--void-accent);
+}
+
+.ck-summary-count { font-size: 0.66rem; letter-spacing: 0.12em; color: var(--void-text-faint); }
+
+.ck-lines { list-style: none; }
+
+.ck-line {
+    display: grid;
+    grid-template-columns: 62px 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.05rem 0;
+    border-bottom: 1px solid var(--ck-rule-soft);
+}
+
+/* The garment floats on the panel; no tile, no frame. */
+.ck-line-media {
+    aspect-ratio: 3 / 4;
+    display: grid;
+    place-items: center;
+}
+
+.ck-line-media img { width: 100%; height: 100%; object-fit: contain; }
+
+.ck-line-name {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--void-text);
+}
+
+.ck-line-meta {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--void-text-faint);
+}
+
+.ck-line-price {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.05rem;
+    color: var(--void-text-soft);
+    white-space: nowrap;
+}
+
+.ck-qty { display: inline-flex; align-items: center; gap: 0.55rem; margin-top: 0.45rem; }
+
+.ck-qty button {
+    width: 20px; height: 20px;
+    display: grid; place-items: center;
+    border: 1px solid var(--ck-rule);
+    background: transparent;
+    font-size: 0.7rem;
+    line-height: 1;
+    color: var(--void-text-muted);
+    cursor: pointer;
+    transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.ck-qty button:hover:not(:disabled) { border-color: var(--ck-gold-line); color: var(--void-text); }
+.ck-qty button:disabled { opacity: 0.3; cursor: default; }
+.ck-qty span { min-width: 1.2em; text-align: center; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
+
+.ck-totals { margin-top: 1.5rem; }
+
+.ck-total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.42rem 0;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--void-text-faint);
+}
+
+.ck-total-row b { font-weight: 400; color: var(--void-text-muted); font-size: 0.82rem; letter-spacing: 0.02em; }
+
+.ck-total-row.is-grand {
+    margin-top: 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--ck-rule);
+    color: var(--void-accent);
+    font-weight: 600;
+    letter-spacing: 0.3em;
+}
+
+.ck-total-row.is-grand b {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.75rem;
+    color: var(--void-text);
+    letter-spacing: 0.01em;
+}
+
+.ck-summary-note {
+    margin-top: 1.2rem;
+    font-size: 0.62rem;
+    line-height: 1.8;
+    color: var(--void-text-faint);
+}
+
+/* ── Empty / blocked states ─────────────────────────────────────────────── */
+.ck-empty {
+    grid-column: 1 / -1;
+    display: grid;
+    place-items: center;
+    gap: 1.6rem;
+    min-height: 46svh;
+    text-align: center;
+}
+
+.ck-empty-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+    font-weight: 500;
+}
+
+.ck-empty-note { max-width: 34ch; font-size: 0.8rem; line-height: 1.8; color: var(--void-text-muted); }
+
+/* ── Confirmation ───────────────────────────────────────────────────────── */
+.ck-confirm {
+    display: grid;
+    justify-items: center;
+    gap: 1.4rem;
+    max-width: 620px;
+    margin: 0 auto;
+    padding: clamp(3rem, 10vw, 6rem) clamp(1.1rem, 4vw, 2rem) 4rem;
+    text-align: center;
+}
+
+/* A point of light that becomes a line, then the room settles. Nothing
+   celebrates; it is a certificate being issued. */
+.ck-seal {
+    width: 100%;
+    max-width: 260px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--void-accent), transparent);
+    transform: scaleX(0.02);
+    animation: ckSeal 1400ms var(--ease-lux) 120ms forwards;
+}
+
+@keyframes ckSeal {
+    0% { transform: scaleX(0.02); opacity: 0; }
+    22% { opacity: 1; }
+    100% { transform: scaleX(1); opacity: 0.75; }
+}
+
+.ck-confirm-eyebrow {
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: var(--void-accent);
+    animation: ckRise 700ms var(--ease-lux) 620ms backwards;
+}
+
+.ck-confirm-number {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(2.1rem, 6vw, 3rem);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    animation: ckRise 760ms var(--ease-lux) 800ms backwards;
+}
+
+.ck-confirm-copy {
+    max-width: 40ch;
+    font-size: 0.86rem;
+    line-height: 1.9;
+    color: var(--void-text-muted);
+    animation: ckRise 760ms var(--ease-lux) 940ms backwards;
+}
+
+@keyframes ckRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ck-confirm-panel {
+    width: 100%;
+    margin-top: 2.4rem;
+    text-align: left;
+    animation: ckRise 800ms var(--ease-lux) 1080ms backwards;
+}
+
+.ck-confirm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2.6rem;
+    animation: ckRise 800ms var(--ease-lux) 1220ms backwards;
+}
+
+.ck-confirm-actions .ck-cta { min-width: 240px; }
+
+/* ── Processing ─────────────────────────────────────────────────────────── */
+.ck-processing {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 1.4rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--void-accent);
+}
+
+.ck-processing[hidden] { display: none; }
+
+.ck-processing i {
+    position: relative;
+    width: 54px;
+    height: 1px;
+    background: var(--ck-rule);
+    overflow: hidden;
+}
+
+.ck-processing i::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, var(--void-gold-bright), transparent);
+    animation: ckTravel 1.3s var(--ease-inout) infinite;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .ck-shell { grid-template-columns: minmax(0, 1fr); }
+
+    /* The manifest moves above the form and collapses, so the CTA stays within
+       reach instead of sitting under a long summary. */
+    .ck-summary {
+        position: static;
+        order: -1;
+        padding-top: 1.4rem;
+    }
+
+    .ck-summary-body[hidden] { display: none; }
+
+    .ck-summary-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        border: 0;
+        background: transparent;
+        font-size: 0.56rem;
+        font-weight: 600;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--void-accent);
+        cursor: pointer;
+    }
+
+    .ck-summary-toggle i {
+        width: 8px; height: 8px;
+        border-right: 1px solid currentColor;
+        border-bottom: 1px solid currentColor;
+        font-style: normal;
+        transform: rotate(45deg) translate(-2px, -2px);
+        transition: transform 0.4s var(--ease-lux);
+    }
+
+    .ck-summary-toggle[aria-expanded="true"] i { transform: rotate(225deg) translate(-2px, -2px); }
+}
+
+@media (min-width: 901px) {
+    .ck-summary-toggle { display: none; }
+    .ck-summary-body[hidden] { display: block; }
+}
+
+@media (max-width: 600px) {
+    .ck-fields { grid-template-columns: minmax(0, 1fr); }
+    .ck-head { padding: 1.1rem; }
+    .ck-mark { font-size: 1.2rem; }
+    .ck-secure span { display: none; }
+    .ck-actions { flex-direction: column-reverse; align-items: stretch; gap: 1rem; }
+    .ck-cta { width: 100%; }
+    .ck-step-label { display: none !important; }
+    .ck-line { grid-template-columns: 48px 1fr auto; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .ck-stage.is-entering,
+    .ck-stage.is-leaving,
+    .ck-stage.is-entering .ck-stage-rule,
+    .ck-seal,
+    .ck-confirm-eyebrow,
+    .ck-confirm-number,
+    .ck-confirm-copy,
+    .ck-confirm-panel,
+    .ck-confirm-actions {
+        animation: none !important;
+    }
+
+    .ck-seal { transform: scaleX(1); opacity: 0.75; }
+    .ck-cta.is-busy::after,
+    .ck-processing i::after { animation-duration: 2.4s; }
+    * { transition-duration: 0.01ms !important; }
+}

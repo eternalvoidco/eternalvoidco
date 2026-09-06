@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Checkout | VOID©</title>
+    <meta name="description" content="Complete your acquisition at ETERNAL VOID.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#000000">
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg?v=20260713-ev">
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260713-ev">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png?v=20260713-ev">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/void-checkout.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="ck-atmos" aria-hidden="true"></div>
+
+    <header class="ck-head">
+        <a class="ck-back" href="/shop"><i aria-hidden="true"></i>Return</a>
+        <a class="ck-mark" href="/">VOID<sup>©</sup></a>
+        <span class="ck-secure">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="5" y="10.5" width="14" height="10" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3" stroke="currentColor" stroke-width="1.6"/>
+            </svg>
+            <span>Secure Checkout</span>
+        </span>
+    </header>
+
+    <main class="ck-shell" id="ckShell">
+        <!-- Empty bag. Rendered instead of the form, never alongside it. -->
+        <section class="ck-empty" id="ckEmpty" hidden>
+            <h1 class="ck-empty-title">Your selection is empty</h1>
+            <p class="ck-empty-note">Nothing has been placed in your bag yet. The season one pieces are in the collection.</p>
+            <a class="ck-cta" href="/shop" style="display:grid;place-items:center;text-decoration:none;">Return to Collection</a>
+        </section>
+
+        <div id="ckMain" hidden>
+            <ol class="ck-progress" id="ckProgress" aria-label="Checkout progress">
+                <li class="ck-step" data-step="details" data-state="active"><span class="ck-step-n">01</span><span class="ck-step-label">Details</span></li>
+                <li class="ck-step" data-step="delivery"><span class="ck-step-n">02</span><span class="ck-step-label">Delivery</span></li>
+                <li class="ck-step" data-step="payment"><span class="ck-step-n">03</span><span class="ck-step-label">Payment</span></li>
+                <li class="ck-step" data-step="confirmation"><span class="ck-step-n">04</span><span class="ck-step-label">Confirmation</span></li>
+            </ol>
+
+            <!-- Raised when the server refuses the bag: a piece went inactive,
+                 a quantity is impossible, delivery is unconfigured. -->
+            <div class="ck-notice" id="ckBlocker" role="alert" hidden>
+                <span class="ck-notice-title" id="ckBlockerTitle">Selection unavailable</span>
+                <span id="ckBlockerBody"></span>
+            </div>
+
+            <!-- 01 ─ DETAILS ─────────────────────────────────────────────── -->
+            <section class="ck-stage is-active" id="stageDetails" data-stage="details" aria-labelledby="stageDetailsTitle">
+                <p class="ck-stage-index">01 / 04</p>
+                <h1 class="ck-stage-title" id="stageDetailsTitle">Details</h1>
+                <p class="ck-stage-note">Where the confirmation is sent. No account is required to complete an order.</p>
+                <div class="ck-stage-rule" aria-hidden="true"></div>
+
+                <form class="ck-fields" id="formDetails" novalidate>
+                    <div class="ck-field is-wide" data-field="email">
+                        <label class="ck-label" for="ckEmail">Email</label>
+                        <input class="ck-input" type="email" id="ckEmail" name="email" autocomplete="email" inputmode="email" spellcheck="false" required aria-describedby="errEmail">
+                        <p class="ck-error" id="errEmail" role="alert"></p>
+                    </div>
+                    <div class="ck-field" data-field="firstName">
+                        <label class="ck-label" for="ckFirstName">First name</label>
+                        <input class="ck-input" type="text" id="ckFirstName" name="firstName" autocomplete="given-name" required aria-describedby="errFirstName">
+                        <p class="ck-error" id="errFirstName" role="alert"></p>
+                    </div>
+                    <div class="ck-field" data-field="lastName">
+                        <label class="ck-label" for="ckLastName">Last name</label>
+                        <input class="ck-input" type="text" id="ckLastName" name="lastName" autocomplete="family-name" required aria-describedby="errLastName">
+                        <p class="ck-error" id="errLastName" role="alert"></p>
+                    </div>
+                    <div class="ck-field is-wide" data-field="phone">
+                        <label class="ck-label" for="ckPhone">Phone <span class="ck-opt">Optional</span></label>
+                        <input class="ck-input" type="tel" id="ckPhone" name="phone" autocomplete="tel" aria-describedby="errPhone">
+                        <p class="ck-error" id="errPhone" role="alert"></p>
+                    </div>
+                </form>
+
+                <div class="ck-actions">
+                    <button type="button" class="ck-cta" data-advance="delivery">Continue to Delivery</button>
+                </div>
+            </section>
+
+            <!-- 02 ─ DELIVERY ────────────────────────────────────────────── -->
+            <section class="ck-stage" id="stageDelivery" data-stage="delivery" aria-labelledby="stageDeliveryTitle">
+                <p class="ck-stage-index">02 / 04</p>
+                <h1 class="ck-stage-title" id="stageDeliveryTitle">Delivery</h1>
+                <p class="ck-stage-note">The address the piece will travel to.</p>
+                <div class="ck-stage-rule" aria-hidden="true"></div>
+
+                <form class="ck-fields" id="formDelivery" novalidate>
+                    <div class="ck-field" data-field="shipFirstName">
+                        <label class="ck-label" for="ckShipFirstName">First name</label>
+                        <input class="ck-input" type="text" id="ckShipFirstName" name="shipFirstName" autocomplete="shipping given-name" required aria-describedby="errShipFirstName">
+                        <p class="ck-error" id="errShipFirstName" role="alert"></p>
+                    </div>
+                    <div class="ck-field" data-field="shipLastName">
+                        <label class="ck-label" for="ckShipLastName">Last name</label>
+                        <input class="ck-input" type="text" id="ckShipLastName" name="shipLastName" autocomplete="shipping family-name" required aria-describedby="errShipLastName">
+                        <p class="ck-error" id="errShipLastName" role="alert"></p>
+                    </div>
+                    <div class="ck-field is-wide" data-field="line1">
+                        <label class="ck-label" for="ckLine1">Address</label>
+                        <input class="ck-input" type="text" id="ckLine1" name="line1" autocomplete="shipping address-line1" required aria-describedby="errLine1">
+                        <p class="ck-error" id="errLine1" role="alert"></p>
+                    </div>
+                    <div class="ck-field is-wide" data-field="line2">
+                        <label class="ck-label" for="ckLine2">Apartment, floor <span class="ck-opt">Optional</span></label>
+                        <input class="ck-input" type="text" id="ckLine2" name="line2" autocomplete="shipping address-line2" aria-describedby="errLine2">
+                        <p class="ck-error" id="errLine2" role="alert"></p>
+                    </div>
+                    <div class="ck-field" data-field="postalCode">
+                        <label class="ck-label" for="ckPostal">Postal code</label>
+                        <input class="ck-input" type="text" id="ckPostal" name="postalCode" autocomplete="shipping postal-code" inputmode="text" required aria-describedby="errPostalCode">
+                        <p class="ck-error" id="errPostalCode" role="alert"></p>
+                    </div>
+                    <div class="ck-field" data-field="city">
+                        <label class="ck-label" for="ckCity">City</label>
+                        <input class="ck-input" type="text" id="ckCity" name="city" autocomplete="shipping address-level2" required aria-describedby="errCity">
+                        <p class="ck-error" id="errCity" role="alert"></p>
+                    </div>
+                    <div class="ck-field is-wide" data-field="country">
+                        <label class="ck-label" for="ckCountry">Country</label>
+                        <select class="ck-select" id="ckCountry" name="country" autocomplete="shipping country" required aria-describedby="errCountry"></select>
+                        <p class="ck-error" id="errCountry" role="alert"></p>
+                    </div>
+                </form>
+
+                <div class="ck-stage-rule" aria-hidden="true"></div>
+                <p class="ck-pay-label">Delivery method</p>
+                <div class="ck-methods" id="ckMethods" role="radiogroup" aria-label="Delivery method"></div>
+                <p class="ck-summary-note" id="ckMethodsNote"></p>
+
+                <div class="ck-actions">
+                    <button type="button" class="ck-cta" data-advance="payment">Continue to Payment</button>
+                    <button type="button" class="ck-back-link" data-back="details">Back to details</button>
+                </div>
+            </section>
+
+            <!-- 03 ─ PAYMENT ─────────────────────────────────────────────── -->
+            <section class="ck-stage" id="stagePayment" data-stage="payment" aria-labelledby="stagePaymentTitle">
+                <p class="ck-stage-index">03 / 04</p>
+                <h1 class="ck-stage-title" id="stagePaymentTitle">Payment</h1>
+                <p class="ck-stage-note">Card details are handled entirely by Stripe and never reach our servers.</p>
+                <div class="ck-stage-rule" aria-hidden="true"></div>
+
+                <!-- Stripe decides whether a wallet is available; nothing is
+                     drawn here unless it says so. -->
+                <div class="ck-express" id="ckExpress" hidden>
+                    <p class="ck-pay-label">Express payment</p>
+                    <div id="ckExpressElement"></div>
+                    <p class="ck-express-rule">Or pay by card</p>
+                </div>
+
+                <div id="ckPaymentElement" aria-live="polite"></div>
+
+                <label class="ck-check">
+                    <input type="checkbox" id="ckBillingSame" checked>
+                    <span class="ck-check-box" aria-hidden="true"></span>
+                    Billing address same as delivery
+                </label>
+
+                <div class="ck-notice" id="ckPayError" role="alert" hidden>
+                    <span class="ck-notice-title">Payment could not be completed</span>
+                    <span id="ckPayErrorBody"></span>
+                </div>
+
+                <div class="ck-actions">
+                    <button type="button" class="ck-cta is-final" id="ckPayButton">Complete Order</button>
+                    <button type="button" class="ck-back-link" data-back="delivery">Back to delivery</button>
+                </div>
+
+                <p class="ck-processing" id="ckProcessing" role="status" hidden>
+                    <i aria-hidden="true"></i>Processing acquisition
+                </p>
+
+                <p class="ck-legal" id="ckLegal">
+                    By completing this order you agree to our
+                    <a href="/privacy-policy.html">Privacy Policy</a>.
+                    Questions? <a href="mailto:support@eternalvoid.co">Contact an advisor</a>.
+                </p>
+            </section>
+        </div>
+
+        <!-- Order manifest ───────────────────────────────────────────────── -->
+        <aside class="ck-summary" id="ckSummary" aria-label="Your selection" hidden>
+            <div class="ck-summary-head">
+                <h2 class="ck-summary-title">Your Selection</h2>
+                <button type="button" class="ck-summary-toggle" id="ckSummaryToggle" aria-expanded="false" aria-controls="ckSummaryBody">
+                    <span id="ckSummaryTotalMini"></span><i aria-hidden="true"></i>
+                </button>
+                <span class="ck-summary-count" id="ckSummaryCount"></span>
+            </div>
+
+            <div class="ck-summary-body" id="ckSummaryBody">
+                <ul class="ck-lines" id="ckLines"></ul>
+
+                <div class="ck-totals">
+                    <p class="ck-total-row"><span>Subtotal</span><b id="ckSubtotal">—</b></p>
+                    <p class="ck-total-row"><span>Delivery</span><b id="ckShipping">—</b></p>
+                    <p class="ck-total-row is-grand"><span>Total</span><b id="ckTotal">—</b></p>
+                </div>
+
+                <p class="ck-summary-note" id="ckSummaryNote">Totals are confirmed by our server before payment.</p>
+            </div>
+        </aside>
+    </main>
+
+    <script type="module" src="/assets/void-checkout.js"></script>
+</body>
+</html>
