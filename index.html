@@ -2175,60 +2175,154 @@
             text-shadow: 0 0 24px rgba(245, 232, 202, 0.42), 0 0 46px rgba(199, 169, 108, 0.24);
         }
 
-        /* ---- Mobile nav: hamburger toggle + slide-in drawer ---- */
-        /* Toggle is hidden on desktop; the max-width:600px block reveals it. */
-        .nav-menu-toggle {
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            gap: 5px;
-            width: 42px;
-            height: 42px;
-            padding: 9px 8px;
-            background: transparent;
-            border: 1px solid rgba(199, 169, 108, 0.28);
-            border-radius: 2px;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            transition: border-color 0.3s ease, background 0.3s ease;
+        /* ---- Site menu: MENU/CLOSE trigger + left-anchored drawer ----------
+           The trigger is the last item of .nav-left at every width, and the
+           drawer it opens is anchored to the LEFT edge so the panel grows out
+           of the same corner the trigger sits in. Class names keep the
+           historical `mobile-menu` prefix — the drawer began as a phones-only
+           sheet and is now the site-wide menu. ------------------------------ */
+        :root {
+            --drawer-w: min(86vw, 360px);
         }
 
-        .nav-menu-toggle:hover,
-        .nav-menu-toggle:focus-visible {
-            border-color: rgba(199, 169, 108, 0.6);
-            background: rgba(199, 169, 108, 0.06);
+        /* Typography comes from the shared .nav-left a group further down; only
+           the button reset and the glyph belong to the trigger itself. */
+        .nav-menu-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Thumb-sized hit area without padding the button — padding would drag
+           the hover underline off the shared nav baseline. */
+        .nav-menu-toggle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: max(100%, 44px);
+            height: max(100%, 44px);
+            transform: translate(-50%, -50%);
+        }
+
+        .nav-menu-toggle-glyph {
+            position: relative;
+            display: block;
+            flex: none;
+            width: 14px;
+            height: 9px;
         }
 
         .nav-menu-toggle-bar {
-            display: block;
+            position: absolute;
+            left: 0;
             width: 100%;
-            height: 1.5px;
-            background: var(--void-gold-soft, rgba(212, 182, 120, 0.9));
-            transition: transform 0.34s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+            height: 1px;
+            background: currentColor;
+            transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
+        .nav-menu-toggle-bar:nth-child(1) { top: 0; }
+        .nav-menu-toggle-bar:nth-child(2) { bottom: 0; }
+
         .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-bar:nth-child(1) {
-            transform: translateY(6.5px) rotate(45deg);
+            transform: translateY(4px) rotate(45deg);
         }
 
         .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-bar:nth-child(2) {
-            opacity: 0;
+            transform: translateY(-4px) rotate(-45deg);
         }
 
-        .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-bar:nth-child(3) {
-            transform: translateY(-6.5px) rotate(-45deg);
+        /* Both words share one grid cell, so the trigger is sized by whichever
+           is longer and the nav never reflows when the label swaps — including
+           in languages where CLOSE is much longer than MENU. */
+        .nav-menu-toggle-words {
+            display: grid;
+        }
+
+        .nav-menu-toggle-word {
+            grid-area: 1 / 1;
+            transition: opacity 0.28s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), filter 0.28s ease;
+        }
+
+        .nav-menu-toggle-word.is-close {
+            opacity: 0;
+            transform: translateX(-7px);
+            filter: blur(2px);
+        }
+
+        .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-word.is-open {
+            opacity: 0;
+            transform: translateX(7px);
+            filter: blur(2px);
+        }
+
+        .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-word.is-close {
+            opacity: 1;
+            transform: translateX(0);
+            filter: blur(0);
+        }
+
+        /* COLLECTION / STYLE GUIDE dismissal. The resting rule carries the
+           REBUILD timing (it is the state the items return to on close) and the
+           open rule carries the EXIT timing, so each direction is tuned
+           separately without a second set of keyframes. --nd-i is the item's
+           index; the exit runs forwards through it and the rebuild backwards. */
+        .nav-left li.nav-dismissable,
+        body.mobile-menu-open.mobile-menu-closing .nav-left li.nav-dismissable {
+            --nd-i: 0;
+            opacity: 1;
+            transform: none;
+            filter: none;
+            transition:
+                opacity 0.42s ease calc(240ms + (1 - var(--nd-i)) * 45ms),
+                transform 0.52s var(--ease-lux) calc(220ms + (1 - var(--nd-i)) * 45ms),
+                filter 0.38s ease calc(260ms + (1 - var(--nd-i)) * 45ms);
+        }
+
+        body.mobile-menu-open .nav-left li.nav-dismissable {
+            opacity: 0;
+            /* Brightness goes first, the blur follows it, the drift outlasts
+               both — so the letters dim and slip left before they fade. */
+            filter: blur(2.2px) brightness(0.42);
+            transform: translateX(-11px);
+            pointer-events: none;
+            transition:
+                filter 0.26s ease calc(var(--nd-i) * 45ms),
+                transform 0.44s cubic-bezier(0.4, 0, 0.2, 1) calc(var(--nd-i) * 45ms),
+                opacity 0.32s ease calc(120ms + var(--nd-i) * 45ms);
+        }
+
+        /* The trigger has to outrank the backdrop while the drawer is open, and
+           the nav's own plate is dropped so the panel reads through underneath
+           it. The :hover selector is repeated because .nav:not(.scrolled):hover
+           would otherwise out-specify this. */
+        body.mobile-menu-open .nav,
+        body.mobile-menu-open .nav.scrolled,
+        body.mobile-menu-open .nav:not(.scrolled):hover {
+            z-index: 1470;
+            background: transparent;
+            border-bottom-color: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
 
         .mobile-menu-backdrop {
             position: fixed;
             inset: 0;
             z-index: 1400;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.62);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
+            transition: opacity 0.44s ease, visibility 0.44s ease;
         }
 
         body.mobile-menu-open {
@@ -2240,32 +2334,165 @@
             visibility: visible;
         }
 
+        body.mobile-menu-open.mobile-menu-closing .mobile-menu-backdrop {
+            opacity: 0;
+            transition: opacity 0.4s ease 0.16s;
+        }
+
+        /* The structural hairline. It appears at the far left of the screen and
+           travels out to where the drawer's trailing edge will be, drawing the
+           panel's boundary before the panel has any mass of its own. */
+        .mobile-menu-edge {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1460;
+            width: 1px;
+            pointer-events: none;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(199, 169, 108, 0.5) 14%,
+                rgba(232, 205, 146, 0.9) 50%,
+                rgba(199, 169, 108, 0.5) 86%,
+                transparent 100%);
+            opacity: 0;
+            transform: translateX(0) scaleY(0.35);
+            transition: opacity 0.26s ease 0.14s, transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body.mobile-menu-open .mobile-menu-edge {
+            opacity: 1;
+            transform: translateX(calc(var(--drawer-w) - 1px)) scaleY(1);
+            transition: opacity 0.22s ease, transform 0.54s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body.mobile-menu-open.mobile-menu-closing .mobile-menu-edge {
+            opacity: 0;
+            transform: translateX(0) scaleY(0.35);
+            transition: opacity 0.3s ease 0.22s, transform 0.44s cubic-bezier(0.4, 0, 0.2, 1) 0.18s;
+        }
+
         .mobile-menu {
             position: fixed;
             top: 0;
-            right: 0;
+            left: 0;
             bottom: 0;
             z-index: 1450;
-            width: min(82vw, 340px);
+            width: var(--drawer-w);
             display: flex;
             flex-direction: column;
-            gap: 1.4rem;
-            padding: calc(5.2rem + env(safe-area-inset-top, 0px)) calc(1.8rem + env(safe-area-inset-right, 0px)) calc(2rem + env(safe-area-inset-bottom, 0px)) 1.8rem;
-            background: linear-gradient(160deg, rgba(12, 12, 12, 0.98), rgba(4, 4, 4, 0.99));
-            border-left: 1px solid rgba(199, 169, 108, 0.28);
-            box-shadow: -24px 0 60px rgba(0, 0, 0, 0.6);
-            transform: translateX(100%);
+            gap: 1.15rem;
+            padding: calc(6.4rem + env(safe-area-inset-top, 0px)) 1.9rem calc(2rem + env(safe-area-inset-bottom, 0px)) calc(1.9rem + env(safe-area-inset-left, 0px));
+            background: linear-gradient(150deg, rgba(11, 11, 11, 0.985), rgba(3, 3, 3, 0.995));
+            box-shadow: 24px 0 64px rgba(0, 0, 0, 0.62);
             visibility: hidden;
+            opacity: 0;
             overflow-y: auto;
-            transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.46s ease;
+            transform: translateX(-16px);
+            /* A clip wipe rather than a slide: the panel is revealed edge-first
+               behind the travelling hairline, so it reads as being built in
+               place instead of arriving as a finished object. */
+            clip-path: inset(0 100% 0 0);
+            transition:
+                clip-path 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.32s ease,
+                visibility 0.5s ease;
         }
 
         body.mobile-menu-open .mobile-menu {
-            transform: translateX(0);
             visibility: visible;
+            opacity: 1;
+            transform: translateX(0);
+            clip-path: inset(0 0 0 0);
+        }
+
+        /* Held back so the entries have finished leaving before the panel goes. */
+        body.mobile-menu-open.mobile-menu-closing .mobile-menu {
+            opacity: 0;
+            transform: translateX(-16px);
+            clip-path: inset(0 100% 0 0);
+            transition:
+                clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s,
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s,
+                opacity 0.34s ease 0.24s;
+        }
+
+        /* Hidden architectural light — a wide, heavily blurred warm pool behind
+           the panel face. The source itself stays off-panel; only its falloff
+           is ever visible, which is what keeps it from reading as a rim glow. */
+        /* The pool is oversized but clipped by the lumen box, which is flush to
+           the panel — otherwise a negatively-inset child inside this scroller
+           would add to its scrollable area. */
+        .mobile-menu-lumen {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.46s ease 0.1s;
+        }
+
+        body.mobile-menu-open .mobile-menu-lumen {
+            opacity: 1;
+        }
+
+        body.mobile-menu-open.mobile-menu-closing .mobile-menu-lumen {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-lumen::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            /* Both sources sit hard against the leading edge and mostly off it,
+               so what lands on the panel is falloff rather than the light. */
+            background:
+                radial-gradient(74% 44% at 4% 24%, rgba(199, 169, 108, 0.16), transparent 70%),
+                radial-gradient(58% 36% at 0% 72%, rgba(184, 148, 58, 0.1), transparent 68%);
+            filter: blur(26px);
+            transform: scale(1);
+            opacity: 0.42;
+        }
+
+        /* darkness -> faint -> breathes brighter -> settles almost out of sight */
+        body.mobile-menu-open .mobile-menu-lumen::before {
+            animation: drawerLumen 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.12s backwards;
+        }
+
+        @keyframes drawerLumen {
+            0%   { opacity: 0; transform: scale(0.86); }
+            30%  { opacity: 0.5; }
+            58%  { opacity: 1; transform: scale(1.03); }
+            100% { opacity: 0.42; transform: scale(1); }
+        }
+
+        .mobile-menu-eyebrow {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.42em;
+            text-transform: uppercase;
+            color: rgba(212, 182, 120, 0.72);
+        }
+
+        .mobile-menu-eyebrow::after {
+            content: '';
+            display: block;
+            margin-top: 0.75rem;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(199, 169, 108, 0.5), rgba(199, 169, 108, 0));
         }
 
         .mobile-menu-links {
+            position: relative;
+            z-index: 1;
             list-style: none;
             display: flex;
             flex-direction: column;
@@ -2337,14 +2564,16 @@
         }
 
         /* Offset each button's light so it ripples around the stack. */
-        body.mobile-menu-open .mobile-menu-links li:nth-child(2) a::after { animation-delay: -0.9s; }
-        body.mobile-menu-open .mobile-menu-links li:nth-child(3) a::after { animation-delay: -1.8s; }
-        body.mobile-menu-open .mobile-menu-links li:nth-child(4) a::after { animation-delay: -2.7s; }
-        body.mobile-menu-open .mobile-menu-preorder::after { animation-delay: -3.4s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(2) a::after { animation-delay: -0.73s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(3) a::after { animation-delay: -1.46s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(4) a::after { animation-delay: -2.2s; }
+        body.mobile-menu-open .mobile-menu-links li:nth-child(5) a::after { animation-delay: -2.93s; }
+        body.mobile-menu-open .mobile-menu-preorder::after { animation-delay: -3.66s; }
 
         /* Premium framed pre-order CTA — sits apart from the links by design.
            Scoped under .mobile-menu to win over the .nav-preorder-trigger reset. */
         .mobile-menu .mobile-menu-preorder {
+            z-index: 1;
             margin-top: 1.15rem;
             padding: 1.05rem 1.1rem;
             background: linear-gradient(145deg, rgba(199, 169, 108, 0.22), rgba(199, 169, 108, 0.05));
@@ -2390,33 +2619,34 @@
             filter: drop-shadow(0 0 3px rgba(199, 169, 108, 0.5));
         }
 
-        /* Staggered reveal as the drawer slides in. */
+        /* Progressive reveal. Entries build from the left, out of focus, in the
+           same motion language the header items just left by. `backwards` (not
+           `both`) is deliberate — it holds the from-state through the delay but
+           releases the properties once the run ends, so the CTA keeps its hover
+           lift and nothing is left carrying a permanent filter. */
         @keyframes mobileMenuItemIn {
-            from { opacity: 0; transform: translateX(22px); }
-            to { opacity: 1; transform: translateX(0); }
+            from { opacity: 0; transform: translateX(-18px); filter: blur(3px); }
+            to { opacity: 1; transform: translateX(0); filter: blur(0); }
         }
 
-        @keyframes mobileMenuFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @keyframes mobileMenuItemOut {
+            from { opacity: 1; transform: translateX(0); filter: blur(0); }
+            to { opacity: 0; transform: translateX(-14px); filter: blur(2.6px); }
         }
 
-        body.mobile-menu-open .mobile-menu-links li {
-            animation: mobileMenuItemIn 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+        .mobile-menu-item {
+            --mm-i: 0;
         }
 
-        body.mobile-menu-open .mobile-menu-links li:nth-child(1) { animation-delay: 0.1s; }
-        body.mobile-menu-open .mobile-menu-links li:nth-child(2) { animation-delay: 0.17s; }
-        body.mobile-menu-open .mobile-menu-links li:nth-child(3) { animation-delay: 0.24s; }
-        body.mobile-menu-open .mobile-menu-links li:nth-child(4) { animation-delay: 0.31s; }
-
-        body.mobile-menu-open .mobile-menu-langs {
-            animation: mobileMenuItemIn 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.46s both;
+        body.mobile-menu-open .mobile-menu-item {
+            animation: mobileMenuItemIn 0.46s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+            animation-delay: calc(150ms + var(--mm-i) * 52ms);
         }
 
-        /* Opacity-only so the hover lift on the CTA stays intact. */
-        body.mobile-menu-open .mobile-menu-preorder {
-            animation: mobileMenuFadeIn 0.5s ease 0.4s both;
+        /* Reverse stagger on the way out: the last entry leaves first. */
+        body.mobile-menu-open.mobile-menu-closing .mobile-menu-item {
+            animation: mobileMenuItemOut 0.24s ease forwards;
+            animation-delay: calc((7 - var(--mm-i)) * 26ms);
         }
 
         html.reduce-motion .mobile-menu-links a::after,
@@ -2425,13 +2655,14 @@
             opacity: 0 !important;
         }
 
-        html.reduce-motion .mobile-menu-links li,
-        html.reduce-motion .mobile-menu-langs,
-        html.reduce-motion .mobile-menu-preorder {
+        html.reduce-motion .mobile-menu-item,
+        html.reduce-motion .mobile-menu-lumen::before {
             animation: none !important;
         }
 
         .mobile-menu-langs {
+            position: relative;
+            z-index: 1;
             margin-top: auto;
             display: flex;
             flex-wrap: wrap;
@@ -2448,13 +2679,19 @@
         }
 
         html.reduce-motion .mobile-menu,
-        html.reduce-motion .mobile-menu-backdrop {
+        html.reduce-motion .mobile-menu-backdrop,
+        html.reduce-motion .mobile-menu-edge,
+        html.reduce-motion .mobile-menu-lumen,
+        html.reduce-motion .nav-left li.nav-dismissable,
+        html.reduce-motion .nav-menu-toggle-bar,
+        html.reduce-motion .nav-menu-toggle-word {
             transition: none !important;
         }
 
         .nav-left a,
         .nav-right a,
-        .nav-preorder-trigger {
+        .nav-preorder-trigger,
+        .nav-menu-toggle {
             color: var(--void-white);
             text-decoration: none;
             font-size: 0.78rem;
@@ -2572,7 +2809,8 @@
 
         .nav-left a::after,
         .nav-right a::after,
-        .nav-preorder-trigger::after {
+        .nav-preorder-trigger::after,
+        .nav-menu-toggle::after {
             content: '';
             position: absolute;
             bottom: -4px;
@@ -2586,13 +2824,16 @@
 
         .nav-left a:hover,
         .nav-right a:hover,
-        .nav-preorder-trigger:hover {
+        .nav-preorder-trigger:hover,
+        .nav-menu-toggle:hover {
             color: #fdf3df;
         }
 
         .nav-left a:hover::after,
         .nav-right a:hover::after,
-        .nav-preorder-trigger:hover::after {
+        .nav-preorder-trigger:hover::after,
+        .nav-menu-toggle:hover::after,
+        .nav-menu-toggle[aria-expanded="true"]::after {
             width: 100%;
         }
 
@@ -8221,7 +8462,8 @@
 
             .nav-left a,
             .nav-right a,
-            .nav-preorder-trigger {
+            .nav-preorder-trigger,
+            .nav-menu-toggle {
                 font-size: 0.74rem;
                 letter-spacing: 0.17em;
             }
@@ -8249,6 +8491,20 @@
             }
         }
 
+        /* The MENU trigger costs the left rail roughly one item's width, so
+           below this the header sheds STYLE GUIDE rather than letting the left
+           rail crowd the wordmark. It stays reachable in the drawer, and
+           COLLECTION still carries the dismissal choreography.
+           The cutoff is set by the worst-case language, not English: German
+           renders the trigger as MENÜ/SCHLIESSEN, some 45px wider, and pairs it
+           with KOLLEKTION. Below 1100px the nav is still on 4rem padding, so
+           that rail no longer clears the centred wordmark. */
+        @media (max-width: 1099px) {
+            .nav-style-guide {
+                display: none;
+            }
+        }
+
         @media (max-width: 768px) {
             .nav {
                 padding: calc(0.95rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) 0.9rem calc(1rem + env(safe-area-inset-left, 0px));
@@ -8264,9 +8520,19 @@
                 gap: 1rem;
             }
 
+            /* Below this the left rail is the trigger alone. German is again
+               the binding case: KOLLEKTION beside MENÜ/SCHLIESSEN overruns the
+               wordmark well before English does, and a rail that keeps an item
+               in one language but not another reads as a bug. COLLECTION is the
+               first entry in the drawer. */
+            .nav-left li.nav-dismissable {
+                display: none;
+            }
+
             .nav-left a,
             .nav-right a,
-            .nav-preorder-trigger {
+            .nav-preorder-trigger,
+            .nav-menu-toggle {
                 font-size: 0.8rem;
             }
 
@@ -8455,9 +8721,19 @@
                 transform: translateX(0.12em);
             }
 
-            .nav-left a {
+            .nav-left a,
+            .nav-menu-toggle {
                 font-size: 0.58rem;
                 letter-spacing: 0.09em;
+            }
+
+            .nav-menu-toggle {
+                gap: 0.4rem;
+            }
+
+            .nav-menu-toggle-glyph {
+                width: 11px;
+                height: 8px;
             }
 
             .nav-right a,
@@ -8753,14 +9029,27 @@
             }
         }
 
-        /* Phones: collapse the crowded inline nav into a hamburger + drawer.
+        /* Phones: the right-hand nav folds entirely into the drawer, leaving the
+           left rail (COLLECTION + the MENU trigger) and the centred wordmark.
            Placed after the smaller-width blocks so it wins on source order. */
         @media (max-width: 600px) {
+            :root {
+                --drawer-w: min(88vw, 320px);
+            }
+
             .nav {
                 grid-template-columns: 1fr auto 1fr;
             }
 
-            .nav-left,
+            .nav-left {
+                display: flex;
+                grid-column: 1;
+                justify-self: start;
+                /* The rail is the trigger alone here, so the clip inherited
+                   from the 480px block would only ever cut its touch target. */
+                overflow: visible;
+            }
+
             .nav-right {
                 display: none;
             }
@@ -8770,10 +9059,8 @@
                 justify-self: center;
             }
 
-            .nav-menu-toggle {
-                display: flex;
-                grid-column: 3;
-                justify-self: end;
+            .mobile-menu {
+                padding-top: calc(5.2rem + env(safe-area-inset-top, 0px));
             }
         }
 
@@ -10088,8 +10375,20 @@
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <ul class="nav-left">
-            <li><a href="/shop" data-i18n="navCollection">Collection</a></li>
-            <li class="nav-style-guide"><a href="#" data-style-guide-trigger data-i18n="navStyleGuide">Style Guide</a></li>
+            <li class="nav-dismissable" style="--nd-i: 0;"><a href="/shop" data-i18n="navCollection">Collection</a></li>
+            <li class="nav-style-guide nav-dismissable" style="--nd-i: 1;"><a href="#" data-style-guide-trigger data-i18n="navStyleGuide">Style Guide</a></li>
+            <li class="nav-menu-item">
+                <button type="button" class="nav-menu-toggle" id="navMenuToggle" aria-controls="mobileMenu" aria-expanded="false">
+                    <span class="nav-menu-toggle-glyph" aria-hidden="true">
+                        <span class="nav-menu-toggle-bar"></span>
+                        <span class="nav-menu-toggle-bar"></span>
+                    </span>
+                    <span class="nav-menu-toggle-words">
+                        <span class="nav-menu-toggle-word is-open" data-i18n="navMenu">Menu</span>
+                        <span class="nav-menu-toggle-word is-close" aria-hidden="true" data-i18n="navClose">Close</span>
+                    </span>
+                </button>
+            </li>
         </ul>
         <div class="logo">VOID<sup class="brand-copyright">©</sup></div>
         <ul class="nav-right">
@@ -10105,23 +10404,23 @@
                 </div>
             </li>
         </ul>
-        <button type="button" class="nav-menu-toggle" id="navMenuToggle" aria-label="Open menu" aria-controls="mobileMenu" aria-expanded="false">
-            <span class="nav-menu-toggle-bar"></span>
-            <span class="nav-menu-toggle-bar"></span>
-            <span class="nav-menu-toggle-bar"></span>
-        </button>
     </nav>
 
-    <!-- Mobile navigation drawer (phones) -->
+    <!-- Site menu drawer, anchored to the left edge. -->
     <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" aria-hidden="true"></div>
-    <aside class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Menu" aria-hidden="true">
+    <span class="mobile-menu-edge" aria-hidden="true"></span>
+    <aside class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-labelledby="mobileMenuTitle" aria-hidden="true">
+        <span class="mobile-menu-lumen" aria-hidden="true"></span>
+        <p class="mobile-menu-eyebrow mobile-menu-item" id="mobileMenuTitle" style="--mm-i: 0;" data-i18n="navMenu">Menu</p>
         <ul class="mobile-menu-links">
-            <li><a href="/shop" data-i18n="navCollection">Collection</a></li>
-            <li><a href="#" data-style-guide-trigger data-i18n="navStyleGuide">Style Guide</a></li>
-            <li><a href="/newsletter" data-i18n="navContact">Contact</a></li>
+            <li class="mobile-menu-item" style="--mm-i: 1;"><a href="/shop" data-i18n="navCollection">Collection</a></li>
+            <li class="mobile-menu-item" style="--mm-i: 2;"><a href="#" data-style-guide-trigger data-i18n="navStyleGuide">Style Guide</a></li>
+            <li class="mobile-menu-item" style="--mm-i: 3;"><a href="#" data-story-trigger data-i18n="navAtelier">The Atelier</a></li>
+            <li class="mobile-menu-item" style="--mm-i: 4;"><a href="/fragrance" data-i18n="navNeant">Néant</a></li>
+            <li class="mobile-menu-item" style="--mm-i: 5;"><a href="/newsletter" data-i18n="navContact">Contact</a></li>
         </ul>
-        <button type="button" class="mobile-menu-preorder nav-preorder-trigger" data-preorder-trigger data-i18n="navPreorder">Pre-order</button>
-        <div class="mobile-menu-langs" role="group" aria-label="Language">
+        <button type="button" class="mobile-menu-preorder mobile-menu-item nav-preorder-trigger" style="--mm-i: 6;" data-preorder-trigger data-i18n="navPreorder">Pre-order</button>
+        <div class="mobile-menu-langs mobile-menu-item" style="--mm-i: 7;" role="group" aria-label="Language">
             <button type="button" class="language-option" role="option" data-language="en"><span class="language-option-code">EN</span> English</button>
             <button type="button" class="language-option" role="option" data-language="fr"><span class="language-option-code">FR</span> Français</button>
             <button type="button" class="language-option" role="option" data-language="it"><span class="language-option-code">IT</span> Italiano</button>
@@ -11383,16 +11682,16 @@
         let refreshCartTranslations = () => {};
         const translations = {
             en: {
-                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Full campaign imagery for this piece is currently in production. Check back soon for the complete atelier gallery.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}', sgaEyebrow: 'Atelier / Fit Archive', sgaTitle: 'The Void Silhouette', sgaSubtitle: 'Oversized architecture, measured in centimetres', sgaIntro: 'VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.', sgaCloseLabel: 'Close', sgaDoc: 'Document / Fit-001', sgaUnit: 'Unit / CM', sgaArchitecture: 'Garment Architecture', sgaDraftAlt: 'Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.', sgaSelect: 'Select Size', sgaCm: 'cm', sgaFitCharacter: 'Fit Character', sgaRestrained: 'Restrained', sgaVolume: 'Volume', sgaNoteLabel: 'Atelier Note', sgaNote: 'The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.', sgaViewFull: 'View Full Specification', sgaHideFull: 'Hide Full Specification'
+                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', navMenu: 'Menu', navClose: 'Close', navAtelier: 'The Atelier', navNeant: 'Néant', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Full campaign imagery for this piece is currently in production. Check back soon for the complete atelier gallery.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}', sgaEyebrow: 'Atelier / Fit Archive', sgaTitle: 'The Void Silhouette', sgaSubtitle: 'Oversized architecture, measured in centimetres', sgaIntro: 'VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.', sgaCloseLabel: 'Close', sgaDoc: 'Document / Fit-001', sgaUnit: 'Unit / CM', sgaArchitecture: 'Garment Architecture', sgaDraftAlt: 'Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.', sgaSelect: 'Select Size', sgaCm: 'cm', sgaFitCharacter: 'Fit Character', sgaRestrained: 'Restrained', sgaVolume: 'Volume', sgaNoteLabel: 'Atelier Note', sgaNote: 'The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.', sgaViewFull: 'View Full Specification', sgaHideFull: 'Hide Full Specification'
             },
             fr: {
-                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
+                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', navMenu: 'Menu', navClose: 'Fermer', navAtelier: 'L’Atelier', navNeant: 'Néant', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
             },
             it: {
-                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', viewDetails: 'Vedi Dettagli', pdResetZoom: 'Reimposta zoom', pdThumbsLabel: 'Viste del prodotto', pdViewBoth: 'Fronte e retro', pdViewFront: 'Fronte', pdViewBack: 'Retro', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
+                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', navMenu: 'Menu', navClose: 'Chiudi', navAtelier: 'L’Atelier', navNeant: 'Néant', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', viewDetails: 'Vedi Dettagli', pdResetZoom: 'Reimposta zoom', pdThumbsLabel: 'Viste del prodotto', pdViewBoth: 'Fronte e retro', pdViewFront: 'Fronte', pdViewBack: 'Retro', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
             },
             de: {
-                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', viewDetails: 'Details ansehen', pdResetZoom: 'Zoom zurücksetzen', pdThumbsLabel: 'Produktansichten', pdViewBoth: 'Vorder- und Rückseite', pdViewFront: 'Vorderseite', pdViewBack: 'Rückseite', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
+                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', navMenu: 'Menü', navClose: 'Schließen', navAtelier: 'Das Atelier', navNeant: 'Néant', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', viewDetails: 'Details ansehen', pdResetZoom: 'Zoom zurücksetzen', pdThumbsLabel: 'Produktansichten', pdViewBoth: 'Vorder- und Rückseite', pdViewFront: 'Vorderseite', pdViewBack: 'Rückseite', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
             }
         };
 
@@ -12690,22 +12989,72 @@
             });
         });
 
-        // Mobile navigation drawer (hamburger) — phones only.
+        // Site menu drawer — available at every width.
         const navMenuToggle = document.getElementById('navMenuToggle');
         const mobileMenu = document.getElementById('mobileMenu');
         const mobileMenuBackdrop = document.getElementById('mobileMenuBackdrop');
 
         if (navMenuToggle && mobileMenu && mobileMenuBackdrop) {
+            // Closing runs as its own phase: the entries leave in reverse
+            // stagger and the light contracts while `.mobile-menu-open` is
+            // still applied, and only then is the open state dropped. Must
+            // outlast the slowest closing transition (the header rebuild).
+            const CLOSE_MS = 620;
+            const menuWords = navMenuToggle.querySelectorAll('.nav-menu-toggle-word');
+            let menuCloseTimer = null;
+
             const setMobileMenu = (open) => {
-                document.body.classList.toggle('mobile-menu-open', open);
+                const body = document.body;
+                window.clearTimeout(menuCloseTimer);
+
+                if (open) {
+                    body.classList.remove('mobile-menu-closing');
+                    body.classList.add('mobile-menu-open');
+                } else if (body.classList.contains('mobile-menu-open')) {
+                    const instant = document.documentElement.classList.contains('reduce-motion');
+                    if (instant) {
+                        body.classList.remove('mobile-menu-open', 'mobile-menu-closing');
+                    } else {
+                        body.classList.add('mobile-menu-closing');
+                        menuCloseTimer = window.setTimeout(() => {
+                            body.classList.remove('mobile-menu-open', 'mobile-menu-closing');
+                        }, CLOSE_MS);
+                    }
+                }
+
                 navMenuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-                navMenuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+                // The visible word is the button's accessible name, so the
+                // inactive one is hidden from assistive tech rather than
+                // carrying a separate hardcoded aria-label to translate.
+                menuWords.forEach((word) => {
+                    const isActiveWord = word.classList.contains('is-close') === open;
+                    word.setAttribute('aria-hidden', isActiveWord ? 'false' : 'true');
+                });
                 mobileMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
                 mobileMenuBackdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
             };
 
+            // The trigger stays in the tab cycle rather than being sealed out of
+            // it, so CLOSE is reachable from the last entry as well as Escape.
+            const menuFocusables = () => [navMenuToggle].concat(
+                Array.prototype.slice.call(mobileMenu.querySelectorAll('a[href], button:not([disabled])'))
+            );
+
             navMenuToggle.addEventListener('click', () => {
-                setMobileMenu(!document.body.classList.contains('mobile-menu-open'));
+                const isOpen = document.body.classList.contains('mobile-menu-open')
+                    && !document.body.classList.contains('mobile-menu-closing');
+                setMobileMenu(!isOpen);
+                if (isOpen) focusElementSafely(navMenuToggle);
+            });
+
+            mobileMenu.addEventListener('keydown', (event) => {
+                if (event.key !== 'Tab') return;
+                const items = menuFocusables();
+                if (items.length < 2) return;
+                const edge = event.shiftKey ? items[0] : items[items.length - 1];
+                if (document.activeElement !== edge) return;
+                event.preventDefault();
+                focusElementSafely(event.shiftKey ? items[items.length - 1] : items[0]);
             });
 
             mobileMenuBackdrop.addEventListener('click', () => setMobileMenu(false));
@@ -12716,16 +13065,19 @@
                 el.addEventListener('click', () => setMobileMenu(false));
             });
 
+            // The Atelier reuses the hero's story overlay. Held until the
+            // drawer is on its way out so the two panels don't cross.
+            mobileMenu.querySelectorAll('[data-story-trigger]').forEach((el) => {
+                el.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    window.setTimeout(handleStoryTrigger, 260);
+                });
+            });
+
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && document.body.classList.contains('mobile-menu-open')) {
                     setMobileMenu(false);
-                }
-            });
-
-            // Close if the viewport grows past the mobile breakpoint.
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 600 && document.body.classList.contains('mobile-menu-open')) {
-                    setMobileMenu(false);
+                    focusElementSafely(navMenuToggle);
                 }
             });
         }
@@ -16443,7 +16795,7 @@ void main() {
             // entry gate and the sign-in modal both lock the body with
             // overflow:hidden, so scrolling underneath either one silently does
             // nothing. Wait for every lock to clear before acting.
-            var SCROLL_LOCKS = ['gate-open', 'void-auth-open', 'preorder-open'];
+            var SCROLL_LOCKS = ['gate-open', 'void-auth-open', 'preorder-open', 'mobile-menu-open'];
 
             function isLocked() {
                 for (var i = 0; i < SCROLL_LOCKS.length; i++) {
