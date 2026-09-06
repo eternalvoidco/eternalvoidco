@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { validateLines, subtotalOf, shippingAmountFor, shippingMethodsFor, taxAmountFor, CURRENCY } from '../_catalog.js';
 import { createPaymentIntent, stripeConfigured } from '../_stripe.js';
-import { createPendingOrder, attachPaymentIntent, generateOrderNumber, ordersConfigured } from '../_orders.js';
+import { createPendingOrder, attachPaymentIntent, generateOrderNumber, ordersConfigured, describeSupabaseError } from '../_orders.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -148,7 +148,13 @@ export default async function handler(request, response) {
             line_amount: line.lineAmount
         })));
     } catch (error) {
-        console.error('checkout/create: order write failed', error.code || error.message);
+        // Full diagnostics to the server log — status, PostgREST code, message,
+        // details, hint, which operation, and the shape of the configured key.
+        // Never the key itself, the request body or any customer field.
+        console.error(describeSupabaseError(error, 'checkout/create: order write')
+            + (error.rolledBack === false ? ' | ROLLBACK FAILED: ' + error.cleanupFailure : '')
+            + (error.rolledBack === true ? ' | order row rolled back' : ''));
+        // The client is told nothing beyond "it did not work".
         return response.status(500).json({ error: 'order_create_failed' });
     }
 
@@ -184,7 +190,7 @@ export default async function handler(request, response) {
     try {
         await attachPaymentIntent(order.id, intent.id);
     } catch (error) {
-        console.error('checkout/create: could not attach intent', error.code || error.message);
+        console.error(describeSupabaseError(error, 'checkout/create: attach intent'));
         return response.status(500).json({ error: 'order_link_failed' });
     }
 

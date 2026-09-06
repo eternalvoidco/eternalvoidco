@@ -18,16 +18,42 @@ export function ordersConfigured() {
     return Boolean(BASE() && SERVICE_KEY());
 }
 
-async function rest(path, { method = 'GET', body, prefer } = {}) {
+// Supabase has two server key formats and they authenticate differently.
+//
+//   legacy  eyJ…            a JWT whose `role` claim carries the privilege, so
+//                           PostgREST wants it in Authorization: Bearer.
+//   current sb_secret_…     an opaque API key. It is resolved by the gateway
+//                           from the `apikey` header; putting it in
+//                           Authorization makes PostgREST try to decode it as
+//                           a JWT, which fails and rejects the request.
+//
+// So Authorization is sent only when the key actually is a JWT. `apikey`
+// carries the credential either way.
+function isJwt(key) {
+    return key.split('.').length === 3 && key.startsWith('ey');
+}
+
+// Safe to log: describes the shape of the key, never any part of its value.
+export function keyKind() {
+    const key = SERVICE_KEY();
+    if (!key) return 'missing';
+    if (key.startsWith('sb_secret_')) return 'sb_secret';
+    if (key.startsWith('sb_publishable_')) return 'sb_publishable (WRONG — this is a public key)';
+    if (isJwt(key)) return 'legacy_jwt';
+    return 'unrecognised';
+}
+
+async function rest(path, { method = 'GET', body, prefer, op } = {}) {
     if (!ordersConfigured()) {
         throw Object.assign(new Error('orders_not_configured'), { code: 'orders_not_configured' });
     }
 
+    const key = SERVICE_KEY();
     const headers = {
-        apikey: SERVICE_KEY(),
-        Authorization: `Bearer ${SERVICE_KEY()}`,
+        apikey: key,
         'Content-Type': 'application/json'
     };
+    if (isJwt(key)) headers.Authorization = `Bearer ${key}`;
     if (prefer) headers.Prefer = prefer;
 
     const res = await fetch(`${BASE()}/rest/v1${path}`, {
@@ -37,16 +63,48 @@ async function rest(path, { method = 'GET', body, prefer } = {}) {
     });
 
     const text = await res.text();
-    const data = text ? JSON.parse(text) : null;
+    let data = null;
+    try {
+        data = text ? JSON.parse(text) : null;
+    } catch (error) {
+        // A gateway or proxy failure can answer with HTML. Keep a short excerpt
+        // so the logs say something more useful than "unexpected token <".
+        data = { message: 'non_json_response', body: text.slice(0, 300) };
+    }
 
     if (!res.ok) {
         throw Object.assign(new Error((data && data.message) || 'supabase_request_failed'), {
             code: 'supabase_error',
             status: res.status,
-            details: data
+            op: op || `${method} ${path.split('?')[0]}`,
+            // PostgREST's own diagnostics: code, message, details, hint.
+            pgCode: data && data.code,
+            details: data && data.details,
+            hint: data && data.hint,
+            body: data
         });
     }
     return data;
+}
+
+// One line, everything needed to diagnose, nothing sensitive. Never touches the
+// key value, the request body or any customer field.
+export function describeSupabaseError(error, context) {
+    if (!error) return `${context}: unknown error`;
+    if (error.code !== 'supabase_error') return `${context}: ${error.code || error.name} — ${error.message}`;
+
+    const parts = [
+        `${context} failed`,
+        `op=${error.op}`,
+        `http=${error.status}`,
+        error.pgCode ? `code=${error.pgCode}` : null,
+        `message=${error.message}`,
+        error.details ? `details=${String(error.details).slice(0, 300)}` : null,
+        error.hint ? `hint=${String(error.hint).slice(0, 200)}` : null,
+        `keyKind=${keyKind()}`
+    ].filter(Boolean);
+
+    return parts.join(' | ');
 }
 
 // ── Order numbers ────────────────────────────────────────────────────────────
@@ -76,7 +134,8 @@ export async function createPendingOrder(order, items) {
             [row] = await rest('/orders', {
                 method: 'POST',
                 body: [order],
-                prefer: 'return=representation'
+                prefer: 'return=representation',
+                op: 'insert orders'
             });
             break;
         } catch (error) {
@@ -86,11 +145,30 @@ export async function createPendingOrder(order, items) {
     }
 
     if (items.length) {
-        await rest('/order_items', {
-            method: 'POST',
-            body: items.map((item) => ({ ...item, order_id: row.id })),
-            prefer: 'return=minimal'
-        });
+        try {
+            await rest('/order_items', {
+                method: 'POST',
+                body: items.map((item) => ({ ...item, order_id: row.id })),
+                prefer: 'return=minimal',
+                op: 'insert order_items'
+            });
+        } catch (error) {
+            // An order with no lines is worse than no order: it would sit
+            // pending forever and could never be fulfilled. Roll the header
+            // back so the failure is clean, and keep the original cause.
+            try {
+                await rest(`/orders?id=eq.${encodeURIComponent(row.id)}`, {
+                    method: 'DELETE',
+                    prefer: 'return=minimal',
+                    op: 'rollback orders'
+                });
+                error.rolledBack = true;
+            } catch (cleanupError) {
+                error.rolledBack = false;
+                error.cleanupFailure = cleanupError.message;
+            }
+            throw error;
+        }
     }
     return row;
 }
@@ -99,7 +177,8 @@ export function attachPaymentIntent(orderId, paymentIntentId) {
     return rest(`/orders?id=eq.${encodeURIComponent(orderId)}`, {
         method: 'PATCH',
         body: { stripe_payment_intent_id: paymentIntentId, updated_at: new Date().toISOString() },
-        prefer: 'return=minimal'
+        prefer: 'return=minimal',
+        op: 'attach payment_intent'
     });
 }
 
@@ -107,7 +186,8 @@ export function attachPaymentIntent(orderId, paymentIntentId) {
 // webhook cannot resurrect an order that was already settled or cancelled.
 export async function markOrderPaid(paymentIntentId, { amountReceived, currency }) {
     const rows = await rest(
-        `/orders?stripe_payment_intent_id=eq.${encodeURIComponent(paymentIntentId)}&select=*`
+        `/orders?stripe_payment_intent_id=eq.${encodeURIComponent(paymentIntentId)}&select=*`,
+        { op: 'find order by intent' }
     );
     const order = rows && rows[0];
     if (!order) return { ok: false, reason: 'order_not_found' };

@@ -10,7 +10,7 @@
 // send a second confirmation.
 // ─────────────────────────────────────────────────────────────────────────────
 import { verifyWebhook, readRawBody } from './_stripe.js';
-import { markOrderPaid, markPaymentFailed, claimEvent, findOrderItems, ordersConfigured } from './_orders.js';
+import { markOrderPaid, markPaymentFailed, claimEvent, findOrderItems, ordersConfigured, describeSupabaseError } from './_orders.js';
 import { sendOrderConfirmation } from './_email.js';
 
 // Vercel would otherwise parse the body and destroy the exact bytes the
@@ -57,7 +57,7 @@ export default async function handler(request, response) {
     try {
         claimed = await claimEvent(event.id, event.type);
     } catch (error) {
-        console.error('stripe-webhook: claim failed', error.code || error.message);
+        console.error(describeSupabaseError(error, 'stripe-webhook: claim event'));
         // 500 asks Stripe to retry, which is right — we do not know if we acted.
         return response.status(500).json({ error: 'claim_failed' });
     }
@@ -70,7 +70,7 @@ export default async function handler(request, response) {
         try {
             await markPaymentFailed(intent.id);
         } catch (error) {
-            console.error('stripe-webhook: mark failed errored', error.code || error.message);
+            console.error(describeSupabaseError(error, 'stripe-webhook: mark failed'));
         }
         return response.status(200).json({ received: true });
     }
@@ -83,7 +83,7 @@ export default async function handler(request, response) {
             currency: intent.currency
         });
     } catch (error) {
-        console.error('stripe-webhook: mark paid failed', error.code || error.message);
+        console.error(describeSupabaseError(error, 'stripe-webhook: mark paid'));
         return response.status(500).json({ error: 'update_failed' });
     }
 

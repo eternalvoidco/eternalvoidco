@@ -9,7 +9,7 @@
 // Both the order number and the email are required, so a guessed number on its
 // own discloses nothing.
 // ─────────────────────────────────────────────────────────────────────────────
-import { findOrderForConfirmation, ordersConfigured } from '../_orders.js';
+import { findOrderForConfirmation, ordersConfigured, describeSupabaseError } from '../_orders.js';
 
 export default async function handler(request, response) {
     response.setHeader('Cache-Control', 'no-store');
@@ -28,7 +28,7 @@ export default async function handler(request, response) {
     try {
         order = await findOrderForConfirmation(number, email);
     } catch (error) {
-        console.error('checkout/order: lookup failed', error.code || error.message);
+        console.error(describeSupabaseError(error, 'checkout/order: lookup'));
         return response.status(500).json({ error: 'lookup_failed' });
     }
 
