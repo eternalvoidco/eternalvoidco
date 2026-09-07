@@ -22,8 +22,16 @@
         <span class="ck-secure"></span>
     </header>
 
-    <main class="ck-confirm" id="ckConfirm" aria-live="polite">
+    <main class="ck-confirm" id="ckConfirm" data-result="pending" aria-live="polite">
         <span class="ck-seal" aria-hidden="true"></span>
+
+        <!-- One mark, two glyphs. Which one is drawn — and how — is the whole
+             difference between the two outcomes. -->
+        <svg class="ck-result-mark" viewBox="0 0 48 48" aria-hidden="true">
+            <circle class="ck-mark-ring" cx="24" cy="24" r="21"/>
+            <path class="ck-mark-glyph" id="ckGlyph" d="M15 24.5 L21.5 31 L33.5 18"/>
+        </svg>
+
         <p class="ck-confirm-eyebrow" id="ckEyebrow">Confirming</p>
         <h1 class="ck-confirm-number" id="ckNumber">&nbsp;</h1>
         <p class="ck-confirm-copy" id="ckCopy">Retrieving your order from the atelier.</p>
@@ -43,7 +51,7 @@
             <p class="ck-summary-note" id="ckEmailNote"></p>
         </section>
 
-        <div class="ck-confirm-actions">
+        <div class="ck-confirm-actions" id="ckActions">
             <a class="ck-cta is-final" href="/shop" style="display:grid;place-items:center;text-decoration:none;">Continue to Boutique</a>
         </div>
     </main>
@@ -61,22 +69,60 @@
         const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'EUR' });
         const money = (minor) => (minor == null ? '—' : fmt.format(minor / 100));
 
+        const CHECK = 'M15 24.5 L21.5 31 L33.5 18';
+        const CROSS = 'M17 17 L31 31 M31 17 L17 31';
+
+        // Sets the outcome before any of the copy, so the mark and the motion
+        // that belong to it start together rather than one catching up.
+        function setResult(result) {
+            $('ckConfirm').dataset.result = result;
+            $('ckGlyph').setAttribute('d', result === 'failed' ? CROSS : CHECK);
+        }
+
         function say(eyebrow, title, copy) {
             $('ckEyebrow').textContent = eyebrow;
             $('ckNumber').textContent = title;
             $('ckCopy').textContent = copy;
         }
 
+        // A failed payment keeps the bag, so the retry is a return to the same
+        // checkout rather than a restart.
+        function setActions(result) {
+            const actions = $('ckActions');
+            actions.textContent = '';
+
+            const link = (href, label, quiet) => {
+                const a = document.createElement('a');
+                a.className = 'ck-cta' + (quiet ? ' is-quiet' : ' is-final');
+                a.href = href;
+                a.textContent = label;
+                a.style.cssText = 'display:grid;place-items:center;text-decoration:none;';
+                return a;
+            };
+
+            if (result === 'failed') {
+                actions.append(link('/checkout', 'Try Again'), link('/shop', 'Return to Collection', true));
+            } else {
+                actions.append(link('/shop', 'Continue to Boutique'));
+            }
+        }
+
         function renderOrder(order) {
             const paid = order.paymentStatus === 'paid';
 
             if (paid) {
-                say('Acquisition Confirmed', order.orderNumber,
+                setResult('success');
+                setActions('success');
+                say('Payment Successful', order.orderNumber,
                     `${order.firstName}, your selection has entered preparation. A confirmation is on its way to ${order.email}.`);
             } else if (order.paymentStatus === 'failed') {
-                say('Payment Incomplete', order.orderNumber,
-                    'This order was not completed. Your bag is unchanged — you can return to the boutique and try again.');
+                setResult('failed');
+                setActions('failed');
+                say('Payment Unsuccessful', order.orderNumber,
+                    'This payment did not complete. Your selection is unchanged and nothing has been charged — you can try again from the checkout.');
             } else {
+                setResult('pending');
+                setActions('pending');
                 say('Awaiting Confirmation', order.orderNumber,
                     'Your payment is still settling with the bank. This page will show the confirmation once it clears; you will also receive an email.');
             }
@@ -133,7 +179,9 @@
 
         async function load() {
             if (!number || !email) {
-                say('Order', 'Not found', 'This confirmation link is incomplete. Check the link in your email, or contact an advisor.');
+                setResult('failed');
+                setActions('failed');
+                say('Order Not Found', 'Incomplete link', 'This confirmation link is missing part of its reference. Check the link in your email, or contact an advisor.');
                 return;
             }
 
@@ -142,7 +190,9 @@
                 if (!res.ok) throw new Error(String(res.status));
                 renderOrder(await res.json());
             } catch (error) {
-                say('Order', number || 'Not found',
+                setResult('pending');
+                setActions('pending');
+                say('Order Unavailable', number || 'Not found',
                     'We could not retrieve this order right now. If you were charged, the order exists — contact support@eternalvoid.co quoting this number.');
             }
         }

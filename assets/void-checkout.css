@@ -508,6 +508,26 @@ a { color: inherit; }
 
 .ck-notice.is-neutral .ck-notice-title { color: var(--void-accent); }
 
+/* A refused payment. Same crimson and the same two-frame flicker as the result
+   page, so the two places a payment can fail read as one language. */
+.ck-notice.is-failure {
+    border-left-color: rgba(192, 115, 106, 0.75);
+    background: rgba(192, 115, 106, 0.05);
+    animation: ckNoticeCut 380ms cubic-bezier(0.7, 0, 0.15, 1) backwards;
+}
+
+.ck-notice.is-failure .ck-notice-title {
+    color: #c0736a;
+    animation: ckFlicker 220ms steps(1, end) 300ms 2;
+}
+
+@keyframes ckNoticeCut {
+    0% { opacity: 0; transform: translateX(-8px); clip-path: inset(0 0 100% 0); }
+    55% { opacity: 1; clip-path: inset(0 0 0 0); }
+    70% { opacity: 0.6; }
+    100% { opacity: 1; transform: translateX(0); clip-path: inset(0 0 0 0); }
+}
+
 /* ── Payment ────────────────────────────────────────────────────────────── */
 .ck-pay-label {
     margin-bottom: 1rem;
@@ -714,6 +734,164 @@ a { color: inherit; }
 
 .ck-empty-note { max-width: 34ch; font-size: 0.8rem; line-height: 1.8; color: var(--void-text-muted); }
 
+/* ── Result states ──────────────────────────────────────────────────────────
+   One layout, three readings. --ck-result is the only colour that changes; the
+   black and the gold underneath it are untouched, so a confirmation still reads
+   as VOID first and as a status second.
+
+   Success resolves: the ring closes, the mark is inscribed, the light swells
+   once and settles. Failure interrupts: the seal arrives broken, the ring
+   stalls before completing, the mark snaps in with two frames of flicker, and
+   the copy enters sideways rather than rising. Different axis, different
+   easing, different rhythm — recognisable apart with the colour ignored. */
+.ck-confirm {
+    --ck-result: var(--void-accent);
+    --ck-result-soft: rgba(199, 169, 108, 0.5);
+}
+
+.ck-confirm[data-result="success"] {
+    --ck-result: #8faa86;
+    --ck-result-soft: rgba(143, 170, 134, 0.45);
+}
+
+.ck-confirm[data-result="failed"] {
+    --ck-result: #c0736a;
+    --ck-result-soft: rgba(192, 115, 106, 0.45);
+}
+
+.ck-result-mark {
+    width: 46px;
+    height: 46px;
+    overflow: visible;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ck-mark-ring {
+    stroke: var(--ck-result-soft);
+    stroke-width: 1;
+    stroke-dasharray: 132;
+    stroke-dashoffset: 132;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.ck-mark-glyph {
+    stroke: var(--ck-result);
+    stroke-width: 1.5;
+    stroke-dasharray: 46;
+    stroke-dashoffset: 46;
+    opacity: 0;
+}
+
+.ck-confirm[data-result="pending"] .ck-mark-ring { animation: ckRingDraw 1100ms var(--ease-lux) 240ms forwards; }
+.ck-confirm[data-result="pending"] .ck-mark-glyph { display: none; }
+
+/* Success: closes, then is signed, then breathes once. */
+.ck-confirm[data-result="success"] .ck-mark-ring {
+    animation: ckRingDraw 900ms var(--ease-lux) 220ms forwards,
+               ckResultGlow 1600ms var(--ease-inout) 1100ms;
+}
+
+.ck-confirm[data-result="success"] .ck-mark-glyph {
+    animation: ckGlyphDraw 620ms var(--ease-lux) 900ms forwards;
+}
+
+/* Failure: the ring hesitates, and the mark arrives rather than being drawn. */
+.ck-confirm[data-result="failed"] .ck-mark-ring {
+    animation: ckRingStall 820ms cubic-bezier(0.9, 0, 0.1, 1) 180ms forwards;
+}
+
+.ck-confirm[data-result="failed"] .ck-mark-glyph {
+    animation: ckGlyphSnap 300ms cubic-bezier(0.7, 0, 0.2, 1) 780ms forwards,
+               ckFlicker 260ms steps(1, end) 1080ms 2;
+}
+
+@keyframes ckRingDraw {
+    to { stroke-dashoffset: 0; }
+}
+
+/* Two thirds, a hold, then the rest — the pause is the whole point. */
+@keyframes ckRingStall {
+    0% { stroke-dashoffset: 132; }
+    46% { stroke-dashoffset: 44; }
+    62% { stroke-dashoffset: 44; }
+    100% { stroke-dashoffset: 0; }
+}
+
+@keyframes ckGlyphDraw {
+    0% { opacity: 1; stroke-dashoffset: 46; }
+    100% { opacity: 1; stroke-dashoffset: 0; }
+}
+
+@keyframes ckGlyphSnap {
+    0% { opacity: 0; stroke-dashoffset: 0; transform: scale(1.35); }
+    100% { opacity: 1; stroke-dashoffset: 0; transform: scale(1); }
+}
+
+@keyframes ckFlicker {
+    0% { opacity: 1; }
+    50% { opacity: 0.25; }
+    100% { opacity: 1; }
+}
+
+/* A swell that recedes to almost nothing — never a permanent halo. */
+@keyframes ckResultGlow {
+    0% { filter: drop-shadow(0 0 0 transparent); }
+    38% { filter: drop-shadow(0 0 9px var(--ck-result-soft)); }
+    100% { filter: drop-shadow(0 0 0 transparent); }
+}
+
+.ck-confirm[data-result="success"] .ck-confirm-eyebrow,
+.ck-confirm[data-result="failed"] .ck-confirm-eyebrow { color: var(--ck-result); }
+
+.ck-confirm[data-result="failed"] .ck-seal {
+    /* Arrives already broken: three segments with gaps where the line failed. */
+    background: linear-gradient(90deg, transparent, var(--ck-result) 18%, transparent 34%,
+                transparent 42%, var(--ck-result) 52%, transparent 62%,
+                transparent 70%, var(--ck-result) 84%, transparent);
+    animation: ckSealBreak 520ms cubic-bezier(0.8, 0, 0.2, 1) 80ms forwards;
+}
+
+@keyframes ckSealBreak {
+    0% { transform: scaleX(0.02); opacity: 0; }
+    40% { transform: scaleX(0.72); opacity: 1; }
+    58% { transform: scaleX(0.72); opacity: 0.45; }
+    100% { transform: scaleX(1); opacity: 0.8; }
+}
+
+.ck-confirm[data-result="success"] .ck-seal {
+    background: linear-gradient(90deg, transparent, var(--ck-result), transparent);
+}
+
+/* Failure copy slides in off-axis and settles; success rises. */
+.ck-confirm[data-result="failed"] .ck-confirm-eyebrow,
+.ck-confirm[data-result="failed"] .ck-confirm-number,
+.ck-confirm[data-result="failed"] .ck-confirm-copy,
+.ck-confirm[data-result="failed"] .ck-confirm-panel,
+.ck-confirm[data-result="failed"] .ck-confirm-actions {
+    animation-name: ckSlipIn;
+    animation-timing-function: cubic-bezier(0.7, 0, 0.15, 1);
+}
+
+@keyframes ckSlipIn {
+    from { opacity: 0; transform: translateX(-9px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.ck-cta.is-quiet {
+    border-color: var(--ck-rule);
+    background: transparent;
+    color: var(--void-text-muted);
+}
+
+.ck-cta.is-quiet:hover:not(:disabled) {
+    border-color: var(--ck-gold-line);
+    color: var(--void-text);
+    background: transparent;
+}
+
 /* ── Confirmation ───────────────────────────────────────────────────────── */
 .ck-confirm {
     display: grid;
@@ -891,6 +1069,16 @@ a { color: inherit; }
     }
 
     .ck-seal { transform: scaleX(1); opacity: 0.75; }
+
+    /* The result still reads — the mark is drawn, just not animated into being. */
+    .ck-mark-ring,
+    .ck-mark-glyph {
+        animation: none !important;
+        stroke-dashoffset: 0;
+        opacity: 1;
+        transform: none;
+    }
+
     .ck-cta.is-busy::after,
     .ck-processing i::after { animation-duration: 2.4s; }
     * { transition-duration: 0.01ms !important; }

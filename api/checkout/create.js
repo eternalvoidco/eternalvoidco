@@ -158,12 +158,24 @@ export default async function handler(request, response) {
         return response.status(500).json({ error: 'order_create_failed' });
     }
 
+    // Curated rather than automatic. `automatic_payment_methods` surfaces
+    // everything switched on in the dashboard — Amazon Pay, Bancontact, EPS and
+    // the rest — which reads as a marketplace, not a boutique. Naming the types
+    // here suppresses them at the source, whatever the dashboard says.
+    //
+    // Apple Pay and Google Pay are card wallets and ride on `card`; they need no
+    // entry of their own. Link is opt-in because an explicit list requires every
+    // named method to be active on the account, and asking for an inactive one
+    // fails the whole PaymentIntent.
+    const methods = ['card'];
+    if (process.env.VOID_ENABLE_LINK === '1') methods.push('link');
+
     let intent;
     try {
         intent = await createPaymentIntent({
             amount: total,
             currency: CURRENCY,
-            automatic_payment_methods: { enabled: true },
+            payment_method_types: methods,
             receipt_email: email,
             // Only what is needed to find our order again. No addresses, no
             // names — Stripe does not need a copy of the customer record.

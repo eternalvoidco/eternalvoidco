@@ -422,6 +422,7 @@ function resetPayment() {
     $('ckPaymentElement').textContent = '';
     $('ckExpress').hidden = true;
     $('ckPayError').hidden = true;
+    $('ckPayError').classList.remove('is-failure');
 }
 
 // Stripe's supported appearance API. The iframe is never touched directly.
@@ -474,6 +475,7 @@ async function preparePayment() {
 
     setBusy(true, $('ckPayButton'));
     $('ckPayError').hidden = true;
+    $('ckPayError').classList.remove('is-failure');
 
     let token = null;
     try {
@@ -559,13 +561,35 @@ async function preparePayment() {
     }
 
     state.elements = state.stripe.elements({ clientSecret: data.clientSecret, appearance: appearance() });
-    state.elements.create('payment', { layout: 'tabs' }).mount('#ckPaymentElement');
 
-    // Wallets are offered only if Stripe reports one is actually usable.
+    // Wallets live in the express row above; repeating them inside the card
+    // form would give the same two buttons twice.
+    state.elements.create('payment', {
+        layout: { type: 'tabs', defaultCollapsed: false },
+        wallets: { applePay: 'never', googlePay: 'never' }
+    }).mount('#ckPaymentElement');
+
+    // Express row: the two wallets we want, and nothing else. `never` is the
+    // supported way to suppress a method the account happens to have on.
     try {
-        const express = state.elements.create('expressCheckout');
+        const express = state.elements.create('expressCheckout', {
+            paymentMethods: {
+                applePay: 'auto',
+                googlePay: 'auto',
+                link: 'auto',
+                amazonPay: 'never',
+                paypal: 'never'
+            },
+            layout: { maxColumns: 2, maxRows: 1 }
+        });
+
+        // `availablePaymentMethods` is an object, so it is truthy even when
+        // empty — checking the flags is what keeps the row from reserving
+        // space for wallets this device cannot offer.
         express.on('ready', (event) => {
-            if (event && event.availablePaymentMethods) $('ckExpress').hidden = false;
+            const offered = event && event.availablePaymentMethods;
+            const any = offered && Object.values(offered).some(Boolean);
+            $('ckExpress').hidden = !any;
         });
         express.on('confirm', () => confirmPayment());
         express.mount('#ckExpressElement');
@@ -585,11 +609,22 @@ function setBusy(busy, button) {
     $('ckProcessing').hidden = !busy || state.stage !== 'payment';
 }
 
+// Restarts the entrance each time, so a second refusal is visibly a second
+// refusal rather than a notice that never moved.
+function showPayFailure() {
+    const el = $('ckPayError');
+    el.classList.remove('is-failure');
+    void el.offsetWidth;
+    el.hidden = false;
+    el.classList.add('is-failure');
+}
+
 async function confirmPayment() {
     if (!state.stripe || !state.elements || !state.order || state.busy) return;
 
     setBusy(true, $('ckPayButton'));
     $('ckPayError').hidden = true;
+    $('ckPayError').classList.remove('is-failure');
 
     const returnUrl = new URL('/checkout/success', window.location.origin);
     returnUrl.searchParams.set('order', state.order.orderNumber);
@@ -607,7 +642,7 @@ async function confirmPayment() {
         setBusy(false, $('ckPayButton'));
         $('ckPayErrorBody').textContent = error.message
             || 'Your selection is unchanged. Please review your payment method and try again.';
-        $('ckPayError').hidden = false;
+        showPayFailure();
         $('ckPayError').scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'center' });
         return;
     }
@@ -620,7 +655,7 @@ async function confirmPayment() {
     } else {
         setBusy(false, $('ckPayButton'));
         $('ckPayErrorBody').textContent = 'The payment was not completed. Your selection is unchanged.';
-        $('ckPayError').hidden = false;
+        showPayFailure();
     }
 }
 
