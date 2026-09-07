@@ -11,7 +11,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/void-checkout.css">
+    <link rel="stylesheet" href="/assets/void-checkout.css?v=20260907a">
+    <script>
+        // Animation is an enhancement, so it is opted into rather than out of.
+        // If this never runs — script error, blocked script, a stale stylesheet —
+        // every element is already in its final, visible state. Inline and in the
+        // head so the entrance state applies before first paint, with no flash.
+        try {
+            if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.documentElement.dataset.motion = 'on';
+            }
+        } catch (e) { /* leave the page in its visible default */ }
+    </script>
 </head>
 <body>
     <div class="ck-atmos" aria-hidden="true"></div>
