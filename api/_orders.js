@@ -144,6 +144,20 @@ export async function createPendingOrder(order, items) {
         }
     }
 
+    // order_items.order_id is a FK onto orders.id, so it must be the primary key
+    // the database actually persisted — not the order number, not the intent id,
+    // not anything generated here. If the representation came back empty we do
+    // not have that value, and inserting the lines would fail the constraint
+    // with a far less obvious message than this one.
+    if (!row || !row.id) {
+        throw Object.assign(new Error('orders insert returned no representation'), {
+            code: 'supabase_error',
+            op: 'insert orders',
+            status: 200,
+            details: 'Prefer: return=representation did not yield a row with an id'
+        });
+    }
+
     if (items.length) {
         try {
             await rest('/order_items', {
