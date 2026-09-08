@@ -428,8 +428,6 @@
         body.gate-open .products,
         body.gate-open .cart-fab,
         body.gate-open .cart-popup,
-        body.gate-open .theme-switch,
-        body.gate-open .void-concierge,
         body.gate-open .void-dock,
         body.gate-open .footer {
             visibility: hidden;
@@ -1207,199 +1205,6 @@
         .cart-popup > *:not(.cart-flag-bg):not(.panel-frame) {
             position: relative;
             z-index: 1;
-        }
-
-        /* ── Floating country-theme switch (appears only after a country is joined) ── */
-        .theme-switch {
-            position: fixed;
-            left: 1.25rem;
-            bottom: 1.25rem;
-            z-index: 1200;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.6rem;
-        }
-
-        .theme-switch[hidden] {
-            display: none;
-        }
-
-        .theme-switch-toggle {
-            /* Idle: a small gold dot. Expands on hover / when the menu is open. */
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 1px solid var(--void-border);
-            background: radial-gradient(circle at 50% 32%, rgba(26, 24, 20, 0.96), rgba(6, 6, 6, 0.95));
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(245, 242, 236, 0.05);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            transition: width 0.45s var(--ease-lux), height 0.45s var(--ease-lux), border-color 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux), transform 0.35s var(--ease-lux);
-        }
-
-        .theme-switch-toggle:hover,
-        .theme-switch-toggle:focus-visible,
-        .theme-switch.open .theme-switch-toggle {
-            width: 54px;
-            height: 54px;
-            border-color: rgba(199, 169, 108, 0.6);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(199, 169, 108, 0.18), inset 0 1px 0 rgba(245, 242, 236, 0.07);
-        }
-
-        /* One premium glyph for every mode; the old flag/cart/swatch on the toggle
-           is retired. The glyph only appears once the dot has expanded. */
-        .theme-switch-toggle > [data-toggle-icon] { display: none !important; }
-
-        .theme-switch-glyph {
-            display: inline-flex;
-            color: var(--void-gold-soft);
-            opacity: 0;
-            transform: scale(0.3);
-            transition: opacity 0.3s ease, transform 0.4s var(--ease-lux);
-        }
-
-        .theme-switch-glyph svg { width: 1.5rem; height: 1.5rem; display: block; }
-
-        .theme-switch-toggle:hover .theme-switch-glyph,
-        .theme-switch-toggle:focus-visible .theme-switch-glyph,
-        .theme-switch.open .theme-switch-toggle .theme-switch-glyph {
-            opacity: 1;
-            transform: none;
-        }
-
-        .theme-switch-toggle .country-flag {
-            width: 1.7rem;
-            height: 1.08rem;
-        }
-
-        /* The toggle mirrors the active mode: flag (full), cart glyph (cart), swatch (original) */
-        .theme-switch-toggle > [data-toggle-icon] {
-            display: none;
-        }
-
-        body.mode-full .theme-switch-toggle > [data-toggle-icon="full"],
-        body.mode-cart .theme-switch-toggle > [data-toggle-icon="cart"],
-        body.mode-original .theme-switch-toggle > [data-toggle-icon="original"] {
-            display: inline-flex;
-        }
-
-        .theme-switch-toggle .theme-switch-ico {
-            width: auto;
-            height: auto;
-            color: var(--void-gold-soft);
-        }
-
-        .theme-switch-toggle .theme-switch-ico svg {
-            width: 1.6rem;
-            height: 1.6rem;
-        }
-
-        .theme-switch-toggle .theme-switch-swatch {
-            width: 1.7rem;
-            height: 1.1rem;
-        }
-
-        .theme-switch-menu {
-            display: none;
-            flex-direction: column;
-            gap: 0.12rem;
-            min-width: 200px;
-            padding: 0.55rem;
-            border: 1px solid rgba(199, 169, 108, 0.32);
-            background: linear-gradient(155deg, rgba(20, 20, 22, 0.98), rgba(6, 6, 7, 0.99));
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transform-origin: bottom left;
-        }
-
-        .theme-switch.open .theme-switch-menu {
-            display: flex;
-            animation: voidLayerFadeIn 0.28s cubic-bezier(0.18, 0.8, 0.24, 1);
-        }
-
-        .theme-switch-title {
-            margin: 0 0 0.35rem;
-            padding: 0 0.4rem;
-            font-size: 0.58rem;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            color: var(--void-text-muted);
-        }
-
-        .theme-switch-option {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            width: 100%;
-            padding: 0.6rem 0.55rem;
-            border: 0;
-            background: transparent;
-            color: var(--void-white);
-            font: inherit;
-            font-size: 0.82rem;
-            letter-spacing: 0.03em;
-            text-align: left;
-            cursor: pointer;
-            transition: background 0.18s ease, color 0.18s ease;
-        }
-
-        .theme-switch-option:hover,
-        .theme-switch-option:focus-visible {
-            background: rgba(199, 169, 108, 0.13);
-            color: #fff7e8;
-            outline: none;
-        }
-
-        .theme-switch-option[aria-checked="true"] {
-            background: rgba(199, 169, 108, 0.16);
-            color: #fff7e8;
-        }
-
-        .theme-switch-option[aria-checked="true"]::after {
-            content: '✓';
-            margin-left: auto;
-            color: var(--void-gold);
-            font-size: 0.82rem;
-        }
-
-        .theme-switch-option .country-flag {
-            width: 1.5rem;
-            height: 0.96rem;
-        }
-
-        .theme-switch-swatch {
-            width: 1.5rem;
-            height: 0.96rem;
-            flex: 0 0 auto;
-            border: 1px solid rgba(245, 242, 236, 0.22);
-            border-radius: 2px;
-        }
-
-        .theme-switch-swatch.is-original {
-            background: repeating-linear-gradient(135deg, #0a0a0a 0 5px, #161616 5px 10px);
-        }
-
-        /* Cart-only option uses the real cart glyph (matches the cart button) */
-        .theme-switch-ico {
-            width: 1.5rem;
-            height: 0.96rem;
-            flex: 0 0 auto;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--void-gold-soft);
-        }
-
-        .theme-switch-ico svg {
-            width: 1.05rem;
-            height: 1.05rem;
-            display: block;
         }
 
         .preorder-input:focus,
@@ -2597,7 +2402,7 @@
         .mobile-menu {
             /* Index of the last staggered entry, read by the exit choreography
                so the reverse stagger stays correct as entries are added. */
-            --mm-n: 16;
+            --mm-n: 17;
             position: fixed;
             top: 0;
             left: 0;
@@ -2925,6 +2730,142 @@
             animation: none !important;
             transition: none !important;
         }
+
+        /* Region control. Built from the drawer's own parts — the same group
+           label, the same .mm-house metrics, the same left edge — so it reads
+           as part of the menu rather than a panel dropped into it. It adds no
+           width: everything is full-bleed within the existing column. */
+        /* Held back until a country is actually chosen — an author display
+           would beat the UA [hidden] rule, so the guard is explicit. */
+        .mm-region[hidden] { display: none; }
+
+        .mm-region {
+            position: relative;
+            z-index: 1;
+            margin-top: 1.5rem;
+        }
+
+        .mm-region-toggle {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: baseline;
+            gap: 0.9rem;
+            width: 100%;
+            padding: 0.4rem 0;
+            border: 0;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .mm-region-key {
+            font-family: 'Jost', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 500;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: rgba(242, 239, 233, 0.42);
+        }
+
+        /* The value is the thing being stated, so it is the only ivory here.
+           min-width 0 lets a long country name ellipsize instead of widening
+           the drawer. */
+        .mm-region-value {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+            justify-self: end;
+            font-size: 0.74rem;
+            letter-spacing: 0.1em;
+            color: rgba(242, 239, 233, 0.9);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.4s ease;
+        }
+
+        .mm-region-value .country-flag {
+            width: 15px;
+            height: 11px;
+            flex: none;
+            border-radius: 1px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .mm-region-chevron {
+            width: 6px;
+            height: 6px;
+            flex: none;
+            border-right: 1px solid rgba(199, 169, 108, 0.55);
+            border-bottom: 1px solid rgba(199, 169, 108, 0.55);
+            transform: rotate(45deg) translate(-2px, -2px);
+            transition: transform 0.42s var(--ease-lux);
+        }
+
+        .mm-region-toggle[aria-expanded="true"] .mm-region-chevron {
+            transform: rotate(225deg) translate(-2px, -2px);
+        }
+
+        .mm-region-toggle:hover .mm-region-value,
+        .mm-region-toggle:focus-visible .mm-region-value { color: #fff; }
+
+        /* Same grid-rows disclosure the category accordion uses, so opening it
+           feels like the rest of the menu. The options sit inside a single
+           wrapper: 0fr only collapses the row it is given, so several direct
+           children would each claim an implicit row and stay open. */
+        .mm-region-options {
+            display: grid;
+            grid-template-rows: 0fr;
+            visibility: hidden;
+            transition: grid-template-rows 0.45s var(--ease-lux), visibility 0.45s;
+        }
+
+        .mm-region.is-open .mm-region-options {
+            grid-template-rows: 1fr;
+            visibility: visible;
+        }
+
+        .mm-region-options > * { min-height: 0; }
+
+        .mm-region-option {
+            display: block;
+            width: 100%;
+            padding: 0.42rem 0;
+            border: 0;
+            background: transparent;
+            text-align: left;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(235, 231, 223, 0.55);
+            cursor: pointer;
+            transition: color 0.36s ease, transform 0.4s var(--ease-lux);
+        }
+
+        .mm-region-option:first-child { padding-top: 0.7rem; }
+
+        .mm-region-option:hover,
+        .mm-region-option:focus-visible {
+            color: rgba(235, 231, 223, 0.92);
+            transform: translateX(3px);
+        }
+
+        /* Gold marks the chosen one and nothing else. */
+        .mm-region-option[aria-checked="true"] { color: var(--void-accent); }
+
+        .mm-region.is-open .mm-region-option {
+            animation: mmSubIn 0.38s var(--ease-lux) backwards;
+        }
+
+        .mm-region.is-open .mm-region-option:nth-child(1) { animation-delay: 0.06s; }
+        .mm-region.is-open .mm-region-option:nth-child(2) { animation-delay: 0.1s; }
+        .mm-region.is-open .mm-region-option:nth-child(3) { animation-delay: 0.14s; }
+
+        html.reduce-motion .mm-region-options,
+        html.reduce-motion .mm-region-option { transition: none !important; animation: none !important; }
 
         /* Tier three: a utility row, deliberately the quietest thing here. */
         .mobile-menu-langs {
@@ -5764,14 +5705,12 @@
         body.product-detail-open .footer,
         body.product-detail-open .cart-fab,
         body.product-detail-open .cart-popup,
-        body.product-detail-open .theme-switch,
         body.style-guide-open .nav,
         body.style-guide-open .video-section,
         body.style-guide-open .products,
         body.style-guide-open .footer,
         body.style-guide-open .cart-fab,
-        body.style-guide-open .cart-popup,
-        body.style-guide-open .theme-switch {
+        body.style-guide-open .cart-popup {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
@@ -7605,630 +7544,6 @@
             animation: needsSizePulse 0.38s ease;
         }
 
-        /* ===================== THE VOID CONCIERGE (OBSIDIAN) ===================== */
-        .void-concierge {
-            position: fixed;
-            right: 1.25rem;
-            bottom: calc(1.25rem + 82px + 0.9rem);
-            z-index: 1250;
-        }
-
-        /* When the cart is open, drop the Concierge launcher/panel behind it so
-           it never overlaps the cart (cart is z-index 1200). */
-        body:has(.cart-popup.open) .void-concierge {
-            z-index: 1150;
-        }
-
-        .vc-launcher {
-            position: relative;
-            /* Idle: a small gold dot so it barely takes space. Grows on hover. */
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 1px solid rgba(199, 169, 108, 0.4);
-            background: radial-gradient(circle at 50% 30%, rgba(28, 26, 22, 0.96), rgba(6, 6, 6, 0.96));
-            color: var(--void-gold-soft);
-            cursor: pointer;
-            overflow: hidden;
-            display: grid;
-            place-items: center;
-            isolation: isolate;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(199, 169, 108, 0.08);
-            transition: width 0.45s var(--ease-lux), height 0.45s var(--ease-lux), transform 0.5s var(--ease-lux), border-color 0.5s var(--ease-lux), box-shadow 0.5s var(--ease-lux), opacity 0.4s ease;
-            animation: vcBreathe 4.2s ease-in-out infinite;
-        }
-
-        .vc-launcher-mark {
-            position: relative;
-            z-index: 2;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.7rem;
-            line-height: 1;
-            color: var(--void-gold-soft);
-            opacity: 0;
-            transform: scale(0.3);
-            transition: opacity 0.3s ease, transform 0.4s var(--ease-lux);
-        }
-
-        .vc-launcher-sweep {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            pointer-events: none;
-            background: linear-gradient(115deg, transparent 40%, rgba(245, 232, 202, 0.22) 50%, transparent 60%);
-            transform: translateX(-120%);
-        }
-
-        .vc-launcher:hover,
-        .vc-launcher:focus-visible {
-            width: 60px;
-            height: 60px;
-            transform: translateY(-3px);
-            border-color: rgba(199, 169, 108, 0.85);
-            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55), 0 0 26px rgba(199, 169, 108, 0.22);
-            outline: none;
-        }
-
-        .vc-launcher:hover .vc-launcher-mark,
-        .vc-launcher:focus-visible .vc-launcher-mark {
-            opacity: 1;
-            transform: none;
-        }
-
-        .vc-launcher:hover .vc-launcher-sweep {
-            transition: transform 0.9s var(--ease-lux);
-            transform: translateX(120%);
-        }
-
-        @keyframes vcBreathe {
-            0%, 100% { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(199, 169, 108, 0.08), 0 0 0 0 rgba(199, 169, 108, 0); }
-            50% { box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(199, 169, 108, 0.14), 0 0 22px 2px rgba(199, 169, 108, 0.18); }
-        }
-
-        .void-concierge.vc-open .vc-launcher {
-            transform: scale(0.6);
-            opacity: 0;
-            pointer-events: none;
-            animation: none;
-        }
-
-        html.reduce-motion .vc-launcher { animation: none; }
-
-        .vc-panel {
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            width: min(90vw, 384px);
-            height: min(72vh, 560px);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(199, 169, 108, 0.34);
-            border-radius: 14px;
-            background:
-                radial-gradient(120% 80% at 15% 0%, rgba(199, 169, 108, 0.08), transparent 40%),
-                linear-gradient(170deg, rgba(16, 15, 13, 0.98), rgba(6, 6, 6, 0.99));
-            box-shadow: 0 34px 80px rgba(0, 0, 0, 0.66), 0 0 40px 2px rgba(199, 169, 108, 0.1);
-            transform-origin: bottom right;
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transform: translateY(16px) scale(0.92);
-            filter: blur(6px);
-            transition: opacity 0.5s var(--ease-lux), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.5s ease, visibility 0.5s ease;
-        }
-
-        .void-concierge.vc-open .vc-panel {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-            transform: translateY(0) scale(1);
-            filter: blur(0);
-        }
-
-        .vc-panel::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            opacity: 0.5;
-            mix-blend-mode: overlay;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 3px 3px;
-        }
-
-        .vc-panel::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            pointer-events: none;
-            opacity: 0.8;
-            background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.85), transparent);
-            background-size: 220% 100%;
-            animation: vcBorderSweep 6s linear infinite;
-        }
-
-        @keyframes vcBorderSweep { to { background-position: 220% 0; } }
-
-        html.reduce-motion .vc-panel {
-            transition: opacity 0.25s ease, visibility 0.25s ease;
-            transform: none;
-            filter: none;
-        }
-
-        html.reduce-motion .vc-panel::after { animation: none; }
-
-        .void-concierge.vc-open .vc-reveal { animation: vcReveal 0.6s var(--ease-lux) both; }
-        .void-concierge.vc-open .vc-head { animation-delay: 0.12s; }
-        .void-concierge.vc-open .vc-body { animation-delay: 0.2s; }
-        .void-concierge.vc-open .vc-quick { animation-delay: 0.28s; }
-        .void-concierge.vc-open .vc-input { animation-delay: 0.34s; }
-
-        @keyframes vcReveal {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: none; }
-        }
-
-        html.reduce-motion .vc-reveal { animation: none !important; }
-
-        .vc-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.8rem;
-            padding: 1rem 1.1rem 0.85rem;
-            border-bottom: 1px solid rgba(199, 169, 108, 0.2);
-        }
-
-        .vc-head-titles { min-width: 0; }
-
-        .vc-title {
-            margin: 0;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.3rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--void-white);
-        }
-
-        .vc-subtitle {
-            margin: 0.18rem 0 0;
-            font-size: 0.54rem;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            color: var(--void-gold-soft);
-        }
-
-        .vc-close {
-            flex: 0 0 auto;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.24);
-            background: rgba(10, 10, 10, 0.7);
-            color: var(--void-white);
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: border-color 0.24s ease, background 0.24s ease;
-        }
-
-        .vc-close:hover,
-        .vc-close:focus-visible {
-            border-color: rgba(199, 169, 108, 0.85);
-            background: rgba(22, 17, 9, 0.9);
-        }
-
-        .vc-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem 1.1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.7rem;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(199, 169, 108, 0.6) transparent;
-        }
-
-        .vc-body::-webkit-scrollbar { width: 0.4rem; }
-        .vc-body::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(220, 190, 126, 0.7), rgba(126, 98, 48, 0.7)); }
-
-        .vc-msg {
-            max-width: 82%;
-            padding: 0.62rem 0.8rem;
-            font-size: 0.82rem;
-            line-height: 1.6;
-            animation: vcMsgIn 0.5s var(--ease-lux) both;
-        }
-
-        @keyframes vcMsgIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: none; }
-        }
-
-        html.reduce-motion .vc-msg { animation: none; }
-
-        .vc-msg-bot {
-            align-self: flex-start;
-            color: rgba(245, 242, 236, 0.9);
-            background: linear-gradient(160deg, rgba(24, 22, 18, 0.9), rgba(12, 12, 12, 0.92));
-            border: 1px solid rgba(199, 169, 108, 0.22);
-            border-left: 2px solid rgba(199, 169, 108, 0.55);
-            border-radius: 3px 12px 12px 12px;
-        }
-
-        .vc-msg-user {
-            align-self: flex-end;
-            color: var(--void-white);
-            background: linear-gradient(160deg, rgba(40, 38, 33, 0.92), rgba(20, 20, 20, 0.92));
-            border: 1px solid rgba(245, 242, 236, 0.14);
-            border-radius: 12px 3px 12px 12px;
-        }
-
-        .vc-msg a {
-            color: var(--void-gold-soft);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-        }
-
-        .vc-typing {
-            align-self: flex-start;
-            display: inline-flex;
-            gap: 5px;
-            padding: 0.7rem 0.85rem;
-            border: 1px solid rgba(199, 169, 108, 0.22);
-            border-left: 2px solid rgba(199, 169, 108, 0.55);
-            border-radius: 3px 12px 12px 12px;
-            background: rgba(16, 15, 13, 0.9);
-        }
-
-        .vc-typing span {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--void-gold-soft);
-            opacity: 0.5;
-            animation: vcDot 1.2s ease-in-out infinite;
-        }
-
-        .vc-typing span:nth-child(2) { animation-delay: 0.2s; }
-        .vc-typing span:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes vcDot {
-            0%, 100% { opacity: 0.35; transform: translateY(0); }
-            50% { opacity: 1; transform: translateY(-3px); }
-        }
-
-        html.reduce-motion .vc-typing span { animation: none; }
-
-        .vc-quick {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.4rem;
-            padding: 0 1.1rem 0.6rem;
-        }
-
-        .vc-chip {
-            border: 1px solid rgba(199, 169, 108, 0.34);
-            background: rgba(14, 12, 8, 0.6);
-            color: var(--void-gold-soft);
-            font-family: 'Jost', sans-serif;
-            font-size: 0.58rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            padding: 0.44rem 0.65rem;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: border-color 0.22s ease, background 0.22s ease, color 0.22s ease, transform 0.22s ease;
-        }
-
-        .vc-chip:hover,
-        .vc-chip:focus-visible {
-            border-color: rgba(199, 169, 108, 0.9);
-            background: rgba(24, 19, 10, 0.8);
-            color: var(--void-gold-bright);
-            transform: translateY(-1px);
-        }
-
-        .vc-input {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.7rem 0.8rem;
-            border-top: 1px solid rgba(199, 169, 108, 0.2);
-        }
-
-        .vc-input input {
-            flex: 1;
-            min-width: 0;
-            background: rgba(8, 8, 8, 0.7);
-            border: 1px solid rgba(199, 169, 108, 0.28);
-            color: var(--void-white);
-            font-family: 'Jost', sans-serif;
-            font-size: 0.8rem;
-            padding: 0.6rem 0.7rem;
-            border-radius: 8px;
-            outline: none;
-            transition: border-color 0.22s ease, box-shadow 0.22s ease;
-        }
-
-        .vc-input input::placeholder { color: rgba(245, 242, 236, 0.4); }
-
-        .vc-input input:focus {
-            border-color: rgba(199, 169, 108, 0.7);
-            box-shadow: 0 0 0 2px rgba(199, 169, 108, 0.12);
-        }
-
-        .vc-send {
-            flex: 0 0 auto;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid rgba(199, 169, 108, 0.5);
-            background: var(--void-gold-gradient);
-            color: #120d05;
-            cursor: pointer;
-            display: grid;
-            place-items: center;
-            transition: filter 0.2s ease, transform 0.2s ease;
-        }
-
-        .vc-send:hover { filter: brightness(1.06); transform: translateY(-1px); }
-        .vc-send svg { width: 18px; height: 18px; }
-
-        /* ---- Lobby atmosphere: silver energy, depth & particles (behind content) ---- */
-        /* Content sits above the ambient layers; the frame ring sits just above content
-           at the panel's edge (never over text — the body has padding). */
-        .vc-panel > .vc-head,
-        .vc-panel > .vc-body,
-        .vc-panel > .vc-quick,
-        .vc-panel > .vc-input { position: relative; z-index: 1; }
-
-        @property --vc-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-
-        /* Layered dark depth: portal texture, drifting mist/shadow, dust, scan pass, vignette. */
-        .vc-atmos {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-            border-radius: inherit;
-        }
-
-        .vc-atmos > span { position: absolute; display: block; }
-
-        /* Barely-visible original arcane geometry: faint spokes + concentric rings. */
-        .vc-atmos-portal {
-            left: 50%;
-            top: 44%;
-            width: 165%;
-            aspect-ratio: 1 / 1;
-            transform: translate(-50%, -50%);
-            opacity: 0.45;
-            background:
-                repeating-conic-gradient(from 0deg, rgba(235, 232, 224, 0.028) 0 0.6deg, transparent 0.6deg 30deg),
-                repeating-radial-gradient(circle at 50% 50%, transparent 0 34px, rgba(235, 232, 224, 0.02) 34px 35px, transparent 35px 70px);
-            -webkit-mask: radial-gradient(circle at 50% 50%, #000 0 40%, transparent 68%);
-            mask: radial-gradient(circle at 50% 50%, #000 0 40%, transparent 68%);
-            animation: vcPortalSpin 120s linear infinite;
-        }
-
-        @keyframes vcPortalSpin { to { transform: translate(-50%, -50%) rotate(1turn); } }
-
-        /* Slow smoke / soft animated shadow movement. */
-        .vc-atmos-mist {
-            inset: -30%;
-            filter: blur(7px);
-            background:
-                radial-gradient(38% 48% at 30% 22%, rgba(255, 255, 255, 0.03), transparent 60%),
-                radial-gradient(46% 56% at 76% 82%, rgba(0, 0, 0, 0.4), transparent 66%),
-                radial-gradient(34% 40% at 62% 42%, rgba(235, 232, 224, 0.02), transparent 62%);
-            animation: vcMist 28s ease-in-out infinite alternate;
-        }
-
-        @keyframes vcMist {
-            0% { transform: translate3d(-2%, -1%, 0) scale(1.05); }
-            100% { transform: translate3d(3%, 2%, 0) scale(1.12); }
-        }
-
-        /* Sparse drifting micro-particles / dust points. */
-        .vc-atmos-particles {
-            inset: 0;
-            opacity: 0.35;
-            background-image:
-                radial-gradient(1px 1px at 20% 30%, rgba(235, 232, 224, 0.5), transparent),
-                radial-gradient(1px 1px at 70% 62%, rgba(235, 232, 224, 0.32), transparent),
-                radial-gradient(1px 1px at 41% 82%, rgba(255, 255, 255, 0.4), transparent),
-                radial-gradient(1px 1px at 85% 26%, rgba(235, 232, 224, 0.3), transparent),
-                radial-gradient(1px 1px at 55% 14%, rgba(235, 232, 224, 0.28), transparent),
-                radial-gradient(1px 1px at 12% 66%, rgba(235, 232, 224, 0.24), transparent);
-            animation: vcDrift 34s linear infinite;
-        }
-
-        @keyframes vcDrift {
-            0% { transform: translateY(6px); opacity: 0.12; }
-            50% { opacity: 0.4; }
-            100% { transform: translateY(-44px); opacity: 0.12; }
-        }
-
-        /* Subtle light/scan pass across the background (~16s cycle). */
-        .vc-atmos-scan {
-            left: 0;
-            right: 0;
-            top: 0;
-            height: 42%;
-            opacity: 0;
-            background: linear-gradient(180deg, transparent, rgba(235, 232, 224, 0.05), transparent);
-            animation: vcScan 16s ease-in-out infinite;
-        }
-
-        @keyframes vcScan {
-            0%, 80% { opacity: 0; transform: translateY(-70%); }
-            85% { opacity: 1; }
-            100% { opacity: 0; transform: translateY(320%); }
-        }
-
-        /* Depth vignette — keeps text well above the ambient wash. */
-        .vc-atmos::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background: radial-gradient(125% 100% at 50% 8%, transparent 42%, rgba(0, 0, 0, 0.55) 100%);
-        }
-
-        /* Refined metallic frame + slow silver energy trace + rare corner spark. */
-        .vc-frame {
-            position: absolute;
-            inset: 0;
-            z-index: 2;
-            pointer-events: none;
-            border-radius: inherit;
-            opacity: 0.85;
-            box-shadow: inset 0 0 0 1px rgba(235, 232, 224, 0.06);
-            transition: opacity 0.6s var(--ease-lux);
-        }
-
-        .vc-frame::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            padding: 1px;
-            opacity: 0.45;
-            background: conic-gradient(from var(--vc-angle),
-                transparent 0 70%,
-                rgba(235, 232, 224, 0.14) 80%,
-                rgba(255, 255, 255, 0.72) 86%,
-                rgba(235, 232, 224, 0.14) 92%,
-                transparent 100%);
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            mask-composite: exclude;
-            animation: vcFrameTrace 12s linear infinite;
-            transition: opacity 0.6s var(--ease-lux), animation-duration 0.6s ease;
-        }
-
-        @keyframes vcFrameTrace { to { --vc-angle: 360deg; } }
-
-        .vc-frame::after {
-            content: '';
-            position: absolute;
-            top: -1px;
-            right: 15%;
-            width: 2px;
-            height: 2px;
-            border-radius: 50%;
-            opacity: 0;
-            background: rgba(255, 255, 255, 0.92);
-            box-shadow: 0 0 6px 1px rgba(235, 232, 224, 0.7);
-            animation: vcSpark 15s ease-in-out infinite;
-        }
-
-        @keyframes vcSpark {
-            0%, 88%, 100% { opacity: 0; }
-            90% { opacity: 1; }
-            92% { opacity: 0.2; }
-            94% { opacity: 0.85; }
-            97% { opacity: 0; }
-        }
-
-        /* Faint breathing outer glow once the panel is open. */
-        .void-concierge.vc-open .vc-panel {
-            animation: vcPanelGlow 7.5s ease-in-out infinite 0.6s;
-        }
-
-        @keyframes vcPanelGlow {
-            0%, 100% { box-shadow: 0 34px 80px rgba(0, 0, 0, 0.66), 0 0 40px 2px rgba(199, 169, 108, 0.1), 0 0 0 0 rgba(235, 232, 224, 0); }
-            50% { box-shadow: 0 34px 84px rgba(0, 0, 0, 0.66), 0 0 52px 3px rgba(199, 169, 108, 0.14), 0 0 30px 2px rgba(235, 232, 224, 0.07); }
-        }
-
-        /* Hover + opening activation briefly intensifies the frame energy, then settles. */
-        .vc-panel:hover .vc-frame,
-        .void-concierge.vc-activate .vc-frame { opacity: 1; }
-
-        .vc-panel:hover .vc-frame::before,
-        .void-concierge.vc-activate .vc-frame::before { opacity: 0.85; animation-duration: 6s; }
-
-        /* Send button: restrained energy pulse when a message is ready to send. */
-        .vc-input.vc-ready .vc-send { animation: vcSendPulse 2.4s ease-in-out infinite; }
-
-        @keyframes vcSendPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(235, 232, 224, 0); }
-            50% { box-shadow: 0 0 14px 1px rgba(235, 232, 224, 0.4); }
-        }
-
-        /* Send discharge: a subtle energy ripple from the send button on send. */
-        .vc-send { position: relative; }
-        .vc-send::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-            opacity: 0;
-            border: 1px solid rgba(235, 232, 224, 0.7);
-        }
-
-        .vc-input.vc-discharge .vc-send::after { animation: vcDischarge 0.6s var(--ease-lux); }
-
-        @keyframes vcDischarge {
-            0% { opacity: 0.9; transform: scale(1); }
-            100% { opacity: 0; transform: scale(2.1); }
-        }
-
-        /* Typing indicator: silver dots with a faint ambient glow. */
-        .vc-typing span { box-shadow: 0 0 6px rgba(235, 232, 224, 0.35); }
-
-        /* Reduced motion: keep the static depth, drop the non-essential animation. */
-        /* These five layers loop forever once the DOM exists, but the panel
-           itself is only visibility:hidden (not display:none) while closed —
-           so without this, the concierge's conic-gradient trace, mist blur
-           and particle drift would repaint on every frame for the entire
-           session, even for visitors who never open the chat. Pausing them
-           until `.vc-open` is set keeps the exact same look the moment the
-           panel opens (a paused animation resumes from where it left off). */
-        .vc-atmos-portal,
-        .vc-atmos-mist,
-        .vc-atmos-particles,
-        .vc-atmos-scan,
-        .vc-frame::before,
-        .vc-frame::after {
-            animation-play-state: paused;
-        }
-
-        .void-concierge.vc-open .vc-atmos-portal,
-        .void-concierge.vc-open .vc-atmos-mist,
-        .void-concierge.vc-open .vc-atmos-particles,
-        .void-concierge.vc-open .vc-atmos-scan,
-        .void-concierge.vc-open .vc-frame::before,
-        .void-concierge.vc-open .vc-frame::after {
-            animation-play-state: running;
-        }
-
-        html.reduce-motion .vc-atmos-portal,
-        html.reduce-motion .vc-atmos-mist,
-        html.reduce-motion .vc-atmos-particles,
-        html.reduce-motion .vc-atmos-scan,
-        html.reduce-motion .vc-frame::before,
-        html.reduce-motion .vc-frame::after,
-        html.reduce-motion .void-concierge.vc-open .vc-panel,
-        html.reduce-motion .vc-input.vc-ready .vc-send,
-        html.reduce-motion .vc-input.vc-discharge .vc-send::after { animation: none; }
-
-        html.reduce-motion .vc-atmos-scan { opacity: 0; }
-
-        @media (max-width: 600px) {
-            .void-concierge {
-                right: calc(0.5rem + env(safe-area-inset-right, 0px));
-                bottom: calc(0.5rem + 66px + 0.7rem + env(safe-area-inset-bottom, 0px));
-            }
-            .vc-panel { width: min(94vw, 384px); height: min(76vh, 560px); }
-        }
 
         .cart-fab {
             position: fixed;
@@ -10882,7 +10197,37 @@
             <li class="mobile-menu-item" style="--mm-i: 14;"><button type="button" class="mm-house" data-dock="profile" data-i18n="navAccount">Account</button></li>
             <li class="mobile-menu-item" style="--mm-i: 15;"><button type="button" class="mm-house" data-dock="settings" data-i18n="settingsLabel">Settings</button></li>
         </ul>
-        <div class="mobile-menu-langs mobile-menu-item" style="--mm-i: 16;" role="group" aria-label="Language">
+        <!-- The country control, rehoused from the floating corner button. It
+             keeps the original ids — themeSwitchMenu, themeSwitchMenuFlag,
+             themeSwitchCountryName — so the existing state, persistence and
+             flag-painting code reach it without a second system being
+             introduced. Only the presentation moved. -->
+        <div class="mm-region mobile-menu-item" style="--mm-i: 16;" hidden>
+            <p class="mm-group-label" data-i18n="regionExperience">Region / Experience</p>
+            <button type="button" class="mm-region-toggle" id="mmRegionToggle" aria-expanded="false" aria-controls="themeSwitchMenu">
+                <span class="mm-region-key" data-i18n="country">Country</span>
+                <span class="mm-region-value">
+                    <span class="theme-switch-flag country-flag" id="themeSwitchMenuFlag" aria-hidden="true"></span>
+                    <span id="themeSwitchCountryName">Country</span>
+                </span>
+                <i class="mm-region-chevron" aria-hidden="true"></i>
+            </button>
+            <div class="mm-region-options">
+                <div class="mm-region-inner" id="themeSwitchMenu" role="menu" aria-label="Country theme">
+                    <button type="button" class="mm-region-option" role="menuitemradio" data-theme-mode="full" aria-checked="false">
+                        <span data-i18n="themeCountry">Country</span>
+                    </button>
+                    <button type="button" class="mm-region-option" role="menuitemradio" data-theme-mode="cart" aria-checked="false">
+                        <span data-i18n="themeCartOnly">Cart only</span>
+                    </button>
+                    <button type="button" class="mm-region-option" role="menuitemradio" data-theme-mode="original" aria-checked="false">
+                        <span data-i18n="themeOriginal">Original</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-menu-langs mobile-menu-item" style="--mm-i: 17;" role="group" aria-label="Language">
             <button type="button" class="language-option" role="option" data-language="en"><span class="language-option-code">EN</span> English</button>
             <button type="button" class="language-option" role="option" data-language="fr"><span class="language-option-code">FR</span> Français</button>
             <button type="button" class="language-option" role="option" data-language="it"><span class="language-option-code">IT</span> Italiano</button>
@@ -12076,42 +11421,6 @@
     </div>
 
     <!-- THE VOID CONCIERGE (presented feature) · persona: OBSIDIAN -->
-    <div class="void-concierge" id="voidConcierge">
-        <button type="button" class="vc-launcher" id="vcLauncher" aria-haspopup="dialog" aria-expanded="false" aria-controls="vcPanel" aria-label="Open the VOID Concierge" data-i18n-aria-label="vcOpen">
-            <span class="vc-launcher-mark" aria-hidden="true">V</span>
-            <span class="vc-launcher-sweep" aria-hidden="true"></span>
-        </button>
-        <section class="vc-panel" id="vcPanel" role="dialog" aria-modal="false" aria-labelledby="vcTitle" aria-hidden="true">
-            <div class="vc-atmos" aria-hidden="true">
-                <span class="vc-atmos-portal"></span>
-                <span class="vc-atmos-mist"></span>
-                <span class="vc-atmos-particles"></span>
-                <span class="vc-atmos-scan"></span>
-            </div>
-            <div class="vc-frame" aria-hidden="true"></div>
-            <header class="vc-head vc-reveal">
-                <div class="vc-head-titles">
-                    <h3 class="vc-title" id="vcTitle" data-i18n="vcTitle">The VOID Concierge</h3>
-                    <p class="vc-subtitle" data-i18n="vcSubtitle">Client Services</p>
-                </div>
-                <button type="button" class="vc-close" id="vcClose" aria-label="Close concierge" data-i18n-aria-label="vcClose">✕</button>
-            </header>
-            <div class="vc-body vc-reveal" id="vcBody" role="log" aria-live="polite"></div>
-            <div class="vc-quick vc-reveal" id="vcQuick">
-                <button type="button" class="vc-chip" data-vc-quick="collection" data-i18n="vcQ1">Explore the collection</button>
-                <button type="button" class="vc-chip" data-vc-quick="size" data-i18n="vcQ2">Find my size</button>
-                <button type="button" class="vc-chip" data-vc-quick="materials" data-i18n="vcQ3">Materials &amp; quality</button>
-                <button type="button" class="vc-chip" data-vc-quick="preorder" data-i18n="vcQ4">Pre-orders</button>
-                <button type="button" class="vc-chip" data-vc-quick="shipping" data-i18n="vcQ5">Shipping &amp; contact</button>
-            </div>
-            <form class="vc-input vc-reveal" id="vcForm">
-                <input type="text" id="vcInput" autocomplete="off" maxlength="800" placeholder="Ask the concierge…" data-i18n-placeholder="vcPlaceholder" aria-label="Ask the concierge" data-i18n-aria-label="vcPlaceholder">
-                <button type="submit" class="vc-send" aria-label="Send message" data-i18n-aria-label="vcSend">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-            </form>
-        </section>
-    </div>
 
     <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart" data-i18n-aria-label="openCart">
         <span class="cart-fab-icon" aria-hidden="true">
@@ -12123,41 +11432,6 @@
         <span class="cart-fab-badge" id="cartCount">0</span>
     </button>
 
-    <div class="theme-switch" id="themeSwitch" hidden>
-        <div class="theme-switch-menu" id="themeSwitchMenu" role="menu" aria-label="Country theme">
-            <p class="theme-switch-title" data-i18n="countryTheme">Country theme</p>
-            <button type="button" class="theme-switch-option" role="menuitemradio" data-theme-mode="full" aria-checked="false">
-                <span class="theme-switch-flag country-flag" id="themeSwitchMenuFlag" aria-hidden="true"></span>
-                <span class="theme-switch-option-label" id="themeSwitchCountryName">Country</span>
-            </button>
-            <button type="button" class="theme-switch-option" role="menuitemradio" data-theme-mode="cart" aria-checked="false">
-                <span class="theme-switch-ico" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
-                        <path d="M7.5 9V7.75C7.5 5.4 9.4 3.5 11.75 3.5C14.1 3.5 16 5.4 16 7.75V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                        <path d="M5 9.5H18.5L17.35 20H6.15L5 9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-                    </svg>
-                </span>
-                <span class="theme-switch-option-label" data-i18n="themeCartOnly">Cart only</span>
-            </button>
-            <button type="button" class="theme-switch-option" role="menuitemradio" data-theme-mode="original" aria-checked="false">
-                <span class="theme-switch-swatch is-original" aria-hidden="true"></span>
-                <span class="theme-switch-option-label" data-i18n="themeOriginal">Original</span>
-            </button>
-        </div>
-        <button type="button" class="theme-switch-toggle" id="themeSwitchToggle" aria-haspopup="true" aria-expanded="false" aria-label="Switch country theme" data-i18n-aria-label="switchCountryTheme">
-            <span class="theme-switch-glyph" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.4"/><path d="M3.6 12h16.8M12 3.6c2.4 2.3 2.4 14.5 0 16.8M12 3.6c-2.4 2.3-2.4 14.5 0 16.8" stroke="currentColor" stroke-width="1.15"/></svg>
-            </span>
-            <span class="theme-switch-flag country-flag" id="themeSwitchToggleFlag" data-toggle-icon="full" aria-hidden="true"></span>
-            <span class="theme-switch-ico" data-toggle-icon="cart" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
-                    <path d="M7.5 9V7.75C7.5 5.4 9.4 3.5 11.75 3.5C14.1 3.5 16 5.4 16 7.75V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                    <path d="M5 9.5H18.5L17.35 20H6.15L5 9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-                </svg>
-            </span>
-            <span class="theme-switch-swatch is-original" data-toggle-icon="original" aria-hidden="true"></span>
-        </button>
-    </div>
 
     <aside class="cart-popup" id="cartPopup" aria-live="polite">
         <span class="panel-frame" aria-hidden="true"></span>
@@ -12286,16 +11560,16 @@
         let refreshCartTranslations = () => {};
         const translations = {
             en: {
-                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', navMenu: 'Menu', navClose: 'Close', navAccount: 'Account', navClientServices: 'Client Services', settingsLabel: 'Settings', navDelivery: 'Delivery & Returns', navSizeFit: 'Size & Fit', navTheHouse: 'The House', navTheCodes: 'The Codes', vcTitleShort: 'Private Concierge', sgaDocLabel: 'Document', tableHemWidth: 'Hem Width', tableCuffWidth: 'Cuff Width', tableWaistWidth: 'Waist Width', tableHipWidth: 'Hip Width', tableFrontRise: 'Front Rise', tableThighWidth: 'Thigh Width', tableInseam: 'Inseam', tableOutseam: 'Outseam', tableLegOpening: 'Leg Opening', sgaIntroSweatshirt: 'The sweatshirt is drafted around structured volume: a dropped shoulder, a deep body and ribbed hem and cuffs that hold the silhouette. Select your usual size for the intended weight, or size down for a closer line.', sgaIntroTrackpants: 'The track pants are drafted around a relaxed leg and a high, unrestrictive waist. Proportion is held through the rise and thigh rather than the hem, so the line stays clean over the full length.', sgaIntroEnsemble: 'The ensemble is drafted as one proportion: the sweatshirt volume and the leg line are graded together. One size governs both halves, so the set reads as a single silhouette.', sgaNoteSweatshirt: 'Volume is held by the hem and cuff ribs, not by the body width alone. For the house fit, select your usual size. For a cleaner line through the body, select one size down.', sgaNoteTrackpants: 'Measure against a pair you already trust, comparing the rise and the inseam before the waist. The waistband is cut to sit without tension at the stated width.', sgaNoteEnsemble: 'Both pieces are cut to the same grade, so a single selection keeps the upper and lower proportions in balance. Size down only if you want the whole set closer to the body.', sgaPending: 'Pattern measurements for this garment are being finalised in the atelier. The architecture is confirmed; the figures follow.', sgaDraftAltSweatshirt: 'Technical drawing of the hooded sweatshirt showing where chest width, body length, shoulder width, sleeve length, hem width and cuff width are measured.', sgaDraftAltTrackpants: 'Technical drawing of the track pants showing where waist width, hip width, front rise, thigh width, inseam, outseam and leg opening are measured.', sgaDraftAltEnsemble: 'Technical drawing of the ensemble showing the hooded sweatshirt and the track pants together, with the measurement points of both garments.', navAtelier: 'The Atelier', navNeant: 'Néant', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Further imagery for this piece follows with the season.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}', sgaEyebrow: 'Atelier / Fit Archive', sgaTitle: 'The Void Silhouette', sgaSubtitle: 'Oversized architecture, measured in centimetres', sgaIntro: 'VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.', sgaCloseLabel: 'Close', sgaDoc: 'Document / Fit-001', sgaUnit: 'Unit / CM', sgaArchitecture: 'Garment Architecture', sgaDraftAlt: 'Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.', sgaSelect: 'Select Size', sgaCm: 'cm', sgaFitCharacter: 'Fit Character', sgaRestrained: 'Restrained', sgaVolume: 'Volume', sgaNoteLabel: 'Atelier Note', sgaNote: 'The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.', sgaViewFull: 'View Full Specification', sgaHideFull: 'Hide Full Specification'
+                navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', navMenu: 'Menu', navClose: 'Close', navAccount: 'Account', navClientServices: 'Client Services', settingsLabel: 'Settings', regionExperience: 'Region / Experience', themeCountry: 'Country', navDelivery: 'Delivery & Returns', navSizeFit: 'Size & Fit', navTheHouse: 'The House', navTheCodes: 'The Codes', vcTitleShort: 'Private Concierge', sgaDocLabel: 'Document', tableHemWidth: 'Hem Width', tableCuffWidth: 'Cuff Width', tableWaistWidth: 'Waist Width', tableHipWidth: 'Hip Width', tableFrontRise: 'Front Rise', tableThighWidth: 'Thigh Width', tableInseam: 'Inseam', tableOutseam: 'Outseam', tableLegOpening: 'Leg Opening', sgaIntroSweatshirt: 'The sweatshirt is drafted around structured volume: a dropped shoulder, a deep body and ribbed hem and cuffs that hold the silhouette. Select your usual size for the intended weight, or size down for a closer line.', sgaIntroTrackpants: 'The track pants are drafted around a relaxed leg and a high, unrestrictive waist. Proportion is held through the rise and thigh rather than the hem, so the line stays clean over the full length.', sgaIntroEnsemble: 'The ensemble is drafted as one proportion: the sweatshirt volume and the leg line are graded together. One size governs both halves, so the set reads as a single silhouette.', sgaNoteSweatshirt: 'Volume is held by the hem and cuff ribs, not by the body width alone. For the house fit, select your usual size. For a cleaner line through the body, select one size down.', sgaNoteTrackpants: 'Measure against a pair you already trust, comparing the rise and the inseam before the waist. The waistband is cut to sit without tension at the stated width.', sgaNoteEnsemble: 'Both pieces are cut to the same grade, so a single selection keeps the upper and lower proportions in balance. Size down only if you want the whole set closer to the body.', sgaPending: 'Pattern measurements for this garment are being finalised in the atelier. The architecture is confirmed; the figures follow.', sgaDraftAltSweatshirt: 'Technical drawing of the hooded sweatshirt showing where chest width, body length, shoulder width, sleeve length, hem width and cuff width are measured.', sgaDraftAltTrackpants: 'Technical drawing of the track pants showing where waist width, hip width, front rise, thigh width, inseam, outseam and leg opening are measured.', sgaDraftAltEnsemble: 'Technical drawing of the ensemble showing the hooded sweatshirt and the track pants together, with the measurement points of both garments.', navAtelier: 'The Atelier', navNeant: 'Néant', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Further imagery for this piece follows with the season.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}', sgaEyebrow: 'Atelier / Fit Archive', sgaTitle: 'The Void Silhouette', sgaSubtitle: 'Oversized architecture, measured in centimetres', sgaIntro: 'VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.', sgaCloseLabel: 'Close', sgaDoc: 'Document / Fit-001', sgaUnit: 'Unit / CM', sgaArchitecture: 'Garment Architecture', sgaDraftAlt: 'Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.', sgaSelect: 'Select Size', sgaCm: 'cm', sgaFitCharacter: 'Fit Character', sgaRestrained: 'Restrained', sgaVolume: 'Volume', sgaNoteLabel: 'Atelier Note', sgaNote: 'The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.', sgaViewFull: 'View Full Specification', sgaHideFull: 'Hide Full Specification'
             },
             fr: {
-                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', navMenu: 'Menu', navClose: 'Fermer', navAccount: 'Compte', navClientServices: 'Service Client', settingsLabel: 'Préférences', navDelivery: 'Livraison & Retours', navSizeFit: 'Tailles & Coupe', navTheHouse: 'La Maison', navTheCodes: 'Les Codes', vcTitleShort: 'Conciergerie Privée', sgaDocLabel: 'Document', tableHemWidth: 'Largeur Ourlet', tableCuffWidth: 'Largeur Poignet', tableWaistWidth: 'Tour de Taille', tableHipWidth: 'Largeur Hanches', tableFrontRise: 'Montant Avant', tableThighWidth: 'Largeur Cuisse', tableInseam: 'Entrejambe', tableOutseam: 'Couture Extérieure', tableLegOpening: 'Bas de Jambe', sgaIntroSweatshirt: 'Le sweat-shirt est construit autour d’un volume structuré : épaule tombante, corps profond, ourlet et poignets côtelés qui tiennent la silhouette. Choisissez votre taille habituelle pour le tombé prévu, ou une taille en dessous pour une ligne plus près du corps.', sgaIntroTrackpants: 'Le pantalon est construit autour d’une jambe ample et d’une taille haute sans contrainte. La proportion se tient par le montant et la cuisse plutôt que par le bas, pour une ligne nette sur toute la longueur.', sgaIntroEnsemble: 'L’ensemble est construit comme une seule proportion : le volume du sweat-shirt et la ligne de jambe sont gradés ensemble. Une seule taille régit les deux pièces, pour une silhouette unique.', sgaNoteSweatshirt: 'Le volume est tenu par les côtes d’ourlet et de poignet, non par la seule largeur du corps. Pour la coupe maison, choisissez votre taille habituelle. Pour une ligne plus nette, choisissez une taille en dessous.', sgaNoteTrackpants: 'Comparez avec un pantalon qui vous convient déjà, en regardant le montant et l’entrejambe avant la taille. La ceinture est coupée pour se poser sans tension à la largeur indiquée.', sgaNoteEnsemble: 'Les deux pièces suivent la même gradation : une seule sélection garde les proportions haut et bas en équilibre. Ne descendez d’une taille que pour rapprocher l’ensemble du corps.', sgaPending: 'Les mesures de patronage de cette pièce sont en cours de finalisation à l’atelier. L’architecture est confirmée ; les chiffres suivront.', sgaDraftAltSweatshirt: 'Dessin technique du sweat-shirt à capuche indiquant où sont mesurées la largeur de poitrine, la longueur du corps, la largeur d’épaules, la longueur de manche, la largeur d’ourlet et la largeur de poignet.', sgaDraftAltTrackpants: 'Dessin technique du pantalon indiquant où sont mesurés le tour de taille, la largeur de hanches, le montant avant, la largeur de cuisse, l’entrejambe, la couture extérieure et le bas de jambe.', sgaDraftAltEnsemble: 'Dessin technique de l’ensemble présentant le sweat-shirt à capuche et le pantalon réunis, avec les points de mesure des deux pièces.', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Voir Tout', catTshirts: 'T-Shirts', catSweatshirts: 'Sweat-shirts', catTrackPants: 'Pantalons de Survêtement', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Aucune pièce dans cette catégorie pour l’instant.', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
+                navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', navMenu: 'Menu', navClose: 'Fermer', navAccount: 'Compte', navClientServices: 'Service Client', settingsLabel: 'Préférences', regionExperience: 'Région / Expérience', themeCountry: 'Pays', navDelivery: 'Livraison & Retours', navSizeFit: 'Tailles & Coupe', navTheHouse: 'La Maison', navTheCodes: 'Les Codes', vcTitleShort: 'Conciergerie Privée', sgaDocLabel: 'Document', tableHemWidth: 'Largeur Ourlet', tableCuffWidth: 'Largeur Poignet', tableWaistWidth: 'Tour de Taille', tableHipWidth: 'Largeur Hanches', tableFrontRise: 'Montant Avant', tableThighWidth: 'Largeur Cuisse', tableInseam: 'Entrejambe', tableOutseam: 'Couture Extérieure', tableLegOpening: 'Bas de Jambe', sgaIntroSweatshirt: 'Le sweat-shirt est construit autour d’un volume structuré : épaule tombante, corps profond, ourlet et poignets côtelés qui tiennent la silhouette. Choisissez votre taille habituelle pour le tombé prévu, ou une taille en dessous pour une ligne plus près du corps.', sgaIntroTrackpants: 'Le pantalon est construit autour d’une jambe ample et d’une taille haute sans contrainte. La proportion se tient par le montant et la cuisse plutôt que par le bas, pour une ligne nette sur toute la longueur.', sgaIntroEnsemble: 'L’ensemble est construit comme une seule proportion : le volume du sweat-shirt et la ligne de jambe sont gradés ensemble. Une seule taille régit les deux pièces, pour une silhouette unique.', sgaNoteSweatshirt: 'Le volume est tenu par les côtes d’ourlet et de poignet, non par la seule largeur du corps. Pour la coupe maison, choisissez votre taille habituelle. Pour une ligne plus nette, choisissez une taille en dessous.', sgaNoteTrackpants: 'Comparez avec un pantalon qui vous convient déjà, en regardant le montant et l’entrejambe avant la taille. La ceinture est coupée pour se poser sans tension à la largeur indiquée.', sgaNoteEnsemble: 'Les deux pièces suivent la même gradation : une seule sélection garde les proportions haut et bas en équilibre. Ne descendez d’une taille que pour rapprocher l’ensemble du corps.', sgaPending: 'Les mesures de patronage de cette pièce sont en cours de finalisation à l’atelier. L’architecture est confirmée ; les chiffres suivront.', sgaDraftAltSweatshirt: 'Dessin technique du sweat-shirt à capuche indiquant où sont mesurées la largeur de poitrine, la longueur du corps, la largeur d’épaules, la longueur de manche, la largeur d’ourlet et la largeur de poignet.', sgaDraftAltTrackpants: 'Dessin technique du pantalon indiquant où sont mesurés le tour de taille, la largeur de hanches, le montant avant, la largeur de cuisse, l’entrejambe, la couture extérieure et le bas de jambe.', sgaDraftAltEnsemble: 'Dessin technique de l’ensemble présentant le sweat-shirt à capuche et le pantalon réunis, avec les points de mesure des deux pièces.', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Voir Tout', catTshirts: 'T-Shirts', catSweatshirts: 'Sweat-shirts', catTrackPants: 'Pantalons de Survêtement', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Aucune pièce dans cette catégorie pour l’instant.', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
             },
             it: {
-                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', navMenu: 'Menu', navClose: 'Chiudi', navAccount: 'Account', navClientServices: 'Servizio Clienti', settingsLabel: 'Impostazioni', navDelivery: 'Spedizioni & Resi', navSizeFit: 'Taglie & Vestibilità', navTheHouse: 'La Maison', navTheCodes: 'I Codici', vcTitleShort: 'Concierge Privato', sgaDocLabel: 'Documento', tableHemWidth: 'Larghezza Orlo', tableCuffWidth: 'Larghezza Polsino', tableWaistWidth: 'Girovita', tableHipWidth: 'Larghezza Fianchi', tableFrontRise: 'Cavallo Anteriore', tableThighWidth: 'Larghezza Coscia', tableInseam: 'Interno Gamba', tableOutseam: 'Esterno Gamba', tableLegOpening: 'Fondo Gamba', sgaIntroSweatshirt: 'La felpa è costruita attorno a un volume strutturato: spalla scesa, corpo profondo, orlo e polsini a costine che sostengono la silhouette. Scegli la tua taglia abituale per la vestibilità prevista, o una taglia in meno per una linea più aderente.', sgaIntroTrackpants: 'I pantaloni sono costruiti attorno a una gamba morbida e a una vita alta e non costrittiva. La proporzione si regge sul cavallo e sulla coscia più che sul fondo, per una linea pulita per tutta la lunghezza.', sgaIntroEnsemble: 'Il completo è costruito come un’unica proporzione: il volume della felpa e la linea della gamba sono sviluppati insieme. Una sola taglia governa entrambi i capi, per una silhouette unica.', sgaNoteSweatshirt: 'Il volume è tenuto dalle costine di orlo e polsino, non dalla sola larghezza del corpo. Per la vestibilità della maison scegli la tua taglia abituale. Per una linea più pulita, scegli una taglia in meno.', sgaNoteTrackpants: 'Confronta con un pantalone che già ti convince, guardando il cavallo e l’interno gamba prima della vita. La cintura è tagliata per appoggiarsi senza tensione alla misura indicata.', sgaNoteEnsemble: 'I due capi seguono la stessa gradazione: una sola scelta mantiene in equilibrio le proporzioni sopra e sotto. Scendi di una taglia solo se vuoi il completo più aderente.', sgaPending: 'Le misure di modellistica di questo capo sono in fase di definizione in atelier. L’architettura è confermata; i valori seguiranno.', sgaDraftAltSweatshirt: 'Disegno tecnico della felpa con cappuccio che mostra dove si misurano larghezza petto, lunghezza corpo, larghezza spalle, lunghezza manica, larghezza orlo e larghezza polsino.', sgaDraftAltTrackpants: 'Disegno tecnico dei pantaloni che mostra dove si misurano girovita, larghezza fianchi, cavallo anteriore, larghezza coscia, interno gamba, esterno gamba e fondo gamba.', sgaDraftAltEnsemble: 'Disegno tecnico del completo che mostra insieme la felpa con cappuccio e i pantaloni, con i punti di misura di entrambi i capi.', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Vedi Tutto', catTshirts: 'T-Shirt', catSweatshirts: 'Felpe', catTrackPants: 'Pantaloni Sportivi', catEnsembles: 'Completi', fragrance: 'Profumo', collectionEmpty: 'Nessun pezzo in questa categoria per ora.', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', viewDetails: 'Vedi Dettagli', pdResetZoom: 'Reimposta zoom', pdThumbsLabel: 'Viste del prodotto', pdViewBoth: 'Fronte e retro', pdViewFront: 'Fronte', pdViewBack: 'Retro', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
+                navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', navMenu: 'Menu', navClose: 'Chiudi', navAccount: 'Account', navClientServices: 'Servizio Clienti', settingsLabel: 'Impostazioni', regionExperience: 'Regione / Esperienza', themeCountry: 'Paese', navDelivery: 'Spedizioni & Resi', navSizeFit: 'Taglie & Vestibilità', navTheHouse: 'La Maison', navTheCodes: 'I Codici', vcTitleShort: 'Concierge Privato', sgaDocLabel: 'Documento', tableHemWidth: 'Larghezza Orlo', tableCuffWidth: 'Larghezza Polsino', tableWaistWidth: 'Girovita', tableHipWidth: 'Larghezza Fianchi', tableFrontRise: 'Cavallo Anteriore', tableThighWidth: 'Larghezza Coscia', tableInseam: 'Interno Gamba', tableOutseam: 'Esterno Gamba', tableLegOpening: 'Fondo Gamba', sgaIntroSweatshirt: 'La felpa è costruita attorno a un volume strutturato: spalla scesa, corpo profondo, orlo e polsini a costine che sostengono la silhouette. Scegli la tua taglia abituale per la vestibilità prevista, o una taglia in meno per una linea più aderente.', sgaIntroTrackpants: 'I pantaloni sono costruiti attorno a una gamba morbida e a una vita alta e non costrittiva. La proporzione si regge sul cavallo e sulla coscia più che sul fondo, per una linea pulita per tutta la lunghezza.', sgaIntroEnsemble: 'Il completo è costruito come un’unica proporzione: il volume della felpa e la linea della gamba sono sviluppati insieme. Una sola taglia governa entrambi i capi, per una silhouette unica.', sgaNoteSweatshirt: 'Il volume è tenuto dalle costine di orlo e polsino, non dalla sola larghezza del corpo. Per la vestibilità della maison scegli la tua taglia abituale. Per una linea più pulita, scegli una taglia in meno.', sgaNoteTrackpants: 'Confronta con un pantalone che già ti convince, guardando il cavallo e l’interno gamba prima della vita. La cintura è tagliata per appoggiarsi senza tensione alla misura indicata.', sgaNoteEnsemble: 'I due capi seguono la stessa gradazione: una sola scelta mantiene in equilibrio le proporzioni sopra e sotto. Scendi di una taglia solo se vuoi il completo più aderente.', sgaPending: 'Le misure di modellistica di questo capo sono in fase di definizione in atelier. L’architettura è confermata; i valori seguiranno.', sgaDraftAltSweatshirt: 'Disegno tecnico della felpa con cappuccio che mostra dove si misurano larghezza petto, lunghezza corpo, larghezza spalle, lunghezza manica, larghezza orlo e larghezza polsino.', sgaDraftAltTrackpants: 'Disegno tecnico dei pantaloni che mostra dove si misurano girovita, larghezza fianchi, cavallo anteriore, larghezza coscia, interno gamba, esterno gamba e fondo gamba.', sgaDraftAltEnsemble: 'Disegno tecnico del completo che mostra insieme la felpa con cappuccio e i pantaloni, con i punti di misura di entrambi i capi.', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Vedi Tutto', catTshirts: 'T-Shirt', catSweatshirts: 'Felpe', catTrackPants: 'Pantaloni Sportivi', catEnsembles: 'Completi', fragrance: 'Profumo', collectionEmpty: 'Nessun pezzo in questa categoria per ora.', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', viewDetails: 'Vedi Dettagli', pdResetZoom: 'Reimposta zoom', pdThumbsLabel: 'Viste del prodotto', pdViewBoth: 'Fronte e retro', pdViewFront: 'Fronte', pdViewBack: 'Retro', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
             },
             de: {
-                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', navMenu: 'Menü', navClose: 'Schließen', navAccount: 'Konto', navClientServices: 'Kundenservice', settingsLabel: 'Einstellungen', navDelivery: 'Versand & Rückgabe', navSizeFit: 'Größe & Passform', navTheHouse: 'Das Haus', navTheCodes: 'Die Codes', vcTitleShort: 'Privater Concierge', sgaDocLabel: 'Dokument', tableHemWidth: 'Saumweite', tableCuffWidth: 'Bündchenweite', tableWaistWidth: 'Bundweite', tableHipWidth: 'Hüftweite', tableFrontRise: 'Vordere Leibhöhe', tableThighWidth: 'Oberschenkelweite', tableInseam: 'Innenbeinlänge', tableOutseam: 'Außenbeinlänge', tableLegOpening: 'Beinöffnung', sgaIntroSweatshirt: 'Das Sweatshirt ist um ein strukturiertes Volumen konstruiert: tiefe Schulter, langer Körper, Rippsaum und Rippbündchen, die die Silhouette halten. Wähle deine gewohnte Größe für den vorgesehenen Fall, oder eine Größe kleiner für eine klarere Linie.', sgaIntroTrackpants: 'Die Hose ist um ein lockeres Bein und einen hohen, uneingeschränkten Bund konstruiert. Die Proportion trägt über Leibhöhe und Oberschenkel statt über den Saum, damit die Linie über die gesamte Länge klar bleibt.', sgaIntroEnsemble: 'Das Ensemble ist als eine Proportion konstruiert: Sweatshirt-Volumen und Beinlinie sind gemeinsam gradiert. Eine Größe bestimmt beide Teile, damit das Set als eine Silhouette liest.', sgaNoteSweatshirt: 'Das Volumen wird von Saum- und Bündchenrippen gehalten, nicht allein von der Körperweite. Für den Hausschnitt wähle deine gewohnte Größe. Für eine klarere Linie am Körper eine Größe kleiner.', sgaNoteTrackpants: 'Vergleiche mit einer Hose, der du bereits vertraust, und sieh dabei zuerst auf Leibhöhe und Innenbeinlänge, dann auf den Bund. Der Bund ist so geschnitten, dass er bei der angegebenen Weite spannungsfrei sitzt.', sgaNoteEnsemble: 'Beide Teile folgen derselben Gradierung, eine Auswahl hält Ober- und Unterteil im Gleichgewicht. Geh nur eine Größe kleiner, wenn das ganze Set enger sitzen soll.', sgaPending: 'Die Schnittmaße dieses Stücks werden im Atelier finalisiert. Die Architektur steht; die Werte folgen.', sgaDraftAltSweatshirt: 'Technische Zeichnung des Kapuzensweatshirts mit den Messpunkten für Brustweite, Körperlänge, Schulterbreite, Ärmellänge, Saumweite und Bündchenweite.', sgaDraftAltTrackpants: 'Technische Zeichnung der Trainingshose mit den Messpunkten für Bundweite, Hüftweite, vordere Leibhöhe, Oberschenkelweite, Innenbeinlänge, Außenbeinlänge und Beinöffnung.', sgaDraftAltEnsemble: 'Technische Zeichnung des Ensembles mit Kapuzensweatshirt und Trainingshose zusammen, mit den Messpunkten beider Teile.', navAtelier: 'Das Atelier', navNeant: 'Néant', catViewAll: 'Alle Ansehen', catTshirts: 'T-Shirts', catSweatshirts: 'Sweatshirts', catTrackPants: 'Trainingshosen', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Noch keine Stücke in dieser Kategorie.', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', viewDetails: 'Details ansehen', pdResetZoom: 'Zoom zurücksetzen', pdThumbsLabel: 'Produktansichten', pdViewBoth: 'Vorder- und Rückseite', pdViewFront: 'Vorderseite', pdViewBack: 'Rückseite', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
+                navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', navMenu: 'Menü', navClose: 'Schließen', navAccount: 'Konto', navClientServices: 'Kundenservice', settingsLabel: 'Einstellungen', regionExperience: 'Region / Erlebnis', themeCountry: 'Land', navDelivery: 'Versand & Rückgabe', navSizeFit: 'Größe & Passform', navTheHouse: 'Das Haus', navTheCodes: 'Die Codes', vcTitleShort: 'Privater Concierge', sgaDocLabel: 'Dokument', tableHemWidth: 'Saumweite', tableCuffWidth: 'Bündchenweite', tableWaistWidth: 'Bundweite', tableHipWidth: 'Hüftweite', tableFrontRise: 'Vordere Leibhöhe', tableThighWidth: 'Oberschenkelweite', tableInseam: 'Innenbeinlänge', tableOutseam: 'Außenbeinlänge', tableLegOpening: 'Beinöffnung', sgaIntroSweatshirt: 'Das Sweatshirt ist um ein strukturiertes Volumen konstruiert: tiefe Schulter, langer Körper, Rippsaum und Rippbündchen, die die Silhouette halten. Wähle deine gewohnte Größe für den vorgesehenen Fall, oder eine Größe kleiner für eine klarere Linie.', sgaIntroTrackpants: 'Die Hose ist um ein lockeres Bein und einen hohen, uneingeschränkten Bund konstruiert. Die Proportion trägt über Leibhöhe und Oberschenkel statt über den Saum, damit die Linie über die gesamte Länge klar bleibt.', sgaIntroEnsemble: 'Das Ensemble ist als eine Proportion konstruiert: Sweatshirt-Volumen und Beinlinie sind gemeinsam gradiert. Eine Größe bestimmt beide Teile, damit das Set als eine Silhouette liest.', sgaNoteSweatshirt: 'Das Volumen wird von Saum- und Bündchenrippen gehalten, nicht allein von der Körperweite. Für den Hausschnitt wähle deine gewohnte Größe. Für eine klarere Linie am Körper eine Größe kleiner.', sgaNoteTrackpants: 'Vergleiche mit einer Hose, der du bereits vertraust, und sieh dabei zuerst auf Leibhöhe und Innenbeinlänge, dann auf den Bund. Der Bund ist so geschnitten, dass er bei der angegebenen Weite spannungsfrei sitzt.', sgaNoteEnsemble: 'Beide Teile folgen derselben Gradierung, eine Auswahl hält Ober- und Unterteil im Gleichgewicht. Geh nur eine Größe kleiner, wenn das ganze Set enger sitzen soll.', sgaPending: 'Die Schnittmaße dieses Stücks werden im Atelier finalisiert. Die Architektur steht; die Werte folgen.', sgaDraftAltSweatshirt: 'Technische Zeichnung des Kapuzensweatshirts mit den Messpunkten für Brustweite, Körperlänge, Schulterbreite, Ärmellänge, Saumweite und Bündchenweite.', sgaDraftAltTrackpants: 'Technische Zeichnung der Trainingshose mit den Messpunkten für Bundweite, Hüftweite, vordere Leibhöhe, Oberschenkelweite, Innenbeinlänge, Außenbeinlänge und Beinöffnung.', sgaDraftAltEnsemble: 'Technische Zeichnung des Ensembles mit Kapuzensweatshirt und Trainingshose zusammen, mit den Messpunkten beider Teile.', navAtelier: 'Das Atelier', navNeant: 'Néant', catViewAll: 'Alle Ansehen', catTshirts: 'T-Shirts', catSweatshirts: 'Sweatshirts', catTrackPants: 'Trainingshosen', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Noch keine Stücke in dieser Kategorie.', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', viewDetails: 'Details ansehen', pdResetZoom: 'Zoom zurücksetzen', pdThumbsLabel: 'Produktansichten', pdViewBoth: 'Vorder- und Rückseite', pdViewFront: 'Vorderseite', pdViewBack: 'Rückseite', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
             }
         };
 
@@ -13029,11 +12303,12 @@
             window.addEventListener('scroll', positionCountrySuggest, true);
         }
 
-        // Floating theme-switch control
-        const themeSwitch = document.getElementById('themeSwitch');
-        const themeSwitchToggle = document.getElementById('themeSwitchToggle');
+        // Country theme control. It lives in the MENU drawer now. The element
+        // ids are unchanged, so the state below — the only place the mode is
+        // read, written or persisted — drives the new row as it drove the old.
+        const regionRow = document.querySelector('.mm-region');
+        const regionToggle = document.getElementById('mmRegionToggle');
         const themeSwitchMenu = document.getElementById('themeSwitchMenu');
-        const themeSwitchToggleFlag = document.getElementById('themeSwitchToggleFlag');
         const themeSwitchMenuFlag = document.getElementById('themeSwitchMenuFlag');
         const themeSwitchCountryName = document.getElementById('themeSwitchCountryName');
         const themeSwitchOptions = themeSwitchMenu ? themeSwitchMenu.querySelectorAll('[data-theme-mode]') : [];
@@ -13057,10 +12332,10 @@
             }
         }
 
-        function closeThemeSwitch() {
-            if (!themeSwitch) return;
-            themeSwitch.classList.remove('open');
-            if (themeSwitchToggle) themeSwitchToggle.setAttribute('aria-expanded', 'false');
+        function closeRegion() {
+            if (!regionRow) return;
+            regionRow.classList.remove('is-open');
+            if (regionToggle) regionToggle.setAttribute('aria-expanded', 'false');
         }
 
         // Exposed so the Profile → Country field can apply the same country theme.
@@ -13091,11 +12366,10 @@
 
             document.body.classList.add('has-country-theme');
 
-            // Populate + reveal the floating switch, then apply the saved display mode
-            applyFlagToElement(themeSwitchToggleFlag, flagToken, 'theme-switch-flag');
+            // Populate + reveal the menu's region row, then apply the saved mode
             applyFlagToElement(themeSwitchMenuFlag, flagToken, 'theme-switch-flag');
             if (themeSwitchCountryName && country) themeSwitchCountryName.textContent = country;
-            if (themeSwitch) themeSwitch.hidden = false;
+            if (regionRow) regionRow.hidden = false;
             setThemeMode(getThemeMode(), false);
 
             if (persist) {
@@ -13105,29 +12379,20 @@
             }
         }
 
-        if (themeSwitchToggle && themeSwitch) {
-            themeSwitchToggle.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const open = themeSwitch.classList.toggle('open');
-                themeSwitchToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (regionToggle && regionRow) {
+            regionToggle.addEventListener('click', () => {
+                const open = regionRow.classList.toggle('is-open');
+                regionToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
             });
         }
 
+        // The one place a mode is chosen. The row collapses back to its
+        // resting line so the choice reads as a statement, not a panel.
         themeSwitchOptions.forEach((option) => {
             option.addEventListener('click', () => {
                 setThemeMode(option.dataset.themeMode, true);
-                closeThemeSwitch();
+                closeRegion();
             });
-        });
-
-        document.addEventListener('click', (event) => {
-            if (themeSwitch && !themeSwitch.contains(event.target)) {
-                closeThemeSwitch();
-            }
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') closeThemeSwitch();
         });
 
         // Restore a country the visitor joined with in a previous visit.
@@ -13614,7 +12879,12 @@
                 if (cat) cat.setAttribute('aria-expanded', open ? 'true' : 'false');
             };
 
-            const collapseGroups = () => menuGroups.forEach((g) => setGroup(g, false));
+            const collapseGroups = () => {
+                menuGroups.forEach((g) => setGroup(g, false));
+                // The region disclosure resets with the categories, so the next
+                // open always starts from the same quiet state.
+                closeRegion();
+            };
 
             // FLIP for the MENU -> CLOSE journey. FIRST is the control's resting
             // rect, read off its <li> because the li is never transformed and so
@@ -13710,9 +12980,9 @@
 
             // Any link / button tap inside the drawer dismisses it (the item's
             // own handler — scroll, pre-order, product — still runs). Category
-            // toggles and the language row are excluded: both are meant to be
-            // used while the drawer stays open.
-            mobileMenu.querySelectorAll('a, button:not(.mm-cat):not(.language-option)').forEach((el) => {
+            // toggles, the language row and the region control are excluded:
+            // all are meant to be used while the drawer stays open.
+            mobileMenu.querySelectorAll('a, button:not(.mm-cat):not(.language-option):not(.mm-region-toggle):not(.mm-region-option)').forEach((el) => {
                 el.addEventListener('click', () => setMobileMenu(false));
             });
 
@@ -16284,238 +15554,6 @@
             }
         });
 
-        // ============================ THE VOID CONCIERGE ============================
-        // Presented to guests as "THE VOID CONCIERGE"; the AI persona is OBSIDIAN.
-        //
-        // ── Connecting the real Claude API later ──────────────────────────────────
-        // Flip `useApi` to true to route messages through the serverless proxy at
-        // `api/concierge.js` (which keeps your ANTHROPIC_API_KEY server-side — it is
-        // NEVER exposed to the browser). Until then, the local mock below runs so the
-        // full experience is testable with no API keys.
-        const VOID_CONCIERGE_CONFIG = {
-            useApi: false,            // ← set true once api/concierge.js has ANTHROPIC_API_KEY
-            endpoint: '/api/concierge'
-        };
-        const VC_HISTORY_LIMIT = 10;  // recent turns sent to the server (cost control)
-        const VC_MAX_INPUT = 800;     // max characters accepted from a single message
-
-        (function initVoidConcierge() {
-            const root = document.getElementById('voidConcierge');
-            const launcher = document.getElementById('vcLauncher');
-            const panel = document.getElementById('vcPanel');
-            const closeBtn = document.getElementById('vcClose');
-            const bodyEl = document.getElementById('vcBody');
-            const form = document.getElementById('vcForm');
-            const input = document.getElementById('vcInput');
-            if (!root || !launcher || !panel || !bodyEl || !form || !input) return;
-
-            let greeted = false;
-            let busy = false;
-            const history = [];   // { role: 'user' | 'assistant', content: string }
-
-            // Grounded knowledge — the concierge never states anything outside this set;
-            // unknowns are handed off to the VOID team. Assistant strings are trusted
-            // (authored here); only guest input is escaped before rendering.
-            const CONTACT = 'a member of the VOID team will assist you personally. Please reach us via the <a href="#" data-vc-action="preorder">pre-order form</a> or at <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>.';
-            const REPLIES = {
-                collection: 'Season One is a limited run of oversized VOID&copy; essentials — heavyweight cotton tees cut with an intentional oversized architecture, in monochrome and oblique-signature colourways. You may <a href="#" data-vc-action="shop">explore the collection</a>, currently available by <a href="#" data-vc-action="preorder">pre-order</a>.',
-                size: 'VOID&copy; pieces are cut with an intentional oversized architecture against an oversized baseline fit. Keep your usual size for the fullest look, or size down one for a cleaner, closer silhouette. For exact measurements in centimetres, see the <a href="#" data-vc-action="sizeguide">Size Guide</a>.',
-                materials: 'Yes — our Season One tees are heavyweight cotton with a dense, substantial hand-feel, finished for depth and permanence. To care for them: machine wash cold at 30&deg;C, inside out, no bleach, no tumble dry, and iron inside out at a low temperature.',
-                preorder: 'The collection is released as limited drops. Reserve through the <a href="#" data-vc-action="preorder">pre-order form</a> for early access and priority updates before a drop opens.',
-                price: 'Pricing for Season One is not published here yet. Reserve through the <a href="#" data-vc-action="preorder">pre-order form</a> or contact <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>, and the VOID team will confirm current prices.',
-                launch: 'Season One is released as limited pre-order drops. There is no confirmed public launch date yet — reserve through the <a href="#" data-vc-action="preorder">pre-order form</a> to receive early access and be notified first.',
-                shippingcost: 'Shipping cost depends on the destination and the final order details. If you share your country and city or postcode, the VOID team will confirm the exact delivery fee before your order is placed — reach them via the <a href="#" data-vc-action="preorder">pre-order form</a> or at <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>.',
-                delivery: 'Delivery is tracked worldwide once your pre-order ships. Exact timeframes depend on your destination and are confirmed at that point; for order-specific timing, ' + CONTACT,
-                shipping: 'Delivery is tracked worldwide once your pre-order ships, with free returns and exchanges within 14 days, excluding personalised items. For anything further, ' + CONTACT,
-                returns: 'Returns and exchanges are free within 14 days, excluding personalised items. For a specific request, ' + CONTACT,
-                contact: 'You can reach the VOID team at <a href="mailto:support@eternalvoid.co">support@eternalvoid.co</a>, or through the <a href="#" data-vc-action="preorder">pre-order form</a> on the site.',
-                fallback: 'For that, ' + CONTACT
-            };
-            const GREETING = 'Welcome to VOID. How may we assist your journey?';
-
-            function scrollToEnd() {
-                window.requestAnimationFrame(() => { bodyEl.scrollTop = bodyEl.scrollHeight; });
-            }
-
-            function appendMessage(role, html) {
-                const el = document.createElement('div');
-                el.className = 'vc-msg ' + (role === 'user' ? 'vc-msg-user' : 'vc-msg-bot');
-                el.innerHTML = html;
-                bodyEl.appendChild(el);
-                scrollToEnd();
-                return el;
-            }
-
-            function showTyping() {
-                const el = document.createElement('div');
-                el.className = 'vc-typing';
-                el.setAttribute('aria-hidden', 'true');
-                el.innerHTML = '<span></span><span></span><span></span>';
-                bodyEl.appendChild(el);
-                scrollToEnd();
-                return el;
-            }
-
-            // Offline intent routing (used when useApi is false). Order matters:
-            // more specific intents are checked first. Kept honest — it never
-            // quotes a fee, price, or date that has not been configured.
-            function resolveIntent(text) {
-                const q = text.toLowerCase();
-                const asksShipping = /\b(ship|shipping|shipped|deliver|delivery|postage|courier|send)\b/.test(q);
-                const asksCost = /how much|\b(cost|costs|fee|fees|price|priced|pricing|charge|charges)\b/.test(q);
-                const asksDeliveryTime = /\b(arrive|arrives|arrival|delivered|eta)\b/.test(q)
-                    || (asksShipping && /\b(when|long|days|time|track|tracking)\b/.test(q))
-                    || (/\border\b/.test(q) && /\b(when|status|track|where)\b/.test(q));
-
-                if (asksShipping && asksCost) return 'shippingcost';
-                if (asksDeliveryTime) return 'delivery';
-                if (/\b(return|returns|exchange|exchanges|refund)\b/.test(q)) return 'returns';
-                if (/\b(size|sizing|fit|fits|measure|measurement|small|medium|large|xl|chest|\d+\s?cm|\d+\s?kg|height|tall)\b/.test(q)) return 'size';
-                if (/\b(material|materials|fabric|cotton|heavyweight|weight|gsm|quality|care|wash|washing|shrink|iron)\b/.test(q)) return 'materials';
-                if (/\b(launch|launching|release|released|drop|drops|restock|available|availability)\b/.test(q) || /\bwhen\b/.test(q)) return 'launch';
-                if (/\b(contact|email|e-mail|reach|support|speak|talk|human|team)\b/.test(q)) return 'contact';
-                if (asksCost) return 'price';
-                if (asksShipping) return 'shipping';
-                if (/\b(pre-?order|reserve|buy|purchase|order)\b/.test(q)) return 'preorder';
-                if (/\b(collection|collections|product|products|piece|pieces|tee|tees|shirt|shirts|explore|catalog|catalogue|browse)\b/.test(q)) return 'collection';
-                return 'fallback';
-            }
-
-            function mockReply(text) {
-                return REPLIES[resolveIntent(text)] || REPLIES.fallback;
-            }
-
-            async function apiReply(text) {
-                try {
-                    // Send only the most recent turns for context, to control cost.
-                    const recent = history.slice(-VC_HISTORY_LIMIT).concat([{ role: 'user', content: text }]);
-                    const res = await fetch(VOID_CONCIERGE_CONFIG.endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: recent })
-                    });
-                    const data = await res.json().catch(() => ({}));
-                    if (!res.ok || !data.reply) throw new Error('concierge_unavailable');
-                    return escapeMarkup(data.reply).replace(/\n/g, '<br>');
-                } catch (error) {
-                    return REPLIES.fallback;
-                }
-            }
-
-            async function respond(text) {
-                busy = true;
-                const typing = showTyping();
-                let replyHtml;
-                if (VOID_CONCIERGE_CONFIG.useApi) {
-                    replyHtml = await apiReply(text);
-                } else {
-                    await new Promise((resolve) => setTimeout(resolve, 620 + Math.random() * 420));
-                    replyHtml = mockReply(text);
-                }
-                typing.remove();
-                appendMessage('bot', replyHtml);
-                history.push({ role: 'assistant', content: replyHtml.replace(/<[^>]+>/g, '') });
-                busy = false;
-            }
-
-            function sendGuestMessage(text) {
-                // Input validation: require non-empty text, ignore while busy,
-                // and cap length so an oversized message can't be sent.
-                const clean = (typeof text === 'string' ? text : '').trim().slice(0, VC_MAX_INPUT);
-                if (!clean || busy) return;
-                form.classList.remove('vc-ready');
-                pulseDischarge();
-                appendMessage('user', escapeMarkup(clean));
-                history.push({ role: 'user', content: clean });
-                respond(clean);
-            }
-
-            // Briefly intensifies the frame energy when the panel opens, then settles.
-            function pulseActivation() {
-                root.classList.add('vc-activate');
-                window.setTimeout(() => root.classList.remove('vc-activate'), 1400);
-            }
-
-            // A short silver discharge ripple from the send button whenever a message leaves.
-            function pulseDischarge() {
-                form.classList.remove('vc-discharge');
-                void form.offsetWidth;   // restart the animation
-                form.classList.add('vc-discharge');
-                window.setTimeout(() => form.classList.remove('vc-discharge'), 640);
-            }
-
-            function openConcierge() {
-                if (root.classList.contains('vc-open')) return;
-                closeCartPopup();
-                root.classList.add('vc-open');
-                pulseActivation();
-                launcher.setAttribute('aria-expanded', 'true');
-                panel.setAttribute('aria-hidden', 'false');
-                if (typeof trackAnalyticsEvent === 'function') trackAnalyticsEvent('open_concierge', {});
-                if (!greeted) {
-                    greeted = true;
-                    window.setTimeout(() => {
-                        appendMessage('bot', GREETING);
-                        history.push({ role: 'assistant', content: GREETING });
-                    }, 360);
-                }
-                window.setTimeout(() => { focusElementSafely(input); }, 420);
-            }
-
-            function closeConcierge() {
-                if (!root.classList.contains('vc-open')) return;
-                root.classList.remove('vc-open');
-                launcher.setAttribute('aria-expanded', 'false');
-                panel.setAttribute('aria-hidden', 'true');
-                focusElementSafely(launcher);
-            }
-
-            launcher.addEventListener('click', openConcierge);
-            closeBtn.addEventListener('click', closeConcierge);
-
-            form.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const text = input.value;
-                input.value = '';
-                sendGuestMessage(text);
-            });
-
-            // Restrained send-button pulse while there is typed text ready to send.
-            input.addEventListener('input', () => {
-                form.classList.toggle('vc-ready', input.value.trim().length > 0);
-            });
-
-            root.querySelectorAll('[data-vc-quick]').forEach((chip) => {
-                chip.addEventListener('click', () => {
-                    if (busy) return;
-                    sendGuestMessage(chip.textContent.trim());
-                });
-            });
-
-            // In-message action links route into the existing site flows.
-            bodyEl.addEventListener('click', (event) => {
-                const link = event.target.closest('[data-vc-action]');
-                if (!link) return;
-                event.preventDefault();
-                const action = link.getAttribute('data-vc-action');
-                if (action === 'sizeguide') {
-                    openSizeGuide();
-                } else if (action === 'preorder') {
-                    const trigger = document.querySelector('[data-preorder-trigger]');
-                    if (trigger) trigger.click();
-                } else if (action === 'shop') {
-                    closeConcierge();
-                    if (window.voidNavigate) window.voidNavigate('/shop'); else window.location.href = '/shop';
-                }
-            });
-
-            // Escape closes the concierge (only when it's the top-most surface).
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && root.classList.contains('vc-open')) {
-                    closeConcierge();
-                }
-            });
-        })();
 
         if (sizePopupConfirm) {
             sizePopupConfirm.addEventListener('click', () => {
@@ -17087,7 +16125,6 @@
 
             const profileModal = document.getElementById('voidProfile');
             const settingsModal = document.getElementById('voidSettings');
-            const themeSeg = document.getElementById('voidSetTheme');
             const gateSwitch = document.getElementById('voidSetGate');
             const pwForm = document.getElementById('voidSetPwForm');
             const pwNew = document.getElementById('voidSetPwNew');
@@ -17142,9 +16179,6 @@
             }
             function syncSettings() {
                 const mode = currentThemeMode();
-                if (themeSeg) themeSeg.querySelectorAll('[data-set-theme]').forEach((b) => {
-                    b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === mode ? 'true' : 'false');
-                });
                 let disabled = false;
                 try { disabled = localStorage.getItem('void-gate-disabled') === '1'; } catch (e) {}
                 if (gateSwitch) gateSwitch.setAttribute('aria-checked', disabled ? 'false' : 'true');
@@ -17176,25 +16210,13 @@
                     } else {
                         window.scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' });
                     }
-                } else if (action === 'concierge') {
-                    const launcher = document.getElementById('vcLauncher');
-                    if (launcher) launcher.click();
-                } else if (action === 'profile') {
+                                } else if (action === 'profile') {
                     if (typeof window.voidProfilePrefill === 'function') window.voidProfilePrefill();
                     openModal(profileModal);
                 } else if (action === 'settings') {
                     syncSettings();
                     openModal(settingsModal);
                 }
-            });
-
-            // Theme segment → drive the existing (hidden) country-theme switch.
-            if (themeSeg) themeSeg.addEventListener('click', (e) => {
-                const b = e.target.closest('[data-set-theme]');
-                if (!b) return;
-                const target = document.querySelector('.theme-switch-option[data-theme-mode="' + b.getAttribute('data-set-theme') + '"]');
-                if (target) target.click();
-                syncSettings();
             });
 
             // Intro-gate toggle (checked = gate shown on load).
