@@ -609,6 +609,47 @@ function setBusy(busy, button) {
     $('ckProcessing').hidden = !busy || state.stage !== 'payment';
 }
 
+// ── Decline reasons ──────────────────────────────────────────────────────────
+// Stripe's own codes, translated once, here. Nothing from the error object is
+// ever shown verbatim: no message, no payment_intent, no client secret, no
+// technical string. A code we do not recognise falls through to the neutral
+// decline rather than guessing — telling someone they had insufficient funds
+// when the bank never said so is worse than saying nothing specific.
+//
+// The lost/stolen/pickup family is deliberately given the same neutral wording
+// as any other decline. Repeating an accusation the bank made is not our place,
+// and the customer standing at the checkout is usually not the thief.
+const DECLINE_COPY = {
+    insufficient_funds: ['Insufficient Funds', 'Your bank reported that the available balance was not sufficient for this acquisition.'],
+    expired_card: ['Card Expired', 'This card has expired. Please use another payment method.'],
+    incorrect_cvc: ['Security Code Incorrect', 'Please check the card security code and try again.'],
+    invalid_cvc: ['Security Code Incorrect', 'Please check the card security code and try again.'],
+    incorrect_number: ['Card Number Incorrect', 'Please check the card number and try again.'],
+    invalid_number: ['Card Number Incorrect', 'Please check the card number and try again.'],
+    incorrect_zip: ['Postal Code Mismatch', 'The postal code did not match the one held by your bank. Please check it and try again.'],
+    invalid_expiry_month: ['Expiry Date Invalid', 'Please check the card expiry date and try again.'],
+    invalid_expiry_year: ['Expiry Date Invalid', 'Please check the card expiry date and try again.'],
+    card_velocity_exceeded: ['Payment Temporarily Limited', 'Your bank has temporarily limited this card. Try again later, or use another payment method.'],
+    withdrawal_count_limit_exceeded: ['Payment Temporarily Limited', 'Your bank has temporarily limited this card. Try again later, or use another payment method.'],
+    authentication_required: ['Authentication Required', 'Your bank needs to verify this payment. Please try again and complete the verification step.'],
+    processing_error: ['Payment Could Not Be Completed', 'The authorisation could not be completed. Please try again in a moment.'],
+    card_not_supported: ['Card Not Supported', 'This card cannot be used for this purchase. Please use another payment method.'],
+    currency_not_supported: ['Currency Not Supported', 'This card cannot be charged in euro. Please use another payment method.']
+};
+
+const GENERIC_DECLINE = ['Payment Declined', 'Your bank declined the transaction. Please try another payment method, or contact your bank.'];
+const GENERIC_ERROR = ['Payment Could Not Be Completed', 'The authorisation could not be completed. Your selection is unchanged — please try again.'];
+
+// Stripe puts the useful specifics in decline_code and the class of problem in
+// code; prefer the specific one.
+function describeDecline(error) {
+    if (!error) return GENERIC_ERROR;
+    const specific = DECLINE_COPY[error.decline_code] || DECLINE_COPY[error.code];
+    if (specific) return specific;
+    if (error.type === 'card_error' || error.code === 'card_declined') return GENERIC_DECLINE;
+    return GENERIC_ERROR;
+}
+
 // Restarts the entrance each time, so a second refusal is visibly a second
 // refusal rather than a notice that never moved.
 function showPayFailure() {
@@ -640,8 +681,10 @@ async function confirmPayment() {
 
     if (error) {
         setBusy(false, $('ckPayButton'));
-        $('ckPayErrorBody').textContent = error.message
-            || 'Your selection is unchanged. Please review your payment method and try again.';
+        // Mapped copy only — Stripe's own message is never surfaced.
+        const [title, body] = describeDecline(error);
+        $('ckPayErrorTitle').textContent = title;
+        $('ckPayErrorBody').textContent = body + ' Your selection is unchanged.';
         showPayFailure();
         $('ckPayError').scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'center' });
         return;
@@ -654,7 +697,9 @@ async function confirmPayment() {
         window.location.assign(returnUrl.toString());
     } else {
         setBusy(false, $('ckPayButton'));
-        $('ckPayErrorBody').textContent = 'The payment was not completed. Your selection is unchanged.';
+        const [title, body] = GENERIC_ERROR;
+        $('ckPayErrorTitle').textContent = title;
+        $('ckPayErrorBody').textContent = body;
         showPayFailure();
     }
 }

@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/void-checkout.css?v=20260907a">
+    <link rel="stylesheet" href="/assets/void-checkout.css?v=20260908a">
     <script>
         // Animation is an enhancement, so it is opted into rather than out of.
         // If this never runs — script error, blocked script, a stale stylesheet —
@@ -91,6 +91,9 @@
         // that belong to it start together rather than one catching up.
         function setResult(result) {
             $('ckConfirm').dataset.result = result;
+            // The atmosphere is a sibling of the confirmation, not a descendant,
+            // so the state has to reach it via an ancestor.
+            document.body.dataset.result = result;
             $('ckGlyph').setAttribute('d', result === 'failed' ? CROSS : CHECK);
         }
 
@@ -157,9 +160,11 @@
             const paid = order.paymentStatus === 'paid';
             const list = $('ckItems');
             list.textContent = '';
-            (order.items || []).forEach((item) => {
+            (order.items || []).forEach((item, i) => {
                 const li = document.createElement('li');
                 li.className = 'ck-line';
+                // Drives the summary stagger; the CSS owns the timing.
+                li.style.setProperty('--ck-line-i', String(i));
 
                 const media = document.createElement('div');
                 media.className = 'ck-line-media';
@@ -186,6 +191,10 @@
 
                 li.append(media, info, price);
                 list.appendChild(li);
+            });
+
+            document.querySelectorAll('.ck-confirm .ck-total-row').forEach((row, i) => {
+                row.style.setProperty('--ck-row-i', String(i));
             });
 
             $('ckSubtotal').textContent = money(order.subtotalAmount);

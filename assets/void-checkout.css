@@ -55,8 +55,17 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* A single, very soft warm source at the top-left of the room. It is the only
-   ambient treatment in the whole page. */
+/* ── Layering contract ───────────────────────────────────────────────────────
+   0  atmosphere      fixed, decorative, never interactive
+   1  content         every top-level region
+   2  header
+
+   The atmosphere is positioned with z-index 0, so it paints in the
+   positioned-descendants step — above the *inline content* of any sibling that
+   is not itself positioned. .ck-shell opted in; .ck-confirm did not, so the
+   result page had its entire confirmation painted over by an opaque gradient.
+   Both regions now carry the same stamp, and the atmosphere is pinned behind
+   them rather than the content being pushed above it with a large z-index. */
 .ck-atmos {
     position: fixed;
     inset: 0;
@@ -65,6 +74,27 @@ body {
     background:
         radial-gradient(60% 44% at 12% 0%, rgba(199, 169, 108, 0.055), transparent 68%),
         linear-gradient(180deg, #050505 0%, #000 62%);
+}
+
+/* Purely decorative, and so is anything it grows: nothing here may ever take a
+   pointer or sit in front of the interface. */
+.ck-atmos,
+.ck-atmos::before,
+.ck-atmos::after {
+    pointer-events: none;
+}
+
+.ck-atmos::before,
+.ck-atmos::after {
+    z-index: 0;
+}
+
+/* Every top-level region declares itself above the atmosphere. Adding a new one
+   without this line is the bug that hid the confirmation. */
+.ck-shell,
+.ck-confirm {
+    position: relative;
+    z-index: 1;
 }
 
 img { display: block; max-width: 100%; }
@@ -144,9 +174,8 @@ a { color: inherit; }
 .ck-secure svg { width: 11px; height: 11px; }
 
 /* ── Shell ──────────────────────────────────────────────────────────────── */
+/* position/z-index come from the layering contract above. */
 .ck-shell {
-    position: relative;
-    z-index: 1;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
     gap: clamp(2rem, 5vw, 5rem);
@@ -678,19 +707,27 @@ a { color: inherit; }
 .ck-total-row b { font-weight: 400; color: var(--void-text-muted); font-size: 0.82rem; letter-spacing: 0.02em; }
 
 .ck-total-row.is-grand {
-    margin-top: 0.9rem;
-    padding-top: 1rem;
+    margin-top: 1.1rem;
+    padding-top: 1.15rem;
     border-top: 1px solid var(--ck-rule);
     color: var(--void-accent);
     font-weight: 600;
     letter-spacing: 0.3em;
 }
 
+/* The payable figure was set in Cormorant, whose old-style numerals sit on
+   uneven baselines and read as decorative rather than exact. Jost — already
+   the interface face here — is the legible one, and tabular figures keep the
+   currency mark and the digits on a common rhythm. This is the only place the
+   change applies; every other price keeps its serif. */
 .ck-total-row.is-grand b {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.75rem;
-    color: var(--void-text);
+    font-family: 'Jost', system-ui, sans-serif;
+    font-size: clamp(1.35rem, 3.4vw, 1.6rem);
+    font-weight: 500;
     letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    color: var(--void-text);
 }
 
 .ck-summary-note {
@@ -902,6 +939,57 @@ a { color: inherit; }
     background: transparent;
 }
 
+/* ── Atmospheric bloom ───────────────────────────────────────────────────────
+   A single centred source behind the seal, driven from the result state on
+   <body> because the atmosphere is a sibling of the confirmation, not a
+   descendant. It swells once as the mark resolves and settles almost entirely
+   back into darkness — no permanently animating full-screen layer. */
+.ck-atmos::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 38%;
+    width: min(70vw, 620px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%) scale(0.7);
+    border-radius: 50%;
+    opacity: 0;
+    background: radial-gradient(circle, var(--ck-bloom, rgba(199, 169, 108, 0.14)), transparent 68%);
+}
+
+body[data-result="success"] { --ck-bloom: rgba(143, 170, 134, 0.16); }
+body[data-result="failed"] { --ck-bloom: rgba(192, 115, 106, 0.11); }
+
+[data-motion="on"] body[data-result="success"] .ck-atmos::after {
+    animation: ckBloomSettle 2600ms var(--ease-lux) 260ms forwards;
+}
+
+/* Weaker, and it arrives interrupted rather than swelling. */
+[data-motion="on"] body[data-result="failed"] .ck-atmos::after {
+    animation: ckBloomFault 1700ms cubic-bezier(0.7, 0, 0.15, 1) 160ms forwards;
+}
+
+@keyframes ckBloomSettle {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+    42% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+    100% { opacity: 0.26; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes ckBloomFault {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.82); }
+    28% { opacity: 0.85; }
+    36% { opacity: 0.2; }
+    48% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0.16; transform: translate(-50%, -50%) scale(0.98); }
+}
+
+/* Reduced motion keeps the light, just not the swell. */
+body[data-result="success"] .ck-atmos::after,
+body[data-result="failed"] .ck-atmos::after {
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(1);
+}
+
 /* ── Confirmation ───────────────────────────────────────────────────────── */
 .ck-confirm {
     display: grid;
@@ -977,8 +1065,54 @@ a { color: inherit; }
 }
 
 [data-motion="on"] .ck-confirm-actions {
-    animation: ckRise 800ms var(--ease-lux) 1220ms backwards;
+    animation: ckRise 800ms var(--ease-lux) 1500ms backwards;
 }
+
+/* The summary enters as a group, then the figure resolves on its own beat —
+   the rule draws, the label arrives, the amount rises last. Hierarchy, rather
+   than eight elements doing the same thing at the same time. */
+[data-motion="on"] .ck-confirm .ck-line {
+    animation: ckRise 620ms var(--ease-lux) backwards;
+    animation-delay: calc(1180ms + var(--ck-line-i, 0) * 90ms);
+}
+
+[data-motion="on"] .ck-confirm .ck-total-row {
+    animation: ckRise 560ms var(--ease-lux) backwards;
+    animation-delay: calc(1300ms + var(--ck-row-i, 0) * 80ms);
+}
+
+[data-motion="on"] .ck-confirm .ck-total-row.is-grand {
+    position: relative;
+    overflow: hidden;
+    animation: ckTotalResolve 720ms var(--ease-lux) 1460ms backwards;
+}
+
+/* One pass of warm light across the figure, once, then gone. */
+[data-motion="on"] .ck-confirm .ck-total-row.is-grand::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent 38%, rgba(232, 212, 172, 0.16) 50%, transparent 62%);
+    transform: translateX(-120%);
+    animation: ckTotalSheen 1100ms var(--ease-inout) 1900ms;
+}
+
+@keyframes ckTotalResolve {
+    0% { opacity: 0; transform: translateY(7px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ckTotalSheen {
+    to { transform: translateX(120%); }
+}
+
+/* Nothing was charged, so the figure is context rather than a receipt: it is
+   muted and gets no sheen. The copy above says so in words as well, since the
+   distinction must not rest on colour alone. */
+.ck-confirm[data-result="failed"] .ck-total-row.is-grand { color: var(--void-text-muted); }
+.ck-confirm[data-result="failed"] .ck-total-row.is-grand b { color: var(--void-text-soft); }
+[data-motion="on"] .ck-confirm[data-result="failed"] .ck-total-row.is-grand::after { animation: none; }
 
 @keyframes ckRise {
     from { opacity: 0; transform: translateY(10px); }
@@ -1103,10 +1237,20 @@ a { color: inherit; }
 
     .ck-seal { transform: scaleX(1); opacity: 0.75; }
 
-    /* The result still reads — the mark is drawn, just not animated into being. */
+    /* The result still reads — the mark is drawn, just not animated into being,
+       and the atmosphere holds its settled level rather than swelling. */
+    .ck-mark-ring,
+    .ck-mark-glyph,
+    .ck-atmos::after,
+    .ck-confirm .ck-line,
+    .ck-confirm .ck-total-row,
+    .ck-confirm .ck-total-row.is-grand,
+    .ck-confirm .ck-total-row.is-grand::after {
+        animation: none !important;
+    }
+
     .ck-mark-ring,
     .ck-mark-glyph {
-        animation: none !important;
         stroke-dashoffset: 0;
         opacity: 1;
         transform: none;
