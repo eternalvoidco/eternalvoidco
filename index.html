@@ -5671,6 +5671,12 @@
             border-bottom: 1px solid rgba(199, 169, 108, 0.16);
         }
 
+        /* .collection-nav sets display, which outranks the UA sheet's
+           [hidden] { display: none } — without this the hidden attribute is
+           inert and the row shows anyway. */
+        .collection-nav[hidden],
+        .collection-nav-tab[hidden] { display: none; }
+
         .collection-nav-tab {
             position: relative;
             background: none;
@@ -5710,6 +5716,49 @@
 
         .collection-nav-tab.active::after {
             transform: scaleX(1);
+        }
+
+        /* A position, not a product. It spans the grid, carries no frame and
+           no image, and says once what three cards used to say three times. */
+        .next-chapter {
+            grid-column: 1 / -1;
+            display: grid;
+            justify-items: center;
+            gap: 0.9rem;
+            padding: clamp(3rem, 7vw, 4.6rem) 1rem clamp(1rem, 2vw, 1.6rem);
+            text-align: center;
+            border-top: 1px solid rgba(245, 242, 236, 0.07);
+        }
+
+        .next-chapter-label {
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.44em;
+            text-indent: 0.44em;
+            text-transform: uppercase;
+            color: rgba(199, 169, 108, 0.55);
+        }
+
+        .next-chapter-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.6rem clamp(1.4rem, 4vw, 2.8rem);
+            list-style: none;
+        }
+
+        .next-chapter-list li {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.15rem, 3vw, 1.5rem);
+            letter-spacing: 0.08em;
+            color: rgba(245, 242, 236, 0.55);
+        }
+
+        .next-chapter-note {
+            font-size: 0.6rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.28);
         }
 
         /* Cards hidden by the active category filter */
@@ -10830,7 +10879,7 @@
                 <button type="button" class="mm-cat" aria-expanded="false" aria-controls="mmSubSweatshirts" data-i18n="catSweatshirts">Sweatshirts</button>
                 <div class="mm-sub" id="mmSubSweatshirts">
                     <div class="mm-sub-inner">
-                        <ul><li><a href="#" data-open-product="Sweatshirt">Sweatshirt</a></li></ul>
+                        <ul><li><span class="mm-sub-empty" data-i18n="nextChapterNote">In development.</span></li></ul>
                     </div>
                 </div>
             </li>
@@ -10838,7 +10887,7 @@
                 <button type="button" class="mm-cat" aria-expanded="false" aria-controls="mmSubTrackPants" data-i18n="catTrackPants">Track Pants</button>
                 <div class="mm-sub" id="mmSubTrackPants">
                     <div class="mm-sub-inner">
-                        <ul><li><a href="#" data-open-product="Track Pants">Track Pants</a></li></ul>
+                        <ul><li><span class="mm-sub-empty" data-i18n="nextChapterNote">In development.</span></li></ul>
                     </div>
                 </div>
             </li>
@@ -10846,7 +10895,7 @@
                 <button type="button" class="mm-cat" aria-expanded="false" aria-controls="mmSubEnsembles" data-i18n="catEnsembles">Ensembles</button>
                 <div class="mm-sub" id="mmSubEnsembles">
                     <div class="mm-sub-inner">
-                        <ul><li><a href="#" data-open-product="Ensemble">Ensemble</a></li></ul>
+                        <ul><li><span class="mm-sub-empty" data-i18n="nextChapterNote">In development.</span></li></ul>
                     </div>
                 </div>
             </li>
@@ -10973,11 +11022,6 @@
                         <h3 class="product-name">Levitate Tee</h3>
                         <span class="product-price">€200</span>
                     </div>
-                    <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
-                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
-                    </div>
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 140ms;" data-product-name="Endzustand Tee" data-product-price="200" data-fit-title="Boxy Oversized Fit" data-fit-note="Structured chest, blunt hem line, and oversized volume with couture-inspired proportions.">
                     <div class="product-image">
@@ -10990,11 +11034,6 @@
                     <div class="product-info">
                         <h3 class="product-name">Endzustand Tee</h3>
                         <span class="product-price">€200</span>
-                    </div>
-                    <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
-                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 200ms;" data-product-name="Insigne Ivoire" data-product-price="250" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
@@ -11009,11 +11048,6 @@
                         <h3 class="product-name">Insigne Ivoire</h3>
                         <span class="product-price">€250</span>
                     </div>
-                    <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
-                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
-                    </div>
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 260ms;" data-product-name="Insigne Noir" data-product-price="250" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                     <div class="product-image">
@@ -11026,11 +11060,6 @@
                     <div class="product-info">
                         <h3 class="product-name">Insigne Noir</h3>
                         <span class="product-price">€250</span>
-                    </div>
-                    <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
-                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
                     </div>
                 </div>
                 <div class="product-card fade-in-up" style="--delay: 320ms;" data-product-name="Insigne Azure" data-product-price="250" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
@@ -11045,59 +11074,17 @@
                         <h3 class="product-name">Insigne Azure</h3>
                         <span class="product-price">€250</span>
                     </div>
-                    <div class="product-actions">
-                        <button type="button" class="size-chip" data-size-chip data-i18n="chooseSize">Choose Size</button>
-                        <button type="button" class="add-to-cart-btn" data-add-to-cart data-i18n="addToCart">Add to Cart</button>
-                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
-                    </div>
                 </div>
-                <div class="product-card fade-in-up" style="--delay: 380ms;" data-category="sweatshirts" data-price-pending="true" data-product-name="Sweatshirt" data-product-price="0" data-fit-title="Oversized Atelier Fit" data-fit-note="Deep black sweatshirt with the VOID© emblem in gold across the chest and a plain black back.">
-                    <div class="product-image">
-                        <img class="product-photo" src="/assets/SWEATSHIRT/eternalvoid-sweatshirt-front-back.png" alt="Sweatshirt — front and back" width="1536" height="1024" loading="lazy" decoding="async">
-                        <span class="product-view-affordance" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                            <span data-i18n="viewDetails">View Details</span>
-                        </span>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Sweatshirt</h3>
-                        <span class="product-price" data-i18n="comingSoon">Coming Soon</span>
-                    </div>
-                    <div class="product-actions">
-                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
-                    </div>
-                </div>
-                <div class="product-card fade-in-up" style="--delay: 440ms;" data-category="trackpants" data-price-pending="true" data-product-name="Track Pants" data-product-price="0" data-fit-title="Oversized Atelier Fit" data-fit-note="Black track pants from the season one lineup, shown front and back.">
-                    <div class="product-image">
-                        <img class="product-photo" src="/assets/TRACKPANTS/eternalvoid-trackpants-front-back.png" alt="Track Pants — front and back" width="1374" height="1145" loading="lazy" decoding="async">
-                        <span class="product-view-affordance" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                            <span data-i18n="viewDetails">View Details</span>
-                        </span>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Track Pants</h3>
-                        <span class="product-price" data-i18n="comingSoon">Coming Soon</span>
-                    </div>
-                    <div class="product-actions">
-                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
-                    </div>
-                </div>
-                <div class="product-card fade-in-up" style="--delay: 500ms;" data-category="ensembles" data-price-pending="true" data-product-name="Ensemble" data-product-price="0" data-fit-title="Oversized Atelier Fit" data-fit-note="The sweatshirt and track pants worn as a set, shown front and back.">
-                    <div class="product-image">
-                        <img class="product-photo" src="/assets/ENSEMBLES/eternalvoid-ensembles-front-back.png" alt="Ensemble — front and back" width="1374" height="1145" loading="lazy" decoding="async">
-                        <span class="product-view-affordance" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                            <span data-i18n="viewDetails">View Details</span>
-                        </span>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Ensemble</h3>
-                        <span class="product-price" data-i18n="comingSoon">Coming Soon</span>
-                    </div>
-                    <div class="product-actions">
-                        <a href="/shop" class="product-cta" data-gallery-link data-i18n="gallery">Discover</a>
-                    </div>
+                <!-- Not products yet, so they are not dressed as products. One
+                     quiet notice instead of three cards advertising absence. -->
+                <div class="next-chapter fade-in-up" style="--delay: 380ms;">
+                    <p class="next-chapter-label" data-i18n="nextChapter">Next Chapter</p>
+                    <ul class="next-chapter-list">
+                        <li data-i18n="catSweatshirts">Sweatshirts</li>
+                        <li data-i18n="catTrackPants">Track Pants</li>
+                        <li data-i18n="catEnsembles">Ensembles</li>
+                    </ul>
+                    <p class="next-chapter-note" data-i18n="nextChapterNote">In development.</p>
                 </div>
             </div>
         </div>
@@ -16141,6 +16128,25 @@
         collectionCards.forEach((card) => {
             if (!card.dataset.category) card.dataset.category = 'tshirts';
         });
+
+        // Filter chips over a single-category drop are decoration: every tab
+        // shows the same five pieces, and the empty ones advertise absence. The
+        // row hides itself until a second category actually has stock, so it
+        // returns on its own rather than needing to be remembered.
+        (function tuneCollectionNav() {
+            const nav = document.querySelector('.collection-nav');
+            if (!nav) return;
+            const stocked = new Set(Array.from(collectionCards).map((card) => card.dataset.category));
+            if (stocked.size > 1) {
+                // Offer only the categories that have something in them.
+                collectionTabs.forEach((tab) => {
+                    const filter = tab.dataset.collectionFilter;
+                    if (filter !== 'all' && !stocked.has(filter)) tab.hidden = true;
+                });
+                return;
+            }
+            nav.hidden = true;
+        })();
 
         let collectionEmpty = null;
         if (collectionGrid) {
