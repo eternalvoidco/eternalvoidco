@@ -43,9 +43,13 @@
             <path class="ck-mark-glyph" id="ckGlyph" d="M15 24.5 L21.5 31 L33.5 18"/>
         </svg>
 
-        <p class="ck-confirm-eyebrow" id="ckEyebrow">Confirming</p>
-        <h1 class="ck-confirm-number" id="ckNumber">&nbsp;</h1>
-        <p class="ck-confirm-copy" id="ckCopy">Retrieving your order from the atelier.</p>
+        <!-- A customer only reaches this page after Stripe accepted the
+             payment, so the shell says so from the first paint. The order
+             number and the exact status are hydrated over the top; nothing here
+             waits on a network call to become legible. -->
+        <p class="ck-confirm-eyebrow" id="ckEyebrow">Payment Received</p>
+        <h1 class="ck-confirm-number" id="ckNumber">Thank you</h1>
+        <p class="ck-confirm-copy" id="ckCopy">We are retrieving your order details. A confirmation is on its way to your email.</p>
 
         <section class="ck-confirm-panel" id="ckPanel" hidden>
             <h2 class="ck-summary-title" style="display:block;margin-bottom:1.2rem;">Your Selection</h2>
@@ -196,15 +200,30 @@
                 return;
             }
 
+            // Bounded, so a slow or hanging lookup resolves into a definite
+            // state instead of leaving the page on its loading shell forever.
+            const abort = new AbortController();
+            const timer = setTimeout(() => abort.abort(), 8000);
+
             try {
-                const res = await fetch(`/api/checkout/order?number=${encodeURIComponent(number)}&email=${encodeURIComponent(email)}`, { cache: 'no-store' });
+                const res = await fetch(
+                    `/api/checkout/order?number=${encodeURIComponent(number)}&email=${encodeURIComponent(email)}`,
+                    { cache: 'no-store', signal: abort.signal }
+                );
                 if (!res.ok) throw new Error(String(res.status));
                 renderOrder(await res.json());
             } catch (error) {
+                // The payment itself is not in doubt — Stripe would not have
+                // returned here otherwise — only our reading of the record. Say
+                // that, rather than casting doubt on a payment that went
+                // through, and give the order number so support can trace it.
+                console.warn('checkout/success: order lookup unavailable', error && error.name);
                 setResult('pending');
                 setActions('pending');
-                say('Order Unavailable', number || 'Not found',
-                    'We could not retrieve this order right now. If you were charged, the order exists — contact support@eternalvoid.co quoting this number.');
+                say('Payment Received', number,
+                    'Your payment went through. We could not load the order details just now — your confirmation email has them, and support@eternalvoid.co can help if you quote this number.');
+            } finally {
+                clearTimeout(timer);
             }
         }
 
