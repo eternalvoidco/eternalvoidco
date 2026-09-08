@@ -196,6 +196,7 @@
                     <i aria-hidden="true"></i>Processing acquisition
                 </p>
 
+
                 <p class="ck-legal" id="ckLegal">
                     By completing this order you agree to our
                     <a href="/privacy-policy.html">Privacy Policy</a>.
@@ -227,6 +228,26 @@
             </div>
         </aside>
     </main>
+
+    <!-- The veil holds the room while Stripe works, and carries the
+         same ring geometry as the confirmation mark — so when the
+         browser moves to /checkout/success the mark appears to
+         continue rather than restart. -->
+    <!-- The veil holds the room while Stripe works. It sits at body level, not
+         inside .ck-shell, because the shell is its own stacking context and the
+         header would otherwise paint over it. It carries the same ring geometry
+         as the confirmation mark, so when the browser moves to
+         /checkout/success the mark appears to continue rather than restart. -->
+    <div class="ck-veil" id="ckVeil" role="status" aria-live="polite" hidden>
+        <div class="ck-veil-inner">
+            <svg class="ck-veil-mark" viewBox="0 0 48 48" aria-hidden="true">
+                <circle class="ck-veil-track" cx="24" cy="24" r="21"/>
+                <circle class="ck-veil-arc" cx="24" cy="24" r="21"/>
+            </svg>
+            <p class="ck-veil-stage" id="ckVeilStage">Processing payment</p>
+            <p class="ck-veil-note">Please keep this window open.</p>
+        </div>
+    </div>
 
     <script type="module" src="/assets/void-checkout.js?v=20260908a"></script>
 </body>

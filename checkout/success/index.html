@@ -48,6 +48,9 @@
              number and the exact status are hydrated over the top; nothing here
              waits on a network call to become legible. -->
         <p class="ck-confirm-eyebrow" id="ckEyebrow">Payment Received</p>
+        <!-- The label appears only when the headline below is an actual EV
+             reference, never when it is a phrase like "Thank you". -->
+        <p class="ck-ref-label" id="ckRefLabel" hidden>Order Reference</p>
         <h1 class="ck-confirm-number" id="ckNumber">Thank you</h1>
         <p class="ck-confirm-copy" id="ckCopy">We are retrieving your order details. A confirmation is on its way to your email.</p>
 
@@ -97,9 +100,17 @@
             $('ckGlyph').setAttribute('d', result === 'failed' ? CROSS : CHECK);
         }
 
+        // An EV code is read character by character, so it gets its own label
+        // and the tracked, tabular treatment. A phrase in the same slot keeps
+        // the display serif.
+        const REF_PATTERN = /^EV-\d{2}-[0-9A-Z]{4,}$/;
+
         function say(eyebrow, title, copy) {
+            const isRef = REF_PATTERN.test(String(title || '').trim());
             $('ckEyebrow').textContent = eyebrow;
             $('ckNumber').textContent = title;
+            $('ckNumber').classList.toggle('is-ref', isRef);
+            $('ckRefLabel').hidden = !isRef;
             $('ckCopy').textContent = copy;
         }
 

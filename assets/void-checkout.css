@@ -939,6 +939,116 @@ a { color: inherit; }
     background: transparent;
 }
 
+/* ── Processing veil ─────────────────────────────────────────────────────────
+   Held while Stripe works. It uses the confirmation's ring geometry at the same
+   size and position, so the move to /checkout/success reads as the mark being
+   completed rather than a second page starting. It never loops after a result
+   arrives — .is-settled and .is-broken both end the animation. */
+.ck-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(46% 34% at 50% 44%, rgba(199, 169, 108, 0.05), transparent 70%),
+        rgba(3, 3, 3, 0.96);
+    animation: ckVeilIn 420ms var(--ease-lux) backwards;
+}
+
+.ck-veil[hidden] { display: none; }
+
+.ck-veil-inner {
+    display: grid;
+    justify-items: center;
+    gap: 1.5rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.ck-veil-mark {
+    width: 46px;
+    height: 46px;
+    overflow: visible;
+    fill: none;
+}
+
+.ck-veil-track {
+    stroke: rgba(245, 242, 236, 0.09);
+    stroke-width: 1;
+}
+
+/* A short arc travelling the ring — the seal being drawn, not a spinner. */
+.ck-veil-arc {
+    stroke: var(--void-accent);
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-dasharray: 26 106;
+    transform-origin: 50% 50%;
+    animation: ckVeilArc 1500ms cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.ck-veil-stage {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+    text-transform: uppercase;
+    color: var(--void-accent);
+    transition: opacity 0.32s ease;
+}
+
+.ck-veil-stage.is-turning { opacity: 0; }
+
+.ck-veil-note {
+    font-size: 0.64rem;
+    letter-spacing: 0.12em;
+    color: var(--void-text-faint);
+}
+
+/* Accepted: the arc closes into a whole ring and holds, so the navigation
+   happens on a completed mark. */
+.ck-veil.is-settled .ck-veil-arc {
+    animation: ckVeilClose 460ms var(--ease-lux) forwards;
+}
+
+/* Refused: the arc stalls, fractures into segments and pulses crimson once. */
+.ck-veil.is-broken .ck-veil-arc {
+    stroke: #c0736a;
+    animation: ckVeilBreak 620ms cubic-bezier(0.7, 0, 0.15, 1) forwards;
+}
+
+.ck-veil.is-broken .ck-veil-stage { color: #c0736a; }
+
+.ck-veil.is-leaving { animation: ckVeilOut 320ms var(--ease-inout) forwards; }
+
+@keyframes ckVeilIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes ckVeilOut {
+    to { opacity: 0; }
+}
+
+@keyframes ckVeilArc {
+    0% { transform: rotate(-90deg); stroke-dasharray: 12 120; }
+    50% { stroke-dasharray: 54 78; }
+    100% { transform: rotate(270deg); stroke-dasharray: 12 120; }
+}
+
+@keyframes ckVeilClose {
+    to { stroke-dasharray: 132 0; transform: rotate(270deg); }
+}
+
+@keyframes ckVeilBreak {
+    0% { stroke-dasharray: 26 106; }
+    34% { stroke-dasharray: 40 92; opacity: 1; }
+    46% { opacity: 0.25; }
+    58% { opacity: 1; }
+    100% { stroke-dasharray: 9 13; opacity: 0.85; transform: rotate(-90deg); }
+}
+
 /* ── Atmospheric bloom ───────────────────────────────────────────────────────
    A single centred source behind the seal, driven from the result state on
    <body> because the atmosphere is a sibling of the confirmation, not a
@@ -1036,6 +1146,42 @@ body[data-result="failed"] .ck-atmos::after {
     font-size: clamp(2.1rem, 6vw, 3rem);
     font-weight: 500;
     letter-spacing: 0.06em;
+}
+
+/* The reference, when the headline is an actual EV code rather than a phrase.
+   Set at a fraction of the display size and widely tracked: a code is read
+   character by character, so it wants air and even figures, not a serif
+   display face carrying it at three rem. */
+.ck-ref-label {
+    margin-bottom: 0.1rem;
+    font-size: 0.5rem;
+    font-weight: 600;
+    letter-spacing: 0.44em;
+    text-indent: 0.44em;
+    text-transform: uppercase;
+    color: rgba(199, 169, 108, 0.62);
+}
+
+.ck-confirm-number.is-ref {
+    font-family: 'Jost', system-ui, sans-serif;
+    font-size: clamp(1.15rem, 3.2vw, 1.45rem);
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    color: var(--void-text);
+}
+
+/* A hairline under the code, the width of the code — it reads as struck into
+   the document rather than typed onto it. */
+.ck-confirm-number.is-ref::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 1px;
+    margin-top: 0.75rem;
+    background: linear-gradient(90deg, transparent, var(--ck-result-soft), transparent);
 }
 
 .ck-confirm-copy {
@@ -1255,6 +1401,12 @@ body[data-result="failed"] .ck-atmos::after {
         opacity: 1;
         transform: none;
     }
+
+    /* The veil still holds the room and still names the stage; only the
+       travelling arc and the fade are dropped. */
+    .ck-veil,
+    .ck-veil-arc { animation: none !important; }
+    .ck-veil-arc { stroke-dasharray: 132 0; }
 
     .ck-cta.is-busy::after,
     .ck-processing i::after { animation-duration: 2.4s; }

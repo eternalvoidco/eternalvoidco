@@ -650,6 +650,79 @@ function describeDecline(error) {
     return GENERIC_ERROR;
 }
 
+// ── Processing veil ──────────────────────────────────────────────────────────
+// Named stages rather than a spinner: the customer is told what is happening
+// while Stripe works, and the arc keeps moving until a result arrives.
+const VEIL_STAGES = ['Processing payment', 'Verifying payment', 'Finalising acquisition'];
+const VEIL_STEP = 2200;
+let veilTimer = null;
+
+function openVeil() {
+    const veil = $('ckVeil');
+    const stage = $('ckVeilStage');
+    if (!veil) return;
+
+    window.clearInterval(veilTimer);
+    veil.classList.remove('is-settled', 'is-broken', 'is-leaving');
+    stage.textContent = VEIL_STAGES[0];
+    veil.hidden = false;
+
+    // Reduced motion gets the first stage and no cycling — the information is
+    // in the words, not the movement.
+    if (reduced()) return;
+
+    let i = 0;
+    veilTimer = window.setInterval(() => {
+        i = Math.min(i + 1, VEIL_STAGES.length - 1);
+        // Fade the label out, swap it, fade it back, so the stage changes
+        // rather than the text popping.
+        stage.classList.add('is-turning');
+        window.setTimeout(() => {
+            stage.textContent = VEIL_STAGES[i];
+            stage.classList.remove('is-turning');
+        }, 320);
+        if (i === VEIL_STAGES.length - 1) window.clearInterval(veilTimer);
+    }, VEIL_STEP);
+}
+
+// Accepted: close the arc into a whole ring and hold it there while the browser
+// moves to the confirmation, which opens on the same mark.
+function settleVeil() {
+    const veil = $('ckVeil');
+    if (!veil) return Promise.resolve();
+    window.clearInterval(veilTimer);
+    veil.classList.add('is-settled');
+    $('ckVeilStage').textContent = 'Acquisition confirmed';
+    return new Promise((resolve) => window.setTimeout(resolve, reduced() ? 0 : 520));
+}
+
+// Refused: fracture the arc, hold the break a moment, then dissolve back to the
+// form so the customer can act on the reason.
+function breakVeil() {
+    const veil = $('ckVeil');
+    if (!veil) return Promise.resolve();
+    window.clearInterval(veilTimer);
+
+    if (reduced()) {
+        veil.hidden = true;
+        return Promise.resolve();
+    }
+
+    veil.classList.add('is-broken');
+    $('ckVeilStage').textContent = 'Payment unsuccessful';
+
+    return new Promise((resolve) => {
+        window.setTimeout(() => {
+            veil.classList.add('is-leaving');
+            window.setTimeout(() => {
+                veil.hidden = true;
+                veil.classList.remove('is-broken', 'is-leaving');
+                resolve();
+            }, 320);
+        }, 780);
+    });
+}
+
 // Restarts the entrance each time, so a second refusal is visibly a second
 // refusal rather than a notice that never moved.
 function showPayFailure() {
@@ -661,11 +734,17 @@ function showPayFailure() {
 }
 
 async function confirmPayment() {
+    // state.busy is the double-submit guard: it is set before any await, so a
+    // second click — or the express wallet firing while the button is already
+    // working — cannot open a second confirmation on the same intent.
     if (!state.stripe || !state.elements || !state.order || state.busy) return;
 
     setBusy(true, $('ckPayButton'));
     $('ckPayError').hidden = true;
     $('ckPayError').classList.remove('is-failure');
+    // Immediately, before Stripe is called, so there is no dead moment between
+    // the click and something happening.
+    openVeil();
 
     const returnUrl = new URL('/checkout/success', window.location.origin);
     returnUrl.searchParams.set('order', state.order.orderNumber);
@@ -680,11 +759,14 @@ async function confirmPayment() {
     });
 
     if (error) {
-        setBusy(false, $('ckPayButton'));
         // Mapped copy only — Stripe's own message is never surfaced.
         const [title, body] = describeDecline(error);
         $('ckPayErrorTitle').textContent = title;
         $('ckPayErrorBody').textContent = body + ' Your selection is unchanged.';
+        // The break plays out before the form returns, so the refusal is read
+        // as part of the same sequence rather than a snap back to the fields.
+        await breakVeil();
+        setBusy(false, $('ckPayButton'));
         showPayFailure();
         $('ckPayError').scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'center' });
         return;
@@ -694,12 +776,16 @@ async function confirmPayment() {
     // the success page reads the recorded state rather than assuming.
     if (paymentIntent && ['succeeded', 'processing', 'requires_capture'].includes(paymentIntent.status)) {
         clearPurchasedItems();
+        // Close the ring first and leave the veil up: the confirmation opens on
+        // the same mark in the same place, so the two pages read as one move.
+        await settleVeil();
         window.location.assign(returnUrl.toString());
     } else {
-        setBusy(false, $('ckPayButton'));
         const [title, body] = GENERIC_ERROR;
         $('ckPayErrorTitle').textContent = title;
         $('ckPayErrorBody').textContent = body;
+        await breakVeil();
+        setBusy(false, $('ckPayButton'));
         showPayFailure();
     }
 }
