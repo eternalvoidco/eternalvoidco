@@ -2844,79 +2844,54 @@
 
         .mm-region.is-open .mm-region-picker-inner { border-top-color: rgba(199, 169, 108, 0.14); }
 
-        .mm-region-eyebrow {
-            margin: 0.85rem 0 0.15rem;
-            font-family: 'Jost', sans-serif;
-            font-size: 0.56rem;
-            font-weight: 500;
-            letter-spacing: 0.28em;
-            text-transform: uppercase;
-            color: rgba(242, 239, 233, 0.34);
-            opacity: 0;
-            transition: opacity 0.4s ease 0.06s;
-        }
-
-        .mm-region.is-open .mm-region-eyebrow { opacity: 1; }
-
-        /* The list scrolls inside the drawer instead of stretching it. */
-        .mm-country-list {
-            display: block;
-            max-height: 40vh;
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(199, 169, 108, 0.28) transparent;
-        }
-
-        .mm-country-list::-webkit-scrollbar { width: 2px; }
-        .mm-country-list::-webkit-scrollbar-track { background: transparent; }
-        .mm-country-list::-webkit-scrollbar-thumb { background: rgba(199, 169, 108, 0.28); }
-
-        .mm-country-option {
+        /* A single line that hands off to the full selector. It carries no
+           scroll container of its own — the drawer's own scrollbar stays the
+           only one in the panel. */
+        .mm-region-action {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            justify-content: space-between;
+            gap: 0.9rem;
             width: 100%;
-            padding: 0.4rem 0;
+            margin-top: 0.6rem;
+            /* Padded to a comfortable thumb target without loosening the block. */
+            padding: 0.6rem 0 0.5rem;
             border: 0;
             background: transparent;
             text-align: left;
             font-family: 'Jost', sans-serif;
-            font-size: 0.72rem;
-            letter-spacing: 0.1em;
-            color: rgba(235, 231, 223, 0.55);
+            font-size: 0.62rem;
+            font-weight: 500;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: rgba(235, 231, 223, 0.62);
             cursor: pointer;
-            transition: color 0.36s ease, transform 0.4s var(--ease-lux);
+            opacity: 0;
+            transform: translate3d(0, -8px, 0);
+            transition: color 0.36s ease, opacity 0.3s ease, transform 0.3s var(--ease-lux);
         }
 
-        .mm-country-option .country-flag {
-            width: 15px;
-            height: 11px;
+        .mm-region.is-open .mm-region-action {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            transition-delay: 0.04s;
+        }
+
+        .mm-region-action:hover,
+        .mm-region-action:focus-visible { color: var(--void-accent); }
+
+        .mm-region-arrow {
+            width: 6px;
+            height: 6px;
             flex: none;
-            border-radius: 1px;
-            background-size: cover;
-            background-position: center;
+            border-top: 1px solid currentColor;
+            border-right: 1px solid currentColor;
+            transform: rotate(45deg);
+            transition: transform 0.36s var(--ease-lux);
         }
 
-        .mm-country-option:hover,
-        .mm-country-option:focus-visible {
-            color: rgba(235, 231, 223, 0.92);
-            transform: translateX(3px);
-        }
-
-        /* Gold marks the country being worn and nothing else. */
-        .mm-country-option[aria-selected="true"] { color: var(--void-accent); }
-
-        .mm-region.is-open .mm-country-option {
-            animation: mmSubIn 0.38s var(--ease-lux) backwards;
-        }
-
-        .mm-region.is-open .mm-country-option:nth-child(1) { animation-delay: 0.06s; }
-        .mm-region.is-open .mm-country-option:nth-child(2) { animation-delay: 0.1s; }
-        .mm-region.is-open .mm-country-option:nth-child(3) { animation-delay: 0.14s; }
-        .mm-region.is-open .mm-country-option:nth-child(4) { animation-delay: 0.18s; }
-        .mm-region.is-open .mm-country-option:nth-child(5) { animation-delay: 0.22s; }
-        .mm-region.is-open .mm-country-option:nth-child(n + 6) { animation-delay: 0.26s; }
+        .mm-region-action:hover .mm-region-arrow,
+        .mm-region-action:focus-visible .mm-region-arrow { transform: rotate(45deg) translate(2px, -2px); }
 
         /* The switch: charcoal at rest, a muted bronze when the theme is worn.
            Only the track, the border and the thumb's position move. */
@@ -2971,10 +2946,12 @@
 
         html.reduce-motion .mm-region-picker,
         html.reduce-motion .mm-region-picker-inner,
-        html.reduce-motion .mm-region-eyebrow,
-        html.reduce-motion .mm-country-option,
+        html.reduce-motion .mm-region-action,
+        html.reduce-motion .mm-region-arrow,
         html.reduce-motion .mm-switch-track,
         html.reduce-motion .mm-switch-thumb { transition: none !important; animation: none !important; }
+
+        html.reduce-motion .mm-region.is-open .mm-region-action { opacity: 1; transform: none; }
 
         /* Tier three: a utility row, deliberately the quietest thing here. */
         .mobile-menu-langs {
@@ -10321,10 +10298,14 @@
                 </span>
                 <i class="mm-region-chevron" aria-hidden="true"></i>
             </button>
+            <!-- One line, not a list. Browsing every country belongs on the
+                 profile's search field, which already owns that experience. -->
             <div class="mm-region-picker" id="mmCountryPicker">
                 <div class="mm-region-picker-inner">
-                    <p class="mm-region-eyebrow" data-i18n="changeCountry">Change Country</p>
-                    <div class="mm-country-list" id="mmCountryList" role="listbox" aria-label="Country"></div>
+                    <button type="button" class="mm-region-action" data-dock="profile" data-focus-country>
+                        <span data-i18n="changeCountry">Change Country</span>
+                        <i class="mm-region-arrow" aria-hidden="true"></i>
+                    </button>
                 </div>
             </div>
             <div class="mm-region-row is-static">
@@ -12417,7 +12398,6 @@
         const regionRow = document.querySelector('.mm-region');
         const regionToggle = document.getElementById('mmRegionToggle');
         const regionThemeSwitch = document.getElementById('mmThemeSwitch');
-        const mmCountryList = document.getElementById('mmCountryList');
         const themeSwitchMenuFlag = document.getElementById('themeSwitchMenuFlag');
         const themeSwitchCountryName = document.getElementById('themeSwitchCountryName');
         const THEME_MODES = ['full', 'cart', 'original'];
@@ -12490,61 +12470,10 @@
             }
         }
 
-        // The picker is built from the pre-order country list, so the site
-        // keeps one set of countries and one set of flags.
-        function buildMenuCountryList() {
-            if (!mmCountryList || mmCountryList.children.length) return;
-            const source = document.getElementById('preorderCountryList');
-            if (!source) return;
-            source.querySelectorAll('.country-picker-option').forEach((src) => {
-                const name = src.dataset.country;
-                const flag = src.dataset.flag;
-                // "Other" has no flag and no theme to wear, so it is not offered here.
-                if (!name || !isValidFlagToken(flag) || flag === 'flag-empty') return;
-                const option = document.createElement('button');
-                option.type = 'button';
-                option.className = 'mm-country-option';
-                option.setAttribute('role', 'option');
-                option.setAttribute('aria-selected', 'false');
-                option.dataset.country = name;
-                option.dataset.flag = flag;
-                const mark = document.createElement('span');
-                mark.setAttribute('aria-hidden', 'true');
-                applyFlagToElement(mark, flag);
-                const label = document.createElement('span');
-                label.textContent = name;
-                option.append(mark, label);
-                mmCountryList.appendChild(option);
-            });
-        }
-
-        function markSelectedCountry() {
-            if (!mmCountryList || !themeSwitchCountryName) return;
-            const current = themeSwitchCountryName.textContent.trim();
-            mmCountryList.querySelectorAll('.mm-country-option').forEach((option) => {
-                option.setAttribute('aria-selected', option.dataset.country === current ? 'true' : 'false');
-            });
-        }
-
         if (regionToggle && regionRow) {
             regionToggle.addEventListener('click', () => {
-                buildMenuCountryList();
-                markSelectedCountry();
                 const open = regionRow.classList.toggle('is-open');
                 regionToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-            });
-        }
-
-        // Choosing a country changes the country only. The theme mode is left
-        // exactly as it was, so a visitor browsing without the theme stays
-        // without it — applyCountryTheme reapplies the stored mode, not a new one.
-        if (mmCountryList) {
-            mmCountryList.addEventListener('click', (event) => {
-                const option = event.target.closest('.mm-country-option');
-                if (!option) return;
-                applyCountryTheme(option.dataset.country, option.dataset.flag, true);
-                markSelectedCountry();
-                closeRegion();
             });
         }
 
@@ -13143,7 +13072,7 @@
             // own handler — scroll, pre-order, product — still runs). Category
             // toggles, the language row and the region control are excluded:
             // all are meant to be used while the drawer stays open.
-            mobileMenu.querySelectorAll('a, button:not(.mm-cat):not(.language-option):not(.mm-region-row):not(.mm-country-option):not(.mm-switch)').forEach((el) => {
+            mobileMenu.querySelectorAll('a, button:not(.mm-cat):not(.language-option):not(.mm-region-row):not(.mm-switch)').forEach((el) => {
                 el.addEventListener('click', () => setMobileMenu(false));
             });
 
@@ -16371,9 +16300,16 @@
                     } else {
                         window.scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' });
                     }
-                                } else if (action === 'profile') {
+                } else if (action === 'profile') {
                     if (typeof window.voidProfilePrefill === 'function') window.voidProfilePrefill();
                     openModal(profileModal);
+                    // Arrived from MENU → Change Country: put the visitor in the
+                    // search field rather than making them find it. Held until
+                    // the drawer has left so the two panels don't cross.
+                    if (btn.hasAttribute('data-focus-country')) {
+                        const field = document.getElementById('pfCountry');
+                        if (field) window.setTimeout(() => { try { field.focus(); field.select(); } catch (e) {} }, 320);
+                    }
                 } else if (action === 'settings') {
                     syncSettings();
                     openModal(settingsModal);
