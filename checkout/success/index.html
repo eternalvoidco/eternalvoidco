@@ -142,9 +142,22 @@
                     'Your payment is still settling with the bank. This page will show the confirmation once it clears; you will also receive an email.');
             }
 
+            // The headline above is the part that matters and is already set.
+            // Everything below is detail, so it is wrapped: a missing or
+            // malformed field costs a line of the summary, never the whole
+            // confirmation.
+            try {
+                renderDetail(order);
+            } catch (error) {
+                console.warn('checkout/success: detail render skipped', error && error.message);
+            }
+        }
+
+        function renderDetail(order) {
+            const paid = order.paymentStatus === 'paid';
             const list = $('ckItems');
             list.textContent = '';
-            order.items.forEach((item) => {
+            (order.items || []).forEach((item) => {
                 const li = document.createElement('li');
                 li.className = 'ck-line';
 
@@ -192,6 +205,30 @@
             $('ckPanel').hidden = false;
         }
 
+        // Stripe returns the browser here the moment it accepts the payment, but
+        // the order is only marked paid by the webhook — a separate request
+        // arriving on its own schedule. Landing first is normal, not a failure,
+        // so a pending record is re-read a few times before it is believed.
+        // Bounded: five attempts over ~2.8s, then a definite state.
+        const POLL_ATTEMPTS = 5;
+        const POLL_DELAY = 700;
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+        async function fetchOrder() {
+            const abort = new AbortController();
+            const timer = setTimeout(() => abort.abort(), 8000);
+            try {
+                const res = await fetch(
+                    `/api/checkout/order?number=${encodeURIComponent(number)}&email=${encodeURIComponent(email)}`,
+                    { cache: 'no-store', signal: abort.signal }
+                );
+                if (!res.ok) throw new Error(String(res.status));
+                return await res.json();
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
         async function load() {
             if (!number || !email) {
                 setResult('failed');
@@ -200,31 +237,44 @@
                 return;
             }
 
-            // Bounded, so a slow or hanging lookup resolves into a definite
-            // state instead of leaving the page on its loading shell forever.
-            const abort = new AbortController();
-            const timer = setTimeout(() => abort.abort(), 8000);
+            for (let attempt = 0; attempt < POLL_ATTEMPTS; attempt += 1) {
+                let order;
+                try {
+                    order = await fetchOrder();
+                } catch (error) {
+                    // The payment itself is not in doubt — Stripe would not have
+                    // returned here otherwise — only our reading of the record.
+                    // Say that, rather than casting doubt on a payment that went
+                    // through, and give the number so support can trace it.
+                    console.warn('checkout/success: order lookup unavailable', error && error.name);
+                    setResult('pending');
+                    setActions('pending');
+                    say('Payment Received', number,
+                        'Your payment went through. We could not load the order details just now — your confirmation email has them, and support@eternalvoid.co can help if you quote this number.');
+                    return;
+                }
 
-            try {
-                const res = await fetch(
-                    `/api/checkout/order?number=${encodeURIComponent(number)}&email=${encodeURIComponent(email)}`,
-                    { cache: 'no-store', signal: abort.signal }
-                );
-                if (!res.ok) throw new Error(String(res.status));
-                renderOrder(await res.json());
-            } catch (error) {
-                // The payment itself is not in doubt — Stripe would not have
-                // returned here otherwise — only our reading of the record. Say
-                // that, rather than casting doubt on a payment that went
-                // through, and give the order number so support can trace it.
-                console.warn('checkout/success: order lookup unavailable', error && error.name);
+                // Settled, either way. Render it and stop asking.
+                if (!order || order.paymentStatus !== 'pending') {
+                    renderOrder(order || {});
+                    return;
+                }
+
+                // Still pending. Show a deliberate verifying state — never an
+                // empty one — and re-read shortly.
                 setResult('pending');
                 setActions('pending');
-                say('Payment Received', number,
-                    'Your payment went through. We could not load the order details just now — your confirmation email has them, and support@eternalvoid.co can help if you quote this number.');
-            } finally {
-                clearTimeout(timer);
+                say('Verifying Acquisition', order.orderNumber || number,
+                    'Your payment was accepted and is being verified with the bank. This will only take a moment.');
+
+                if (attempt < POLL_ATTEMPTS - 1) await wait(POLL_DELAY);
             }
+
+            // Exhausted. The payment is real; only the confirmation is late.
+            setResult('pending');
+            setActions('pending');
+            say('Confirmation Pending', number,
+                'Your payment was received and is being verified. You will receive confirmation by email as soon as it completes — no further action is needed.');
         }
 
         load();
