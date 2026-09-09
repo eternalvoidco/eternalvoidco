@@ -2799,32 +2799,17 @@
             background-position: center;
         }
 
-        /* Same construction as the arrow below: a 10px box holding a turned
-           6px glyph. Both marks then share one right edge and one optical
-           centre, and neither can spill past a clip. */
+        /* Same drawn construction and the same 12-unit viewBox as the arrow
+           below, so the two marks share one right edge and one optical centre. */
         .mm-region-chevron {
-            position: relative;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             flex: none;
-        }
-
-        .mm-region-chevron::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 6px;
-            height: 6px;
-            border-right: 1px solid rgba(199, 169, 108, 0.55);
-            border-bottom: 1px solid rgba(199, 169, 108, 0.55);
-            transform: translate(-50%, -75%) rotate(45deg);
+            color: rgba(199, 169, 108, 0.55);
             transition: transform 0.42s var(--ease-lux);
         }
 
-        .mm-region-row[aria-expanded="true"] .mm-region-chevron::before {
-            transform: translate(-50%, -25%) rotate(225deg);
-        }
+        .mm-region-row[aria-expanded="true"] .mm-region-chevron { transform: rotate(180deg); }
 
         .mm-region-row.is-country:hover .mm-region-value,
         .mm-region-row.is-country:focus-visible .mm-region-value { color: #fff; }
@@ -2893,27 +2878,16 @@
         .mm-region-action:hover,
         .mm-region-action:focus-visible { color: var(--void-accent); }
 
-        /* A 6px square turned 45° needs 8.49px of room, so a 6px box overflowed
-           its row by ~1.2px on each side and the picker's clip cut the tip off.
-           The box now reserves the diagonal and the glyph is drawn inside it. */
+        /* Drawn, not rotated. A turned CSS square needs more room than its box
+           and overhung the row, where .mm-region-picker-inner's clip took the
+           tip. This stroke lives well inside a 12-unit viewBox, so there is
+           nothing to crop even at the extreme of the hover shift. */
         .mm-region-arrow {
-            position: relative;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             flex: none;
+            overflow: visible;
             transition: transform 0.36s var(--ease-lux);
-        }
-
-        .mm-region-arrow::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 6px;
-            height: 6px;
-            border-top: 1px solid currentColor;
-            border-right: 1px solid currentColor;
-            transform: translate(-50%, -50%) rotate(45deg);
         }
 
         .mm-region-action:hover .mm-region-arrow,
@@ -3254,6 +3228,13 @@
         }
 
         .void-region-row[aria-selected="true"] { color: var(--void-accent); }
+
+        /* The chosen region stands apart from the markets below it. */
+        .void-region-row.is-pinned {
+            margin-bottom: 0.7rem;
+            padding-bottom: 1.1rem;
+            border-bottom-color: rgba(199, 169, 108, 0.22);
+        }
 
         .void-region-row-mark {
             flex: none;
@@ -10648,7 +10629,9 @@
                     <span class="theme-switch-flag country-flag" id="themeSwitchMenuFlag" aria-hidden="true"></span>
                     <span id="themeSwitchCountryName">Country</span>
                 </span>
-                <i class="mm-region-chevron" aria-hidden="true"></i>
+                <svg class="mm-region-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                    <path d="M2.5 4.5 L6 8 L9.5 4.5" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="square"/>
+                </svg>
             </button>
             <!-- One line, not a list. Browsing every country belongs on the
                  profile's search field, which already owns that experience. -->
@@ -10656,7 +10639,9 @@
                 <div class="mm-region-picker-inner">
                     <button type="button" class="mm-region-action" id="mmChangeCountry" aria-haspopup="dialog">
                         <span data-i18n="changeCountry">Change Country</span>
-                        <i class="mm-region-arrow" aria-hidden="true"></i>
+                        <svg class="mm-region-arrow" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                            <path d="M4 2.5 L8 6 L4 9.5" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="square"/>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -12890,19 +12875,43 @@
             const countries = () => (window.voidCountryList || []);
             const selectedName = () => (themeSwitchCountryName ? themeSwitchCountryName.textContent.trim() : '');
 
+            // The house's markets, in the house's order. Codes only — the names
+            // and flags still come from the canonical list.
+            const PRIORITY_CODES = ['at', 'fr', 'it', 'de', 'fi', 'se', 'ch', 'nl', 'dk', 'no', 'gb', 'us', 'hu', 'ie'];
+
+            // Anything else the pre-order form already ships to (Belgium, Canada)
+            // follows the named order rather than being dropped.
+            function servedCodes() {
+                const extra = Array.prototype.slice.call(preorderCountryOptions)
+                    .map((o) => (o.dataset.flag || '').replace('flag-', ''))
+                    .filter((code) => /^[a-z]{2}$/.test(code) && PRIORITY_CODES.indexOf(code) === -1);
+                return PRIORITY_CODES.concat(extra);
+            }
+
+            function restingMarkets() {
+                const byCode = new Map();
+                countries().forEach((c) => { if (c.code) byCode.set(c.code, c); });
+                const current = selectedName();
+                const list = [];
+                servedCodes().forEach((code) => {
+                    const entry = byCode.get(code);
+                    // The selected country is pinned above, so it is not repeated here.
+                    if (entry && entry.name !== current) list.push(entry);
+                });
+                const pinned = countries().filter((c) => c.name === current);
+                return pinned.concat(list);
+            }
+
             // Starts-with first, then contains — so "uni" leads with United
             // Kingdom and United States rather than burying them.
             function matchesFor(query) {
                 const q = query.trim().toLowerCase();
                 const all = countries();
-                if (!q) {
-                    // The row cap would otherwise bury the current country
-                    // somewhere past the alphabet, so it leads the resting list.
-                    const current = selectedName();
-                    const rest = all.filter((c) => c.name !== current);
-                    const held = all.filter((c) => c.name === current);
-                    return held.concat(rest).slice(0, MAX_ROWS);
-                }
+                // At rest the house shows the markets it serves, in the order it
+                // regards them — not the alphabet. Typing then searches all of
+                // them. Nothing here holds a name or a flag: only codes, which
+                // are resolved against the canonical list above.
+                if (!q) return restingMarkets();
                 const starts = [];
                 const contains = [];
                 all.forEach((c) => {
@@ -12926,6 +12935,8 @@
                     row.dataset.country = c.name;
                     const isSelected = c.name === current;
                     row.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+                    // Pinned only at rest: in a search result it is just a match.
+                    if (isSelected && !query.trim()) row.classList.add('is-pinned');
 
                     const flag = document.createElement('span');
                     flag.setAttribute('aria-hidden', 'true');
