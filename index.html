@@ -2278,6 +2278,57 @@
             animation: nmtWordWrite 360ms var(--ease-arrive) 360ms both;
         }
 
+        /* ── CLOSE, on approach ──────────────────────────────────────────
+           Scoped to the settled open state so MENU keeps its own ivory hover.
+           The bars are drawn in currentColor, so warming the button warms the
+           letterforms and the cross together. The turn is on the glyph, not on
+           the bars: the bars carry the open/close choreography and must be
+           left alone. Nothing here affects layout — colour, a rotation, and a
+           pseudo-element's width. */
+        .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-glyph {
+            transition: transform 0.22s var(--ease-lux);
+        }
+
+        /* The shared nav rule transitions width alone. Its 0.42s is the timing
+           the drawer's own choreography draws this line with, so it is kept
+           for the state change and only the two colour properties are added. */
+        .nav-menu-toggle[aria-expanded="true"]::after {
+            transition: width 0.42s var(--ease-lux), background 0.24s ease, box-shadow 0.24s ease;
+        }
+
+        .nav-menu-toggle[aria-expanded="true"]:hover,
+        .nav-menu-toggle[aria-expanded="true"]:focus-visible {
+            color: var(--void-gold-soft, #d8c08a);
+        }
+
+        .nav-menu-toggle[aria-expanded="true"]:hover .nav-menu-toggle-glyph,
+        .nav-menu-toggle[aria-expanded="true"]:focus-visible .nav-menu-toggle-glyph {
+            transform: rotate(8deg);
+        }
+
+        .nav-menu-toggle[aria-expanded="true"]:hover::after,
+        .nav-menu-toggle[aria-expanded="true"]:focus-visible::after {
+            /* Already full width in this state; it reaches a little past the
+               word and brightens rather than growing from nothing. Entering is
+               quicker than the 0.42s the line is first drawn with. */
+            transition: width 0.24s var(--ease-lux), background 0.24s ease, box-shadow 0.24s ease;
+            width: calc(100% + 5px);
+            background: linear-gradient(90deg, var(--void-gold-soft, #d8c08a), var(--void-gold-bright, #f2e2bd));
+            box-shadow: 0 0 9px rgba(216, 192, 138, 0.5);
+        }
+
+        .nav-menu-toggle[aria-expanded="true"]:active { opacity: 0.78; }
+
+        html.reduce-motion .nav-menu-toggle[aria-expanded="true"] .nav-menu-toggle-glyph {
+            transition: none;
+        }
+
+        /* The warmth stays under reduced motion; only the turn is dropped. */
+        html.reduce-motion .nav-menu-toggle[aria-expanded="true"]:hover .nav-menu-toggle-glyph,
+        html.reduce-motion .nav-menu-toggle[aria-expanded="true"]:focus-visible .nav-menu-toggle-glyph {
+            transform: none;
+        }
+
         @keyframes nmtWordConsume {
             0%   { opacity: 1; clip-path: inset(-30% 0 -30% 0); filter: blur(0); }
             55%  { opacity: 1; filter: blur(0.9px); }
