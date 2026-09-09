@@ -3991,96 +3991,76 @@
         .story-overlay-spark.spark-two .spark-ray:nth-child(3) { width: min(3.1vw, 29px); transform: translate(-2px, 3px) rotate(201deg); animation-delay: 0.17s; }
         .story-overlay-spark.spark-two .spark-ray:nth-child(4) { width: min(2.3vw, 22px); transform: translate(3px, 1px) rotate(287deg); animation-delay: 0.39s; }
 
+        /* A quiet exit from a loud story. Same interface language as the menu's
+           utility rows — Jost, wide tracking, ivory with gold on approach —
+           rather than the framed HUD panel this used to be. */
         .story-overlay-exit {
             position: absolute;
             left: 50%;
             bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
             transform: translateX(-50%);
             z-index: 4;
-            isolation: isolate;
-            overflow: hidden;
-            border-radius: 3px;
-            border: 1px solid rgba(199, 169, 108, 0.5);
-            background: linear-gradient(180deg, rgba(30, 24, 12, 0.55), rgba(6, 6, 6, 0.84));
-            -webkit-backdrop-filter: blur(4px);
-            backdrop-filter: blur(4px);
-            color: #f3e4c4;
-            padding: 0.78rem 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            border: 0;
+            background: transparent;
+            color: rgba(242, 239, 233, 0.72);
+            padding: 0.7rem 0.4rem 0.6rem;
             font-family: 'Jost', sans-serif;
             font-size: 0.62rem;
-            font-weight: 600;
+            font-weight: 500;
             letter-spacing: 0.24em;
             text-transform: uppercase;
             cursor: pointer;
-            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), 0 0 30px rgba(199, 169, 108, 0.16), inset 0 1px 0 rgba(245, 242, 236, 0.12);
-            transition: transform 0.4s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)), border-color 0.3s ease, background 0.3s ease, color 0.3s ease, box-shadow 0.4s ease;
+            transition: color 0.24s ease, opacity 0.18s ease;
+        }
+
+        /* The hairline is the only chrome, and it extends on approach. */
+        .story-overlay-exit::after {
+            content: '';
+            position: absolute;
+            left: 0.4rem;
+            right: 0.4rem;
+            bottom: 0.25rem;
+            height: 1px;
+            background: currentColor;
+            opacity: 0.22;
+            transform: scaleX(0.82);
+            transform-origin: center;
+            transition: transform 0.24s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)), opacity 0.24s ease;
         }
 
         .story-overlay-exit:hover,
         .story-overlay-exit:focus-visible {
-            border-color: rgba(226, 199, 138, 0.9);
-            background: linear-gradient(180deg, rgba(58, 48, 26, 0.7), rgba(10, 9, 6, 0.86));
-            color: #fbf1d9;
-            transform: translateX(-50%) translateY(-3px);
-            box-shadow: 0 20px 46px rgba(0, 0, 0, 0.6), 0 0 54px rgba(199, 169, 108, 0.32), inset 0 1px 0 rgba(245, 242, 236, 0.2);
+            color: var(--void-accent, #c7a96c);
+            outline: none;
         }
 
-        .story-overlay-exit:active {
-            transform: translateX(-50%) translateY(-1px) scale(0.986);
+        .story-overlay-exit:hover::after,
+        .story-overlay-exit:focus-visible::after {
+            transform: scaleX(1);
+            opacity: 0.5;
         }
 
-        /* Travelling gold light ("lightning") ring around the button. */
-        .story-overlay-exit::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            padding: 1.4px;
-            z-index: 2;
-            pointer-events: none;
-            background: conic-gradient(from var(--void-frame-angle),
-                transparent 0deg,
-                transparent 68deg,
-                rgba(249, 240, 216, 0) 80deg,
-                rgba(253, 245, 224, 0.96) 95deg,
-                rgba(249, 240, 216, 0) 110deg,
-                transparent 122deg,
-                transparent 360deg);
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            mask-composite: exclude;
+        .story-overlay-exit:active { opacity: 0.72; }
+
+        /* Drawn, not a glyph: the stroke sits well inside its viewBox, so the
+           tip survives both the hover shift and any font fallback. */
+        .story-exit-arrow {
+            width: 12px;
+            height: 12px;
+            flex: none;
+            overflow: visible;
+            transition: transform 0.24s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1));
         }
 
-        .story-overlay.open .story-overlay-exit::after {
-            animation: voidFrameOrbit 4.2s linear infinite;
-        }
+        .story-overlay-exit:hover .story-exit-arrow,
+        .story-overlay-exit:focus-visible .story-exit-arrow { transform: translateX(-3px); }
 
-        /* HUD corner brackets — the "cool frame". */
-        .story-overlay-exit::before {
-            content: '';
-            position: absolute;
-            inset: 4px;
-            z-index: 2;
-            pointer-events: none;
-            --vf-t: 1px;
-            --vf-l: 13px;
-            background:
-                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top left / var(--vf-l) var(--vf-t) no-repeat,
-                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top left / var(--vf-t) var(--vf-l) no-repeat,
-                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top right / var(--vf-l) var(--vf-t) no-repeat,
-                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) top right / var(--vf-t) var(--vf-l) no-repeat,
-                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom left / var(--vf-l) var(--vf-t) no-repeat,
-                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom left / var(--vf-t) var(--vf-l) no-repeat,
-                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom right / var(--vf-l) var(--vf-t) no-repeat,
-                linear-gradient(var(--void-gold-soft, #d4b678), var(--void-gold-soft, #d4b678)) bottom right / var(--vf-t) var(--vf-l) no-repeat;
-            opacity: 0.82;
-            filter: drop-shadow(0 0 3px rgba(199, 169, 108, 0.5));
-        }
-
-        html.reduce-motion .story-overlay-exit::after {
-            animation: none !important;
-        }
+        html.reduce-motion .story-overlay-exit,
+        html.reduce-motion .story-overlay-exit::after,
+        html.reduce-motion .story-exit-arrow { transition: none !important; animation: none !important; }
 
         /* Calm mode: the field is still there, it simply holds still. Opacity is
            set explicitly because the layers rest at 0 and are faded in by
@@ -8926,9 +8906,8 @@
             }
 
             .story-overlay-exit {
-                width: min(88vw, 270px);
-                padding: 0.68rem 1rem;
-                letter-spacing: 0.16em;
+                padding: 0.75rem 0.4rem 0.65rem;
+                letter-spacing: 0.18em;
             }
 
             .story-crawl {
@@ -10694,7 +10673,15 @@
             <span class="spark-ray"></span>
             <span class="spark-ray"></span>
         </div>
-        <button type="button" class="story-overlay-exit" id="exitStoryButton" data-i18n-html="storyReturn">Return to VOID<sup class="brand-copyright">©</sup></button>
+        <!-- The label keeps its own element: data-i18n-html rewrites the inner
+             HTML of whatever carries it, so on the button itself it would erase
+             the arrow every time the language changed. -->
+        <button type="button" class="story-overlay-exit" id="exitStoryButton">
+            <svg class="story-exit-arrow" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                <path d="M8 2.5 L4 6 L8 9.5" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="square"/>
+            </svg>
+            <span data-i18n-html="storyReturn">Return to VOID<sup class="brand-copyright">©</sup></span>
+        </button>
         <div class="story-overlay-stage" role="dialog" aria-modal="true" aria-labelledby="storyCrawlTitle">
             <div class="story-crawl" tabindex="0">
                 <p class="story-crawl-eyebrow" data-i18n-html="storyArchive">VOID<sup class="brand-copyright">©</sup> Archive</p>
