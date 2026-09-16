@@ -12845,6 +12845,54 @@
             }
         }
 
+        /* Move every owner of the page's scroll position to the top, instantly.
+           Which element actually scrolls depends on the engine — WebKit has
+           historically scrolled `body` where others scroll `documentElement` —
+           so all three are set rather than guessed at. A hash is dropped at the
+           same time: left in place the browser re-scrolls to that section the
+           moment the document regains its height. replaceState is used so no
+           entry is added to history and no routing is disturbed. */
+        function resetToTop() {
+            const root = document.documentElement;
+            const previous = root.style.scrollBehavior;
+            root.style.scrollBehavior = 'auto';
+
+            if (location.hash) {
+                try {
+                    history.replaceState(history.state, '', location.pathname + location.search);
+                } catch (e) {}
+            }
+
+            try { window.scrollTo(0, 0); } catch (e) { window.scrollTo(0, 0); }
+            root.scrollTop = 0;
+            if (document.body) document.body.scrollTop = 0;
+
+            // Restored rather than cleared, so a stylesheet value stays intact.
+            root.style.scrollBehavior = previous;
+        }
+
+        /* The later confirmations run after the gate has stopped covering the
+           page, so they must never overrule the visitor. If a hand has touched
+           the page — wheel, touch, or a scrolling key — the position is theirs
+           and is left alone; otherwise anything that moved the document was the
+           layout settling, and the top is re-asserted. */
+        let entryScrollClaimed = false;
+        function claimEntryScroll() { entryScrollClaimed = true; }
+
+        function watchEntryScroll(on) {
+            const method = on ? 'addEventListener' : 'removeEventListener';
+            ['wheel', 'touchmove', 'keydown'].forEach((type) => {
+                window[method](type, claimEntryScroll, { passive: true });
+            });
+            if (on) entryScrollClaimed = false;
+        }
+
+        function confirmTop() {
+            if (entryScrollClaimed) return;
+            if ((window.scrollY || document.documentElement.scrollTop || 0) === 0) return;
+            resetToTop();
+        }
+
         function enterVoid() {
             if (!entryGate || entryGate.classList.contains('hidden') || entryGate.classList.contains('entering')) return;
 
@@ -12854,6 +12902,22 @@
             const willPromptLogin = typeof window.voidAuthWillPrompt === 'function' && window.voidAuthWillPrompt();
             const offerPreorder = shouldOfferPreorderOnEntry() && !willPromptLogin;
 
+            /* Land at the very top, before the world behind the gate is
+               uncovered.
+
+               `html` carries `scroll-behavior: smooth` for in-page anchors, and
+               that applies to programmatic scrolling too: `window.scrollTo(0, 0)`
+               from the footer became an animated journey of several thousand
+               pixels, still travelling when the gate dissolved at 470ms — and
+               cancelled outright by any touch or wheel along the way, stranding
+               the visitor wherever it stopped. That is why the footer appeared,
+               and why it only happened sometimes.
+
+               So the behaviour is suspended for the reset, every scroll owner is
+               moved at once, and it is restored immediately afterwards. The
+               anchors keep their smooth scrolling; only this jump is instant. */
+            resetToTop();
+
             // Reveal the landing world behind the gate so it can settle-zoom in
             // as the gate dissolves — a seamless hand-off, not a page swap.
             document.body.classList.remove('gate-open');
@@ -12861,10 +12925,14 @@
             // Remember for this session so returning from other pages (e.g. the
             // Privacy Policy) doesn't replay the gate.
             try { sessionStorage.setItem('void-entered', '1'); } catch (e) {}
-            // Always land at the very top. While the gate was up the body was
-            // locked (overflow:hidden), so any restored/hash scroll position sat
-            // underneath and would otherwise be revealed at a random offset.
-            window.scrollTo(0, 0);
+
+            /* Unlocking `overflow: hidden` gives the document its scrollable
+               height back, and a hash or a late layout pass can move it again.
+               Re-assert on the next frame, and once more when the gate has
+               actually left the layout — both while the gate still covers the
+               page, so neither is ever seen. */
+            window.requestAnimationFrame(resetToTop);
+            watchEntryScroll(true);
             setupVideo(heroVideo, 1);
 
             // Begin the cinematic zoom + light bloom + button dissolve.
@@ -12873,7 +12941,11 @@
             if (reduceMotion) {
                 entryGate.classList.add('hidden');
                 if (entryGateVideo) entryGateVideo.pause();
-                window.setTimeout(() => { entryGate.style.display = 'none'; }, 320);
+                window.setTimeout(() => {
+                    entryGate.style.display = 'none';
+                    confirmTop();       // the gate has left the layout
+                    watchEntryScroll(false);
+                }, 320);
                 if (typeof window.voidAuthOnEnter === 'function') window.voidAuthOnEnter();
                 if (offerPreorder) {
                     window.setTimeout(openPreorderModal, 1200);
@@ -12890,6 +12962,11 @@
             window.setTimeout(() => {
                 if (entryGateVideo) entryGateVideo.pause();
                 entryGate.style.display = 'none';
+                // Taking the gate out of the layout is the last thing that can
+                // move the document. Confirm here, at that lifecycle point,
+                // rather than hoping an earlier reset survived it.
+                confirmTop();
+                watchEntryScroll(false);
             }, 1320);
 
             // Once inside, present the member sign-in (unless already signed in).
