@@ -1389,12 +1389,14 @@
             width: min(120vmin, 900px);
             height: min(120vmin, 900px);
             transform: translate3d(-50%, -50%, 0);
-            border-radius: 50%;
+            /* Same treatment as the halo: to transparent white first, then
+               hold at transparent black, and no radius to clip against. */
             background: radial-gradient(circle,
                 rgba(244, 246, 250, 0.09) 0%,
-                rgba(244, 246, 250, 0.045) 30%,
-                rgba(244, 246, 250, 0.012) 52%,
-                transparent 70%);
+                rgba(244, 246, 250, 0.045) 28%,
+                rgba(244, 246, 250, 0.012) 46%,
+                rgba(244, 246, 250, 0) 62%,
+                rgba(0, 0, 0, 0) 100%);
             opacity: 0;
             z-index: 0;
             pointer-events: none;
@@ -1426,7 +1428,8 @@
                 rgba(255, 255, 255, 0.95) 0%,
                 rgba(240, 243, 248, 0.5) 20%,
                 rgba(228, 234, 242, 0.14) 44%,
-                transparent 66%);
+                rgba(228, 234, 242, 0) 62%,
+                rgba(0, 0, 0, 0) 100%);
             opacity: 0;
             z-index: 2;
             pointer-events: none;
@@ -1554,12 +1557,21 @@
             width: 150%;
             height: 340%;
             transform: translate3d(-50%, -50%, 0) scale(0.92);
-            border-radius: 50%;
+            /* Two things used to draw a line here. The gradient ended on
+               `transparent`, which is transparent BLACK — interpolating to it
+               from a white stop takes the colour through grey, and that grey
+               survives compositing as a pale fringe. It now fades to a
+               transparent WHITE first, so only the alpha changes, and only
+               then holds at transparent black. Second, the light reached zero
+               at 76% while `border-radius: 50%` clipped at 100%, leaving a
+               faint value to be cut by the clip. The light is now gone by 62%
+               and the radius is unnecessary: there is nothing left to clip. */
             background: radial-gradient(closest-side ellipse,
                 rgba(var(--portal-light), 0.1) 0%,
-                rgba(var(--portal-light), 0.055) 34%,
-                rgba(var(--portal-light), 0.018) 58%,
-                transparent 76%);
+                rgba(var(--portal-light), 0.055) 30%,
+                rgba(var(--portal-light), 0.016) 46%,
+                rgba(var(--portal-light), 0) 62%,
+                rgba(0, 0, 0, 0) 100%);
             opacity: 0.85;
             pointer-events: none;
             animation: enterVoidGlowBreath 7.4s ease-in-out infinite;
@@ -1570,11 +1582,16 @@
             outline: none;
         }
 
-        /* The focus ring is drawn in the portal's own light rather than a
-           default outline, so keyboard users get the same composition. */
+        /* Focus is shown by the light itself, never by a ring: a box-shadow
+           here drew exactly the pale hairline this composition is meant not to
+           have. The sigil brightening is what marks the control as focused. */
         .entry-gate-button:focus-visible .entry-gate-halo {
             opacity: 1;
-            box-shadow: 0 0 0 1px rgba(var(--portal-pearl), 0.22);
+        }
+
+        .entry-gate-button:focus-visible .entry-gate-sigil {
+            opacity: 0.85;
+            filter: none;
         }
 
         .entry-gate-button.intro-hidden {
@@ -1629,11 +1646,13 @@
             z-index: 2;
             opacity: 0.6;
             background: linear-gradient(90deg,
-                transparent 0%,
+                rgba(0, 0, 0, 0) 0%,
+                rgba(var(--portal-light), 0) 6%,
                 rgba(var(--portal-light), 0.12) 18%,
                 rgba(var(--portal-light), 0.42) 50%,
                 rgba(var(--portal-light), 0.12) 82%,
-                transparent 100%);
+                rgba(var(--portal-light), 0) 94%,
+                rgba(0, 0, 0, 0) 100%);
             transition: opacity 0.7s ease, transform 0.8s ease, filter 0.7s ease;
             pointer-events: none;
         }
@@ -1649,7 +1668,7 @@
             width: 22%;
             height: 1px;
             transform: translate3d(0, -50%, 0);
-            background: linear-gradient(90deg, transparent, rgba(var(--portal-pearl), 0.5), transparent);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(var(--portal-pearl), 0) 8%, rgba(var(--portal-pearl), 0.5) 50%, rgba(var(--portal-pearl), 0) 92%, rgba(0, 0, 0, 0));
             opacity: 0;
             animation: enterVoidSheen 9s ease-in-out 2.2s infinite;
             pointer-events: none;
@@ -1847,8 +1866,12 @@
             outline: none;
         }
 
+        /* Focus is carried by the light growing, not by a ring drawn around
+           the mark — the same rule the central control follows. The name is
+           already revealed on focus, so the state is never ambiguous. */
         .entry-seq-control:focus-visible .entry-seq-dot {
-            box-shadow: 0 0 0 1px rgba(var(--portal-pearl), 0.5), 0 0 16px rgba(var(--portal-light), 0.6);
+            background: rgba(var(--portal-pearl), 1);
+            box-shadow: 0 0 22px rgba(var(--portal-light), 0.85), 0 0 6px rgba(var(--portal-pearl), 0.7);
         }
 
         @keyframes entrySeqPulse {
@@ -2223,6 +2246,65 @@
             text-shadow: 0 0 24px rgba(245, 232, 202, 0.42), 0 0 46px rgba(199, 169, 108, 0.24);
         }
 
+        /* ── The wordmark withdraws while the drawer is open ──────────────
+           CLOSE travels to the drawer's top-right, which on a narrow screen
+           brings it alongside the centred wordmark — six pixels of clearance
+           at 320px, and none once the reader has enlarged their type. Rather
+           than nudging the control, the identity steps back: it sinks into the
+           depth of the page, softens, and stays as atmosphere while CLOSE
+           holds the foreground.
+
+           The depth is carried on the independent `scale` and `translate`
+           properties, so the wordmark's own `transform: translateX(…)` — which
+           differs per breakpoint — is left exactly as it is. Nothing here
+           touches layout, so the header never reflows. */
+        .logo {
+            transition: opacity 0.72s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)),
+                        filter 0.82s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)),
+                        scale 0.82s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)),
+                        translate 0.82s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)),
+                        text-shadow 0.4s ease;
+            position: relative;
+            z-index: 0;
+        }
+
+        body.mobile-menu-open .logo {
+            opacity: 0.14;
+            filter: blur(5px);
+            scale: 0.86;
+            translate: 0 7px;
+            pointer-events: none;
+        }
+
+        /* Coming back starts the moment the drawer begins to leave, not once
+           it has gone — so the wordmark resolves alongside the closing panel
+           instead of snapping in after it. */
+        body.mobile-menu-open.mobile-menu-closing .logo {
+            opacity: 1;
+            filter: blur(0);
+            scale: 1;
+            translate: 0 0;
+            transition-duration: 0.62s;
+        }
+
+        /* Reduced motion: the same intent, carried by a plain fade. No blur to
+           resolve, no depth to travel. */
+        html.reduce-motion .logo {
+            transition: opacity 0.2s ease;
+        }
+
+        html.reduce-motion body.mobile-menu-open .logo {
+            filter: none;
+            scale: 1;
+            translate: 0 0;
+            opacity: 0.12;
+        }
+
+        html.reduce-motion body.mobile-menu-open.mobile-menu-closing .logo {
+            filter: none;
+            opacity: 1;
+        }
+
         /* ---- Site menu: MENU/CLOSE trigger + left-anchored drawer ----------
            The trigger leads .nav-left at every width, and the drawer it opens is
            anchored to the LEFT edge. MENU and CLOSE are one object: on open the
@@ -2273,6 +2355,8 @@
         /* Settled destination. The keyframes below land on exactly this value,
            so when they finish the property hands back without a flicker. */
         body.mobile-menu-open .nav-menu-toggle {
+            /* Unambiguously in front of the receded wordmark it travels past. */
+            z-index: 3;
             transform: translate3d(var(--nmt-x), 0, 0);
             /* `backwards`, never `forwards`: the rule already holds the landed
                value, so handing back at the end costs nothing visually and
