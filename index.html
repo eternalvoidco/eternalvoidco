@@ -470,6 +470,16 @@
             pointer-events: none;
         }
 
+        /* While the entry is being prepared the gate is opaque, full stop —
+           no transition, no inherited opacity, nothing the reveal could have
+           started early. The homepage is being moved to the top underneath
+           this, and not one frame of it may reach the screen. */
+        body[data-entry="preparing"] .entry-gate {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transition: none !important;
+        }
+
         /* Returning within the same session skips the intro gate entirely
            (the class is set by the inline script at the top of <body>). */
         body.void-returning .entry-gate {
@@ -12871,26 +12881,45 @@
             root.style.scrollBehavior = previous;
         }
 
-        /* The later confirmations run after the gate has stopped covering the
-           page, so they must never overrule the visitor. If a hand has touched
-           the page — wheel, touch, or a scrolling key — the position is theirs
-           and is left alone; otherwise anything that moved the document was the
-           layout settling, and the top is re-asserted. */
-        let entryScrollClaimed = false;
-        function claimEntryScroll() { entryScrollClaimed = true; }
+        /* Bring the page to the top and prove it, while the gate is still
+           opaque. Returns true only once the document has actually committed
+           to 0 — the caller does not begin revealing anything until it has.
 
-        function watchEntryScroll(on) {
-            const method = on ? 'addEventListener' : 'removeEventListener';
-            ['wheel', 'touchmove', 'keydown'].forEach((type) => {
-                window[method](type, claimEntryScroll, { passive: true });
-            });
-            if (on) entryScrollClaimed = false;
+           The order matters and was wrong before. The reset ran while
+           `body.gate-open` still carried `overflow: hidden`: a viewport with
+           hidden overflow has no scrollable region to move within, so the
+           write is clamped and reads back as 0 while the browser quietly keeps
+           the offset it had before the lock — and hands it straight back the
+           moment the overflow is released. The lock is now released first, so
+           there is a real scroll range to move in, and the position is read
+           back afterwards to confirm the move landed. */
+        function prepareTopBeforeReveal() {
+            const root = document.documentElement;
+            const body = document.body;
+
+            // Scroll anchoring would otherwise "helpfully" pull the viewport
+            // back towards whatever was on screen as the layout changes.
+            root.style.overflowAnchor = 'none';
+
+            // Release the lock BEFORE resetting, so the document has somewhere
+            // to be moved to. The gate is still fully opaque at this point.
+            body.classList.remove('gate-open');
+
+            // Reading scrollTop flushes pending layout, so each attempt is
+            // measured against a committed position rather than a stale one.
+            for (let attempt = 0; attempt < 3; attempt++) {
+                resetToTop();
+                if ((root.scrollTop | 0) === 0 && (window.scrollY | 0) === 0) return true;
+            }
+            return (window.scrollY | 0) === 0;
         }
 
-        function confirmTop() {
-            if (entryScrollClaimed) return;
-            if ((window.scrollY || document.documentElement.scrollTop || 0) === 0) return;
-            resetToTop();
+        /* ── entered ── the gate is out of the layout and the visitor owns the
+           page again. Scroll anchoring goes back to the browser's default; no
+           position is touched here, so nothing can teleport after the reveal. */
+        function finishEntry() {
+            document.documentElement.style.overflowAnchor = '';
+            document.body.dataset.entry = 'entered';
         }
 
         function enterVoid() {
@@ -12915,25 +12944,28 @@
 
                So the behaviour is suspended for the reset, every scroll owner is
                moved at once, and it is restored immediately afterwards. The
-               anchors keep their smooth scrolling; only this jump is instant. */
-            resetToTop();
+               anchors keep their smooth scrolling; only this jump is instant.
 
-            // Reveal the landing world behind the gate so it can settle-zoom in
-            // as the gate dissolves — a seamless hand-off, not a page swap.
-            document.body.classList.remove('gate-open');
+               ── preparing-entry ──
+               Everything from here to the reveal happens in this one task,
+               with the gate at full opacity and pointer input sealed. The
+               browser cannot paint between statements, so there is no frame in
+               which the homepage exists on screen at the old position. The
+               reveal is not started until the top is confirmed. */
+            document.body.dataset.entry = 'preparing';
+            entryGate.style.pointerEvents = 'none';
+
+            prepareTopBeforeReveal();
+
             document.body.classList.add('void-entered');
             // Remember for this session so returning from other pages (e.g. the
             // Privacy Policy) doesn't replay the gate.
             try { sessionStorage.setItem('void-entered', '1'); } catch (e) {}
 
-            /* Unlocking `overflow: hidden` gives the document its scrollable
-               height back, and a hash or a late layout pass can move it again.
-               Re-assert on the next frame, and once more when the gate has
-               actually left the layout — both while the gate still covers the
-               page, so neither is ever seen. */
-            window.requestAnimationFrame(resetToTop);
-            watchEntryScroll(true);
             setupVideo(heroVideo, 1);
+
+            // ── revealing-site ── the position is settled; the gate may go.
+            document.body.dataset.entry = 'revealing';
 
             // Begin the cinematic zoom + light bloom + button dissolve.
             entryGate.classList.add('entering');
@@ -12943,8 +12975,7 @@
                 if (entryGateVideo) entryGateVideo.pause();
                 window.setTimeout(() => {
                     entryGate.style.display = 'none';
-                    confirmTop();       // the gate has left the layout
-                    watchEntryScroll(false);
+                    finishEntry();
                 }, 320);
                 if (typeof window.voidAuthOnEnter === 'function') window.voidAuthOnEnter();
                 if (offerPreorder) {
@@ -12962,11 +12993,7 @@
             window.setTimeout(() => {
                 if (entryGateVideo) entryGateVideo.pause();
                 entryGate.style.display = 'none';
-                // Taking the gate out of the layout is the last thing that can
-                // move the document. Confirm here, at that lifecycle point,
-                // rather than hoping an earlier reset survived it.
-                confirmTop();
-                watchEntryScroll(false);
+                finishEntry();
             }, 1320);
 
             // Once inside, present the member sign-in (unless already signed in).
