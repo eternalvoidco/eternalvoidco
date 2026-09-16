@@ -1368,9 +1368,50 @@
         /* GPU-friendly: only transform / opacity / filter animate. */
         .entry-gate-video {
             transform-origin: center;
+            /* Held back until there is a frame to show, so the loop never
+               appears as a grey box or a half-decoded flash. */
+            opacity: 0;
             transition: transform 1.15s cubic-bezier(0.5, 0, 0.15, 1),
-                        filter 1.15s ease, opacity 0.9s ease;
+                        filter 1.15s ease, opacity 1.4s ease;
         }
+
+        .entry-gate[data-media="ready"] .entry-gate-video { opacity: 1; }
+
+        /* While the loop is on its way — or if it never arrives — the gate is
+           lit from the centre by this instead. Same light, same slow breath,
+           so a failure looks like a quieter version of the design rather than
+           a broken screen. */
+        .entry-gate::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: min(120vmin, 900px);
+            height: min(120vmin, 900px);
+            transform: translate3d(-50%, -50%, 0);
+            border-radius: 50%;
+            background: radial-gradient(circle,
+                rgba(244, 246, 250, 0.09) 0%,
+                rgba(244, 246, 250, 0.045) 30%,
+                rgba(244, 246, 250, 0.012) 52%,
+                transparent 70%);
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+            animation: enterVoidStandby 7.4s ease-in-out infinite;
+            transition: opacity 1.2s ease;
+        }
+
+        .entry-gate[data-media="loading"]::after,
+        .entry-gate[data-media="slow"]::after,
+        .entry-gate[data-media="failed"]::after { opacity: 1; }
+
+        @keyframes enterVoidStandby {
+            0%, 100% { opacity: 0.75; transform: translate3d(-50%, -50%, 0) scale(0.94); }
+            50%      { opacity: 1;    transform: translate3d(-50%, -50%, 0) scale(1.02); }
+        }
+
+        html.reduce-motion .entry-gate::after { animation: none; }
 
         /* Radial light portal + spark burst that blooms from the button. */
         .entry-gate-portal {
@@ -1382,9 +1423,9 @@
             border-radius: 50%;
             transform: translate(-50%, -50%) scale(0.2);
             background: radial-gradient(circle,
-                rgba(255, 249, 233, 0.95) 0%,
-                rgba(226, 198, 138, 0.55) 20%,
-                rgba(199, 169, 108, 0.16) 44%,
+                rgba(255, 255, 255, 0.95) 0%,
+                rgba(240, 243, 248, 0.5) 20%,
+                rgba(228, 234, 242, 0.14) 44%,
                 transparent 66%);
             opacity: 0;
             z-index: 2;
@@ -1399,12 +1440,12 @@
             inset: 0;
             border-radius: 50%;
             background:
-                radial-gradient(2px 2px at 30% 38%, rgba(255, 244, 214, 0.95), transparent 60%),
-                radial-gradient(2px 2px at 70% 30%, rgba(255, 244, 214, 0.85), transparent 60%),
-                radial-gradient(1.5px 1.5px at 56% 66%, rgba(255, 244, 214, 0.9), transparent 60%),
-                radial-gradient(2px 2px at 40% 72%, rgba(255, 244, 214, 0.8), transparent 60%),
-                radial-gradient(1.5px 1.5px at 64% 54%, rgba(255, 244, 214, 0.85), transparent 60%),
-                radial-gradient(1.5px 1.5px at 48% 46%, rgba(255, 244, 214, 0.8), transparent 60%);
+                radial-gradient(2px 2px at 30% 38%, rgba(255, 255, 255, 0.95), transparent 60%),
+                radial-gradient(2px 2px at 70% 30%, rgba(255, 255, 255, 0.85), transparent 60%),
+                radial-gradient(1.5px 1.5px at 56% 66%, rgba(255, 255, 255, 0.9), transparent 60%),
+                radial-gradient(2px 2px at 40% 72%, rgba(255, 255, 255, 0.8), transparent 60%),
+                radial-gradient(1.5px 1.5px at 64% 54%, rgba(255, 255, 255, 0.85), transparent 60%),
+                radial-gradient(1.5px 1.5px at 48% 46%, rgba(255, 255, 255, 0.8), transparent 60%);
             opacity: 0;
         }
 
@@ -1470,42 +1511,70 @@
             filter: none !important;
         }
 
+        /* The portal palette. Sampled from the ring in the loop: no gold
+           reaches the gate, and nothing here is a surface — only light. */
+        .entry-gate {
+            --portal-light: 244, 246, 250;
+            --portal-pearl: 255, 255, 255;
+        }
+
+        /* The target stays large and rectangular for the pointer; nothing of
+           it is drawn. No border, no plate, no blur pane — the visible mark is
+           the bloom behind the words and the hairline through them. */
         .entry-gate-button {
             position: relative;
             z-index: 3;
             width: min(92vw, 372px);
             min-width: min(92vw, 340px);
-            padding: 1.15rem 1.6rem;
-            border: 1px solid rgba(199, 169, 108, 0.5);
-            border-radius: 2px;
-            background:
-                linear-gradient(180deg, rgba(24, 21, 14, 0.42), rgba(6, 6, 6, 0.72)),
-                rgba(7, 7, 7, 0.4);
-            color: var(--void-white);
+            padding: 1.35rem 1.6rem;
+            border: 0;
+            background: transparent;
+            color: rgba(var(--portal-pearl), 0.94);
             font-family: 'Jost', sans-serif;
             font-size: clamp(0.72rem, 1.9vw, 0.84rem);
-            font-weight: 600;
+            font-weight: 500;
             letter-spacing: 0;
             text-transform: uppercase;
             cursor: pointer;
-            overflow: hidden;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            -webkit-backdrop-filter: blur(3px);
-            backdrop-filter: blur(3px);
-            box-shadow:
-                0 0 0 1px rgba(199, 169, 108, 0.18),
-                0 20px 46px rgba(0, 0, 0, 0.66),
-                0 0 44px rgba(199, 169, 108, 0.14),
-                inset 0 1px 0 rgba(245, 242, 236, 0.12),
-                inset 0 0 34px rgba(199, 169, 108, 0.06);
-            animation: enterVoidGlowBreath 4.6s ease-in-out infinite;
-            transition: border-color 0.35s var(--ease-lux, ease), background 0.35s ease,
-                        transform 0.5s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)),
-                        color 0.35s ease, opacity 0.4s ease, box-shadow 0.5s ease, filter 0.5s ease;
+            transition: transform 0.9s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)),
+                        color 0.9s ease, opacity 0.5s ease;
             isolation: isolate;
             pointer-events: auto;
-            will-change: transform;
+        }
+
+        /* The bloom. A feathered radial with no edge of its own, so the control
+           dissolves into the black instead of sitting on top of it. */
+        .entry-gate-halo {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 1;
+            width: 150%;
+            height: 340%;
+            transform: translate3d(-50%, -50%, 0) scale(0.92);
+            border-radius: 50%;
+            background: radial-gradient(closest-side ellipse,
+                rgba(var(--portal-light), 0.1) 0%,
+                rgba(var(--portal-light), 0.055) 34%,
+                rgba(var(--portal-light), 0.018) 58%,
+                transparent 76%);
+            opacity: 0.85;
+            pointer-events: none;
+            animation: enterVoidGlowBreath 7.4s ease-in-out infinite;
+            transition: opacity 0.9s ease, transform 1.1s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1));
+        }
+
+        .entry-gate-button:focus-visible {
+            outline: none;
+        }
+
+        /* The focus ring is drawn in the portal's own light rather than a
+           default outline, so keyboard users get the same composition. */
+        .entry-gate-button:focus-visible .entry-gate-halo {
+            opacity: 1;
+            box-shadow: 0 0 0 1px rgba(var(--portal-pearl), 0.22);
         }
 
         .entry-gate-button.intro-hidden {
@@ -1523,14 +1592,20 @@
             pointer-events: none;
         }
 
+        /* The words stay sharp while everything around them stays soft: the
+           glow lives in the halo and the text-shadow, never in a blur on the
+           glyphs themselves once they have settled. */
         .entry-gate-letter {
             display: inline-block;
             opacity: 0;
             transform: translateY(9px) scale(0.86) rotateX(34deg);
             filter: blur(5px);
-            color: rgba(245, 242, 236, 0.92);
-            text-shadow: 0 0 10px rgba(245, 242, 236, 0.08), 0 0 26px rgba(199, 169, 108, 0.09);
-            transition: transform 0.54s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.42s ease, filter 0.5s ease;
+            color: rgba(var(--portal-pearl), 0.95);
+            text-shadow:
+                0 0 14px rgba(var(--portal-light), 0.3),
+                0 0 38px rgba(var(--portal-light), 0.14);
+            transition: transform 0.54s cubic-bezier(0.18, 0.8, 0.24, 1), opacity 0.42s ease,
+                        filter 0.5s ease, text-shadow 0.9s ease;
             transition-delay: calc(var(--i, 0) * 36ms);
         }
 
@@ -1542,6 +1617,8 @@
             margin-right: 0.24em;
         }
 
+        /* The hairline the words rest on, in the ring's own white. It is the
+           resting state of the mark and retreats once the letters arrive. */
         .entry-gate-sigil {
             position: absolute;
             left: 50%;
@@ -1550,71 +1627,70 @@
             height: 1px;
             transform: translate(-50%, -50%) scale(1);
             z-index: 2;
-            opacity: 0.88;
-            background: linear-gradient(90deg, transparent 0%, rgba(173, 145, 96, 0.2) 18%, rgba(173, 145, 96, 0.54) 50%, rgba(173, 145, 96, 0.2) 82%, transparent 100%);
-            box-shadow: 0 0 12px rgba(173, 145, 96, 0.22);
-            transition: opacity 0.4s ease, transform 0.45s ease, filter 0.45s ease;
+            opacity: 0.6;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(var(--portal-light), 0.12) 18%,
+                rgba(var(--portal-light), 0.42) 50%,
+                rgba(var(--portal-light), 0.12) 82%,
+                transparent 100%);
+            transition: opacity 0.7s ease, transform 0.8s ease, filter 0.7s ease;
             pointer-events: none;
         }
 
-        .entry-gate-sigil::before,
-        .entry-gate-sigil::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 8px;
-            height: 8px;
-            border: 1px solid rgba(173, 145, 96, 0.5);
-            transform: translateY(-50%) rotate(45deg);
-            background: rgba(7, 7, 7, 0.86);
-            box-shadow: 0 0 10px rgba(173, 145, 96, 0.2);
-        }
-
-        .entry-gate-sigil::before {
-            left: 24%;
-        }
-
-        .entry-gate-sigil::after {
-            right: 24%;
-        }
-
-        /* Slow diagonal light sheen sweeping across the button. */
+        /* A single slow traveller along the hairline — the only motion on the
+           control at rest, matched to the loop's own pace. */
         .entry-gate-button::after {
             content: '';
             position: absolute;
-            inset: 0;
-            z-index: 1;
-            background: linear-gradient(115deg,
-                transparent 32%,
-                rgba(245, 240, 224, 0.08) 46%,
-                rgba(255, 250, 235, 0.20) 50%,
-                rgba(245, 240, 224, 0.08) 54%,
-                transparent 68%);
-            transform: translateX(-130%);
-            animation: enterVoidSheen 6.5s ease-in-out 1.6s infinite;
+            left: 14%;
+            top: 50%;
+            z-index: 2;
+            width: 22%;
+            height: 1px;
+            transform: translate3d(0, -50%, 0);
+            background: linear-gradient(90deg, transparent, rgba(var(--portal-pearl), 0.5), transparent);
+            opacity: 0;
+            animation: enterVoidSheen 9s ease-in-out 2.2s infinite;
             pointer-events: none;
         }
 
+        /* Approach: the bloom swells, the letters brighten and open, and the
+           whole mark lifts a little. Nothing gains an edge. */
         .entry-gate-button:hover,
         .entry-gate-button:focus-visible {
-            border-color: rgba(226, 199, 138, 0.9);
-            background:
-                linear-gradient(180deg, rgba(58, 48, 28, 0.5), rgba(10, 9, 6, 0.7)),
-                rgba(120, 96, 54, 0.22);
-            color: #f7efe0;
-            /* Freeze the idle glow-breath so this stronger glow can take over. */
-            animation: none;
-            transform: translateY(-2px) scale(1.022);
-            box-shadow:
-                0 0 0 1px rgba(226, 199, 138, 0.4),
-                0 26px 60px rgba(0, 0, 0, 0.7),
-                0 0 72px rgba(199, 169, 108, 0.32),
-                inset 0 1px 0 rgba(245, 242, 236, 0.18),
-                inset 0 0 46px rgba(199, 169, 108, 0.12);
+            color: rgba(var(--portal-pearl), 1);
+            transform: translateY(-2px);
         }
 
+        .entry-gate-button:hover .entry-gate-halo,
+        .entry-gate-button:focus-visible .entry-gate-halo {
+            opacity: 1;
+            transform: translate3d(-50%, -50%, 0) scale(1.06);
+            animation: none;
+        }
+
+        .entry-gate-button:hover .entry-gate-letter,
+        .entry-gate-button:focus-visible .entry-gate-letter {
+            text-shadow:
+                0 0 18px rgba(var(--portal-light), 0.5),
+                0 0 54px rgba(var(--portal-light), 0.22);
+        }
+
+        .entry-gate-button:hover .entry-gate-label,
+        .entry-gate-button:focus-visible .entry-gate-label {
+            letter-spacing: 0.06em;
+        }
+
+        /* Press: the light draws in rather than the shape shrinking. */
         .entry-gate-button:active {
-            transform: translateY(0) scale(0.992);
+            transform: translateY(0);
+        }
+
+        .entry-gate-button:active .entry-gate-halo {
+            opacity: 0.72;
+            transform: translate3d(-50%, -50%, 0) scale(0.97);
+            transition-duration: 0.22s;
         }
 
         .entry-gate-button:hover .entry-gate-letter,
@@ -1638,6 +1714,184 @@
             filter: blur(2px);
         }
 
+        .entry-gate-label {
+            transition: letter-spacing 0.9s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1));
+        }
+
+        /* ── Entry sequence ───────────────────────────────────────────────
+           The preference, kept at the edge of the frame. At rest it is a
+           single point of the portal's light; the name and state are drawn
+           out of the darkness only when reached for. Clear of the notch and
+           the status bar on every device. */
+        .entry-seq {
+            position: absolute;
+            top: calc(1.35rem + env(safe-area-inset-top, 0px));
+            right: calc(1.35rem + env(safe-area-inset-right, 0px));
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+            pointer-events: auto;
+        }
+
+        /* A generous invisible target around a very small visible mark. */
+        .entry-seq-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.85rem;
+            margin: -0.85rem;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .entry-seq-dot {
+            position: relative;
+            width: 7px;
+            height: 7px;
+            flex: none;
+            border-radius: 50%;
+            background: rgba(var(--portal-pearl), 0.9);
+            box-shadow: 0 0 12px rgba(var(--portal-light), 0.5);
+            transition: background 0.7s ease, box-shadow 0.7s ease, opacity 0.7s ease;
+        }
+
+        /* The slow pulse that marks the sequence as armed. */
+        .entry-seq-dot::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(var(--portal-light), 0.3), transparent 70%);
+            animation: entrySeqPulse 5.2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* Bypassed: still legible, simply unlit. Never looks broken. */
+        .entry-seq[data-state="bypassed"] .entry-seq-dot {
+            background: rgba(var(--portal-light), 0.34);
+            box-shadow: none;
+        }
+
+        .entry-seq[data-state="bypassed"] .entry-seq-dot::after {
+            animation: none;
+            opacity: 0;
+        }
+
+        /* The name materialises letter by letter out of the black. */
+        .entry-seq-name {
+            display: inline-block;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.56rem;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: rgba(var(--portal-light), 0.62);
+            opacity: 0;
+            transform: translateX(6px);
+            filter: blur(3px);
+            transition: opacity 0.6s ease, transform 0.7s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1)), filter 0.6s ease;
+        }
+
+        .entry-seq-readout {
+            margin: 0;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.54rem;
+            font-weight: 500;
+            letter-spacing: 0.34em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: rgba(var(--portal-pearl), 0.78);
+            opacity: 0;
+            transition: opacity 0.5s ease 0.18s;
+            pointer-events: none;
+        }
+
+        .entry-seq[data-state="bypassed"] .entry-seq-readout {
+            color: rgba(var(--portal-light), 0.42);
+        }
+
+        /* Each character arrives on its own beat, as one continuous reveal
+           that runs on from the name. */
+        .entry-seq-word span {
+            display: inline-block;
+            opacity: 0;
+            filter: blur(4px);
+            transform: translateY(3px);
+            transition: opacity 0.42s ease, filter 0.42s ease, transform 0.5s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1));
+            transition-delay: calc(240ms + var(--i, 0) * 46ms);
+        }
+
+        .entry-seq-word span.space { width: 0.34em; }
+
+        .entry-seq.is-open .entry-seq-name {
+            opacity: 1;
+            transform: translateX(0);
+            filter: blur(0);
+        }
+
+        .entry-seq.is-open .entry-seq-readout { opacity: 1; }
+
+        .entry-seq.is-open .entry-seq-word span {
+            opacity: 1;
+            filter: blur(0);
+            transform: translateY(0);
+        }
+
+        .entry-seq-control:focus-visible {
+            outline: none;
+        }
+
+        .entry-seq-control:focus-visible .entry-seq-dot {
+            box-shadow: 0 0 0 1px rgba(var(--portal-pearl), 0.5), 0 0 16px rgba(var(--portal-light), 0.6);
+        }
+
+        @keyframes entrySeqPulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.9); }
+            50%      { opacity: 1;   transform: scale(1.25); }
+        }
+
+        /* Touch has no hover: the name stays out permanently and the mark is
+           always labelled, so a preference is never changed by accident. */
+        @media (hover: none) {
+            .entry-seq-name { opacity: 1; transform: none; filter: none; }
+            .entry-seq-readout { opacity: 1; }
+            .entry-seq-word span { opacity: 1; filter: none; transform: none; transition-delay: 0ms; }
+        }
+
+        .void-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            clip-path: inset(50%);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        html.reduce-motion .entry-gate-halo,
+        html.reduce-motion .entry-gate-button::after,
+        html.reduce-motion .entry-seq-dot::after {
+            animation: none !important;
+        }
+
+        html.reduce-motion .entry-seq-name,
+        html.reduce-motion .entry-seq-readout,
+        html.reduce-motion .entry-seq-word span,
+        html.reduce-motion .entry-gate-label {
+            transition-duration: 0.12s !important;
+            transition-delay: 0ms !important;
+            filter: none !important;
+        }
+
         @keyframes enterVoidOuterPulse {
             0% {
                 box-shadow: 0 0 0 0 rgba(173, 145, 96, 0.24), 0 14px 30px rgba(0, 0, 0, 0.58);
@@ -1650,31 +1904,20 @@
             }
         }
 
-        /* Gentle breathing of the button's gold aura + depth (keeps all shadow
-           layers so the glass/inset highlights never disappear). */
+        /* The bloom breathes on opacity and scale alone — compositor work, no
+           shadow repaint — at the loop's unhurried pace. */
         @keyframes enterVoidGlowBreath {
-            0%, 100% {
-                box-shadow:
-                    0 0 0 1px rgba(199, 169, 108, 0.18),
-                    0 20px 46px rgba(0, 0, 0, 0.66),
-                    0 0 40px rgba(199, 169, 108, 0.12),
-                    inset 0 1px 0 rgba(245, 242, 236, 0.12),
-                    inset 0 0 34px rgba(199, 169, 108, 0.06);
-            }
-            50% {
-                box-shadow:
-                    0 0 0 1px rgba(199, 169, 108, 0.3),
-                    0 22px 50px rgba(0, 0, 0, 0.68),
-                    0 0 64px rgba(199, 169, 108, 0.26),
-                    inset 0 1px 0 rgba(245, 242, 236, 0.16),
-                    inset 0 0 42px rgba(199, 169, 108, 0.1);
-            }
+            0%, 100% { opacity: 0.78; transform: translate3d(-50%, -50%, 0) scale(0.92); }
+            50%      { opacity: 1;    transform: translate3d(-50%, -50%, 0) scale(1); }
         }
 
-        /* Diagonal light sheen travelling across the button face. */
+        /* A light travelling the length of the hairline and fading out before
+           it reaches the end, so nothing ever strikes an edge. */
         @keyframes enterVoidSheen {
-            0% { transform: translateX(-130%); }
-            24%, 100% { transform: translateX(130%); }
+            0%       { transform: translate3d(0, -50%, 0); opacity: 0; }
+            8%       { opacity: 0.55; }
+            26%      { opacity: 0; }
+            27%, 100% { transform: translate3d(290%, -50%, 0); opacity: 0; }
         }
 
         @keyframes storyStarsFadeIn {
@@ -10450,16 +10693,50 @@
 </head>
 <body class="gate-open">
     <script>
-        /* If the visitor has already entered the VOID this session (e.g. they
-           opened the Privacy Policy and clicked "Back to VOID"), skip the
-           cinematic entry gate and restore where they were — don't replay the
-           intro or drop them at the top. Runs before the gate paints. */
+        /* Decides, before the gate can paint, whether this is a fresh entry to
+           the house or a return to a room the visitor was already in.
+
+           The distinction used to be a single session flag, and the flag was
+           written on arrivals that were not entries at all — including simply
+           having the gate switched off. Once written it was never cleared, so
+           turning the entry sequence back on could not bring the gate back in
+           that tab: it had been marked "already entered" for the session.
+           The flag now means exactly one thing — this visitor has passed
+           through the gate in this tab — and it is read only to recognise an
+           internal return. */
         (function () {
             try {
                 var gateDisabled = false;
                 try { gateDisabled = localStorage.getItem('void-gate-disabled') === '1'; } catch (e) {}
-                var returning = false;
-                try { returning = sessionStorage.getItem('void-entered') === '1'; } catch (e) {}
+                var entered = false;
+                try { entered = sessionStorage.getItem('void-entered') === '1'; } catch (e) {}
+
+                /* A reload is a fresh entry: the visitor asked for the site
+                   again from the top. Coming back from another page of the
+                   house is not. Navigation Timing answers this without timers
+                   or guesswork; where it is unavailable the referrer decides. */
+                var navType = '';
+                try {
+                    var nav = performance.getEntriesByType('navigation')[0];
+                    navType = nav ? nav.type : (performance.navigation && performance.navigation.type === 1 ? 'reload' : '');
+                } catch (e) {}
+
+                var sameOrigin = false;
+                try {
+                    sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin;
+                } catch (e) {}
+
+                /* Reloading clears the mark, so the gate returns. Without this
+                   a refresh inherited the previous visit's "entered" state and
+                   the gate stayed away for the life of the tab. */
+                if (navType === 'reload') {
+                    entered = false;
+                    try { sessionStorage.removeItem('void-entered'); } catch (e) {}
+                }
+
+                /* Only a genuine internal return skips the gate: the mark is
+                   set AND the visitor arrived from one of our own pages. */
+                var returning = entered && (sameOrigin || navType === 'back_forward');
                 // Returning from a social (OAuth) sign-in redirect — land inside.
                 var oauthReturn = (location.hash && location.hash.indexOf('access_token') !== -1);
                 // Sent here to sign in (protected page) or returning from an email
@@ -10480,19 +10757,21 @@
                     }
                 } catch (e) {}
                 if (fromLinks) {
-                    try {
-                        sessionStorage.setItem('void-entered', '1');
-                        sessionStorage.setItem('void-defer-auth', '1');
-                    } catch (e) {}
+                    try { sessionStorage.setItem('void-defer-auth', '1'); } catch (e) {}
                 }
+
+                /* Each of these is a deliberate request to land inside: the
+                   sequence is bypassed by preference, the visitor is coming
+                   back from a room of the house, an identity provider is
+                   handing them back, or a link promised a specific place.
+                   None of them is an entry, so none of them marks one. The
+                   flag is written in exactly two places now — passing through
+                   the gate, and choosing to bypass it from the gate itself. */
                 if (gateDisabled || returning || oauthReturn || loginRequest || fromLinks) {
                     document.body.classList.remove('gate-open');
                     // void-returning also hides the intro gate via CSS, so any skip
                     // path lands the visitor straight inside.
                     document.body.classList.add('void-entered', 'void-returning');
-                    // When the gate is turned off in Settings, treat the visitor as
-                    // already inside for the rest of the session.
-                    if (gateDisabled || oauthReturn || loginRequest) { try { sessionStorage.setItem('void-entered', '1'); } catch (e) {} }
                     var y = parseInt(sessionStorage.getItem('void-scroll') || '0', 10);
                     if (returning && y > 0) {
                         var restore = function () { window.scrollTo(0, y); };
@@ -10508,7 +10787,27 @@
             <source src="enter-the-void.mp4" type="video/mp4">
         </video>
         <div class="entry-gate-portal" aria-hidden="true"></div>
+
+        <!-- The entry-sequence preference, reachable from the gate itself. It
+             writes the same key the Preferences panel writes; there is one
+             setting, shown in two places. -->
+        <div class="entry-seq" id="entrySeq">
+            <button type="button" class="entry-seq-control" id="entrySeqToggle"
+                    role="switch" aria-checked="true" aria-describedby="entrySeqState">
+                <span class="entry-seq-dot" aria-hidden="true"></span>
+                <span class="entry-seq-name">Entry Sequence</span>
+            </button>
+            <p class="entry-seq-readout" aria-hidden="true">
+                <span class="entry-seq-word" id="entrySeqWord"></span>
+            </p>
+            <!-- The spoken truth, independent of the letter-by-letter reveal. -->
+            <span class="void-sr-only" id="entrySeqState" aria-live="polite">Entry sequence active</span>
+        </div>
+
+        <!-- No frame, no plate. The mark is struck from the same light as the
+             ring behind it: a bloom, a hairline, and the words. -->
         <button type="button" class="entry-gate-button" id="enterVoidButton" aria-label="Enter The Void">
+            <span class="entry-gate-halo" aria-hidden="true"></span>
             <span class="entry-gate-label" aria-hidden="true">
                 <span class="entry-gate-letter" style="--i:0;">E</span>
                 <span class="entry-gate-letter" style="--i:1;">N</span>
@@ -12268,6 +12567,39 @@
 
         setupVideo(entryGateVideo, 1);
 
+        /* The loop is the gate's whole atmosphere, so the composition waits for
+           it — but never on it. The screen is black and lit from the centre
+           while it loads, and if the file is slow or never arrives the gate
+           settles into that same lit black and the control appears anyway.
+           There is no state in which the visitor is left with nothing. */
+        (function initGateMedia() {
+            const gate = document.getElementById('entryGate');
+            if (!gate) return;
+            if (!entryGateVideo) { gate.dataset.media = 'ready'; return; }
+
+            let settled = false;
+            const settle = (state) => {
+                if (settled) return;
+                settled = true;
+                gate.dataset.media = state;
+                window.clearTimeout(timer);
+            };
+
+            // Enough time for a slow connection to deliver a first frame,
+            // short enough that no one is left looking at an empty screen.
+            const timer = window.setTimeout(() => settle('slow'), 6000);
+
+            if (entryGateVideo.readyState >= 3) settle('ready');
+            entryGateVideo.addEventListener('canplay', () => settle('ready'), { once: true });
+            entryGateVideo.addEventListener('playing', () => settle('ready'), { once: true });
+            entryGateVideo.addEventListener('error', () => settle('failed'), { once: true });
+            entryGateVideo.addEventListener('stalled', () => {
+                // Only a real failure if nothing has been decoded yet.
+                if (entryGateVideo.readyState < 2) settle('slow');
+            });
+            gate.dataset.media = gate.dataset.media || 'loading';
+        })();
+
         function activateWithKeyboard(event, callback) {
             if (!event || typeof callback !== 'function') return;
 
@@ -12312,6 +12644,107 @@
                 storyCrawl.classList.add('is-animating');
             });
         }
+
+        /* ── Entry sequence ───────────────────────────────────────────────
+           The one place the preference is read and written. The Preferences
+           panel and the control on the gate both go through here, so the two
+           can never disagree and there is no second key to keep in step.
+           The storage key is unchanged, so existing visitors keep their
+           setting. */
+        window.voidEntrySequence = (function () {
+            const KEY = 'void-gate-disabled';
+            const listeners = [];
+
+            function get() {
+                try { return localStorage.getItem(KEY) !== '1'; } catch (e) { return true; }
+            }
+
+            function set(active) {
+                try {
+                    if (active) {
+                        localStorage.removeItem(KEY);
+                        /* Turning it back on must be able to bring the gate
+                           back in this tab. The "already entered" mark is what
+                           suppresses it, so arming the sequence clears it —
+                           without this the setting appeared to do nothing
+                           until the visitor opened a new tab. */
+                        sessionStorage.removeItem('void-entered');
+                    } else {
+                        localStorage.setItem(KEY, '1');
+                    }
+                } catch (e) {}
+                listeners.forEach((fn) => { try { fn(active); } catch (e) {} });
+                return active;
+            }
+
+            function onChange(fn) { listeners.push(fn); }
+
+            // Another tab changing the setting keeps this one honest.
+            window.addEventListener('storage', (e) => {
+                if (e.key !== KEY) return;
+                const active = get();
+                listeners.forEach((fn) => { try { fn(active); } catch (err) {} });
+            });
+
+            return { get: get, set: set, onChange: onChange };
+        })();
+
+        /* The control at the corner of the gate. It changes the preference and
+           nothing else: the visitor stays on this screen until they choose to
+           enter, so switching the sequence off never throws them inside. */
+        (function initEntrySeq() {
+            const root = document.getElementById('entrySeq');
+            const toggle = document.getElementById('entrySeqToggle');
+            const word = document.getElementById('entrySeqWord');
+            const state = document.getElementById('entrySeqState');
+            if (!root || !toggle || !word) return;
+
+            // Split into per-character spans so the state can materialise one
+            // letter at a time rather than simply fading in as a block.
+            function write(text) {
+                word.textContent = '';
+                text.split('').forEach((ch, i) => {
+                    const span = document.createElement('span');
+                    if (ch === ' ') span.className = 'space';
+                    else span.textContent = ch;
+                    span.style.setProperty('--i', i);
+                    word.appendChild(span);
+                });
+            }
+
+            function paint(active) {
+                root.dataset.state = active ? 'active' : 'bypassed';
+                toggle.setAttribute('aria-checked', active ? 'true' : 'false');
+                toggle.setAttribute('aria-label', 'Entry sequence');
+                write(active ? 'Active' : 'Bypassed');
+                // Announced as a sentence, independent of the letter reveal.
+                if (state) state.textContent = 'Entry sequence ' + (active ? 'active' : 'bypassed');
+            }
+
+            paint(window.voidEntrySequence.get());
+            window.voidEntrySequence.onChange(paint);
+
+            const open = () => root.classList.add('is-open');
+            const close = () => root.classList.remove('is-open');
+
+            root.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') open(); });
+            root.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') close(); });
+            toggle.addEventListener('focus', open);
+            toggle.addEventListener('blur', close);
+
+            toggle.addEventListener('click', () => {
+                const next = toggle.getAttribute('aria-checked') !== 'true';
+                window.voidEntrySequence.set(next);
+                // The change confirms itself: the word is rewritten and the
+                // letters arrive again. Held open briefly on touch so the new
+                // state is actually read before it retreats.
+                open();
+                if (root.dataset.hold) window.clearTimeout(+root.dataset.hold);
+                root.dataset.hold = String(window.setTimeout(() => {
+                    if (document.activeElement !== toggle && !root.matches(':hover')) close();
+                }, 2600));
+            });
+        })();
 
         // The pre-order invite shouldn't greet the visitor on every entry.
         // Surface it on the first visit, then stay quiet until five more
@@ -13248,7 +13681,10 @@
                 activateWithKeyboard(event, enterVoid);
             });
 
-            entryGate.addEventListener('click', () => {
+            // Anywhere on the gate enters — except the entry-sequence control,
+            // which is a setting and must never double as the way in.
+            entryGate.addEventListener('click', (event) => {
+                if (event.target.closest('#entrySeq')) return;
                 enterVoid();
             });
 
@@ -16867,9 +17303,7 @@
             }
             function syncSettings() {
                 const mode = currentThemeMode();
-                let disabled = false;
-                try { disabled = localStorage.getItem('void-gate-disabled') === '1'; } catch (e) {}
-                if (gateSwitch) gateSwitch.setAttribute('aria-checked', disabled ? 'false' : 'true');
+                if (gateSwitch) gateSwitch.setAttribute('aria-checked', window.voidEntrySequence.get() ? 'true' : 'false');
                 // Signed-in state (Supabase account or local email).
                 Promise.resolve(typeof window.voidGetIdentity === 'function' ? window.voidGetIdentity() : null).then((id) => {
                     const who = id ? (id.email || id.name) : null;
@@ -16907,15 +17341,21 @@
                 }
             });
 
-            // Intro-gate toggle (checked = gate shown on load).
-            if (gateSwitch) gateSwitch.addEventListener('click', () => {
-                const nowEnabled = gateSwitch.getAttribute('aria-checked') !== 'true';
-                gateSwitch.setAttribute('aria-checked', nowEnabled ? 'true' : 'false');
-                try {
-                    if (nowEnabled) localStorage.removeItem('void-gate-disabled');
-                    else localStorage.setItem('void-gate-disabled', '1');
-                } catch (e) {}
-            });
+            // Intro-gate toggle (checked = gate shown on load). Writes through
+            // the shared entry-sequence API, so the control on the gate itself
+            // moves with it — one setting, two places to reach it.
+            if (gateSwitch) {
+                // Subscribed rather than synced only when the panel opens: the
+                // setting can change from the gate, or in another tab, while
+                // this switch is already on screen. Reading a stale
+                // aria-checked on click would flip it the wrong way.
+                window.voidEntrySequence.onChange((active) => {
+                    gateSwitch.setAttribute('aria-checked', active ? 'true' : 'false');
+                });
+                gateSwitch.addEventListener('click', () => {
+                    window.voidEntrySequence.set(gateSwitch.getAttribute('aria-checked') !== 'true');
+                });
+            }
 
             // Settings action buttons.
             if (settingsModal) settingsModal.addEventListener('click', (e) => {
