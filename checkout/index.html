@@ -26,6 +26,10 @@
         } catch (e) { /* leave the page in its visible default */ }
     </script>
     <script src="https://js.stripe.com/v3/"></script>
+    <!-- The house typing mark. Deferred: it enhances fields that already
+         work without it, and never blocks first paint. -->
+    <link rel="stylesheet" href="/assets/void-smooth-caret.css?v=20260916a">
+    <script defer src="/assets/void-smooth-caret.js?v=20260916a"></script>
 </head>
 <body>
     <div class="ck-atmos" aria-hidden="true"></div>

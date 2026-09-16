@@ -1,0 +1,67 @@
+/* ============================================================
+   VOID© — Smooth caret
+   One mark for the whole document, fixed to the viewport and moved by
+   void-smooth-caret.js. The native caret is only hidden on the field
+   that currently has ours, so if the script never runs the browser's
+   own caret is exactly where it always was.
+   ============================================================ */
+
+.void-caret {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2147483000;   /* above the drawer, the modals and the veil */
+    width: 1.5px;
+    height: 1em;
+    /* The house gold rather than a bright cursor: present, not loud. */
+    background: var(--void-accent, #c7a96c);
+    border-radius: 0.5px;
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform;
+    transition: opacity 0.12s ease;
+}
+
+/* The ruler. Never painted, never read aloud, never part of layout. */
+.void-caret-measure {
+    position: fixed;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+    white-space: pre;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* The baseline. Every field a visitor can type into gets the house gold for
+   its caret, so the mark reads the same whether the smooth one applies or
+   not — on an email field, where the platform will not report a caret index,
+   and on any page where this script fails to run. */
+/* Wrapped in :where() so the whole thing carries no specificity at all. It is
+   a default, not a decision: any existing per-field rule still wins, and the
+   host rule below needs nothing more than a single class to override it. */
+:where(
+    input[type="text"],
+    input[type="search"],
+    input[type="url"],
+    input[type="tel"],
+    input[type="password"],
+    input[type="email"],
+    input[type="number"],
+    input:not([type]),
+    textarea,
+    [contenteditable]:not([contenteditable="false"])
+):where(:not([readonly]):not(:disabled)) {
+    caret-color: var(--void-accent, #c7a96c);
+}
+
+/* Applied only while our caret is on this field, and removed on blur. */
+.void-caret-host {
+    caret-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .void-caret { transition: none; }
+}
+
+html.reduce-motion .void-caret { transition: none; }
