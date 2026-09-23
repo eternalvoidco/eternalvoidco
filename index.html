@@ -1585,6 +1585,15 @@
             --gate-sync: 0s;
         }
 
+        /* Centred on the control. When the bloom was split into an element for
+           the envelope and a pseudo for the breath, the centring translate went
+           with the pseudo's transform and was never replaced here — so the
+           glow hung off the lower right of the words as a separate orb instead
+           of sitting behind them. The independent `translate` property does
+           the centring, which composes with the pseudo's `transform` instead
+           of competing with it. Margins could not: a percentage margin-top
+           resolves against the container's WIDTH, which put the bloom five
+           hundred pixels above the words. */
         .entry-gate-halo {
             position: absolute;
             left: 50%;
@@ -1592,6 +1601,7 @@
             z-index: 1;
             width: 150%;
             height: 340%;
+            translate: -50% -50%;
             pointer-events: none;
         }
 
