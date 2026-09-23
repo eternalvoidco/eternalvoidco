@@ -1374,21 +1374,6 @@
             z-index: 1;
         }
 
-        /* A breath of grain over the whole frame. The bloom peaks around
-           rgb(20,20,20) and falls to black across some five hundred pixels —
-           about one 8-bit level every twenty-five, which is where concentric
-           banding shows on a good panel. This dithers it. Full-bleed by
-           definition, so it cannot introduce an edge of its own, and static,
-           so it costs one tiled decode and nothing after. */
-        .entry-gate-grain {
-            position: absolute;
-            inset: 0;
-            z-index: 2;
-            pointer-events: none;
-            opacity: 0.035;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-            background-size: 120px 120px;
-        }
 
         /* ===== Cinematic "enter another world" transition ===== */
         /* GPU-friendly: only transform / opacity / filter animate. */
@@ -1426,13 +1411,21 @@
             opacity: 0;
             z-index: 0;
             pointer-events: none;
-            animation: enterVoidStandby 7.4s ease-in-out infinite;
             transition: opacity 1.2s ease;
         }
 
+        /* The animation lives here, not on the base rule. An animation
+           overrides a normal declaration for as long as it runs, so declaring
+           it unconditionally overrode `opacity: 0` and left this 900px white
+           radial painting across the whole frame at every moment — a standby
+           light for a film that had already arrived. That is what greyed the
+           void. It now exists only while there is genuinely nothing to show. */
         .entry-gate[data-media="loading"]::after,
         .entry-gate[data-media="slow"]::after,
-        .entry-gate[data-media="failed"]::after { opacity: 1; }
+        .entry-gate[data-media="failed"]::after {
+            opacity: 1;
+            animation: enterVoidStandby 7.4s ease-in-out infinite;
+        }
 
         @keyframes enterVoidStandby {
             0%, 100% { opacity: 0.75; transform: translate3d(-50%, -50%, 0) scale(0.94); }
@@ -1604,8 +1597,7 @@
 
         /* Lit by the film only while there is a film to be lit by. */
         .entry-gate[data-media="ready"] .entry-gate-halo,
-        .entry-gate[data-media="ready"] .entry-gate-sigil,
-        .entry-gate[data-media="ready"] .entry-gate-grain {
+        .entry-gate[data-media="ready"] .entry-gate-sigil {
             animation: gateSceneLight 30s linear infinite;
             animation-delay: var(--gate-sync);
         }
@@ -10976,7 +10968,6 @@
         <video autoplay loop muted playsinline class="entry-gate-video" id="entryGateVideo">
             <source src="enter-the-void.mp4" type="video/mp4">
         </video>
-        <span class="entry-gate-grain" aria-hidden="true"></span>
         <div class="entry-gate-portal" aria-hidden="true"></div>
 
         <!-- The entry-sequence preference, reachable from the gate itself. It
