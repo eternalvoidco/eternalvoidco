@@ -1374,6 +1374,22 @@
             z-index: 1;
         }
 
+        /* A breath of grain over the whole frame. The bloom peaks around
+           rgb(20,20,20) and falls to black across some five hundred pixels —
+           about one 8-bit level every twenty-five, which is where concentric
+           banding shows on a good panel. This dithers it. Full-bleed by
+           definition, so it cannot introduce an edge of its own, and static,
+           so it costs one tiled decode and nothing after. */
+        .entry-gate-grain {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+            background-size: 120px 120px;
+        }
+
         /* ===== Cinematic "enter another world" transition ===== */
         /* GPU-friendly: only transform / opacity / filter animate. */
         .entry-gate-video {
@@ -1557,8 +1573,25 @@
             pointer-events: auto;
         }
 
-        /* The bloom. A feathered radial with no edge of its own, so the control
-           dissolves into the black instead of sitting on top of it. */
+        /* ── Lit by the scene ─────────────────────────────────────────────
+           The loop was measured rather than guessed at: 1920×1080, 30s, mean
+           luminance 9.11 across the body of it, varying only 10% — there is no
+           lightning in this film and nothing to strike on. What it does have is
+           a 3.03s breath (crests at 3.5s, 6.5s, 9.5s … exactly ten cycles per
+           loop, which is why it wraps seamlessly) and one real darkness: from
+           28.5s the light falls away to an absolutely black frame at 29.97s,
+           and takes until 1.5s to return.
+
+           That blackout is when an overlay betrays itself, so the gate's own
+           light is driven by the same curve. Two animations, multiplied by
+           nesting: the envelope carries the 30s fall to nothing, the breath
+           carries the 3.03s rhythm inside it. Both are phase-locked to the
+           video by a single custom property, so no frame is ever sampled and
+           no script runs per frame. */
+        .entry-gate {
+            --gate-sync: 0s;
+        }
+
         .entry-gate-halo {
             position: absolute;
             left: 50%;
@@ -1566,7 +1599,26 @@
             z-index: 1;
             width: 150%;
             height: 340%;
-            transform: translate3d(-50%, -50%, 0) scale(0.92);
+            pointer-events: none;
+        }
+
+        /* Lit by the film only while there is a film to be lit by. */
+        .entry-gate[data-media="ready"] .entry-gate-halo,
+        .entry-gate[data-media="ready"] .entry-gate-sigil,
+        .entry-gate[data-media="ready"] .entry-gate-grain {
+            animation: gateSceneLight 30s linear infinite;
+            animation-delay: var(--gate-sync);
+        }
+
+        .entry-gate[data-media="ready"] .entry-gate-sigil {
+            animation-name: gateSceneVeil;
+        }
+
+        .entry-gate-halo::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            transform: translate3d(0, 0, 0) scale(0.92);
             /* Two things used to draw a line here. The gradient ended on
                `transparent`, which is transparent BLACK — interpolating to it
                from a white stop takes the colour through grey, and that grey
@@ -1582,10 +1634,36 @@
                 rgba(var(--portal-light), 0.016) 46%,
                 rgba(var(--portal-light), 0) 62%,
                 rgba(0, 0, 0, 0) 100%);
-            opacity: 0.85;
             pointer-events: none;
-            animation: enterVoidGlowBreath 7.4s ease-in-out infinite;
+            /* The breath, on the film's own 3.03s period and phase. */
+            animation: gateSceneBreath 3.03s ease-in-out infinite;
+            animation-delay: var(--gate-sync);
             transition: opacity 0.9s ease, transform 1.1s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1));
+        }
+
+        /* The envelope. Measured from the loop: black at the wrap, back up by
+           1.5s, steady through the body, gone again from 28.5s. While the film
+           is black the gate's light is black too, so there is nothing of the
+           overlay left to see. */
+        @keyframes gateSceneLight {
+            0%      { opacity: 0; }
+            1.7%    { opacity: 0.18; }   /* 0.5s — first glimmer returning */
+            3.3%    { opacity: 0.72; }   /* 1.0s */
+            5%      { opacity: 0.95; }   /* 1.5s — settled */
+            9%, 91% { opacity: 1; }
+            95%     { opacity: 0.9; }    /* 28.5s — the fall begins */
+            97.5%   { opacity: 0.5; }    /* 29.25s */
+            98.3%   { opacity: 0.22; }   /* 29.5s */
+            99.3%   { opacity: 0.05; }   /* 29.8s */
+            99.9%,
+            100%    { opacity: 0; }      /* 29.97s — the black frame */
+        }
+
+        /* Crests at 3.5s, 6.5s, 9.5s: a crest sits 0.47 of the way through
+           each 3.03s cycle, which is where this one peaks. */
+        @keyframes gateSceneBreath {
+            0%, 100% { opacity: 0.74; transform: translate3d(0, 0, 0) scale(0.92); }
+            47%      { opacity: 1;    transform: translate3d(0, 0, 0) scale(1); }
         }
 
         .entry-gate-button:focus-visible {
@@ -1595,7 +1673,7 @@
         /* Focus is shown by the light itself, never by a ring: a box-shadow
            here drew exactly the pale hairline this composition is meant not to
            have. The sigil brightening is what marks the control as focused. */
-        .entry-gate-button:focus-visible .entry-gate-halo {
+        .entry-gate-button:focus-visible .entry-gate-halo::before {
             opacity: 1;
         }
 
@@ -1646,6 +1724,11 @@
 
         /* The hairline the words rest on, in the ring's own white. It is the
            resting state of the mark and retreats once the letters arrive. */
+        /* The soft shapes ride the same envelope as the bloom: a hairline
+           floating on a black frame reads as a separate layer just as plainly
+           as a rectangle does. The letters are deliberately left out — they are
+           type, not an overlay, and ENTER THE VOID has to stay legible and
+           clickable through the darkest frame of the loop. */
         .entry-gate-sigil {
             position: absolute;
             left: 50%;
@@ -1665,6 +1748,15 @@
                 rgba(0, 0, 0, 0) 100%);
             transition: opacity 0.7s ease, transform 0.8s ease, filter 0.7s ease;
             pointer-events: none;
+        }
+
+        @keyframes gateSceneVeil {
+            0%      { filter: opacity(0); }
+            5%      { filter: opacity(0.95); }
+            9%, 91% { filter: opacity(1); }
+            95%     { filter: opacity(0.9); }
+            98.3%   { filter: opacity(0.22); }
+            100%    { filter: opacity(0); }
         }
 
         /* A single slow traveller along the hairline — the only motion on the
@@ -1692,11 +1784,13 @@
             transform: translateY(-2px);
         }
 
-        .entry-gate-button:hover .entry-gate-halo,
-        .entry-gate-button:focus-visible .entry-gate-halo {
+        /* Approach lifts the bloom above its breath without stopping it —
+           the rhythm belongs to the film, not to the cursor. */
+        .entry-gate-button:hover .entry-gate-halo::before,
+        .entry-gate-button:focus-visible .entry-gate-halo::before {
             opacity: 1;
-            transform: translate3d(-50%, -50%, 0) scale(1.06);
-            animation: none;
+            transform: translate3d(0, 0, 0) scale(1.06);
+            animation-play-state: paused;
         }
 
         .entry-gate-button:hover .entry-gate-letter,
@@ -1716,9 +1810,9 @@
             transform: translateY(0);
         }
 
-        .entry-gate-button:active .entry-gate-halo {
+        .entry-gate-button:active .entry-gate-halo::before {
             opacity: 0.72;
-            transform: translate3d(-50%, -50%, 0) scale(0.97);
+            transform: translate3d(0, 0, 0) scale(0.97);
             transition-duration: 0.22s;
         }
 
@@ -1910,7 +2004,9 @@
             border: 0;
         }
 
-        html.reduce-motion .entry-gate-halo,
+        /* Reduced motion keeps the envelope — it is what hides the overlay
+           in the dark — but drops the breath and the traveller. */
+        html.reduce-motion .entry-gate-halo::before,
         html.reduce-motion .entry-gate-button::after,
         html.reduce-motion .entry-seq-dot::after {
             animation: none !important;
@@ -10880,6 +10976,7 @@
         <video autoplay loop muted playsinline class="entry-gate-video" id="entryGateVideo">
             <source src="enter-the-void.mp4" type="video/mp4">
         </video>
+        <span class="entry-gate-grain" aria-hidden="true"></span>
         <div class="entry-gate-portal" aria-hidden="true"></div>
 
         <!-- The entry-sequence preference, reachable from the gate itself. It
@@ -12682,6 +12779,33 @@
             // Enough time for a slow connection to deliver a first frame,
             // short enough that no one is left looking at an empty screen.
             const timer = window.setTimeout(() => settle('slow'), 6000);
+
+            /* Phase-lock the gate's light to the film. A negative delay starts
+               a CSS animation partway through, so setting it to the video's
+               current time puts the 30s envelope and the 3.03s breath exactly
+               where the loop is. It is set when playback starts and again each
+               time the loop wraps — detected by the time running backwards,
+               which `timeupdate` reports about four times a second. No frame is
+               ever decoded to a canvas and nothing runs per frame. */
+            let lastTime = 0;
+            const sync = () => {
+                const t = entryGateVideo.currentTime || 0;
+                gate.style.setProperty('--gate-sync', (-t).toFixed(2) + 's');
+                lastTime = t;
+            };
+            entryGateVideo.addEventListener('play', sync);
+            entryGateVideo.addEventListener('seeked', sync);
+            entryGateVideo.addEventListener('timeupdate', () => {
+                const t = entryGateVideo.currentTime || 0;
+                if (t < lastTime) sync();      // the loop has come round
+                else lastTime = t;
+            });
+            // A backgrounded tab pauses the film; the light must not drift on
+            // without it, so the phase is retaken when the tab comes back.
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) sync();
+            });
+            if (entryGateVideo.currentTime) sync();
 
             if (entryGateVideo.readyState >= 3) settle('ready');
             entryGateVideo.addEventListener('canplay', () => settle('ready'), { once: true });
