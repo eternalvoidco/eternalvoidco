@@ -4030,7 +4030,13 @@
             z-index: 2;
             pointer-events: none;
             opacity: 0;
-            mix-blend-mode: screen;
+            /* The rings were light on transparency, so screen blending was right
+               for them. A cloth surface is mostly black and has to be able to
+               hold shadow; under screen blending black contributes nothing and
+               shadow cannot exist at all. The layer composites normally now.
+               Nothing is lost by it: there is no hero video behind this — the
+               id that code looks for has never existed — only the section's
+               own black. */
             transition: opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
@@ -18000,112 +18006,51 @@
         })();
     </script>
 
-    <!-- ─────────────────────────────────────────────────────────────────────
-         MAGIC RINGS — gold WebGL hero backdrop (adapted from the React Bits
-         component to vanilla JS for this static site). Three.js is loaded from
-         a CDN (allowed in the CSP). Purely ambient: no pointer interaction, so
-         it never blocks the hero buttons. Pauses when off-screen or the tab is
-         hidden, and renders a single static frame under reduce-motion.
-         ── Edit MAGIC_RINGS_CONFIG below to tune colours, count, speed, etc. ──
-    ───────────────────────────────────────────────────────────────────────── -->
+    <!-- ─────────────────────────────────────────────────────────────────
+         WOVEN GROUND — the hero backdrop, a macro view of black cotton.
+
+         Replaces the MAGIC RINGS effect. Same r160 setup, same mount, same
+         orthographic full-frame quad: the surface is lit analytically in the
+         fragment shader rather than built as geometry, because a single plane
+         cannot cast shadow onto itself and a shadow-map pass has no place in
+         a first paint. Normals come from the weave height field; one low
+         directional light rakes across it.
+
+         Colour comes from the house tokens, read from :root at runtime rather
+         than restated here, so the palette cannot drift from the stylesheet.
+         --void-gold-sheen is a CSS gradient and cannot be a uniform; its stops
+         are reproduced as the highlight ramp below.
+
+         STATIC for now — a single frame, no loop. The visibility and resize
+         scaffolding is kept so the sweep can be switched on without rework.
+    ────────────────────────────────────────────────────────────────── -->
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-        (function initMagicRings() {
+        (function initWovenGround() {
             const mount = document.getElementById('heroRings');
             if (!mount) return;
 
-            // ── Editable configuration (gold, tuned for the VOID hero) ──
-            const MAGIC_RINGS_CONFIG = {
-                color: '#8a6a34',       // deep gold — inner rings
-                colorTwo: '#f3e3ba',    // champagne — outer rings
-                speed: 0.85,            // animation pace (1 = original) — smooth, close to source
-                ringCount: 6,
-                attenuation: 10,
-                lineThickness: 2,
-                baseRadius: 0.35,
-                radiusStep: 0.1,
-                scaleRate: 0.1,
-                opacity: 1,
-                noiseAmount: 0.04,
-                rotation: 0,
-                ringGap: 1.5,
-                fadeIn: 0.7,
-                fadeOut: 0.5,
-                // ── Cursor reactivity — gentle, like the source (keeps the centred
-                //    sphere calm and smooth rather than shoving it around) ──
-                followMouse: true,      // rings drift toward the cursor
-                mouseInfluence: 0.09,   // how far they drift (0 = off)
-                parallax: 0.05,         // per-ring depth offset with the cursor
-                hoverScale: 1.05,       // subtle swell while the cursor is over the hero
-                clickBurst: true        // soft flare on click
+            // ── Editable configuration ──
+            const WOVEN_CONFIG = {
+                weaveScale:   96.0,   // threads across the frame
+                bump:         0.020,  // how steeply the threads turn the light
+                lightPitch:   0.30,   // low angle: grazing, not overhead
+                centreCalm:   0.72,   // how far the centre third is flattened
+                centreDim:    0.55,   // and darkened, for the logo and CTAs
+                lightSpread:  0.88,   // strength of the two flank pools
+                sweepPhase:   22.0    // where the light sits while static
             };
 
-            const vertexShader = `
-void main() {
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`;
-
-            const fragmentShader = `
-precision highp float;
-
-uniform float uTime, uAttenuation, uLineThickness;
-uniform float uBaseRadius, uRadiusStep, uScaleRate;
-uniform float uOpacity, uNoiseAmount, uRotation, uRingGap;
-uniform float uFadeIn, uFadeOut;
-uniform float uMouseInfluence, uHoverAmount, uHoverScale, uParallax, uBurst;
-uniform vec2 uResolution, uMouse;
-uniform vec3 uColor, uColorTwo;
-uniform int uRingCount;
-
-const float HP = 1.5707963;
-const float CYCLE = 3.45;
-
-float fade(float t) {
-  return t < uFadeIn ? smoothstep(0.0, uFadeIn, t) : 1.0 - smoothstep(uFadeOut, CYCLE - 0.2, t);
-}
-
-float ring(vec2 p, float ri, float cut, float t0, float px) {
-  float t = mod(uTime + t0, CYCLE);
-  float r = ri + t / CYCLE * uScaleRate;
-  float d = abs(length(p) - r);
-  float a = atan(abs(p.y), abs(p.x)) / HP;
-  float th = max(1.0 - a, 0.5) * px * uLineThickness;
-  float h = (1.0 - smoothstep(th, th * 1.5, d)) + 1.0;
-  d += pow(cut * a, 3.0) * r;
-  return h * exp(-uAttenuation * d) * fade(t);
-}
-
-void main() {
-  float px = 1.0 / min(uResolution.x, uResolution.y);
-  vec2 p = (gl_FragCoord.xy - 0.5 * uResolution.xy) * px;
-  float cr = cos(uRotation), sr = sin(uRotation);
-  p = mat2(cr, -sr, sr, cr) * p;
-  p -= uMouse * uMouseInfluence;
-  float sc = mix(1.0, uHoverScale, uHoverAmount) + uBurst * 0.3;
-  p /= sc;
-  vec3 c = vec3(0.0);
-  float rcf = max(float(uRingCount) - 1.0, 1.0);
-  for (int i = 0; i < 10; i++) {
-    if (i >= uRingCount) break;
-    float fi = float(i);
-    vec2 pr = p - fi * uParallax * uMouse;
-    vec3 rc = mix(uColor, uColorTwo, fi / rcf);
-    c = mix(c, rc, vec3(ring(pr, uBaseRadius + fi * uRadiusStep, pow(uRingGap, fi), i == 0 ? 0.0 : 2.95 * fi, px)));
-  }
-  c *= 1.0 + uBurst * 2.0;
-  float n = fract(sin(dot(gl_FragCoord.xy + uTime * 100.0, vec2(12.9898, 78.233))) * 43758.5453);
-  c += (n - 0.5) * uNoiseAmount;
-  gl_FragColor = vec4(c, max(c.r, max(c.g, c.b)) * uOpacity);
-}
-`;
+            // The palette, straight from the stylesheet.
+            const token = (name) => getComputedStyle(document.documentElement)
+                .getPropertyValue(name).trim();
 
             let renderer;
             try {
                 renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             } catch (e) {
-                return;   // no WebGL — the hero video remains as-is
+                return;   // no WebGL — the hero keeps its plain black ground
             }
             if (!renderer.capabilities.isWebGL2) {
                 renderer.dispose();
@@ -18119,103 +18064,117 @@ void main() {
             camera.position.z = 1;
 
             const uniforms = {
-                uTime: { value: 0 },
-                uAttenuation: { value: 0 },
-                uResolution: { value: new THREE.Vector2() },
-                uColor: { value: new THREE.Color() },
-                uColorTwo: { value: new THREE.Color() },
-                uLineThickness: { value: 0 },
-                uBaseRadius: { value: 0 },
-                uRadiusStep: { value: 0 },
-                uScaleRate: { value: 0 },
-                uRingCount: { value: 0 },
-                uOpacity: { value: 1 },
-                uNoiseAmount: { value: 0 },
-                uRotation: { value: 0 },
-                uRingGap: { value: 1.6 },
-                uFadeIn: { value: 0.5 },
-                uFadeOut: { value: 0.75 },
-                // Ambient backdrop — mouse/hover/burst intentionally stay at 0.
-                uMouse: { value: new THREE.Vector2() },
-                uMouseInfluence: { value: 0 },
-                uHoverAmount: { value: 0 },
-                uHoverScale: { value: 1 },
-                uParallax: { value: 0 },
-                uBurst: { value: 0 }
+                uTime:        { value: WOVEN_CONFIG.sweepPhase },
+                uResolution:  { value: new THREE.Vector2() },
+                uObsidian:    { value: new THREE.Color(token('--void-obsidian')) },
+                uBlack:       { value: new THREE.Color(token('--void-black')) },
+                uGoldDeep:    { value: new THREE.Color(token('--void-gold-deep')) },
+                uGold:        { value: new THREE.Color(token('--void-gold')) },
+                uGoldBright:  { value: new THREE.Color(token('--void-gold-bright')) },
+                uWeaveScale:  { value: WOVEN_CONFIG.weaveScale },
+                uBump:        { value: WOVEN_CONFIG.bump },
+                uLightPitch:  { value: WOVEN_CONFIG.lightPitch },
+                uCentreCalm:  { value: WOVEN_CONFIG.centreCalm },
+                uCentreDim:   { value: WOVEN_CONFIG.centreDim },
+                uLightSpread: { value: WOVEN_CONFIG.lightSpread }
             };
 
-            const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms, transparent: true });
+            const vertexShader = [
+                'varying vec2 vUv;',
+                'void main() { vUv = uv; gl_Position = vec4(position.xy * 2.0, 0.0, 1.0); }'
+            ].join('\n');
+
+            const fragmentShader = [
+                'precision highp float;',
+                'varying vec2 vUv;',
+                'uniform float uTime, uWeaveScale, uBump, uLightPitch, uCentreCalm, uCentreDim, uLightSpread;',
+                'uniform vec2  uResolution;',
+                'uniform vec3  uObsidian, uBlack, uGoldDeep, uGold, uGoldBright;',
+                '',
+                'float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+                'float vnoise(vec2 p){',
+                '    vec2 i = floor(p), f = fract(p);',
+                '    vec2 u = f * f * (3.0 - 2.0 * f);',
+                '    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),',
+                '               mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);',
+                '}',
+                'float fbm(vec2 p){',
+                '    float s = 0.0, a = 0.5;',
+                '    for (int i = 0; i < 4; i++) { s += a * vnoise(p); p *= 2.02; a *= 0.5; }',
+                '    return s;',
+                '}',
+                '',
+                '// Plain weave: warp passes over weft on alternating cells, so the',
+                '// surface reads as interlacing rather than as a grid of dots. The',
+                '// slub keeps it cotton — a machined weave looks like mesh.',
+                'float weaveHeight(vec2 uv){',
+                '    vec2 g = uv * uWeaveScale;',
+                '    vec2 cell = floor(g);',
+                '    float parity = mod(cell.x + cell.y, 2.0);',
+                '    vec2 f = fract(g) - 0.5;',
+                '    float warp = cos(f.x * 3.14159);',
+                '    float weft = cos(f.y * 3.14159);',
+                '    float over  = mix(weft, warp, parity);',
+                '    float under = mix(warp, weft, parity) * 0.35;',
+                '    float slub = fbm(uv * vec2(18.0, 74.0)) * 0.26 + fbm(uv * 38.0) * 0.06;',
+                '    return (over + under) * 0.5 + slub;',
+                '}',
+                '',
+                'void main(){',
+                '    vec2 uv = vUv;',
+                '    float aspect = uResolution.x / max(uResolution.y, 1.0);',
+                '    vec2 suv = vec2(uv.x * aspect, uv.y);',
+                '',
+                '    // Cloth settling under its own weight — barely a movement.',
+                '    float sag = sin(uv.x * 3.14159) * 0.004 * sin(uv.y * 2.0 + uTime * 0.06);',
+                '    vec2 duv = uv + vec2(0.0, sag);',
+                '',
+                '    // The centre third is flattened and dimmed so the logo and the',
+                '    // two CTAs keep their contrast.',
+                '    float centre = smoothstep(0.42, 0.08, abs(uv.x - 0.5));',
+                '    float calm = 1.0 - centre * uCentreCalm;',
+                '',
+                '    // Normal from the height field. z stays unit and the gradients',
+                '    // are divided by the sample step, or the normal tilts flat and',
+                '    // the light stops reading.',
+                '    float e = 2.0 / max(uResolution.x, 1.0);',
+                '    float h  = weaveHeight(duv);',
+                '    float hx = weaveHeight(duv + vec2(e, 0.0));',
+                '    float hy = weaveHeight(duv + vec2(0.0, e));',
+                '    vec3 n = normalize(vec3(((h - hx) / e) * uBump * calm,',
+                '                            ((h - hy) / e) * uBump * calm, 1.0));',
+                '',
+                '    // One directional light, low and slow. Static for now.',
+                '    float a = 0.35 + sin(uTime * 0.05) * 1.15;',
+                '    vec3 L = normalize(vec3(cos(a), uLightPitch, sin(a) * 0.35 + 0.55));',
+                '    float lam = max(dot(n, L), 0.0);',
+                '    float graze = pow(1.0 - max(n.z, 0.0), 2.0);',
+                '    vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));',
+                '    float spec = pow(max(dot(H, n), 0.0), 34.0) * 0.5;',
+                '',
+                '    // Two pools on the flanks, nothing in the middle — the mirror of',
+                '    // the rings the effect replaces, in shadow instead of light.',
+                '    float poolL = smoothstep(1.15, 0.10, length(suv - vec2(aspect * 0.06, 0.44)));',
+                '    float poolR = smoothstep(1.15, 0.10, length(suv - vec2(aspect * 0.94, 0.56)));',
+                '    float pool = min(1.0, (poolL + poolR) * uLightSpread);',
+                '',
+                '    // Gold is the light-catch, never the ground.',
+                '    vec3 c = mix(uObsidian, uBlack, h * 0.5 + 0.5);',
+                '    c = mix(c, uGoldDeep,   clamp(pow(lam, 2.6) * 0.52 * pool, 0.0, 1.0));',
+                '    c = mix(c, uGold,       clamp(pow(lam, 5.0) * 0.66 * pool * (0.30 + graze), 0.0, 1.0));',
+                '    c = mix(c, uGoldBright, clamp((spec * 1.35 + pow(lam, 13.0) * 0.38) * pool, 0.0, 1.0));',
+                '    c *= 1.0 - centre * uCentreDim;',
+                '',
+                '    c += (hash(gl_FragCoord.xy) - 0.5) * 0.012;   // dither the darks',
+                '    gl_FragColor = vec4(c, 1.0);',
+                '}'
+            ].join('\n');
+
+            const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
             const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
             scene.add(quad);
 
-            const c = MAGIC_RINGS_CONFIG;
-            uniforms.uAttenuation.value = c.attenuation;
-            uniforms.uColor.value.set(c.color);
-            uniforms.uColorTwo.value.set(c.colorTwo);
-            uniforms.uLineThickness.value = c.lineThickness;
-            uniforms.uBaseRadius.value = c.baseRadius;
-            uniforms.uRadiusStep.value = c.radiusStep;
-            uniforms.uScaleRate.value = c.scaleRate;
-            uniforms.uRingCount.value = c.ringCount;
-            uniforms.uOpacity.value = c.opacity;
-            uniforms.uNoiseAmount.value = c.noiseAmount;
-            uniforms.uRotation.value = (c.rotation * Math.PI) / 180;
-            uniforms.uRingGap.value = c.ringGap;
-            uniforms.uFadeIn.value = c.fadeIn;
-            uniforms.uFadeOut.value = c.fadeOut;
-
-            uniforms.uMouseInfluence.value = c.followMouse ? c.mouseInfluence : 0;
-            uniforms.uHoverScale.value = c.hoverScale;
-            uniforms.uParallax.value = c.parallax;
-
-            const reduceMotion = () => document.documentElement.classList.contains('reduce-motion');
-
-            // Cursor state. The layer is click-through, so we track the pointer at
-            // the window level (normalised to the hero, gently clamped) and swell
-            // only while the cursor is actually over the hero.
-            const hero = mount.closest('.video-section.hero') || mount.parentElement || mount;
-            let mouseX = 0, mouseY = 0, smoothX = 0, smoothY = 0;
-            let hoverAmount = 0, isHovered = false, burst = 0;
-            const clamp = (v, m) => Math.max(-m, Math.min(m, v));
-
-            // While the cursor is over the hero the rings react; the moment it
-            // crosses any edge (e.g. down into the Collection) the target eases
-            // back to neutral so the reaction smoothly stops.
-            const settle = () => { mouseX = 0; mouseY = 0; isHovered = false; };
-            const onMove = (e) => {
-                const rect = hero.getBoundingClientRect();
-                if (!rect.width || !rect.height) return;
-                const inside = e.clientX >= rect.left && e.clientX <= rect.right &&
-                               e.clientY >= rect.top && e.clientY <= rect.bottom;
-                if (inside) {
-                    mouseX = clamp((e.clientX - rect.left) / rect.width - 0.5, 0.75);
-                    mouseY = clamp(-((e.clientY - rect.top) / rect.height - 0.5), 0.75);
-                    isHovered = true;
-                } else {
-                    settle();
-                }
-            };
-            const onClick = () => { if (c.clickBurst) burst = 0.45; };   // subtle pulse, not a flash
-            window.addEventListener('mousemove', onMove, { passive: true });
-            window.addEventListener('click', onClick);
-            // Also settle if the cursor leaves the window entirely.
-            document.addEventListener('mouseleave', settle);
-            window.addEventListener('blur', settle);
-
-            const renderFrame = (tMs) => {
-                // Ease the cursor-driven values so motion stays smooth and settles.
-                smoothX += (mouseX - smoothX) * 0.06;
-                smoothY += (mouseY - smoothY) * 0.06;
-                hoverAmount += ((isHovered ? 1 : 0) - hoverAmount) * 0.06;
-                burst *= 0.95;
-                if (burst < 0.001) burst = 0;
-
-                uniforms.uTime.value = tMs * 0.001 * c.speed;
-                uniforms.uMouse.value.set(smoothX, smoothY);
-                uniforms.uHoverAmount.value = hoverAmount;
-                uniforms.uBurst.value = c.clickBurst ? burst : 0;
-                renderer.render(scene, camera);
-            };
+            const renderFrame = () => renderer.render(scene, camera);
 
             const resize = () => {
                 const w = mount.clientWidth || 1;
@@ -18224,43 +18183,22 @@ void main() {
                 renderer.setPixelRatio(dpr);
                 renderer.setSize(w, h, false);
                 uniforms.uResolution.value.set(w * dpr, h * dpr);
-                if (!running) renderFrame(reduceMotion() ? 3000 : uniforms.uTime.value * 1000 / (c.speed || 1));
-            };
-
-            let frameId = null;
-            let running = false;
-            const animate = (tMs) => {
-                if (!running) return;
-                frameId = requestAnimationFrame(animate);
-                renderFrame(tMs);
-            };
-            const start = () => {
-                if (running) return;
-                if (reduceMotion()) { renderFrame(3000); return; }   // static single frame
-                running = true;
-                frameId = requestAnimationFrame(animate);
-            };
-            const stop = () => {
-                running = false;
-                if (frameId) cancelAnimationFrame(frameId);
-                frameId = null;
+                renderFrame();
             };
 
             resize();
             window.addEventListener('resize', resize);
             if ('ResizeObserver' in window) new ResizeObserver(resize).observe(mount);
 
-            // Only run while the hero is on-screen and the tab is visible.
+            // Kept for the sweep that follows: the frame is only drawn while the
+            // hero is actually on screen and the tab is visible.
             if ('IntersectionObserver' in window) {
                 new IntersectionObserver((entries) => {
-                    const visible = entries.some((e) => e.isIntersecting);
-                    if (visible && !document.hidden) start(); else stop();
+                    if (entries.some((e) => e.isIntersecting) && !document.hidden) renderFrame();
                 }, { threshold: 0.01 }).observe(mount);
-            } else {
-                start();
             }
             document.addEventListener('visibilitychange', () => {
-                if (document.hidden) stop(); else start();
+                if (!document.hidden) renderFrame();
             });
         })();
 
