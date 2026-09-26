@@ -1922,35 +1922,15 @@
         @keyframes langFadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(3px); } }
         @keyframes langFadeIn  { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0); } }
 
-        /* Reduced motion: the language still changes, it simply does not
-           travel. No blur to resolve, no stagger to wait through.
+        /* There is deliberately no reduce-motion or prefers-reduced-motion rule
+           for any .lang-* selector, and none should be added. Changing language
+           is how the house speaks, and it plays for every visitor without their
+           having to find a setting first. The module does not read either signal
+           either; see the note beside canAnimate for the whole decision.
 
-           The script already declines to dress the page when either signal is
-           set, so in practice these selectors never match. They are kept as the
-           backstop for the one case the script cannot cover: the preference
-           being turned on mid-transition, which would otherwise leave letters
-           frozen part-way out. Both signals are listed because this effect
-           honours the device preference on its own — see the note on reduced()
-           in the swap module for why it departs from the house rule. */
-        html.reduce-motion .lang-swap-out .lang-glyph,
-        html.reduce-motion .lang-swap-out .lang-word,
-        html.reduce-motion .lang-swap-in .lang-glyph,
-        html.reduce-motion .lang-swap-in .lang-word,
-        html.reduce-motion .lang-swap-out .lang-fade,
-        html.reduce-motion .lang-swap-in .lang-fade {
-            animation: none !important;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .lang-swap-out .lang-glyph,
-            .lang-swap-out .lang-word,
-            .lang-swap-in .lang-glyph,
-            .lang-swap-in .lang-word,
-            .lang-swap-out .lang-fade,
-            .lang-swap-in .lang-fade {
-                animation: none !important;
-            }
-        }
+           The blur and the light are declared inside the keyframes rather than
+           on the base rules, so a browser that does not support filter simply
+           resolves the opacity and the text still transitions. */
 
         /* ── Entry sequence ───────────────────────────────────────────────
            The preference, kept at the edge of the frame. At rest it is a
@@ -13290,20 +13270,30 @@
 
             let run = 0, active = [], timers = [];
 
-            // A deliberate exception to the house rule.
+            // This transition is not gated on a motion preference, by explicit
+            // product decision: it is how the house changes language and every
+            // visitor is meant to see it, without first finding a setting in
+            // Windows, in the browser or on the site. Neither
+            // prefers-reduced-motion nor html.reduce-motion is read here, and
+            // there are deliberately no language rules in the reduce-motion
+            // stylesheet blocks — if you are adding one back, that is the
+            // decision you are reversing.
             //
-            // Elsewhere on the site the OS query alone is not enough to calm an
-            // effect: html.reduce-motion requires the visitor's own opt-in AND
-            // the system preference, so the cinematics show by default. This
-            // effect does not follow that. It moves every word on the screen at
-            // once for the better part of three seconds, which is exactly what
-            // a device-level request for less motion is asking not to happen,
-            // and a visitor should not have to find a switch on the site first.
-            //
-            // So either signal is sufficient here. The language still changes
-            // immediately; it simply arrives without the letter animation.
-            const reduced = () => document.documentElement.classList.contains('reduce-motion')
-                || !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+            // The one thing that is feature-detected is CSS animation itself.
+            // Where it is missing there is nothing to wait for, so the text is
+            // swapped at once rather than after a timeout that would look like
+            // the page had simply stalled. Everything else degrades on its own:
+            // a browser without filter ignores the blur and still resolves the
+            // opacity, one without Intl.Segmenter falls back to code units, and
+            // one without custom properties in calc() loses only the stagger.
+            const canAnimate = (function () {
+                if (window.CSS && CSS.supports) {
+                    return CSS.supports('animation', 'langGlyphIn 1s linear both')
+                        || CSS.supports('-webkit-animation', 'langGlyphIn 1s linear both');
+                }
+                const s = document.createElement('div').style;
+                return 'animation' in s || 'webkitAnimation' in s;
+            })();
 
             function collect() {
                 const vh = window.innerHeight || 0;
@@ -13381,7 +13371,8 @@
                 const me = ++run;
                 settle();                       // a second switch lands on a clean page
 
-                if (reduced()) { apply(); return; }
+                // No motion-preference branch here — see canAnimate above.
+                if (!canAnimate) { apply(); return; }
 
                 active = collect();
                 if (!active.length) { apply(); return; }
