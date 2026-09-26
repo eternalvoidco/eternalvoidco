@@ -4363,74 +4363,125 @@
             opacity: 1;
         }
 
+        /* ── Hero actions ─────────────────────────────────────────────────
+           Both buttons sit on a woven ground now, and a transparent panel
+           behind a hairline border simply dissolved into it. Each one gets a
+           near-black plate of its own so the lettering and the edge read as a
+           made object laid on the cloth rather than part of it. The primary
+           keeps the gold edge; the secondary is the same object in a quieter
+           register — one design, two weights.
+
+           The old hover flooded the face with --void-gold-gradient at 0.14,
+           which over a dark weave came out as a muddy brown wash. Gold is a
+           filament along the edge now, not a fill. */
+        .cta-button,
+        .story-trigger-button {
+            position: relative;
+            isolation: isolate;
+            text-transform: uppercase;
+            font-weight: 600;
+            /* The plate. Opaque enough to seat the type, still black. */
+            background:
+                linear-gradient(180deg, rgba(14, 13, 12, 0.94), rgba(5, 5, 5, 0.97));
+            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: color 0.34s var(--ease-lux), border-color 0.34s var(--ease-lux),
+                        transform 0.34s var(--ease-lux), box-shadow 0.34s var(--ease-lux);
+        }
+
         .cta-button {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             padding: 1rem 3.2rem;
-            background: transparent;
-            border: 1px solid var(--void-accent);
+            border: 1px solid rgba(199, 169, 108, 0.62);
             color: var(--void-white);
             text-decoration: none;
             font-size: 0.78rem;
             letter-spacing: 0.28em;
-            text-transform: uppercase;
-            font-weight: 600;
-            transition: color 0.45s var(--ease-lux), border-color 0.45s var(--ease-lux), transform 0.55s var(--ease-lux), box-shadow 0.55s var(--ease-lux);
-            position: relative;
-            overflow: hidden;
-            isolation: isolate;
+            /* Seated on the cloth: a contact shadow, and the faintest warm
+               hairline inside the edge so the plate has thickness. */
+            box-shadow:
+                0 14px 30px rgba(0, 0, 0, 0.55),
+                inset 0 0 0 1px rgba(199, 169, 108, 0.10);
         }
 
-        .cta-button::before {
-            content: '';
+        .cta-label {
+            position: relative;
+            z-index: 2;
+            display: block;
+            transition: color 0.34s var(--ease-lux), text-shadow 0.34s var(--ease-lux);
+        }
+
+        /* ── The filament ──
+           A short bright dash travelling the perimeter once, then gone. The
+           rect is normalised with pathLength="100", so the dash maths is the
+           same whatever the button's real size, and the stroke is kept at a
+           true hairline under the non-uniform viewBox scale. */
+        .cta-filament {
             position: absolute;
             inset: 0;
-            background: var(--void-gold-gradient);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            z-index: -1;
-        }
-
-        /* Diagonal light sweep on hover */
-        .cta-button::after {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            z-index: -1;
-            background: var(--void-gold-sheen);
-            transform: translateX(-130%) skewX(-12deg);
-            opacity: 0;
-            transition: transform 0.9s var(--ease-lux), opacity 0.3s ease;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: visible;
             pointer-events: none;
         }
 
-        /* Restrained gold edge illumination and a slight depth shift, rather
-           than flooding the button with gold — reads more expensive and keeps
-           the emblem above it the focal point. */
+        .cta-filament-line {
+            fill: none;
+            stroke: var(--void-gold-bright, #f2e2bd);
+            stroke-width: 1.4;
+            stroke-linecap: round;
+            stroke-dasharray: 13 87;
+            stroke-dashoffset: 13;      /* parked just off the start */
+            opacity: 0;
+        }
+
+        .cta-button:hover .cta-filament-line,
+        .cta-button:focus-visible .cta-filament-line,
+        .story-trigger-button:hover .cta-filament-line,
+        .story-trigger-button:focus-visible .cta-filament-line {
+            opacity: 1;
+            /* Linear, deliberately. --ease-lux is a heavy ease-out and put 90%
+               of the travel in the first third: the filament flicked round the
+               corner and then stalled. A light running along an edge has to
+               keep its pace to read as one. */
+            animation: ctaFilament 0.82s linear 1 both;
+        }
+
+        @keyframes ctaFilament {
+            0%   { stroke-dashoffset: 13;  opacity: 0; }
+            12%  { opacity: 1; }
+            82%  { opacity: 1; }
+            100% { stroke-dashoffset: -87; opacity: 0; }
+        }
+
+        /* Settled state: the edge and the lettering stay lifted after the
+           filament has passed, so the hover resolves somewhere rather than
+           snapping back to rest. */
         .cta-button:hover,
         .cta-button:focus-visible {
-            color: #f7ecd2;
-            border-color: rgba(226, 199, 138, 0.95);
+            color: #fbf3e2;
+            border-color: rgba(233, 208, 150, 0.95);
             transform: translateY(-2px);
             box-shadow:
-                0 0 0 1px rgba(199, 169, 108, 0.3),
-                0 0 26px rgba(199, 169, 108, 0.26),
-                0 18px 40px rgba(0, 0, 0, 0.5),
-                inset 0 0 22px rgba(199, 169, 108, 0.09);
+                0 0 0 1px rgba(199, 169, 108, 0.34),
+                0 18px 40px rgba(0, 0, 0, 0.6),
+                inset 0 0 0 1px rgba(226, 199, 138, 0.28);
         }
 
-        .cta-button:hover::before,
-        .cta-button:focus-visible::before {
-            opacity: 0.14;
+        .cta-button:hover .cta-label,
+        .cta-button:focus-visible .cta-label {
+            text-shadow: 0 0 16px rgba(226, 199, 138, 0.45);
         }
 
-        .cta-button:hover::after,
-        .cta-button:focus-visible::after {
-            transform: translateX(130%) skewX(-12deg);
-            opacity: 1;
-        }
-
-        .cta-button:active {
-            transform: translateY(0);
+        .cta-button:active,
+        .story-trigger-button:active {
+            transform: translateY(0) scale(0.995);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(226, 199, 138, 0.34);
         }
 
         .hero-actions {
@@ -4478,35 +4529,62 @@
             animation: none !important;
         }
 
+        /* The same object, one register down: an ivory edge instead of gold,
+           smaller type, no inner hairline. It reads as available rather than
+           as the thing to do. */
         .story-trigger-button {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            border: 1px solid rgba(245, 242, 236, 0.52);
-            background: rgba(5, 5, 5, 0.56);
-            color: rgba(245, 242, 236, 0.9);
+            border: 1px solid rgba(245, 242, 236, 0.30);
+            color: rgba(245, 242, 236, 0.82);
             padding: 0.74rem 1.65rem;
             font-size: 0.64rem;
             letter-spacing: 0.22em;
-            text-transform: uppercase;
-            font-weight: 600;
             cursor: pointer;
-            transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease, transform 0.3s ease;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            position: relative;
             z-index: 2;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
         }
 
         .story-trigger-button:hover,
         .story-trigger-button:focus-visible {
-            /* Secondary action: a quieter gold edge than the primary CTA. */
-            border-color: rgba(212, 184, 124, 0.72);
-            background: rgba(20, 18, 14, 0.86);
+            border-color: rgba(212, 184, 124, 0.78);
             color: #f4ecdc;
             transform: translateY(-2px);
-            box-shadow: 0 0 18px rgba(199, 169, 108, 0.14), 0 14px 32px rgba(0, 0, 0, 0.45);
+            box-shadow:
+                0 14px 32px rgba(0, 0, 0, 0.55),
+                inset 0 0 0 1px rgba(199, 169, 108, 0.16);
+        }
+
+        .story-trigger-button:hover .cta-label,
+        .story-trigger-button:focus-visible .cta-label {
+            text-shadow: 0 0 12px rgba(212, 184, 124, 0.32);
+        }
+
+        /* The secondary's filament is thinner and dimmer than the primary's,
+           so the two never compete for the eye. */
+        .story-trigger-button .cta-filament-line {
+            stroke: var(--void-gold-soft, #d8c08a);
+            stroke-width: 1.1;
+        }
+
+        /* Reduced motion: the filament does not travel. The settled edge and
+           lettering still light, so the hover is just as legible. */
+        html.reduce-motion .cta-filament-line {
+            animation: none !important;
+        }
+
+        html.reduce-motion .cta-button:hover .cta-filament-line,
+        html.reduce-motion .cta-button:focus-visible .cta-filament-line,
+        html.reduce-motion .story-trigger-button:hover .cta-filament-line,
+        html.reduce-motion .story-trigger-button:focus-visible .cta-filament-line {
+            opacity: 0;
+        }
+
+        /* No hover on touch: the pressed state carries the whole response. */
+        @media (hover: none) {
+            .cta-filament-line { display: none; }
         }
 
         .story-overlay {
@@ -9441,7 +9519,9 @@
                 width: min(100%, 260px);
                 font-size: 0.58rem;
                 letter-spacing: 0.18em;
-                padding: 0.7rem 1.2rem;
+                /* 0.7rem left the secondary at 37px tall — under the thumb.
+                   Both actions now clear 44 without changing their weights. */
+                padding: 0.92rem 1.2rem;
             }
 
             .products-header {
@@ -9656,7 +9736,9 @@
                 width: min(100%, 260px);
                 display: inline-flex;
                 justify-content: center;
-                padding: 0.78rem 1.2rem;
+                /* Clears 44 for the thumb, and stays the taller of the two so
+                   the hierarchy survives the stack. */
+                padding: 1rem 1.2rem;
                 font-size: 0.68rem;
                 letter-spacing: 0.13em;
             }
@@ -11509,8 +11591,24 @@
         <div class="hero-content fade-in-up" style="--delay: 80ms;">
             <h1 class="hero-title"><img class="hero-title-img" src="/assets/ev-emblem.png?v=20260714c" alt="Eternal Void" width="594" height="500"></h1>
             <div class="hero-actions">
-                <a href="/shop" class="cta-button" data-i18n="heroEnterBoutique">Enter The Boutique</a>
-                <button type="button" class="story-trigger-button" id="openStoryButton" data-i18n="heroReadStory">Read The Story</button>
+                <!-- The label keeps its own element: data-i18n rewrites the
+                     textContent of whatever carries it, so left on the button
+                     it would erase the filament every time the language
+                     changed. Wording, href and id are unchanged. -->
+                <a href="/shop" class="cta-button">
+                    <svg class="cta-filament" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                        <rect class="cta-filament-line" x="0.5" y="0.5" width="99" height="39"
+                              pathLength="100" vector-effect="non-scaling-stroke"/>
+                    </svg>
+                    <span class="cta-label" data-i18n="heroEnterBoutique">Enter The Boutique</span>
+                </a>
+                <button type="button" class="story-trigger-button" id="openStoryButton">
+                    <svg class="cta-filament" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                        <rect class="cta-filament-line" x="0.5" y="0.5" width="99" height="39"
+                              pathLength="100" vector-effect="non-scaling-stroke"/>
+                    </svg>
+                    <span class="cta-label" data-i18n="heroReadStory">Read The Story</span>
+                </button>
             </div>
         </div>
     </section>
