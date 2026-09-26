@@ -1932,6 +1932,181 @@
            on the base rules, so a browser that does not support filter simply
            resolves the opacity and the text still transitions. */
 
+        /* ── The language portal ──────────────────────────────────────────
+           The counter for the transition above, and driven by it rather than
+           by a clock of its own — see voidLanguagePortal.
+
+           Fixed, centred with the translate property rather than negative
+           margins (a percentage margin resolves against the container's
+           width, which is not what centring vertically needs), and
+           pointer-events: none so it can never take a click. contain keeps
+           its painting off the rest of the document. */
+        .lang-portal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 168px;
+            height: 168px;
+            translate: -50% -50%;
+            z-index: 3300;
+            pointer-events: none;
+            contain: layout style paint;
+            display: grid;
+            place-items: center;
+            opacity: 0;
+            visibility: hidden;
+            scale: 0.84;
+            filter: blur(7px);
+            transition: opacity 0.52s var(--ease-lux), scale 0.52s var(--ease-lux),
+                        filter 0.52s var(--ease-lux), visibility 0.52s linear;
+        }
+
+        /* It arrives out of the black as the old letters leave it. */
+        .lang-portal.is-open {
+            opacity: 1;
+            visibility: visible;
+            scale: 1;
+            filter: blur(0);
+        }
+
+        /* And lets go: a breath wider, back into the void. */
+        .lang-portal.is-dissolving {
+            opacity: 0;
+            visibility: visible;
+            scale: 1.07;
+            filter: blur(6px);
+            transition-duration: 0.62s;
+        }
+
+        .lang-portal-ring {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /* Two orbits at different radii and different rates, turning against
+           each other. Continuous and slow: this is the atmosphere, not the
+           progress, and it must never read as a loading spinner. */
+        .lang-portal-orbit {
+            transform-origin: 60px 60px;
+        }
+
+        .lang-portal-orbit-a { animation: langPortalOrbitA 17s linear infinite; }
+        .lang-portal-orbit-b { animation: langPortalOrbitB 23s linear infinite; }
+
+        /* The orbits are infinite, so they are held still unless the portal is
+           actually on screen. Otherwise three animations turn for the whole
+           session to be composited behind opacity: 0. */
+        .lang-portal-orbit,
+        .lang-portal-specks {
+            animation-play-state: paused;
+        }
+
+        .lang-portal.is-open .lang-portal-orbit,
+        .lang-portal.is-open .lang-portal-specks,
+        .lang-portal.is-dissolving .lang-portal-orbit,
+        .lang-portal.is-dissolving .lang-portal-specks {
+            animation-play-state: running;
+        }
+
+        @keyframes langPortalOrbitA { to { transform: rotate(360deg); } }
+        @keyframes langPortalOrbitB { to { transform: rotate(-360deg); } }
+
+        .lang-portal-dash {
+            fill: none;
+            stroke: rgba(199, 169, 108, 0.20);
+            stroke-width: 0.6;
+            stroke-dasharray: 1.6 9;
+            stroke-linecap: round;
+        }
+
+        .lang-portal-dash-fine {
+            fill: none;
+            stroke: rgba(245, 242, 236, 0.10);
+            stroke-width: 0.5;
+            stroke-dasharray: 0.8 6.4;
+            stroke-linecap: round;
+        }
+
+        .lang-portal-specks {
+            fill: rgba(245, 242, 236, 0.42);
+            transform-origin: 60px 60px;
+            /* paused belongs in the shorthand: this rule sits after the block
+               that pauses the orbits, and a bare animation shorthand would
+               reset animation-play-state back to running. */
+            animation: langPortalOrbitA 31s linear infinite paused;
+        }
+
+        /* The unfilled ring. Barely there — it should read as the edge of the
+           portal catching a little light, not as a grey groove. */
+        .lang-portal-track {
+            fill: none;
+            stroke: rgba(245, 242, 236, 0.07);
+            stroke-width: 1;
+        }
+
+        /* The progress itself. pathLength="100" above means --p is a literal
+           percentage. Rotated so zero sits at the top. */
+        .lang-portal-arc {
+            fill: none;
+            stroke: var(--void-gold-soft, #d8c08a);
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-dasharray: var(--p, 0) 100;
+            transform: rotate(-90deg);
+            transform-origin: 60px 60px;
+            filter: drop-shadow(0 0 3px rgba(199, 169, 108, 0.45));
+        }
+
+        /* The glint riding the leading edge. JS places it; it is the same
+           value that draws the arc, so the two cannot disagree. */
+        .lang-portal-head {
+            fill: var(--void-gold-bright, #f2e2bd);
+            filter: drop-shadow(0 0 4px rgba(226, 199, 138, 0.75));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .lang-portal.is-open .lang-portal-head { opacity: 1; }
+        .lang-portal.is-dissolving .lang-portal-head { opacity: 0; }
+
+        .lang-portal-readout {
+            position: relative;
+            display: flex;
+            align-items: baseline;
+            gap: 0.06em;
+            line-height: 1;
+            /* Tabular figures, or the number jitters as the digits change. */
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: 'tnum' 1;
+        }
+
+        .lang-portal-num {
+            font-size: 1.32rem;
+            letter-spacing: 0.05em;
+            color: var(--void-white, #f5f2ec);
+            text-shadow: 0 0 14px rgba(226, 199, 138, 0.28);
+        }
+
+        .lang-portal-sign {
+            font-size: 0.66rem;
+            letter-spacing: 0.12em;
+            color: rgba(199, 169, 108, 0.82);
+            transform: translateY(-0.15em);
+        }
+
+        @media (max-width: 640px) {
+            .lang-portal {
+                width: 132px;
+                height: 132px;
+            }
+
+            .lang-portal-num { font-size: 1.08rem; }
+            .lang-portal-sign { font-size: 0.58rem; }
+        }
+
         /* ── Entry sequence ───────────────────────────────────────────────
            The preference, kept at the edge of the frame. At rest it is a
            single point of the portal's light; the name and state are drawn
@@ -11129,6 +11304,53 @@
     <div class="scroll-letterbox top" id="scrollLetterboxTop" aria-hidden="true"></div>
     <div class="scroll-letterbox bottom" id="scrollLetterboxBottom" aria-hidden="true"></div>
 
+    <!-- ─────────────────────────────────────────────────────────────────
+         LANGUAGE PORTAL — the progress of the language transition.
+
+         Entirely decorative and entirely aria-hidden: the elements being
+         translated already carry aria-busy, so a screen reader is told the
+         page is working without also being read a counter. Fixed and
+         pointer-events: none, so it neither moves the page nor takes a click.
+
+         The arc is drawn with pathLength="100", which makes the dash array a
+         literal percentage and keeps the geometry independent of the radius.
+    ────────────────────────────────────────────────────────────────── -->
+    <div class="lang-portal" id="langPortal" aria-hidden="true">
+        <svg class="lang-portal-ring" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+            <defs>
+                <radialGradient id="langPortalCore" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%"   stop-color="#050505" stop-opacity="0.94"/>
+                    <stop offset="58%"  stop-color="#050505" stop-opacity="0.76"/>
+                    <stop offset="100%" stop-color="#050505" stop-opacity="0"/>
+                </radialGradient>
+            </defs>
+
+            <!-- The void it emerges from: a soft core, not a panel and not a
+                 full-screen wash. It fades to nothing well inside the frame. -->
+            <circle cx="60" cy="60" r="58" fill="url(#langPortalCore)"/>
+
+            <g class="lang-portal-orbit lang-portal-orbit-a">
+                <circle class="lang-portal-dash" cx="60" cy="60" r="53"/>
+            </g>
+            <g class="lang-portal-orbit lang-portal-orbit-b">
+                <circle class="lang-portal-dash-fine" cx="60" cy="60" r="37"/>
+            </g>
+
+            <g class="lang-portal-specks">
+                <circle cx="60" cy="13"  r="0.75"/>
+                <circle cx="104" cy="74" r="0.6"/>
+                <circle cx="20" cy="78"  r="0.7"/>
+            </g>
+
+            <circle class="lang-portal-track" cx="60" cy="60" r="46"/>
+            <circle class="lang-portal-arc"   cx="60" cy="60" r="46" pathLength="100"/>
+            <circle class="lang-portal-head"  cx="60" cy="14" r="1.8"/>
+        </svg>
+        <div class="lang-portal-readout">
+            <span class="lang-portal-num" id="langPortalNum">0</span><span class="lang-portal-sign">%</span>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <ul class="nav-left">
@@ -13249,6 +13471,172 @@
             languageSelectorButton.setAttribute('aria-expanded', 'false');
         }
 
+        /* ── The language portal ──────────────────────────────────────────
+           The indicator for the transition below. It owns no timeline of its
+           own: the swap tells it how long each half will actually take, and
+           then tells it when each half has really ended. Between those points
+           it interpolates, and it is clamped so it can never announce a
+           milestone the text has not reached:
+
+             · the first half approaches but cannot cross the midpoint until
+               applyTranslations() has run,
+             · the second half approaches but cannot reach 100% until the last
+               letter's animation has finished.
+
+           That clamp is what makes it safe under a throttled or suspended
+           timer. If setTimeout is late the arc waits at 49% or 99% instead of
+           running ahead of the words, which is the only direction in which
+           being wrong is acceptable. The arc, the glint and the number are all
+           painted from the same single value, so they cannot disagree. */
+        const voidLanguagePortal = (function () {
+            const root = document.getElementById('langPortal');
+            const numEl = document.getElementById('langPortalNum');
+            const arc = root && root.querySelector('.lang-portal-arc');
+            const head = root && root.querySelector('.lang-portal-head');
+
+            // The transition must still work if the markup is ever absent.
+            if (!root || !numEl || !arc || !head) {
+                return { begin: function () {}, crossed: function () {},
+                         complete: function () {}, cancel: function () {} };
+            }
+
+            const HOLD_MS = 300;        // 100% registers before it lets go
+            const FADE_MS = 700;        // matches the dissolve transition
+            const CX = 60, CY = 60, R = 46;
+
+            let raf = 0, phase = 'idle';
+            let t0 = 0, tMid = 0, outSpan = 1, inSpan = 1;
+            let shown = 0, hiddenAt = 0, holdTimer = 0, gone = 0, ticker = 0;
+
+            function paint(p) {
+                const pct = p * 100;
+                arc.style.setProperty('--p', pct.toFixed(2));
+                // The glint is placed from the same number that draws the arc,
+                // so the light is always exactly at the leading edge.
+                const a = (-90 + p * 360) * Math.PI / 180;
+                head.setAttribute('cx', (CX + R * Math.cos(a)).toFixed(2));
+                head.setAttribute('cy', (CY + R * Math.sin(a)).toFixed(2));
+                numEl.textContent = String(Math.round(pct));
+            }
+
+            // One value, computed one way. Both drivers below call this, and
+            // because it is clamped and monotonic it does not matter how often
+            // or in what order they do.
+            function advance() {
+                const now = performance.now();
+                let target;
+                if (phase === 'out') {
+                    target = Math.min((now - t0) / outSpan, 1) * 0.5;
+                    if (target > 0.497) target = 0.497;
+                } else if (phase === 'in') {
+                    target = 0.5 + Math.min((now - tMid) / inSpan, 1) * 0.5;
+                    if (target > 0.995) target = 0.995;
+                } else {
+                    target = 1;
+                }
+                // Monotonic: a counter that steps backwards looks broken.
+                shown = Math.max(shown, target);
+                paint(shown);
+            }
+
+            function frame() {
+                advance();
+                raf = (phase === 'done' && shown >= 1) ? 0 : requestAnimationFrame(frame);
+            }
+
+            // rAF is the right driver when it runs, but it is suspended in
+            // background tabs and throttled by some power-saving modes, while
+            // the letter animations and the phase timers carry on. A coarse
+            // interval alongside it keeps the arc moving in that case rather
+            // than freezing the number mid-sweep and snapping it to 100 at the
+            // end. Both call advance(), so they cannot disagree.
+            function startDrivers() {
+                if (!raf) raf = requestAnimationFrame(frame);
+                if (!ticker) ticker = setInterval(advance, 45);
+            }
+
+            function stopDrivers() {
+                if (raf) { cancelAnimationFrame(raf); raf = 0; }
+                if (ticker) { clearInterval(ticker); ticker = 0; }
+            }
+
+            function clearTimers() {
+                clearTimeout(holdTimer); clearTimeout(gone);
+                holdTimer = 0; gone = 0;
+            }
+
+            function begin(outMs, inMs) {
+                clearTimers();
+                outSpan = Math.max(1, outMs);
+                inSpan = Math.max(1, inMs);
+                phase = 'out';
+                t0 = performance.now();
+                tMid = 0;
+                shown = 0;
+                hiddenAt = 0;
+                paint(0);
+                // A switch landing mid-dissolve restarts from zero in place
+                // rather than blinking out and back.
+                root.classList.remove('is-dissolving');
+                root.classList.add('is-open');
+                startDrivers();
+            }
+
+            // The old text has gone and the translation has been applied.
+            function crossed() {
+                if (phase !== 'out') return;
+                phase = 'in';
+                tMid = performance.now();
+                shown = Math.max(shown, 0.5);
+            }
+
+            // The last letter has arrived. Only now is 100% true.
+            function complete() {
+                if (phase === 'idle') return;
+                phase = 'done';
+                shown = 1;
+                paint(1);
+                stopDrivers();
+                holdTimer = setTimeout(function () {
+                    root.classList.remove('is-open');
+                    root.classList.add('is-dissolving');
+                    gone = setTimeout(function () {
+                        root.classList.remove('is-dissolving');
+                        phase = 'idle';
+                    }, FADE_MS);
+                }, HOLD_MS);
+            }
+
+            function cancel() {
+                clearTimers();
+                stopDrivers();
+                phase = 'idle';
+                shown = 0;
+                root.classList.remove('is-open', 'is-dissolving');
+                paint(0);
+            }
+
+            // A hidden tab stops rAF and may suspend the letter animations with
+            // it. Crediting that time to the progress would let the number run
+            // ahead of the words, so the elapsed clock is shifted instead and
+            // the arc resumes from where it stopped.
+            document.addEventListener('visibilitychange', function () {
+                if (phase !== 'out' && phase !== 'in') return;
+                if (document.hidden) {
+                    hiddenAt = performance.now();
+                    stopDrivers();
+                } else if (hiddenAt) {
+                    const gap = performance.now() - hiddenAt;
+                    hiddenAt = 0;
+                    t0 += gap;
+                    if (tMid) tMid += gap;
+                    startDrivers();
+                }
+            });
+
+            return { begin: begin, crossed: crossed, complete: complete, cancel: cancel };
+        })();
+
         /* ── The language transition ──────────────────────────────────────
            The text is swapped by applyTranslations() exactly as before; this
            only choreographs what is seen either side of it. The DOM ends as
@@ -13261,6 +13649,11 @@
         const voidLanguageSwap = (function () {
             const OUT_MS = 620, GAP_MS = 110, IN_MS = 900;
             const E_OUT = 42, E_IN = 55, MAX_E = 12;   // capped, or the tail runs away
+            // The per-letter stagger, mirroring the animation-delay calc() in
+            // the stylesheet. If you change one, change the other: the progress
+            // indicator derives its timeline from these.
+            const LETTER_OUT = 9, LETTER_IN = 14;
+            const END_PAD = 40;                        // the last letter really is done
 
             // Grapheme clusters, so an accented or combining character is
             // never torn in half and a surrogate pair stays whole.
@@ -13344,13 +13737,30 @@
                 });
                 el.textContent = '';
                 el.appendChild(frag);
+                return gi;              // how many letters this element contributed
             }
 
+            // Returns how far the last letter's delay actually reaches, in each
+            // direction. The worst case (MAX_E * E) is not good enough: the
+            // per-letter stagger means a long line finishes well after a short
+            // one at the same element index, and the indicator is not allowed to
+            // reach 100% before that last letter has arrived.
             function dress(list) {
+                let out = 0, into = 0;
                 list.forEach((t) => {
                     t.el.setAttribute('aria-busy', 'true');
-                    if (t.fade) t.el.classList.add('lang-fade'); else split(t.el, t.e);
+                    if (t.fade) {
+                        // The brand lines fade whole and carry no stagger.
+                        t.el.classList.add('lang-fade');
+                        t.n = 1;
+                    } else {
+                        t.n = split(t.el, t.e);
+                    }
+                    const last = Math.max(0, t.n - 1);
+                    out  = Math.max(out,  t.e * E_OUT + (t.fade ? 0 : last * LETTER_OUT));
+                    into = Math.max(into, t.e * E_IN  + (t.fade ? 0 : last * LETTER_IN));
                 });
+                return { out: out, in: into };
             }
 
             // Collapses the letter spans back to a plain text node and clears
@@ -13377,15 +13787,22 @@
                 active = collect();
                 if (!active.length) { apply(); return; }
 
-                dress(active);
+                // Both halves are measured from what was actually dressed, and
+                // the indicator is handed the same two numbers that schedule
+                // the phases. One timeline, two effects.
+                const reach = dress(active);
+                const outSpan = OUT_MS + reach.out;
+                const inSpan = IN_MS + reach.in;
+
+                voidLanguagePortal.begin(outSpan, inSpan);
                 document.body.classList.add('lang-swap-out');
 
-                const outFor = OUT_MS + MAX_E * E_OUT + GAP_MS;
                 timers.push(setTimeout(() => {
                     if (run !== me) return;
                     // Everything animated is invisible at this instant, so the
                     // real swap — and any reflow it causes — is never seen.
                     apply();
+                    voidLanguagePortal.crossed();   // the midpoint, now that it is true
                     document.body.classList.remove('lang-swap-out');
                     active.forEach((t) => { if (!t.fade) split(t.el, t.e); });
                     // Force a frame so the browser sees the start state before
@@ -13396,12 +13813,13 @@
                     timers.push(setTimeout(() => {
                         if (run !== me) return;
                         settle();
-                    }, IN_MS + MAX_E * E_IN + 120));
-                }, outFor));
+                        voidLanguagePortal.complete();   // and only now, 100%
+                    }, inSpan + END_PAD));
+                }, outSpan + GAP_MS));
             }
 
-            return { play: play, settle: settle,
-                     total: OUT_MS + MAX_E * E_OUT + GAP_MS + IN_MS + MAX_E * E_IN + 120 };
+            return { play: play, settle: settle, portal: voidLanguagePortal,
+                     total: OUT_MS + MAX_E * E_OUT + GAP_MS + IN_MS + MAX_E * E_IN + END_PAD };
         })();
 
         // The saved language is applied before this is armed, so a reload with
