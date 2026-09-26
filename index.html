@@ -11273,10 +11273,33 @@
                 /* Reloading clears the mark, so the gate returns. Without this
                    a refresh inherited the previous visit's "entered" state and
                    the gate stayed away for the life of the tab. */
-                if (navType === 'reload') {
+                var wasReload = (navType === 'reload');
+                if (wasReload) {
                     entered = false;
                     try { sessionStorage.removeItem('void-entered'); } catch (e) {}
+
+                    /* A refresh is a request for the page again, from the top —
+                       not for whatever the visitor happened to be looking at
+                       when they pressed it. void-scroll is written on every
+                       pagehide, a refresh included, and clearing the entered
+                       mark alone left that offset behind to be restored by the
+                       next navigation that counted as a return. */
+                    try { sessionStorage.removeItem('void-scroll'); } catch (e) {}
+
+                    /* A fragment left in the address bar is re-applied by the
+                       browser the moment the document has height, underneath
+                       the gate, which is exactly the offset the gate exists to
+                       prevent. scrollRestoration: manual does not cover it. */
+                    if (location.hash) {
+                        try {
+                            history.replaceState(history.state, '', location.pathname + location.search);
+                        } catch (e) {}
+                    }
                 }
+                /* Read by the router at the end of the document: a section path
+                   is a deep link when it is asked for, and merely where the
+                   visitor was when it is refreshed. */
+                try { window.voidWasReload = wasReload; } catch (e) {}
 
                 /* Only a genuine internal return skips the gate: the mark is
                    set AND the visitor arrived from one of our own pages. */
@@ -19184,9 +19207,23 @@
                 history.replaceState({ voidRoute: legacy }, '', legacy);
             }
 
-            // Deep links land instantly rather than animating a long scroll from
-            // the top — the visitor asked for that section, not the journey.
-            if (normalise(location.pathname) !== '/') {
+            // A refresh is not a deep link. Navigating to Collection rewrites
+            // the address bar to /shop, so from then on every refresh read as
+            // "take me to the Collection" — the visitor was put back there
+            // instead of at the top of the page, and with the gate skipped
+            // whenever the entered mark had survived, there was nothing in the
+            // way to make it obvious. Pressing reload asks for this page again,
+            // so the section is dropped and the homepage starts where it should.
+            //
+            // Asking for /shop is still a deep link and still lands on the
+            // Collection: a shared URL, a typed one, or a followed link is a
+            // fresh navigation, not a reload.
+            if (window.voidWasReload && normalise(location.pathname) !== '/') {
+                try { history.replaceState({ voidRoute: '/' }, '', '/'); } catch (e) {}
+            } else if (normalise(location.pathname) !== '/') {
+                // Deep links land instantly rather than animating a long scroll
+                // from the top — the visitor asked for that section, not the
+                // journey.
                 applyRoute(location.pathname, true);
             }
         })();
