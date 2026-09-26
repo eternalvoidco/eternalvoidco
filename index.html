@@ -1843,6 +1843,115 @@
             transition: letter-spacing 0.9s var(--ease-lux, cubic-bezier(0.22, 1, 0.36, 1));
         }
 
+        /* ── Language transition ──────────────────────────────────────────
+           The old text recedes into the void and the new language emerges in
+           its place. Letters carry the light; whole words carry the movement.
+
+           The split is deliberate. A per-letter transform needs inline-block,
+           and inline-block letters break words across lines — on body copy
+           that is a disaster. So the word is the inline-block that moves, and
+           the letters inside stay inline and animate only opacity, blur and
+           their own light. Line breaking is untouched. */
+        .lang-word {
+            display: inline-block;
+            white-space: pre;
+        }
+
+        .lang-glyph { display: inline; }
+
+        .lang-swap-out .lang-glyph {
+            animation: langGlyphOut 620ms cubic-bezier(0.4, 0, 0.7, 0.2) both;
+            animation-delay: calc(var(--e, 0) * 42ms + var(--i, 0) * 9ms);
+        }
+
+        .lang-swap-out .lang-word {
+            animation: langWordOut 620ms cubic-bezier(0.4, 0, 0.7, 0.2) both;
+            animation-delay: calc(var(--e, 0) * 42ms);
+        }
+
+        /* linear, deliberately. A keyframe timing function is applied to every
+           segment, so an ease-out curve across four stops does not read as one
+           smooth arrival — it completes each segment in its first third and
+           then waits, which is a staircase. The shape lives in the values
+           below instead, sampled finely enough to be the curve. */
+        .lang-swap-in .lang-glyph {
+            animation: langGlyphIn 900ms linear both;
+            animation-delay: calc(var(--e, 0) * 55ms + var(--i, 0) * 14ms);
+        }
+
+        .lang-swap-in .lang-word {
+            animation: langWordIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: calc(var(--e, 0) * 55ms);
+        }
+
+        @keyframes langGlyphOut {
+            from { opacity: 1; filter: blur(0); }
+            to   { opacity: 0; filter: blur(3px); }
+        }
+
+        @keyframes langWordOut {
+            from { transform: translate3d(0, 0, 0) scale(1); }
+            to   { transform: translate3d(0, 5px, 0) scale(0.985); }
+        }
+
+        /* The light catches the arriving letters briefly and then lets go. It
+           is on the glyph itself, so it stays where the text is and never
+           becomes a wash over whatever sits behind it. */
+        @keyframes langGlyphIn {
+            0%   { opacity: 0;    filter: blur(4px);    text-shadow: 0 0 0px    rgba(226, 199, 138, 0);    }
+            12%  { opacity: 0.08; filter: blur(3.3px);  text-shadow: 0 0 5px    rgba(226, 199, 138, 0.14); }
+            26%  { opacity: 0.22; filter: blur(2.6px);  text-shadow: 0 0 8px    rgba(226, 199, 138, 0.26); }
+            40%  { opacity: 0.40; filter: blur(1.9px);  text-shadow: 0 0 10px   rgba(226, 199, 138, 0.33); }
+            54%  { opacity: 0.58; filter: blur(1.3px);  text-shadow: 0 0 10px   rgba(226, 199, 138, 0.31); }
+            68%  { opacity: 0.74; filter: blur(0.8px);  text-shadow: 0 0 8px    rgba(226, 199, 138, 0.24); }
+            80%  { opacity: 0.86; filter: blur(0.45px); text-shadow: 0 0 6px    rgba(226, 199, 138, 0.16); }
+            90%  { opacity: 0.94; filter: blur(0.2px);  text-shadow: 0 0 4px    rgba(226, 199, 138, 0.09); }
+            100% { opacity: 1;    filter: blur(0);      text-shadow: 0 0 0px    rgba(226, 199, 138, 0);    }
+        }
+
+        @keyframes langWordIn {
+            from { transform: translate3d(0, -6px, 0) scale(0.99); }
+            to   { transform: translate3d(0, 0, 0) scale(1); }
+        }
+
+        /* The brand marks carry <sup>© and are never split into letters; the
+           whole line dips and returns instead. */
+        .lang-swap-out .lang-fade { animation: langFadeOut 620ms ease both; }
+        .lang-swap-in  .lang-fade { animation: langFadeIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+        @keyframes langFadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(3px); } }
+        @keyframes langFadeIn  { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0); } }
+
+        /* Reduced motion: the language still changes, it simply does not
+           travel. No blur to resolve, no stagger to wait through.
+
+           The script already declines to dress the page when either signal is
+           set, so in practice these selectors never match. They are kept as the
+           backstop for the one case the script cannot cover: the preference
+           being turned on mid-transition, which would otherwise leave letters
+           frozen part-way out. Both signals are listed because this effect
+           honours the device preference on its own — see the note on reduced()
+           in the swap module for why it departs from the house rule. */
+        html.reduce-motion .lang-swap-out .lang-glyph,
+        html.reduce-motion .lang-swap-out .lang-word,
+        html.reduce-motion .lang-swap-in .lang-glyph,
+        html.reduce-motion .lang-swap-in .lang-word,
+        html.reduce-motion .lang-swap-out .lang-fade,
+        html.reduce-motion .lang-swap-in .lang-fade {
+            animation: none !important;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .lang-swap-out .lang-glyph,
+            .lang-swap-out .lang-word,
+            .lang-swap-in .lang-glyph,
+            .lang-swap-in .lang-word,
+            .lang-swap-out .lang-fade,
+            .lang-swap-in .lang-fade {
+                animation: none !important;
+            }
+        }
+
         /* ── Entry sequence ───────────────────────────────────────────────
            The preference, kept at the edge of the frame. At rest it is a
            single point of the portal's light; the name and state are drawn
@@ -11125,7 +11234,7 @@
                 <button type="button" class="mm-cat" aria-expanded="false" aria-controls="mmSubFragrance" data-i18n="fragrance">Fragrance</button>
                 <div class="mm-sub" id="mmSubFragrance">
                     <div class="mm-sub-inner">
-                        <ul><li><a href="/fragrance" data-i18n="navNeant">Néant</a></li></ul>
+                        <ul><li><a href="/fragrance" data-i18n="navNeant" data-lang-static>Néant</a></li></ul>
                     </div>
                 </div>
             </li>
@@ -13160,23 +13269,180 @@
             languageSelectorButton.setAttribute('aria-expanded', 'false');
         }
 
+        /* ── The language transition ──────────────────────────────────────
+           The text is swapped by applyTranslations() exactly as before; this
+           only choreographs what is seen either side of it. The DOM ends as
+           plain text every time, so assistive technology reads the finished
+           language and never the scaffolding.
+
+           Only what is on screen is split into letters. Splitting all 180
+           strings would cost far more than it shows, and nothing off-screen
+           is being watched. */
+        const voidLanguageSwap = (function () {
+            const OUT_MS = 620, GAP_MS = 110, IN_MS = 900;
+            const E_OUT = 42, E_IN = 55, MAX_E = 12;   // capped, or the tail runs away
+
+            // Grapheme clusters, so an accented or combining character is
+            // never torn in half and a surrogate pair stays whole.
+            const seg = (window.Intl && Intl.Segmenter)
+                ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+            const graphemes = (s) => seg ? Array.from(seg.segment(s), (x) => x.segment) : Array.from(s);
+
+            let run = 0, active = [], timers = [];
+
+            // A deliberate exception to the house rule.
+            //
+            // Elsewhere on the site the OS query alone is not enough to calm an
+            // effect: html.reduce-motion requires the visitor's own opt-in AND
+            // the system preference, so the cinematics show by default. This
+            // effect does not follow that. It moves every word on the screen at
+            // once for the better part of three seconds, which is exactly what
+            // a device-level request for less motion is asking not to happen,
+            // and a visitor should not have to find a switch on the site first.
+            //
+            // So either signal is sufficient here. The language still changes
+            // immediately; it simply arrives without the letter animation.
+            const reduced = () => document.documentElement.classList.contains('reduce-motion')
+                || !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+            function collect() {
+                const vh = window.innerHeight || 0;
+                const list = [];
+                const consider = (el, fade) => {
+                    // Proper names opt out. They carry a data-i18n key so the
+                    // dictionary stays complete, but the value is the same in
+                    // every language, so there is nothing to transition and a
+                    // brand mark should not be taken apart letter by letter.
+                    if (el.hasAttribute('data-lang-static')) return;
+                    if (!fade && !el.textContent.trim()) return;
+                    const r = el.getBoundingClientRect();
+                    if (!r.width || !r.height) return;
+                    if (r.bottom < -60 || r.top > vh + 60) return;
+                    const cs = getComputedStyle(el);
+                    if (cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return;
+                    list.push({ el: el, top: r.top, left: r.left, fade: fade });
+                };
+                document.querySelectorAll('[data-i18n]').forEach((el) => consider(el, false));
+                document.querySelectorAll('[data-i18n-html]').forEach((el) => consider(el, true));
+                // One composed transition: the order follows where things sit
+                // on screen, not where they happen to fall in the document.
+                list.sort((a, b) => (a.top - b.top) || (a.left - b.left));
+                list.forEach((t, i) => { t.e = Math.min(i, MAX_E); });
+                return list;
+            }
+
+            function split(el, e) {
+                const frag = document.createDocumentFragment();
+                let gi = 0;
+                // Words are split off first and kept whole, so line breaking
+                // is exactly as it was; only the glyphs inside them animate.
+                el.textContent.split(/(\s+)/).forEach((chunk) => {
+                    if (!chunk) return;
+                    if (/^\s+$/.test(chunk)) { frag.appendChild(document.createTextNode(chunk)); return; }
+                    const w = document.createElement('span');
+                    w.className = 'lang-word';
+                    w.style.setProperty('--e', e);
+                    graphemes(chunk).forEach((ch) => {
+                        const g = document.createElement('span');
+                        g.className = 'lang-glyph';
+                        g.style.setProperty('--e', e);
+                        g.style.setProperty('--i', gi++);
+                        g.textContent = ch;
+                        w.appendChild(g);
+                    });
+                    frag.appendChild(w);
+                });
+                el.textContent = '';
+                el.appendChild(frag);
+            }
+
+            function dress(list) {
+                list.forEach((t) => {
+                    t.el.setAttribute('aria-busy', 'true');
+                    if (t.fade) t.el.classList.add('lang-fade'); else split(t.el, t.e);
+                });
+            }
+
+            // Collapses the letter spans back to a plain text node and clears
+            // every mark. Safe to call at any point, which is what makes the
+            // transition interruptible.
+            function settle() {
+                timers.forEach(clearTimeout); timers = [];
+                document.body.classList.remove('lang-swap-out', 'lang-swap-in');
+                active.forEach((t) => {
+                    t.el.classList.remove('lang-fade');
+                    t.el.removeAttribute('aria-busy');
+                    if (!t.fade) t.el.textContent = t.el.textContent;
+                });
+                active = [];
+            }
+
+            function play(apply) {
+                const me = ++run;
+                settle();                       // a second switch lands on a clean page
+
+                if (reduced()) { apply(); return; }
+
+                active = collect();
+                if (!active.length) { apply(); return; }
+
+                dress(active);
+                document.body.classList.add('lang-swap-out');
+
+                const outFor = OUT_MS + MAX_E * E_OUT + GAP_MS;
+                timers.push(setTimeout(() => {
+                    if (run !== me) return;
+                    // Everything animated is invisible at this instant, so the
+                    // real swap — and any reflow it causes — is never seen.
+                    apply();
+                    document.body.classList.remove('lang-swap-out');
+                    active.forEach((t) => { if (!t.fade) split(t.el, t.e); });
+                    // Force a frame so the browser sees the start state before
+                    // the in-class lands, or the animation is skipped.
+                    void document.body.offsetWidth;
+                    document.body.classList.add('lang-swap-in');
+
+                    timers.push(setTimeout(() => {
+                        if (run !== me) return;
+                        settle();
+                    }, IN_MS + MAX_E * E_IN + 120));
+                }, outFor));
+            }
+
+            return { play: play, settle: settle,
+                     total: OUT_MS + MAX_E * E_OUT + GAP_MS + IN_MS + MAX_E * E_IN + 120 };
+        })();
+
+        // The saved language is applied before this is armed, so a reload with
+        // a stored preference never replays the transition.
+        let voidLanguageArmed = false;
+
         function setLanguageValue(language) {
             if (!languageSelectorButton) return;
 
             const supportedLanguage = supportedLanguages.includes(language) ? language : 'en';
+            const changed = supportedLanguage !== currentLanguage;
             currentLanguage = supportedLanguage;
             languageSelectorButton.textContent = supportedLanguage.toUpperCase();
+            // Set immediately, not at the end of the animation: assistive
+            // technology should know the page's language from the moment the
+            // choice is made.
             document.documentElement.lang = supportedLanguage;
 
             languageOptions.forEach((option) => {
                 option.setAttribute('aria-selected', option.dataset.language === supportedLanguage ? 'true' : 'false');
             });
 
-            applyTranslations();
-            refreshCartTranslations();
-            // The fit archive renders its table and fit names from JS, so it
-            // has to be re-rendered rather than re-labelled in place.
-            if (typeof window.voidFitArchiveRefresh === 'function') window.voidFitArchiveRefresh();
+            const apply = () => {
+                applyTranslations();
+                refreshCartTranslations();
+                // The fit archive renders its table and fit names from JS, so
+                // it has to be re-rendered rather than re-labelled in place.
+                if (typeof window.voidFitArchiveRefresh === 'function') window.voidFitArchiveRefresh();
+            };
+
+            if (voidLanguageArmed && changed) voidLanguageSwap.play(apply);
+            else apply();
         }
 
         function getPreferredLanguage() {
@@ -13195,6 +13461,9 @@
         }
 
         setLanguageValue(getPreferredLanguage());
+        // Armed only after the initial application, so loading with a saved
+        // language is silent and only a deliberate choice is choreographed.
+        voidLanguageArmed = true;
 
         if (languageSelectorButton && languageSelector) {
             languageSelectorButton.addEventListener('click', () => {
