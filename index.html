@@ -17088,12 +17088,56 @@
             pdAdded.style.animation = '';
         }
 
+        /* PRODUCT_META.description is a { en, fr, it, de } object for every
+           released tee, resolved against currentLanguage here. The three
+           pending-specification pieces below still carry a plain string —
+           they have no price or style code either, and are not part of this —
+           so this reads either shape rather than assuming one. */
+        function localizedProductDescription(meta) {
+            const d = meta && meta.description;
+            if (!d) return '';
+            if (typeof d === 'string') return d;
+            return d[currentLanguage] || d.en || '';
+        }
+
+        /* Each of the five released tees carries its description in all four
+           supported languages, resolved above by localizedProductDescription().
+           Every added sentence stays in the register the rest of the site
+           already uses: colourway and cut as given on the card, one image
+           drawn from the piece's own name, and nothing claimed about fabric,
+           construction or availability beyond what the base description
+           already states. */
         const PRODUCT_META = {
-            'Levitate Tee': { code: 'EV·S1·LVT', description: 'A weightless ritual tee in heavyweight cotton. Dropped shoulder, wide silhouette and a dense hand-feel engineered for layered VOID© styling. Cut with an intentional oversized architecture that drapes rather than clings.' },
-            'Endzustand Tee': { code: 'EV·S1·END', description: 'Boxy oversized volume with a structured chest and a blunt hem line. Couture-inspired proportions in a substantial jersey that holds its shape through movement — a quiet statement in monochrome tension.' },
-            'Insigne Ivoire': { code: 'EV·S1·OGW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-ivory oblique signature, printed and finished for depth and permanence.' },
-            'Insigne Noir': { code: 'EV·S1·OGB', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast.' },
-            'Insigne Azure': { code: 'EV·S1·OBW', description: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup.' },
+            'Levitate Tee': { code: 'EV·S1·LVT', description: {
+                en: 'A weightless ritual tee in heavyweight cotton. Dropped shoulder, wide silhouette and a dense hand-feel engineered for layered VOID© styling. Cut with an intentional oversized architecture that drapes rather than clings. White here reads as absence until the density of the cloth proves otherwise — the contradiction the name is built on. It is built for the moment of arrival, before the room has decided what to make of you.',
+                fr: 'Un t-shirt rituel et sans poids, en coton épais. Épaule tombante, silhouette ample et une main dense pensée pour la superposition VOID©. Coupé selon une architecture oversize volontaire, qui drape plutôt qu’elle ne colle. Le blanc s’y lit comme une absence, jusqu’à ce que la densité du tissu prouve le contraire — la contradiction sur laquelle repose le nom. Il est pensé pour l’instant de l’arrivée, avant que la pièce n’ait décidé ce qu’elle pense de vous.',
+                it: 'Una maglia rituale e senza peso, in cotone pesante. Spalla scesa, silhouette ampia e una mano densa pensata per la sovrapposizione VOID©. Tagliata secondo un’architettura oversize intenzionale, che avvolge invece di aderire. Il bianco si legge qui come un’assenza, finché la densità del tessuto non dimostra il contrario — la contraddizione su cui si fonda il nome. È pensata per l’istante dell’arrivo, prima che la stanza abbia deciso cosa pensare di te.',
+                de: 'Ein schwereloses, rituelles Shirt aus schwerem Baumwollstoff. Fallende Schulter, weite Silhouette und ein dichter Griff, ausgelegt für das Lagen-Styling von VOID©. Geschnitten nach einer bewusst oversized Architektur, die fällt statt anliegt. Weiß liest sich hier zunächst wie Abwesenheit, bis das Gewicht des Stoffs das Gegenteil beweist — der Widerspruch, auf dem der Name beruht. Es ist für den Moment der Ankunft gemacht, bevor der Raum entschieden hat, was er von dir hält.'
+            } },
+            'Endzustand Tee': { code: 'EV·S1·END', description: {
+                en: 'Boxy oversized volume with a structured chest and a blunt hem line. Couture-inspired proportions in a substantial jersey that holds its shape through movement — a quiet statement in monochrome tension. Endzustand — the state a system settles into once every force acting on it has been resolved. The tee is built the same way: structure that holds because nothing in it is still being decided.',
+                fr: 'Un volume ample et structuré, poitrine construite et ourlet net et droit. Des proportions inspirées de la haute couture, dans un jersey conséquent qui garde sa forme dans le mouvement — une déclaration silencieuse dans une tension monochrome. Endzustand : l’état dans lequel un système se stabilise une fois que chaque force qui s’exerce sur lui a trouvé sa résolution. Le t-shirt est construit selon le même principe — une structure qui tient parce que plus rien, en elle, n’est encore en suspens.',
+                it: 'Un volume ampio e strutturato, petto costruito e orlo netto e dritto. Proporzioni di ispirazione couture, in un jersey sostanzioso che mantiene la forma nel movimento — una dichiarazione silenziosa in una tensione monocroma. Endzustand: lo stato in cui un sistema si stabilizza una volta che ogni forza che agisce su di esso ha trovato la propria risoluzione. La maglia è costruita secondo lo stesso principio — una struttura che regge perché nulla, al suo interno, è ancora in sospeso.',
+                de: 'Boxiges, oversized Volumen mit strukturierter Brust und gerade geschnittenem Saum. Von Couture inspirierte Proportionen in einem kräftigen Jersey, der auch in Bewegung seine Form hält — eine stille Aussage in monochromer Spannung. Endzustand: der Zustand, in den ein System übergeht, sobald jede einwirkende Kraft ausgeglichen ist. Das Shirt ist nach demselben Prinzip gebaut — eine Struktur, die hält, weil nichts an ihr noch in der Schwebe ist.'
+            } },
+            'Insigne Ivoire': { code: 'EV·S1·OGW', description: {
+                en: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-ivory oblique signature, printed and finished for depth and permanence. An insignia earns its authority quietly, worn rather than announced. Set against ivory, the gold reads like early light — present before it is noticed.',
+                fr: 'Une coupe oversize détendue, avec une largeur de corps fluide et un tombé net pour un usage quotidien. Signature oblique or sur ivoire, imprimée et finie pour donner profondeur et permanence. Un insigne acquiert son autorité en silence, porté plutôt qu’annoncé. Sur l’ivoire, l’or se lit comme une lumière matinale — présent avant d’être remarqué.',
+                it: 'Un taglio oversize rilassato, con una larghezza del corpo fluida e una caduta pulita per l’uso quotidiano. Firma obliqua oro su avorio, stampata e rifinita per profondità e permanenza. Un’insegna conquista la propria autorità in silenzio, indossata più che dichiarata. Sull’avorio, l’oro si legge come una luce del mattino — presente prima ancora di essere notato.',
+                de: 'Ein entspannter, oversized Schnitt mit fließender Körperbreite und sauberem Fall für den Alltag. Schräg gesetzte Signatur in Gold auf Elfenbein, gedruckt und veredelt für Tiefe und Bestand. Ein Zeichen gewinnt seine Autorität leise, getragen statt verkündet. Auf Elfenbein liest sich das Gold wie frühes Licht — da, bevor es bemerkt wird.'
+            } },
+            'Insigne Noir': { code: 'EV·S1·OGB', description: {
+                en: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Gold-on-black oblique signature for maximum monochrome contrast. Against black, the same mark turns into something closer to an ember: the one point the eye is given permission to land on. Contrast, held in reserve rather than spent.',
+                fr: 'Une coupe oversize détendue, avec une largeur de corps fluide et un tombé net pour un usage quotidien. Signature oblique or sur noir, pour un contraste monochrome maximal. Sur le noir, le même signe se rapproche d’une braise : le seul point où l’œil est autorisé à se poser. Un contraste tenu en réserve plutôt que dépensé.',
+                it: 'Un taglio oversize rilassato, con una larghezza del corpo fluida e una caduta pulita per l’uso quotidiano. Firma obliqua oro su nero, per un contrasto monocromo massimo. Sul nero, lo stesso segno si avvicina a una brace: l’unico punto in cui l’occhio ha il permesso di posarsi. Un contrasto tenuto in riserva più che consumato.',
+                de: 'Ein entspannter, oversized Schnitt mit fließender Körperbreite und sauberem Fall für den Alltag. Schräg gesetzte Signatur in Gold auf Schwarz, für maximalen monochromen Kontrast. Auf Schwarz wird dasselbe Zeichen fast zur Glut: der einzige Punkt, auf dem sich der Blick niederlassen darf. Ein Kontrast, der aufgespart bleibt, statt verbraucht zu werden.'
+            } },
+            'Insigne Azure': { code: 'EV·S1·OBW', description: {
+                en: 'A relaxed oversized cut with a fluid body width and clean everyday drape. Blue-on-ivory oblique signature — a cooler register in the season one lineup. Blue keeps the same insignia at a slight remove — a signature read like a horizon rather than a signal. The coolest register in the trio, and the one that asks to be noticed last.',
+                fr: 'Une coupe oversize détendue, avec une largeur de corps fluide et un tombé net pour un usage quotidien. Signature oblique bleue sur ivoire — un registre plus froid dans la ligne Saison Un. Le bleu tient le même insigne à une légère distance — une signature qui se lit comme un horizon plutôt que comme un signal. Le registre le plus froid du trio, celui qui demande à être remarqué en dernier.',
+                it: 'Un taglio oversize rilassato, con una larghezza del corpo fluida e una caduta pulita per l’uso quotidiano. Firma obliqua blu su avorio — un registro più freddo nella linea Stagione Uno. L’azzurro tiene la stessa insegna a una lieve distanza — una firma che si legge come un orizzonte più che come un segnale. Il registro più freddo del trio, quello che chiede di essere notato per ultimo.',
+                de: 'Ein entspannter, oversized Schnitt mit fließender Körperbreite und sauberem Fall für den Alltag. Schräg gesetzte Signatur in Blau auf Elfenbein — das kühlere Register in der Saison-Eins-Linie. Blau hält dasselbe Zeichen auf leichter Distanz — eine Signatur, die sich eher wie ein Horizont liest als wie ein Signal. Das kühlste Register im Trio, und jenes, das zuletzt bemerkt werden will.'
+            } },
 
             // ---- Pending specification -------------------------------------
             // No style code, price, fabric or care copy exists for these three
@@ -17214,7 +17258,7 @@
             if (pdNameEl) pdNameEl.textContent = name;
             if (pdPriceEl) pdPriceEl.textContent = pricePending ? t('comingSoon') : '€' + price;
             if (pdDesc) {
-                const copy = meta.description || productCard.dataset.fitNote || '';
+                const copy = localizedProductDescription(meta) || productCard.dataset.fitNote || '';
                 pdDesc.innerHTML = formatBrandMarkup(copy);
                 pdDesc.classList.add('collapsed');
             }
