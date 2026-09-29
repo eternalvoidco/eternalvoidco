@@ -1859,6 +1859,22 @@
 
         .lang-glyph { display: inline; }
 
+        /* A box being animated to its new width is, for most of that animation,
+           narrower than the label it will end up holding. A label that is one
+           line when the transition is over must not be allowed to wrap on the
+           way there: it did, and the extra line pushed the button 16px taller,
+           its row 16px taller again, and every one of those heights dropped
+           back the moment the animation released — a jump after 100%.
+
+           Only applied to labels measured as a single line in their finished
+           state, so it can never change where a genuinely wrapping paragraph
+           breaks. The line overhangs its growing border for a moment instead,
+           while its letters are still fading in. */
+        .lang-swap-out .lang-nowrap,
+        .lang-swap-in .lang-nowrap {
+            white-space: nowrap;
+        }
+
         .lang-swap-out .lang-glyph {
             animation: langGlyphOut 620ms cubic-bezier(0.4, 0, 0.7, 0.2) both;
             animation-delay: calc(var(--e, 0) * 42ms + var(--i, 0) * 9ms);
@@ -14057,7 +14073,22 @@
                     frag.appendChild(w);
                 });
                 el.textContent = '';
-                el.appendChild(frag);
+                /* A flex or grid container lays every word span out as an item
+                   of its own, so the container's gap is inserted between words
+                   that used to be a single anonymous text run — .section-eyebrow
+                   grew 7px the moment it was dressed and shrank back when the
+                   spans collapsed, a jump at 0% and another after 100%. One
+                   wrapper keeps it to the single item the text already was. */
+                const cs = getComputedStyle(el);
+                if (cs.display === 'flex' || cs.display === 'inline-flex'
+                    || cs.display === 'grid' || cs.display === 'inline-grid') {
+                    const line = document.createElement('span');
+                    line.className = 'lang-line';
+                    line.appendChild(frag);
+                    el.appendChild(line);
+                } else {
+                    el.appendChild(frag);
+                }
                 return gi;              // how many letters this element contributed
             }
 
@@ -14084,23 +14115,176 @@
                 return { out: out, in: into };
             }
 
-            // Collapses the letter spans back to a plain text node and clears
-            // every mark. Safe to call at any point, which is what makes the
-            // transition interruptible.
-            function settle() {
+            /* ── The boxes around the letters ─────────────────────────────
+               The letters are invisible at the instant applyTranslations()
+               runs, so the swap itself is never seen. The boxes are not. A
+               button's border and fill, the row that centres it and the block
+               below it all stay on screen, so a label going from "Menu" to
+               "Menü schließen" snapped its outline 48px wider in one frame
+               while the letters inside it were hidden — the jump this fixes.
+
+               Real width and height, animated. Not a transform: scaling the
+               box would stretch its border, its label and any icon in it, and
+               the brief is explicit that nothing may be scaled. Animating the
+               layout properties means everything in normal flow reflows every
+               frame instead, which is also what carries the neighbours — a
+               paragraph that gains a line pushes what follows it smoothly
+               rather than teleporting it — and what keeps a centred group
+               centred the whole way through, since the flex row recomputes
+               its own alignment each frame.
+
+               fill: 'forwards', and the reason is subtle. The target is the
+               plain-text size, measured before the letters are re-split,
+               because that is the size the element ends at. But the dressed
+               element does not always have that size in the meantime: an
+               inline-block word cannot break where a text run can, so on a
+               narrow screen a wrapped label is a line taller while it is split
+               than it is as plain text. Released with fill: 'none' the box
+               therefore fell back to the *split* size when the animation ended
+               and dropped again when the spans collapsed — two steps after the
+               counter read 100%, which is exactly what the brief rules out.
+               Holding the target past the end and clearing it only once settle()
+               has collapsed the spans means the value it reverts to is the value
+               it was already showing. Nothing moves.
+
+               The flip side is that a held size would go stale on a resize, so
+               it is cleared there too, and on the final settle of every
+               transition. */
+            const BOX_MS_MIN = 260;
+            const BOX_EPS = 0.5;               // sub-pixel churn is not a jump
+            // Decelerates to a standstill: the curve leaves (1,1) along (0.9,0),
+            // so the last frame has no velocity left to lose. A box that is
+            // still moving when the counter reads 100% is the snap the brief
+            // rules out.
+            const BOX_EASE = 'cubic-bezier(0.4, 0.6, 0.1, 1)';
+            // Their own size is driven by their container or their intrinsic
+            // aspect, and the brief forbids scaling either. They follow the box
+            // that animates around them.
+            const BOX_SKIP_TAGS = { SVG: 1, IMG: 1, PICTURE: 1, VIDEO: 1, CANVAS: 1, IFRAME: 1, BR: 1, SOURCE: 1 };
+            let boxAnims = [];
+
+            /* Every box that a translated label can resize: the label itself and
+               its ancestors. The label's own width frequently does not change —
+               a block label fills its parent either way — while the button
+               drawn around it does, so the ancestors matter more than the
+               element. Four levels reaches the control, the row that lays it
+               out and the block that row sits in. */
+            function boxCandidates(list) {
+                const seen = new Set();
+                const out = [];
+                list.forEach((t) => {
+                    let n = t.el;
+                    for (let d = 0; d < 4 && n && n !== document.body; d++) {
+                        if (!seen.has(n)) {
+                            seen.add(n);
+                            if (!BOX_SKIP_TAGS[n.tagName] && !n.closest('.lang-portal')) out.push(n);
+                        }
+                        n = n.parentElement;
+                    }
+                });
+                return out;
+            }
+
+            // offsetWidth/Height, not getBoundingClientRect: the rect is scaled
+            // by any transform on an ancestor — the hero rise runs a scale()
+            // during its entrance — and pinning a scaled figure as an explicit
+            // width would resize the element for real.
+            function measureBoxes(els) {
+                const m = new Map();
+                els.forEach((el) => {
+                    if (typeof el.checkVisibility === 'function'
+                        && !el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return;
+                    const w = el.offsetWidth, h = el.offsetHeight;
+                    if (!w && !h) return;
+                    m.set(el, { w: w, h: h });
+                });
+                return m;
+            }
+
+            /* How many line boxes the element's text occupies. A data-i18n node
+               holds nothing but text, so one rect per line is exactly what a
+               range over its contents reports. Used to decide which labels may
+               be held to one line while their box animates. */
+            function lineCount(el) {
+                try {
+                    const r = document.createRange();
+                    r.selectNodeContents(el);
+                    const n = r.getClientRects().length;
+                    return n || 1;
+                } catch (e) {
+                    return 2;   // unknown: assume it wraps, and leave it alone
+                }
+            }
+
+            function cancelBoxes() {
+                boxAnims.forEach((a) => { try { a.cancel(); } catch (e) {} });
+                boxAnims = [];
+            }
+
+            /* first and last are both measured before this is called, and that
+               separation is the whole point. Writing an explicit width onto a
+               child changes its parent's natural width, so measuring one
+               element and immediately animating it before measuring the next
+               made every ancestor report the size its already-pinned child was
+               showing. Ancestors came out as "unchanged", were skipped, and
+               snapped at the end instead: the MENU button jumped its full 49px
+               one frame after the counter read 100% while the span inside it
+               had animated perfectly. Read everything, then write everything. */
+            function animateBoxes(first, last, els, duration) {
+                cancelBoxes();
+                if (!(duration > 0) || !els.length
+                    || typeof document.body.animate !== 'function') return;
+                const ms = Math.max(BOX_MS_MIN, duration);
+                els.forEach((el) => {
+                    const was = first.get(el), now = last.get(el);
+                    if (!was || !now) return;
+                    const cs = getComputedStyle(el);
+                    // width and height do not apply to a non-replaced inline box.
+                    if (cs.display === 'inline' || cs.display === 'contents' || cs.display === 'none') return;
+                    const dw = Math.abs(now.w - was.w), dh = Math.abs(now.h - was.h);
+                    if (dw < BOX_EPS && dh < BOX_EPS) return;
+                    const from = {}, to = {};
+                    if (dw >= BOX_EPS) { from.width = was.w + 'px'; to.width = now.w + 'px'; }
+                    if (dh >= BOX_EPS) { from.height = was.h + 'px'; to.height = now.h + 'px'; }
+                    try {
+                        boxAnims.push(el.animate([from, to],
+                            { duration: ms, easing: BOX_EASE, fill: 'forwards' }));
+                    } catch (e) {}
+                });
+            }
+
+            // A held size is only right for the layout it was measured in.
+            window.addEventListener('resize', cancelBoxes);
+
+            /* Collapses the letter spans back to a plain text node and clears
+               every mark. Safe to call at any point, which is what makes the
+               transition interruptible.
+
+               finalising says which of the two callers this is. At the end of a
+               transition the held box sizes are released here, once the spans
+               above have gone, so the size they fall back to is the size they
+               are already showing. At the start of the *next* transition they
+               are deliberately left alone: animateBoxes() reads their live
+               values as its starting point, which is what lets an interrupted
+               switch continue from where the last one had reached instead of
+               jumping to the size it had been heading for. */
+            function settle(finalising) {
                 timers.forEach(clearTimeout); timers = [];
                 document.body.classList.remove('lang-swap-out', 'lang-swap-in');
                 active.forEach((t) => {
-                    t.el.classList.remove('lang-fade');
+                    t.el.classList.remove('lang-fade', 'lang-nowrap');
                     t.el.removeAttribute('aria-busy');
                     if (!t.fade) t.el.textContent = t.el.textContent;
                 });
                 active = [];
+                if (finalising) cancelBoxes();
             }
 
             function play(apply) {
                 const me = ++run;
-                settle();                       // a second switch lands on a clean page
+                // Not finalising: any box animation still in flight is left
+                // running so the new one can pick up its live size.
+                settle(false);                  // a second switch lands on a clean page
 
                 // No motion-preference branch here — see canAnimate above.
                 if (!canAnimate) { apply(); return; }
@@ -14115,31 +14299,69 @@
                 const outSpan = OUT_MS + reach.out;
                 const inSpan = IN_MS + reach.in;
 
+                const boxes = boxCandidates(active);
+
                 voidLanguagePortal.begin(outSpan, inSpan);
                 document.body.classList.add('lang-swap-out');
 
                 timers.push(setTimeout(() => {
                     if (run !== me) return;
-                    // Everything animated is invisible at this instant, so the
-                    // real swap — and any reflow it causes — is never seen.
+                    /* The letters are invisible at this instant, so the swap
+                       itself is never seen — but the boxes around them are on
+                       screen, so their old sizes are taken now, one frame
+                       before the text changes underneath them. Measured while
+                       any previous box animation is still running, on purpose:
+                       reading the live size is what lets an interrupted switch
+                       carry on from where the last one had got to instead of
+                       starting with a jump. */
+                    const boxesWere = measureBoxes(boxes);
+
                     apply();
                     voidLanguagePortal.crossed();   // the midpoint, now that it is true
                     document.body.classList.remove('lang-swap-out');
+
+                    /* Measured here, between the swap and the re-split: the text
+                       is the new text and the letters are plain nodes again,
+                       which is precisely the state settle() restores at the end.
+                       Measuring after the re-split would aim at the dressed
+                       layout instead and leave a correction to pay when the
+                       spans collapse — a snap after 100%. */
+                    const boxesNow = measureBoxes(boxes);
+
+                    /* Decided here, on the finished text, for the same reason
+                       the sizes are: a label that is one line now is one that
+                       may be held to one line while its box catches up. Judging
+                       it from the outgoing text would hold a label that is about
+                       to need two. */
+                    active.forEach((t) => {
+                        if (!t.fade && lineCount(t.el) === 1) t.el.classList.add('lang-nowrap');
+                    });
+
                     active.forEach((t) => { if (!t.fade) split(t.el, t.e); });
                     // Force a frame so the browser sees the start state before
                     // the in-class lands, or the animation is skipped.
                     void document.body.offsetWidth;
                     document.body.classList.add('lang-swap-in');
 
+                    /* Same span as the letters' arrival, so the outlines finish
+                       growing at the moment the last letter lands and the
+                       counter's 100% is true of the whole frame, not just the
+                       text. */
+                    animateBoxes(boxesWere, boxesNow, boxes, inSpan);
+
                     timers.push(setTimeout(() => {
                         if (run !== me) return;
-                        settle();
+                        // Finalising: the spans come off and the held box sizes
+                        // are released in that order, so neither move.
+                        settle(true);
                         voidLanguagePortal.complete();   // and only now, 100%
                     }, inSpan + END_PAD));
                 }, outSpan + GAP_MS));
             }
 
-            return { play: play, settle: settle, portal: voidLanguagePortal,
+            // The public settle is a hard reset: an outside caller wants the page
+            // left clean, held box sizes included.
+            return { play: play, settle: function () { settle(true); }, portal: voidLanguagePortal,
                      total: OUT_MS + MAX_E * E_OUT + GAP_MS + IN_MS + MAX_E * E_IN + END_PAD };
         })();
 
