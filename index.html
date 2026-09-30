@@ -11692,16 +11692,26 @@
     <div class="lang-portal" id="langPortal" aria-hidden="true">
         <svg class="lang-portal-ring" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
             <defs>
+                <!-- The ring is centred in the viewport and so is the hero
+                     emblem, so on the home page they were drawn straight
+                     through each other: the arc crossed the letterforms and the
+                     percentage sat on top of them. The core is what separates
+                     them. It holds full black across the whole disc the ring
+                     encloses and only falls away outside it, so the emblem
+                     reads as being behind the portal instead of tangled in it,
+                     and the fade still ends at nothing well inside the frame —
+                     no panel, no edge, nothing rectangular. -->
                 <radialGradient id="langPortalCore" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%"   stop-color="#050505" stop-opacity="0.94"/>
-                    <stop offset="58%"  stop-color="#050505" stop-opacity="0.76"/>
-                    <stop offset="100%" stop-color="#050505" stop-opacity="0"/>
+                    <stop offset="0%"   stop-color="#040404" stop-opacity="0.99"/>
+                    <stop offset="62%"  stop-color="#040404" stop-opacity="0.97"/>
+                    <stop offset="82%"  stop-color="#040404" stop-opacity="0.72"/>
+                    <stop offset="100%" stop-color="#040404" stop-opacity="0"/>
                 </radialGradient>
             </defs>
 
             <!-- The void it emerges from: a soft core, not a panel and not a
                  full-screen wash. It fades to nothing well inside the frame. -->
-            <circle cx="60" cy="60" r="58" fill="url(#langPortalCore)"/>
+            <circle cx="60" cy="60" r="74" fill="url(#langPortalCore)"/>
 
             <g class="lang-portal-orbit lang-portal-orbit-a">
                 <circle class="lang-portal-dash" cx="60" cy="60" r="53"/>
