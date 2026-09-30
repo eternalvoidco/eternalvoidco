@@ -1869,6 +1869,27 @@
             white-space: pre;
         }
 
+        /* Give each word its own compositor layer for as long as it is animating.
+           An animated filter on an un-promoted element is re-rasterised every
+           frame, and the raster is snapped to whole device pixels — so as the
+           blur radius changes, the word's painted position can flip between two
+           pixels while its layout position never moves at all. Measured on the
+           painted output rather than the layout tree: the worst frame-to-frame
+           movement of a word's ink was 0.17px at a device scale of 1 but 0.80px
+           at 1.5, which is the scale most Windows machines actually run at. That
+           is the shimmer, and it is invisible to every layout-level measurement.
+
+           Promoting the word pins the layer once and lets the blur run on the
+           compositor against a stable raster. Only while dressed: forty
+           permanent layers would be a worse trade than the one it fixes. */
+        .lang-swap-out .lang-word,
+        .lang-swap-in .lang-word {
+            will-change: filter, opacity;
+            /* Rasterise at the layer's own resolution so the blur does not
+               resample text that has already been snapped to a pixel grid. */
+            transform: translateZ(0);
+        }
+
         .lang-glyph { display: inline; }
 
         /* A box being animated to its new width is, for most of that animation,
@@ -1941,7 +1962,7 @@
 
         @keyframes langWordOut {
             from { filter: blur(0); }
-            to   { filter: blur(3px); }
+            to   { filter: blur(2.2px); }
         }
 
         @keyframes langGlyphIn {
@@ -1960,13 +1981,18 @@
            is already blurring with means one region does both and the letters
            carry nothing. Same soft halo, and it reads slightly better: the glow
            is cast by the blurred word rather than by each sharp letter. */
+        /* Peak blur is 2.6px, down from 4. The wider the blur, the further the
+           word's ink spreads and the more of it moves as the radius resolves —
+           at 4px that movement was itself readable as a wobble, on top of the
+           raster snapping. This is enough softness to read as emerging and
+           little enough that the letters barely stir. */
         @keyframes langWordIn {
-            0%   { filter: blur(4px)    drop-shadow(0 0 0px  rgba(226, 199, 138, 0));    }
-            20%  { filter: blur(3.6px)  drop-shadow(0 0 6px  rgba(226, 199, 138, 0.18)); }
-            40%  { filter: blur(2.6px)  drop-shadow(0 0 9px  rgba(226, 199, 138, 0.28)); }
-            55%  { filter: blur(1.6px)  drop-shadow(0 0 9px  rgba(226, 199, 138, 0.26)); }
-            70%  { filter: blur(0.84px) drop-shadow(0 0 7px  rgba(226, 199, 138, 0.18)); }
-            85%  { filter: blur(0.24px) drop-shadow(0 0 4px  rgba(226, 199, 138, 0.09)); }
+            0%   { filter: blur(2.6px)  drop-shadow(0 0 0px  rgba(226, 199, 138, 0));    }
+            20%  { filter: blur(2.34px) drop-shadow(0 0 6px  rgba(226, 199, 138, 0.18)); }
+            40%  { filter: blur(1.69px) drop-shadow(0 0 9px  rgba(226, 199, 138, 0.28)); }
+            55%  { filter: blur(1.04px) drop-shadow(0 0 9px  rgba(226, 199, 138, 0.26)); }
+            70%  { filter: blur(0.55px) drop-shadow(0 0 7px  rgba(226, 199, 138, 0.18)); }
+            85%  { filter: blur(0.16px) drop-shadow(0 0 4px  rgba(226, 199, 138, 0.09)); }
             100% { filter: blur(0)      drop-shadow(0 0 0px  rgba(226, 199, 138, 0));    }
         }
 
@@ -1975,8 +2001,8 @@
         .lang-swap-out .lang-fade { animation: langFadeOut 620ms var(--lang-ease-away) both; }
         .lang-swap-in  .lang-fade { animation: langFadeIn 900ms var(--lang-ease-arrive) both; }
 
-        @keyframes langFadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(3px); } }
-        @keyframes langFadeIn  { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0); } }
+        @keyframes langFadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(2.2px); } }
+        @keyframes langFadeIn  { from { opacity: 0; filter: blur(2.6px); } to { opacity: 1; filter: blur(0); } }
 
         /* There is deliberately no reduce-motion or prefers-reduced-motion rule
            for any .lang-* selector, and none should be added. Changing language
@@ -4682,6 +4708,25 @@
             visibility: visible;
             pointer-events: auto;
             transition: opacity 0.55s ease, visibility 0s linear 0s;
+        }
+
+        /* The starfield is roughly twenty infinite animations — drift, twinkle,
+           nebula, and nine spark rays — and they were all still running with the
+           overlay closed, for the whole session. visibility: hidden stops them
+           being painted; it does not stop them being animated, so they went on
+           taking compositor work every frame from everything that was visible,
+           the language transition included. Fifty animations were live on an
+           idle page; twenty-four of them were infinite ones nobody could see.
+
+           They resume with the overlay, so nothing about the story changes. */
+        .story-overlay:not(.open) *,
+        .story-overlay:not(.open)::before,
+        .story-overlay:not(.open)::after {
+            animation-play-state: paused !important;
+        }
+
+        .gallery-preview-backdrop:not(.open) * {
+            animation-play-state: paused !important;
         }
 
         /* Soft pool of light behind the copy plus a restrained edge vignette,
