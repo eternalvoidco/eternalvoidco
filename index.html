@@ -119,6 +119,18 @@
             --void-panel-shadow: 0 40px 120px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(245, 242, 236, 0.04), inset 0 1px 0 rgba(245, 242, 236, 0.07);
 
             --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+            /* The language transition's two curves, and the only two it uses —
+               the outgoing letters, the incoming letters, the boxes resizing
+               around them and the layout they push all read from these, so the
+               whole swap accelerates and decelerates as one movement. Four
+               unrelated curves were what made it feel uneven.
+
+               away: leaves from rest and accelerates out of the frame.
+               arrive: enters and decelerates to a standstill. Its slope is zero
+               at both ends, so nothing starts or stops abruptly and there is no
+               velocity left to lose on the final frame. */
+            --lang-ease-away: cubic-bezier(0.4, 0, 0.7, 0.2);
+            --lang-ease-arrive: cubic-bezier(0.4, 0, 0.2, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
             --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
         }
@@ -1875,65 +1887,93 @@
             white-space: nowrap;
         }
 
+        /* Which property sits on which element is a performance decision, and a
+           visible one. The blur and the gold light used to be on every glyph:
+           260 separate filter regions and 260 text-shadow convolutions, each
+           re-rendered every frame, and the frame budget went with them — 67ms a
+           frame at 1440px, against 16.7 at 390px where the same effect covers a
+           quarter of the pixels. They are on the word now, ~35 regions instead
+           of ~260 for the same reading, because a 4px blur over a word and the
+           same blur over each of its letters are not tellable apart.
+
+           The letters keep the opacity, and the per-letter stagger with it, so
+           the signature of the effect is untouched — it is only the expensive
+           half that moved up a level. */
         .lang-swap-out .lang-glyph {
-            animation: langGlyphOut 620ms cubic-bezier(0.4, 0, 0.7, 0.2) both;
+            animation: langGlyphOut 620ms var(--lang-ease-away) both;
             animation-delay: calc(var(--e, 0) * 42ms + var(--i, 0) * 9ms);
         }
 
         .lang-swap-out .lang-word {
-            animation: langWordOut 620ms cubic-bezier(0.4, 0, 0.7, 0.2) both;
+            animation: langWordOut 620ms var(--lang-ease-away) both;
             animation-delay: calc(var(--e, 0) * 42ms);
         }
 
-        /* linear, deliberately. A keyframe timing function is applied to every
-           segment, so an ease-out curve across four stops does not read as one
-           smooth arrival — it completes each segment in its first third and
-           then waits, which is a staircase. The shape lives in the values
-           below instead, sampled finely enough to be the curve. */
+        /* One segment, one curve. This was nine shaped stops on linear timing
+           because blur, light and opacity all had to be shaped together on the
+           same element; with opacity alone the arrive curve does it directly,
+           and a single segment cannot produce the per-segment staircase that
+           made the old four-stop version step and wait. */
         .lang-swap-in .lang-glyph {
-            animation: langGlyphIn 900ms linear both;
+            animation: langGlyphIn 900ms var(--lang-ease-arrive) both;
             animation-delay: calc(var(--e, 0) * 55ms + var(--i, 0) * 14ms);
         }
 
+        /* linear here, because this one is multi-stop: a keyframe timing
+           function is re-applied to every segment, which turns a curve across
+           several stops into a series of starts and stalls. The shape lives in
+           the values, sampled along the arrive curve. */
         .lang-swap-in .lang-word {
-            animation: langWordIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation: langWordIn 900ms linear both;
             animation-delay: calc(var(--e, 0) * 55ms);
         }
 
+        /* No transform on either side. The words used to sink 5px and scale to
+           0.985 on the way out and arrive from -6px at 0.99 — an 11px reversal
+           across the swap, on 35 boxes, with the text resampled at a fraction
+           of its size the whole way. It read as twitching, it moved every
+           baseline, and scaled text is distorted text. The recession is carried
+           by opacity, blur and the light alone; nothing moves off its baseline. */
         @keyframes langGlyphOut {
-            from { opacity: 1; filter: blur(0); }
-            to   { opacity: 0; filter: blur(3px); }
+            from { opacity: 1; }
+            to   { opacity: 0; }
         }
 
         @keyframes langWordOut {
-            from { transform: translate3d(0, 0, 0) scale(1); }
-            to   { transform: translate3d(0, 5px, 0) scale(0.985); }
+            from { filter: blur(0); }
+            to   { filter: blur(3px); }
         }
 
-        /* The light catches the arriving letters briefly and then lets go. It
-           is on the glyph itself, so it stays where the text is and never
-           becomes a wash over whatever sits behind it. */
         @keyframes langGlyphIn {
-            0%   { opacity: 0;    filter: blur(4px);    text-shadow: 0 0 0px    rgba(226, 199, 138, 0);    }
-            12%  { opacity: 0.08; filter: blur(3.3px);  text-shadow: 0 0 5px    rgba(226, 199, 138, 0.14); }
-            26%  { opacity: 0.22; filter: blur(2.6px);  text-shadow: 0 0 8px    rgba(226, 199, 138, 0.26); }
-            40%  { opacity: 0.40; filter: blur(1.9px);  text-shadow: 0 0 10px   rgba(226, 199, 138, 0.33); }
-            54%  { opacity: 0.58; filter: blur(1.3px);  text-shadow: 0 0 10px   rgba(226, 199, 138, 0.31); }
-            68%  { opacity: 0.74; filter: blur(0.8px);  text-shadow: 0 0 8px    rgba(226, 199, 138, 0.24); }
-            80%  { opacity: 0.86; filter: blur(0.45px); text-shadow: 0 0 6px    rgba(226, 199, 138, 0.16); }
-            90%  { opacity: 0.94; filter: blur(0.2px);  text-shadow: 0 0 4px    rgba(226, 199, 138, 0.09); }
-            100% { opacity: 1;    filter: blur(0);      text-shadow: 0 0 0px    rgba(226, 199, 138, 0);    }
+            from { opacity: 0; }
+            to   { opacity: 1; }
         }
 
+        /* The light catches the arriving text briefly and lets go, and the blur
+           resolves along the same arrive curve the letters and their boxes are
+           following. Sharp at rest: the last stop is a true zero on both.
+
+           drop-shadow rather than text-shadow, and that is the point of it.
+           text-shadow inherits, so putting it on the word left all 260 glyphs
+           painting a shadow of their own — the count went up, not down. A
+           filter does not inherit, so folding the glow into the chain the word
+           is already blurring with means one region does both and the letters
+           carry nothing. Same soft halo, and it reads slightly better: the glow
+           is cast by the blurred word rather than by each sharp letter. */
         @keyframes langWordIn {
-            from { transform: translate3d(0, -6px, 0) scale(0.99); }
-            to   { transform: translate3d(0, 0, 0) scale(1); }
+            0%   { filter: blur(4px)    drop-shadow(0 0 0px  rgba(226, 199, 138, 0));    }
+            20%  { filter: blur(3.6px)  drop-shadow(0 0 6px  rgba(226, 199, 138, 0.18)); }
+            40%  { filter: blur(2.6px)  drop-shadow(0 0 9px  rgba(226, 199, 138, 0.28)); }
+            55%  { filter: blur(1.6px)  drop-shadow(0 0 9px  rgba(226, 199, 138, 0.26)); }
+            70%  { filter: blur(0.84px) drop-shadow(0 0 7px  rgba(226, 199, 138, 0.18)); }
+            85%  { filter: blur(0.24px) drop-shadow(0 0 4px  rgba(226, 199, 138, 0.09)); }
+            100% { filter: blur(0)      drop-shadow(0 0 0px  rgba(226, 199, 138, 0));    }
         }
 
         /* The brand marks carry <sup>© and are never split into letters; the
-           whole line dips and returns instead. */
-        .lang-swap-out .lang-fade { animation: langFadeOut 620ms ease both; }
-        .lang-swap-in  .lang-fade { animation: langFadeIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+           whole line dissolves and returns instead, on the same two curves. */
+        .lang-swap-out .lang-fade { animation: langFadeOut 620ms var(--lang-ease-away) both; }
+        .lang-swap-in  .lang-fade { animation: langFadeIn 900ms var(--lang-ease-arrive) both; }
 
         @keyframes langFadeOut { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(3px); } }
         @keyframes langFadeIn  { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0); } }
@@ -1973,8 +2013,11 @@
             visibility: hidden;
             scale: 0.84;
             filter: blur(7px);
-            transition: opacity 0.52s var(--ease-lux), scale 0.52s var(--ease-lux),
-                        filter 0.52s var(--ease-lux), visibility 0.52s linear;
+            /* The arrive curve, like everything else in the swap. --ease-lux is
+               a heavy ease-out that spends 90% of itself in the first third, so
+               the ring appeared with a flick rather than emerging. */
+            transition: opacity 0.52s var(--lang-ease-arrive), scale 0.52s var(--lang-ease-arrive),
+                        filter 0.52s var(--lang-ease-arrive), visibility 0.52s linear;
         }
 
         /* It arrives out of the black as the old letters leave it. */
@@ -2099,11 +2142,19 @@
             font-feature-settings: 'tnum' 1;
         }
 
+        /* Three tabular figures are reserved whatever the count is. The readout
+           as a whole was always centred — grid placement kept its centre to
+           within 0.01px — but the digits still crept outward and dragged the %
+           with them each time the number gained one, at 10 and again at 100.
+           With the slot reserved, the figures sit centred in it and the % does
+           not move at all. */
         .lang-portal-num {
             font-size: 1.32rem;
             letter-spacing: 0.05em;
             color: var(--void-white, #f5f2ec);
             text-shadow: 0 0 14px rgba(226, 199, 138, 0.28);
+            min-width: 3ch;
+            text-align: center;
         }
 
         .lang-portal-sign {
@@ -13839,11 +13890,13 @@
 
             const HOLD_MS = 300;        // 100% registers before it lets go
             const FADE_MS = 700;        // matches the dissolve transition
+            // Long enough that a merely slow frame is not mistaken for a stall.
+            const STALL_MS = 180;
             const CX = 60, CY = 60, R = 46;
 
             let raf = 0, phase = 'idle';
             let t0 = 0, tMid = 0, outSpan = 1, inSpan = 1;
-            let shown = 0, hiddenAt = 0, holdTimer = 0, gone = 0, ticker = 0;
+            let shown = 0, hiddenAt = 0, holdTimer = 0, gone = 0, ticker = 0, lastFrameAt = 0;
 
             function paint(p) {
                 const pct = p * 100;
@@ -13877,19 +13930,29 @@
             }
 
             function frame() {
+                lastFrameAt = performance.now();
                 advance();
                 raf = (phase === 'done' && shown >= 1) ? 0 : requestAnimationFrame(frame);
             }
 
-            // rAF is the right driver when it runs, but it is suspended in
-            // background tabs and throttled by some power-saving modes, while
-            // the letter animations and the phase timers carry on. A coarse
-            // interval alongside it keeps the arc moving in that case rather
-            // than freezing the number mid-sweep and snapping it to 100 at the
-            // end. Both call advance(), so they cannot disagree.
+            /* rAF is the driver. The interval beside it is a stall fallback and
+               nothing more — it only advances the value when rAF has not ticked
+               for a while, which happens in a background tab or under a
+               power-saving mode while the letter animations and the phase timers
+               carry on.
+
+               It used to advance on every tick, which made it a second live
+               driver writing the same custom property on a different cadence
+               from the frame loop. The ring's per-frame step then varied by most
+               of its own size — measured mean jerk 0.87× the mean step — and
+               that is what read as a shake. One writer, one cadence. */
             function startDrivers() {
-                if (!raf) raf = requestAnimationFrame(frame);
-                if (!ticker) ticker = setInterval(advance, 45);
+                if (!raf) { lastFrameAt = performance.now(); raf = requestAnimationFrame(frame); }
+                if (!ticker) {
+                    ticker = setInterval(function () {
+                        if (performance.now() - lastFrameAt > STALL_MS) advance();
+                    }, 60);
+                }
             }
 
             function stopDrivers() {
@@ -14152,11 +14215,21 @@
                transition. */
             const BOX_MS_MIN = 260;
             const BOX_EPS = 0.5;               // sub-pixel churn is not a jump
-            // Decelerates to a standstill: the curve leaves (1,1) along (0.9,0),
-            // so the last frame has no velocity left to lose. A box that is
-            // still moving when the counter reads 100% is the snap the brief
-            // rules out.
-            const BOX_EASE = 'cubic-bezier(0.4, 0.6, 0.1, 1)';
+            /* Read from the stylesheet, not restated here: the boxes ease on the
+               same curve as the letters arriving inside them and the layout they
+               push, so the three are one movement rather than three. It was its
+               own front-loaded curve before, which put the box at most of its
+               final size while the letters were still a third of the way in —
+               the geometry and the text finishing at visibly different times is
+               a large part of what read as uneven. */
+            const BOX_EASE = (function () {
+                try {
+                    const v = getComputedStyle(document.documentElement)
+                        .getPropertyValue('--lang-ease-arrive').trim();
+                    if (v) return v;
+                } catch (e) {}
+                return 'cubic-bezier(0.4, 0, 0.2, 1)';
+            })();
             // Their own size is driven by their container or their intrinsic
             // aspect, and the brief forbids scaling either. They follow the box
             // that animates around them.
