@@ -2037,7 +2037,13 @@
             translate: -50% -50%;
             z-index: 3300;
             pointer-events: none;
-            contain: layout style paint;
+            /* layout and style only. `paint` clipped every pixel to this
+               168px box, and the backing behind the ring is far wider than
+               that — so it was sliced off mid-gradient and read as a
+               rectangular patch laid over the page. Containment of layout and
+               style still isolates everything that matters here; paint was the
+               one doing the damage. */
+            contain: layout style;
             display: grid;
             place-items: center;
             opacity: 0;
@@ -2052,6 +2058,49 @@
         }
 
         /* It arrives out of the black as the old letters leave it. */
+        /* The backing, and it is deliberately not in the SVG any more. In there
+           it was a circle drawn at r=74 of a 120-unit viewBox — 207px across
+           inside a 168px box — so it was always going to be cut, and its
+           gradient still stood at 0.72 opacity exactly where the cut fell. A
+           hard edge at three-quarters opaque is what was crossing the gold
+           button.
+
+           Here it is its own layer, 340px wide against a 168px ring, so the
+           falloff has somewhere to go and reaches true zero long before
+           anything can clip it. The stops are weighted to hold near-solid
+           through the disc the ring encloses — that is what keeps the
+           percentage readable over a photograph — and then to spend more than
+           half the radius easing away, with a long tail through the low alphas
+           where banding would otherwise show as a ring of its own. */
+        .lang-portal::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 340px;
+            height: 340px;
+            translate: -50% -50%;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(closest-side circle,
+                rgba(4, 4, 4, 0.985) 0%,
+                rgba(4, 4, 4, 0.980) 20%,
+                rgba(4, 4, 4, 0.960) 27%,
+                rgba(4, 4, 4, 0.900) 33%,
+                rgba(4, 4, 4, 0.790) 39%,
+                rgba(4, 4, 4, 0.650) 45%,
+                rgba(4, 4, 4, 0.500) 52%,
+                rgba(4, 4, 4, 0.360) 59%,
+                rgba(4, 4, 4, 0.240) 66%,
+                rgba(4, 4, 4, 0.150) 73%,
+                rgba(4, 4, 4, 0.085) 80%,
+                rgba(4, 4, 4, 0.042) 87%,
+                rgba(4, 4, 4, 0.016) 93%,
+                rgba(4, 4, 4, 0.004) 97%,
+                rgba(4, 4, 4, 0) 100%);
+        }
+
         .lang-portal.is-open {
             opacity: 1;
             visibility: visible;
@@ -11944,27 +11993,12 @@
     ────────────────────────────────────────────────────────────────── -->
     <div class="lang-portal" id="langPortal" aria-hidden="true">
         <svg class="lang-portal-ring" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
-            <defs>
-                <!-- The ring is centred in the viewport and so is the hero
-                     emblem, so on the home page they were drawn straight
-                     through each other: the arc crossed the letterforms and the
-                     percentage sat on top of them. The core is what separates
-                     them. It holds full black across the whole disc the ring
-                     encloses and only falls away outside it, so the emblem
-                     reads as being behind the portal instead of tangled in it,
-                     and the fade still ends at nothing well inside the frame —
-                     no panel, no edge, nothing rectangular. -->
-                <radialGradient id="langPortalCore" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%"   stop-color="#040404" stop-opacity="0.99"/>
-                    <stop offset="62%"  stop-color="#040404" stop-opacity="0.97"/>
-                    <stop offset="82%"  stop-color="#040404" stop-opacity="0.72"/>
-                    <stop offset="100%" stop-color="#040404" stop-opacity="0"/>
-                </radialGradient>
-            </defs>
-
-            <!-- The void it emerges from: a soft core, not a panel and not a
-                 full-screen wash. It fades to nothing well inside the frame. -->
-            <circle cx="60" cy="60" r="74" fill="url(#langPortalCore)"/>
+            <!-- The backing that used to live here is now .lang-portal::before.
+                 It could never work inside this SVG: at r=74 of a 120 viewBox it
+                 was 207px across in a 168px box, so it was clipped, and clipped
+                 while still at 0.72 opacity — the hard rectangle over the gold
+                 button. It needs more room than the ring does, so it is no
+                 longer tied to the ring's own coordinate space. -->
 
             <g class="lang-portal-orbit lang-portal-orbit-a">
                 <circle class="lang-portal-dash" cx="60" cy="60" r="53"/>
