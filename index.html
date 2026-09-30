@@ -63,7 +63,12 @@
     <meta name="twitter:image" content="https://eternalvoid.co/assets/icons/android-chrome-512x512.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Bodoni Moda is the drawer's editorial voice, and only the drawer's:
+         the house already speaks it on Néant, so the menu now belongs to the
+         same family rather than borrowing the body serif. The optical-size
+         axis is the reason it can be used at all here — at small sizes it
+         thickens the hairlines that a display cut would drop on a phone. -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&display=swap" rel="stylesheet">
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -4171,6 +4176,254 @@
         .mobile-menu-langs .language-option:hover .language-option-code,
         .mobile-menu-langs .language-option:focus .language-option-code {
             color: rgba(235, 231, 223, 0.82);
+        }
+
+        /* ══ Drawer refinement ══════════════════════════════════════════════
+           Scoped to .mobile-menu throughout: nothing here reaches the rest of
+           the site.
+
+           THE FIT. The panel did not overflow only on short phones — with
+           Region / Experience present it was 971px of content in a 900px
+           drawer on a full desktop, and 952 in 600 on a small phone. Hiding it
+           behind a scrollbar is what was happening; this gives the space back
+           instead. Every vertical measurement below is a clamp against vh, so
+           the panel breathes at full height and tightens as the screen gets
+           shorter, and the language row stays on the floor because it still
+           owns the margin-top:auto it always had. The type sizes are clamped
+           far less than the spacing: rhythm compresses first, letters last. */
+        /* The class is doubled deliberately. The drawer's padding is re-declared
+           as a shorthand inside the width media queries further down the sheet,
+           which would reset a longhand set here no matter what it said; this
+           outranks them instead of depending on source order. */
+        .mobile-menu.mobile-menu {
+            gap: clamp(0.5rem, 1.5vh, 1.15rem);
+            padding-top: clamp(3.4rem, 8vh, 6.4rem);
+            padding-bottom: clamp(1rem, 2.2vh, 2rem);
+        }
+
+        /* THE SHOPPING LINKS. Bodoni, and sized up rather than spaced out —
+           the brief's point exactly. Bodoni's own proportions carry the line,
+           so the tracking comes down from 0.1em to 0.05em: Garamond needed
+           opening up, a didone does not, and at 0.1em it read as letterspaced
+           rather than as set. Optical sizing keeps the hairlines from thinning
+           away at the size a phone renders it. */
+        .mobile-menu .mm-cat {
+            font-family: 'Bodoni Moda', 'Cormorant Garamond', Georgia, serif;
+            font-optical-sizing: auto;
+            font-size: clamp(1.18rem, 2.05vh, 1.46rem);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            line-height: 1.14;
+            padding: clamp(0.16rem, 0.78vh, 0.44rem) 0;
+            opacity: 1;
+            color: rgba(242, 239, 233, 0.9);
+        }
+
+        /* THE SUPPORTING VOICE. Jost stays, because a second serif here would
+           compete with the shopping links instead of supporting them — but it
+           drops from 500 to 400 and loses a little tracking. It was set like a
+           button; it is set like a caption now, which is what it is. */
+        .mobile-menu .mm-house {
+            font-size: clamp(0.62rem, 1.08vh, 0.72rem);
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            line-height: 1.25;
+            padding: clamp(0.14rem, 0.62vh, 0.4rem) 0;
+            color: rgba(242, 239, 233, 0.72);
+        }
+
+        .mobile-menu .mm-group-label {
+            margin: clamp(0.62rem, 1.9vh, 1.7rem) 0 clamp(0.2rem, 0.62vh, 0.5rem);
+            font-size: 0.5rem;
+            letter-spacing: 0.4em;
+            text-indent: 0.4em;
+            color: rgba(199, 169, 108, 0.62);
+        }
+
+        /* Pinned to the floor of the panel. Everything above fits without
+           scrolling at every height this was measured at, but a screen shorter
+           than any of them — or a browser with more chrome than expected —
+           must not be able to push the language row out of sight again, which
+           is the fault this started from. Sticky costs nothing when there is
+           nothing to scroll, and guarantees it when there is. */
+        .mobile-menu .mobile-menu-langs {
+            position: sticky;
+            bottom: 0;
+            padding-top: clamp(0.7rem, 2.2vh, 1.8rem);
+            gap: clamp(0.8rem, 2vw, 1.1rem);
+            background: linear-gradient(180deg,
+                rgba(5, 5, 5, 0) 0%, rgba(5, 5, 5, 0.92) 42%, rgba(5, 5, 5, 0.98) 100%);
+        }
+
+        /* ── Hover identities ──
+           One palette, one rhythm, three degrees of attention. Each is a
+           transform or an opacity on a pseudo-element, so none of them costs
+           layout and none can shift a neighbour. */
+
+        /* Couture: a hairline drawn under the word, left to right. */
+        .mobile-menu .mm-cat {
+            position: relative;
+        }
+
+        .mobile-menu .mm-cat::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: clamp(0.06rem, 0.3vh, 0.2rem);
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg,
+                rgba(199, 169, 108, 0.75), rgba(199, 169, 108, 0.25));
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform 0.52s var(--lang-ease-arrive);
+        }
+
+        .mobile-menu .mm-cat:hover,
+        .mobile-menu .mm-cat:focus-visible,
+        .mobile-menu .mm-group.is-open > .mm-cat {
+            color: #f6f2ea;
+        }
+
+        .mobile-menu .mm-cat:hover::after,
+        .mobile-menu .mm-cat:focus-visible::after,
+        .mobile-menu .mm-group.is-open > .mm-cat::after {
+            transform: scaleX(1);
+        }
+
+        /* Archival: a short gold marker in the margin, as if the line had been
+           ticked in an index. The House only. */
+        .mobile-menu-house .mm-house {
+            position: relative;
+        }
+
+        .mobile-menu-house .mm-house::before {
+            content: '';
+            position: absolute;
+            left: -0.95rem;
+            top: 50%;
+            width: 0.5rem;
+            height: 1px;
+            background: rgba(199, 169, 108, 0.9);
+            transform: scaleX(0);
+            transform-origin: right center;
+            opacity: 0;
+            transition: transform 0.42s var(--lang-ease-arrive), opacity 0.42s ease;
+        }
+
+        .mobile-menu-house .mm-house:hover::before,
+        .mobile-menu-house .mm-house:focus-visible::before {
+            transform: scaleX(1);
+            opacity: 1;
+        }
+
+        /* The translate the links used to carry is removed: a row that shifts
+           sideways under the pointer is the kind of small movement the rest of
+           this work has been taking out. Tone alone, and the marker. */
+        .mobile-menu .mm-house:hover,
+        .mobile-menu .mm-house:focus-visible {
+            color: #f6f2ea;
+            transform: none;
+        }
+
+        /* Keyboard gets the same language as the pointer, plus a ring it can
+           actually see — the markers alone are too quiet to locate focus. */
+        .mobile-menu .mm-cat:focus-visible,
+        .mobile-menu .mm-house:focus-visible,
+        .mobile-menu .language-option:focus-visible {
+            outline: 1px solid rgba(199, 169, 108, 0.55);
+            outline-offset: 0.35rem;
+        }
+
+        /* Touch has no hover to discover anything with, so the markers rest
+           faintly visible instead of waiting for a pointer that never comes. */
+        @media (hover: none) {
+            .mobile-menu .mm-cat::after { transform: scaleX(1); opacity: 0.32; }
+            .mobile-menu-house .mm-house::before { transform: scaleX(1); opacity: 0.4; }
+        }
+
+        html.reduce-motion .mobile-menu .mm-cat::after,
+        html.reduce-motion .mobile-menu-house .mm-house::before {
+            transition: none;
+        }
+
+        /* Short screens. The services columns are the only block long enough to
+           be worth folding, and their labels are short enough to take it — two
+           columns of eight short rows instead of one of sixteen. The shopping
+           links stay in a single column: they are the reason the panel exists
+           and halving them would read as a directory. */
+        @media (max-height: 760px) {
+            .mobile-menu-house.mobile-menu-house {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                column-gap: 1rem;
+                align-items: start;
+            }
+
+            /* The House is items 1-4, Client Services 5-10, so the second
+               column starts at its own heading and the two groups sit side by
+               side rather than stacked. */
+            .mobile-menu-house.mobile-menu-house > li:nth-child(-n + 4) { grid-column: 1; }
+            .mobile-menu-house.mobile-menu-house > li:nth-child(n + 5)  { grid-column: 2; }
+
+            /* Both headings start level. */
+            .mobile-menu-house.mobile-menu-house > li:nth-child(5) .mm-group-label {
+                margin-top: 0;
+            }
+        }
+
+        /* The last 70px, on the shortest phones still in use. Taken from the
+           rhythm and never from the labels: the shopping links give up a
+           little of their leading and the groups sit closer, but the smallest
+           type in the panel is the same size here as it is at full height, and
+           every row still clears a thumb. */
+        @media (max-height: 700px) {
+            .mobile-menu.mobile-menu {
+                gap: 0.4rem;
+                padding-top: clamp(2.9rem, 7vh, 3.4rem);
+                padding-bottom: 0.8rem;
+            }
+
+            /* min-height, not padding, is what holds the row open: compressing
+               the leading to fit produced 14px rows, which is nothing to aim a
+               thumb at. Each row keeps a height a finger can find and the
+               label stays centred in it. */
+            .mobile-menu .mm-cat {
+                font-size: 1.06rem;
+                padding: 0.07rem 0;
+                line-height: 1.1;
+                min-height: 1.95rem;
+                display: flex;
+                align-items: center;
+            }
+
+            .mobile-menu .mm-house {
+                padding: 0.06rem 0;
+                line-height: 1.2;
+                min-height: 1.72rem;
+                display: flex;
+                align-items: center;
+            }
+
+            .mobile-menu .mm-group-label {
+                margin: 0.45rem 0 0.16rem;
+            }
+
+            .mobile-menu .mobile-menu-eyebrow {
+                font-size: 0.56rem;
+            }
+
+            .mobile-menu .mobile-menu-langs {
+                padding-top: 0.6rem;
+            }
+
+            /* The region rows keep their controls at full size — the switch
+               and the country row are the two things in here that are actually
+               operated — and give up only the space around them. */
+            .mobile-menu .mm-region-row {
+                padding-top: 0.42rem;
+                padding-bottom: 0.42rem;
+            }
         }
 
         .mobile-menu-langs .language-option[aria-selected="true"] .language-option-code {
