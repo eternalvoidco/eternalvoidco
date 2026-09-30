@@ -14236,38 +14236,40 @@
             /* ── The boxes around the letters ─────────────────────────────
                The letters are invisible at the instant applyTranslations()
                runs, so the swap itself is never seen. The boxes are not. A
-               button's border and fill, the row that centres it and the block
-               below it all stay on screen, so a label going from "Menu" to
-               "Menü schließen" snapped its outline 48px wider in one frame
-               while the letters inside it were hidden — the jump this fixes.
+               button's border and fill stay on screen, so a label going from
+               "Menu" to "Menü schließen" snapped its outline 48px wider in one
+               frame while the letters inside it were hidden.
 
-               Real width and height, animated. Not a transform: scaling the
-               box would stretch its border, its label and any icon in it, and
-               the brief is explicit that nothing may be scaled. Animating the
-               layout properties means everything in normal flow reflows every
-               frame instead, which is also what carries the neighbours — a
-               paragraph that gains a line pushes what follows it smoothly
-               rather than teleporting it — and what keeps a centred group
-               centred the whole way through, since the flex row recomputes
-               its own alignment each frame.
+               This animated the real width and height for a while, and that is
+               what made the buttons stutter. width is a layout property: it
+               cannot be composited, so every frame of it ran style, layout and
+               paint on the main thread, for the whole document. On a machine
+               with headroom that is invisible — 4.4ms frames here hid it
+               completely — and on one without, it drops frames, and the
+               outlines expand in steps.
 
-               fill: 'forwards', and the reason is subtle. The target is the
-               plain-text size, measured before the letters are re-split,
-               because that is the size the element ends at. But the dressed
-               element does not always have that size in the meantime: an
-               inline-block word cannot break where a text run can, so on a
-               narrow screen a wrapped label is a line taller while it is split
-               than it is as plain text. Released with fill: 'none' the box
-               therefore fell back to the *split* size when the animation ended
-               and dropped again when the spans collapsed — two steps after the
-               counter read 100%, which is exactly what the brief rules out.
-               Holding the target past the end and clearing it only once settle()
-               has collapsed the spans means the value it reverts to is the value
-               it was already showing. Nothing moves.
+               Nothing about the layout is animated now. The trick is the same
+               fact the swap already relies on: at the moment the text changes,
+               every letter is at zero opacity. So the layout is simply allowed
+               to snap to its final size at that instant, unseen — the text
+               lands where it will finally sit and fades in there, without ever
+               moving — and the only thing left that would visibly jump is the
+               box's own outline. That is animated with a transform, which the
+               compositor owns, so it costs no layout at all.
 
-               The flip side is that a held size would go stale on a resize, so
-               it is cleared there too, and on the final settle of every
-               transition. */
+               The text is not scaled by it. Each box's label is given the exact
+               inverse scale, so the two matrices cancel and the glyphs are
+               drawn at their true size throughout; what stretches is the
+               border and the fill, which is the thing that is meant to be
+               changing shape. Icons ride with the box, which is correct — an
+               outline and the mark inside it are one object.
+
+               fill: 'none' is what makes it self-cleaning. A transform that
+               ends at the identity leaves nothing behind when it stops
+               applying, so there is no held value to unset, none to go stale
+               on a resize, and no correction on the final frame. Cancelling
+               mid-flight drops straight back to the real layout the same way,
+               which is what makes an interrupted switch safe. */
             const BOX_MS_MIN = 260;
             const BOX_EPS = 0.5;               // sub-pixel churn is not a jump
             /* Read from the stylesheet, not restated here: the boxes ease on the
@@ -14358,30 +14360,73 @@
                snapped at the end instead: the MENU button jumped its full 49px
                one frame after the counter read 100% while the span inside it
                had animated perfectly. Read everything, then write everything. */
+            /* Only something that actually draws an outline or a fill can be
+               seen to change shape. A label with no border and no background
+               has nothing to animate: its text is invisible at the instant the
+               layout snaps, so it simply arrives at its new size. This is what
+               keeps the work to the handful of real controls — the buttons —
+               and off everything else. */
+            function drawsABox(cs) {
+                if (cs.borderTopWidth !== '0px' || cs.borderRightWidth !== '0px'
+                    || cs.borderBottomWidth !== '0px' || cs.borderLeftWidth !== '0px') return true;
+                if (cs.backgroundImage && cs.backgroundImage !== 'none') return true;
+                const bg = cs.backgroundColor;
+                return !!bg && bg !== 'transparent' && !/rgba\([^)]*,\s*0\s*\)$/.test(bg);
+            }
+
+            /* What to hold steady while the box stretches: whichever direct
+               children actually carry the label. Found by walking up from the
+               translated node to the child of this box that contains it, so a
+               button with an icon beside its text counter-scales the text and
+               leaves the icon to ride with the outline. Where the box carries
+               the text itself, the word spans are the children to hold. */
+            function labelsOf(el) {
+                const out = [];
+                const t = el.querySelector('[data-i18n], [data-i18n-html]');
+                if (t && t !== el) {
+                    let n = t;
+                    while (n && n.parentElement && n.parentElement !== el) n = n.parentElement;
+                    if (n && n.parentElement === el) out.push(n);
+                } else {
+                    el.querySelectorAll(':scope > .lang-word').forEach((w) => out.push(w));
+                }
+                return out;
+            }
+
             function animateBoxes(first, last, els, duration) {
                 cancelBoxes();
                 if (!(duration > 0) || !els.length
                     || typeof document.body.animate !== 'function') return;
                 const ms = Math.max(BOX_MS_MIN, duration);
+                const opts = { duration: ms, easing: BOX_EASE, fill: 'none' };
                 els.forEach((el) => {
                     const was = first.get(el), now = last.get(el);
-                    if (!was || !now) return;
+                    if (!was || !now || !now.w || !now.h) return;
                     const cs = getComputedStyle(el);
-                    // width and height do not apply to a non-replaced inline box.
                     if (cs.display === 'inline' || cs.display === 'contents' || cs.display === 'none') return;
-                    const dw = Math.abs(now.w - was.w), dh = Math.abs(now.h - was.h);
-                    if (dw < BOX_EPS && dh < BOX_EPS) return;
-                    const from = {}, to = {};
-                    if (dw >= BOX_EPS) { from.width = was.w + 'px'; to.width = now.w + 'px'; }
-                    if (dh >= BOX_EPS) { from.height = was.h + 'px'; to.height = now.h + 'px'; }
+                    if (!drawsABox(cs)) return;
+                    if (Math.abs(now.w - was.w) < BOX_EPS && Math.abs(now.h - was.h) < BOX_EPS) return;
+
+                    // Where the box was, expressed against where it now is.
+                    const sx = was.w / now.w, sy = was.h / now.h;
+                    if (!isFinite(sx) || !isFinite(sy)) return;
                     try {
-                        boxAnims.push(el.animate([from, to],
-                            { duration: ms, easing: BOX_EASE, fill: 'forwards' }));
+                        boxAnims.push(el.animate(
+                            [{ transform: 'scale(' + sx + ',' + sy + ')' },
+                             { transform: 'scale(1,1)' }], opts));
+                        // …and the exact inverse on the label, so the two
+                        // cancel and the glyphs are never drawn stretched.
+                        labelsOf(el).forEach((label) => {
+                            boxAnims.push(label.animate(
+                                [{ transform: 'scale(' + (1 / sx) + ',' + (1 / sy) + ')' },
+                                 { transform: 'scale(1,1)' }], opts));
+                        });
                     } catch (e) {}
                 });
             }
 
-            // A held size is only right for the layout it was measured in.
+            // Nothing is held any more, but an interrupted resize should still
+            // drop back to the real layout rather than finish to a stale one.
             window.addEventListener('resize', cancelBoxes);
 
             /* Collapses the letter spans back to a plain text node and clears
