@@ -4810,6 +4810,259 @@
             transition: color 0.34s var(--ease-lux), text-shadow 0.34s var(--ease-lux);
         }
 
+        /* ══ The aperture ═══════════════════════════════════════════════════
+           What the primary button does while the language changes.
+
+           The problem it answers: the letters used to leave and then sit out
+           the swap inside an empty outlined rectangle — the frame was present
+           and doing nothing. Now the frame is the event. Two shutters travel
+           in from the sides, meet on a gold seam over the vanished label, hold
+           for the instant the text is exchanged, then retract into the edges
+           and leave the new label standing in the open.
+
+           Built from the two free pseudo-elements, so there is no new markup
+           and nothing new to lay out. scaleX from the outer edges rather than
+           translate: a door grown from its own edge can never reach outside
+           the button, so the sequence needs no overflow clipping — which is
+           what would otherwise have cut the filament's glow off square.
+
+           Each door is a dark plate carrying its light on the leading edge,
+           put there as a gradient rather than a shadow so it scales with the
+           door and stays on the edge that is moving. Where the two meet, their
+           leading edges make the seam; nothing draws it separately. */
+        .cta-button {
+            position: relative;
+            isolation: isolate;
+        }
+
+        .cta-button::before,
+        .cta-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            z-index: 3;                 /* over the label it closes across */
+            pointer-events: none;
+            opacity: 0;
+            transform: scaleX(0);
+            background-repeat: no-repeat;
+        }
+
+        .cta-button::before {
+            left: 0;
+            right: 50%;
+            transform-origin: left center;
+            background-image:
+                linear-gradient(90deg,
+                    rgba(6, 6, 6, 0.86) 0%,
+                    rgba(9, 8, 6, 0.95) 72%,
+                    rgba(150, 123, 76, 0.55) 96.5%,
+                    rgba(243, 226, 180, 0.95) 100%);
+        }
+
+        .cta-button::after {
+            left: 50%;
+            right: 0;
+            transform-origin: right center;
+            background-image:
+                linear-gradient(270deg,
+                    rgba(6, 6, 6, 0.86) 0%,
+                    rgba(9, 8, 6, 0.95) 72%,
+                    rgba(150, 123, 76, 0.55) 96.5%,
+                    rgba(243, 226, 180, 0.95) 100%);
+        }
+
+        /* Anticipation and close, across the outgoing half of the timeline.
+           Held a little behind the letters so the shutters read as arriving
+           after the text has begun to go, rather than chasing it out. */
+        .lang-swap-out .cta-button::before,
+        .lang-swap-out .cta-button::after {
+            animation: ctaIrisClose 620ms var(--lang-ease-away) both;
+            animation-delay: 90ms;
+        }
+
+        /* Open and resolve, across the incoming half. */
+        .lang-swap-in .cta-button::before,
+        .lang-swap-in .cta-button::after {
+            animation: ctaIrisOpen 900ms var(--lang-ease-arrive) both;
+        }
+
+        @keyframes ctaIrisClose {
+            0%   { transform: scaleX(0);    opacity: 0; }
+            22%  { transform: scaleX(0.22); opacity: 0.85; }
+            100% { transform: scaleX(1);    opacity: 1; }
+        }
+
+        @keyframes ctaIrisOpen {
+            0%   { transform: scaleX(1);    opacity: 1; }
+            68%  { transform: scaleX(0.3);  opacity: 0.9; }
+            100% { transform: scaleX(0);    opacity: 0; }
+        }
+
+        /* The frame answers once: a single pass of warmth through the border
+           and the seated shadow as the shutters meet, and back again as they
+           clear, so the plate reads as having been opened rather than merely
+           covered over. One element, two properties. */
+        .lang-swap-out .cta-button { animation: ctaFrameWake 620ms var(--lang-ease-away) both; }
+        .lang-swap-in  .cta-button { animation: ctaFrameSettle 900ms var(--lang-ease-arrive) both; }
+
+        @keyframes ctaFrameWake {
+            0%   { border-color: rgba(199, 169, 108, 0.62);
+                   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55),
+                               inset 0 0 0 1px rgba(199, 169, 108, 0.10); }
+            100% { border-color: rgba(228, 199, 143, 0.9);
+                   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.6),
+                               inset 0 0 0 1px rgba(226, 199, 138, 0.3); }
+        }
+
+        @keyframes ctaFrameSettle {
+            0%   { border-color: rgba(228, 199, 143, 0.9);
+                   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.6),
+                               inset 0 0 0 1px rgba(226, 199, 138, 0.3); }
+            100% { border-color: rgba(199, 169, 108, 0.62);
+                   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55),
+                               inset 0 0 0 1px rgba(199, 169, 108, 0.10); }
+        }
+
+        /* ── Secondary: one blade, not two ──
+           READ THE STORY gets the same material and the same curves at a lower
+           volume — a single edge of light that crosses and withdraws, with no
+           meeting seam and no answer from the frame. It leaves by the far edge
+           rather than reversing over its own path, so the blade travels one way
+           through the swap. Related, and plainly subordinate. */
+        .story-trigger-button {
+            position: relative;
+            isolation: isolate;
+        }
+
+        .story-trigger-button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0;
+            transform: scaleX(0);
+            transform-origin: left center;
+            background-image:
+                linear-gradient(90deg,
+                    rgba(6, 6, 6, 0.8) 0%,
+                    rgba(9, 8, 6, 0.9) 78%,
+                    rgba(150, 123, 76, 0.42) 97.5%,
+                    rgba(236, 217, 171, 0.8) 100%);
+        }
+
+        .lang-swap-out .story-trigger-button::before {
+            animation: ctaBladeIn 620ms var(--lang-ease-away) both;
+            animation-delay: 150ms;
+        }
+
+        .lang-swap-in .story-trigger-button::before {
+            animation: ctaBladeOut 900ms var(--lang-ease-arrive) both;
+        }
+
+        @keyframes ctaBladeIn {
+            0%   { transform: scaleX(0); opacity: 0; transform-origin: left center; }
+            25%  { opacity: 0.9; }
+            100% { transform: scaleX(1); opacity: 1; transform-origin: left center; }
+        }
+
+        @keyframes ctaBladeOut {
+            0%   { transform: scaleX(1); opacity: 1; transform-origin: right center; }
+            70%  { opacity: 0.85; }
+            100% { transform: scaleX(0); opacity: 0; transform-origin: right center; }
+        }
+
+        /* Reduced motion keeps the letters — that is the house's standing
+           decision and it is not reversed here — but every decorative layer
+           added above stands down. The label still changes; nothing sweeps. */
+        html.reduce-motion .cta-button,
+        html.reduce-motion .cta-button::before,
+        html.reduce-motion .cta-button::after,
+        html.reduce-motion .story-trigger-button::before {
+            animation: none !important;
+            opacity: 0 !important;
+        }
+
+        html.reduce-motion .cta-button { opacity: 1 !important; }
+
+        /* ── Boxed controls: a rim, and nothing more ──
+           Size guide, pre-order, fragrance, the collection tabs. These are
+           plated like the hero buttons but they are not the subject, so they
+           get the light without the mechanism: a thin warm rim that lifts off
+           the edge as the label goes and settles back as it returns.
+
+           outline rather than border or box-shadow, deliberately — it is unused
+           on every one of these, so nothing of their own styling is overwritten
+           by a keyframe, and outline has never taken part in layout. */
+        .size-guide-trigger,
+        .collection-preorder-trigger,
+        .collection-fragrance-trigger,
+        .collection-nav-tab {
+            outline: 1px solid rgba(226, 199, 138, 0);
+            outline-offset: 0;
+        }
+
+        .lang-swap-out .size-guide-trigger,
+        .lang-swap-out .collection-preorder-trigger,
+        .lang-swap-out .collection-fragrance-trigger,
+        .lang-swap-out .collection-nav-tab {
+            animation: boxRimWake 620ms var(--lang-ease-away) both;
+        }
+
+        .lang-swap-in .size-guide-trigger,
+        .lang-swap-in .collection-preorder-trigger,
+        .lang-swap-in .collection-fragrance-trigger,
+        .lang-swap-in .collection-nav-tab {
+            animation: boxRimSettle 900ms var(--lang-ease-arrive) both;
+        }
+
+        @keyframes boxRimWake {
+            0%   { outline-color: rgba(226, 199, 138, 0);    outline-offset: 0; }
+            100% { outline-color: rgba(226, 199, 138, 0.32); outline-offset: 3px; }
+        }
+
+        @keyframes boxRimSettle {
+            0%   { outline-color: rgba(226, 199, 138, 0.32); outline-offset: 3px; }
+            100% { outline-color: rgba(226, 199, 138, 0);    outline-offset: 0; }
+        }
+
+        /* ── Navigation: the line the link already owns ──
+           The nav links carry a hairline under them for hover. The swap borrows
+           it rather than inventing a second one: it draws as the old word
+           leaves and withdraws as the new one arrives, so the row reads as
+           being re-set rather than decorated. The lightest weight in the
+           family, and the one that appears most often. Hover is untouched —
+           an animation outranks the transition while it runs and hands the
+           line straight back afterwards. */
+        .lang-swap-out .nav-left a::after,
+        .lang-swap-out .nav-right a::after,
+        .lang-swap-out .nav-preorder-trigger::after,
+        .lang-swap-out .nav-menu-toggle::after {
+            animation: navSeamDraw 620ms var(--lang-ease-away) both;
+        }
+
+        .lang-swap-in .nav-left a::after,
+        .lang-swap-in .nav-right a::after,
+        .lang-swap-in .nav-preorder-trigger::after,
+        .lang-swap-in .nav-menu-toggle::after {
+            animation: navSeamClear 900ms var(--lang-ease-arrive) both;
+        }
+
+        @keyframes navSeamDraw  { 0% { width: 0; }    100% { width: 100%; } }
+        @keyframes navSeamClear { 0% { width: 100%; } 100% { width: 0; } }
+
+        html.reduce-motion .size-guide-trigger,
+        html.reduce-motion .collection-preorder-trigger,
+        html.reduce-motion .collection-fragrance-trigger,
+        html.reduce-motion .collection-nav-tab,
+        html.reduce-motion .nav-left a::after,
+        html.reduce-motion .nav-right a::after,
+        html.reduce-motion .nav-preorder-trigger::after,
+        html.reduce-motion .nav-menu-toggle::after {
+            animation: none !important;
+        }
+
         /* ── The filament ──
            A short bright dash travelling the perimeter once, then gone. The
            rect is normalised with pathLength="100", so the dash maths is the
