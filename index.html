@@ -4891,7 +4891,7 @@
            mechanism rather than as the animation having stopped. */
         .lang-swap-out .cta-button::before,
         .lang-swap-out .cta-button::after {
-            animation: ctaIrisClose 1040ms var(--lang-ease-mech) both;
+            animation: ctaIrisClose var(--lang-out-ms, 1040ms) var(--lang-ease-mech) both;
             will-change: transform, opacity;
         }
 
@@ -4899,7 +4899,7 @@
            at 72% and leaving the rest of the timeline to the text alone. */
         .lang-swap-in .cta-button::before,
         .lang-swap-in .cta-button::after {
-            animation: ctaIrisOpen 1180ms var(--lang-ease-arrive) both;
+            animation: ctaIrisOpen var(--lang-in-ms, 1180ms) var(--lang-ease-arrive) both;
             will-change: transform, opacity;
         }
 
@@ -4924,8 +4924,8 @@
            with it before, and a 30px shadow repainted every frame underneath a
            WebGL hero is real work for an effect nobody could name. The colour
            carries the whole read. */
-        .lang-swap-out .cta-button { animation: ctaFrameWake 1040ms var(--lang-ease-mech) both; }
-        .lang-swap-in  .cta-button { animation: ctaFrameSettle 1180ms var(--lang-ease-arrive) both; }
+        .lang-swap-out .cta-button { animation: ctaFrameWake var(--lang-out-ms, 1040ms) var(--lang-ease-mech) both; }
+        .lang-swap-in  .cta-button { animation: ctaFrameSettle var(--lang-in-ms, 1180ms) var(--lang-ease-arrive) both; }
 
         @keyframes ctaFrameWake {
             0%   { border-color: rgba(199, 169, 108, 0.62); }
@@ -4966,13 +4966,18 @@
         }
 
         .lang-swap-out .story-trigger-button::before {
-            animation: ctaBladeIn 960ms var(--lang-ease-mech) both;
-            animation-delay: 80ms;
+            /* No delay any more. It used to start 80ms late against a shorter,
+               fixed duration; now that the duration is the phase itself, a delay
+               would simply push the blade past the end of the phase and put it
+               out of step with everything it is meant to finish beside. The
+               secondary stays subordinate through its curve and its single
+               edge, not by running late. */
+            animation: ctaBladeIn var(--lang-out-ms, 960ms) var(--lang-ease-mech) both;
             will-change: transform, opacity;
         }
 
         .lang-swap-in .story-trigger-button::before {
-            animation: ctaBladeOut 1100ms var(--lang-ease-arrive) both;
+            animation: ctaBladeOut var(--lang-in-ms, 1100ms) var(--lang-ease-arrive) both;
             will-change: transform, opacity;
         }
 
@@ -5028,7 +5033,7 @@
         .lang-swap-out .collection-fragrance-trigger,
         .lang-swap-out .collection-nav-tab {
             outline-offset: 3px;
-            animation: boxRimWake 1040ms var(--lang-ease-mech) both;
+            animation: boxRimWake var(--lang-out-ms, 1040ms) var(--lang-ease-mech) both;
         }
 
         .lang-swap-in .size-guide-trigger,
@@ -5036,7 +5041,7 @@
         .lang-swap-in .collection-fragrance-trigger,
         .lang-swap-in .collection-nav-tab {
             outline-offset: 3px;
-            animation: boxRimSettle 1180ms var(--lang-ease-arrive) both;
+            animation: boxRimSettle var(--lang-in-ms, 1180ms) var(--lang-ease-arrive) both;
         }
 
         @keyframes boxRimWake {
@@ -5081,14 +5086,14 @@
         .lang-swap-out .nav-right a::after,
         .lang-swap-out .nav-preorder-trigger::after,
         .lang-swap-out .nav-menu-toggle::after {
-            animation: navSeamDraw 1040ms var(--lang-ease-mech) both;
+            animation: navSeamDraw var(--lang-out-ms, 1040ms) var(--lang-ease-mech) both;
         }
 
         .lang-swap-in .nav-left a::after,
         .lang-swap-in .nav-right a::after,
         .lang-swap-in .nav-preorder-trigger::after,
         .lang-swap-in .nav-menu-toggle::after {
-            animation: navSeamClear 1180ms var(--lang-ease-arrive) both;
+            animation: navSeamClear var(--lang-in-ms, 1180ms) var(--lang-ease-arrive) both;
         }
 
         @keyframes navSeamDraw  { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
@@ -14581,11 +14586,19 @@
                 const now = performance.now();
                 let target;
                 if (phase === 'out') {
+                    /* Exactly a half, and it rests there. The out phase ends
+                       when the last letter has gone and the shutters have met;
+                       the exchange happens during the beat that follows. So the
+                       counter arrives at 50 as the mechanism closes and holds
+                       there for the real length of that pause — it is not
+                       frozen while a timer runs on underneath, because there is
+                       no second timer: this is the same span the animations
+                       were given. It used to stop a hair short at 49.7 to avoid
+                       showing a half that had not happened yet, which is the
+                       one thing the hold now makes honest. */
                     target = Math.min((now - t0) / outSpan, 1) * 0.5;
-                    if (target > 0.497) target = 0.497;
                 } else if (phase === 'in') {
                     target = 0.5 + Math.min((now - tMid) / inSpan, 1) * 0.5;
-                    if (target > 0.995) target = 0.995;
                 } else {
                     target = 1;
                 }
@@ -15084,6 +15097,23 @@
 
                 const boxes = boxCandidates(active);
 
+                /* The two spans are published to CSS before anything starts, so
+                   the decoration runs on the same numbers the counter does.
+                   Every shutter, blade, rim and hairline takes its duration from
+                   these, which is what makes the ring a reading of the
+                   choreography rather than a stopwatch beside it.
+
+                   This is the whole fix for the mismatch: the shutters were on
+                   fixed 1040ms and 1180ms while these spans carry the per-letter
+                   stagger and run several hundred milliseconds longer, so the
+                   buttons were done and the counter was still climbing. Derived,
+                   not guessed — nothing here is a constant that has to be kept
+                   in step with anything by hand. */
+                const root = document.documentElement.style;
+                root.setProperty('--lang-out-ms', outSpan + 'ms');
+                root.setProperty('--lang-in-ms', inSpan + 'ms');
+                root.setProperty('--lang-gap-ms', GAP_MS + 'ms');
+
                 voidLanguagePortal.begin(outSpan, inSpan);
                 document.body.classList.add('lang-swap-out');
 
@@ -15132,12 +15162,25 @@
                        text. */
                     animateBoxes(boxesWere, boxesNow, boxes, inSpan);
 
+                    /* 100% lands on the frame the choreography ends, not a beat
+                       after it. inSpan is when the last letter arrives, when the
+                       box animation closes and when the shutters finish, because
+                       all three were given this number — so the counter is read
+                       out at exactly that moment. */
                     timers.push(setTimeout(() => {
                         if (run !== me) return;
-                        // Finalising: the spans come off and the held box sizes
-                        // are released in that order, so neither move.
+                        voidLanguagePortal.complete();
+                    }, inSpan));
+
+                    /* Tidying up happens after, and is invisible: collapsing the
+                       letter spans and releasing the held box sizes only returns
+                       each element to the value it is already showing. It is not
+                       part of the transition and the counter does not wait for
+                       it — nor for the ring's own fade out, which is an exit, not
+                       progress. */
+                    timers.push(setTimeout(() => {
+                        if (run !== me) return;
                         settle(true);
-                        voidLanguagePortal.complete();   // and only now, 100%
                     }, inSpan + END_PAD));
                 }, outSpan + GAP_MS));
             }
