@@ -5123,21 +5123,24 @@
         }
 
         @keyframes navSeamDraw  { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
-        /* Draws, then fades where it stands. It used to retract by the far end,
-           which looked right on paper — the line leaving the way it came in —
-           but it moved the anchor. Growing from the left, the edge your eye
-           follows is the right one, and it ends at the far end of the link at
-           50%. Shrinking toward the right then starts a *different* edge moving
-           from the opposite end, so the thing being tracked jumped the width of
-           the word at the midpoint. Nothing resized and nothing restarted; the
-           moving point simply changed ends.
+        /* Out and back on the same edge. One line, one anchor, one moving
+           point: it grows from the left so the tip travels right, stops at the
+           far end for the length of the midpoint beat, then returns along the
+           way it came to nothing. No fade, no second edge, no change of origin
+           — the tip simply reverses from the exact spot it stopped at.
 
-           So the second half no longer moves at all. The line holds the length
-           and position it reached and dims from there: one sweep, one fade, and
-           the handoff at 50% has nothing in it to see. */
+           Both earlier attempts moved something at the handoff. Retracting with
+           transform-origin: right pinned the far end and started the *near*
+           edge moving instead, so the point being followed jumped the width of
+           the word. Holding still and fading instead meant the sweep stopped
+           dead and the line dissolved where it stood, which is not the same
+           gesture coming back. This is the only version where nothing changes
+           at 50% except the direction of travel — and --seam-w is what makes
+           "the exact spot" true, by holding the length while the label
+           underneath resizes. */
         @keyframes navSeamClear {
-            0%   { transform: scaleX(1); opacity: 1; }
-            100% { transform: scaleX(1); opacity: 0; }
+            0%   { transform: scaleX(1); }
+            100% { transform: scaleX(0); }
         }
 
         html.reduce-motion .size-guide-trigger,
