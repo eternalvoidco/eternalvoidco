@@ -5112,11 +5112,21 @@
         }
 
         @keyframes navSeamDraw  { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
-        /* Withdraws by the far end, so the line travels one way through the
-           swap rather than retracing itself. */
+        /* Draws, then fades where it stands. It used to retract by the far end,
+           which looked right on paper — the line leaving the way it came in —
+           but it moved the anchor. Growing from the left, the edge your eye
+           follows is the right one, and it ends at the far end of the link at
+           50%. Shrinking toward the right then starts a *different* edge moving
+           from the opposite end, so the thing being tracked jumped the width of
+           the word at the midpoint. Nothing resized and nothing restarted; the
+           moving point simply changed ends.
+
+           So the second half no longer moves at all. The line holds the length
+           and position it reached and dims from there: one sweep, one fade, and
+           the handoff at 50% has nothing in it to see. */
         @keyframes navSeamClear {
-            0%   { transform: scaleX(1); transform-origin: right center; }
-            100% { transform: scaleX(0); transform-origin: right center; }
+            0%   { transform: scaleX(1); opacity: 1; }
+            100% { transform: scaleX(1); opacity: 0; }
         }
 
         html.reduce-motion .size-guide-trigger,
