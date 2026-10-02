@@ -4650,11 +4650,25 @@
             position: absolute;
             bottom: -4px;
             left: 0;
-            width: 0;
+            /* Full width always, revealed by scale. It used to be width: 0
+               growing to 100%, which collided with the language swap: that also
+               needed the line at full width, so when its classes came off the
+               width fell back to 0 and this transition drew the whole line,
+               lit, shrinking away over 0.42s — a second sweep after the labels
+               had already settled. Nothing was restarting; the hover
+               transition was simply inheriting a width it had not set.
+
+               One property now owns the line. The swap's keyframes end at
+               scaleX(0) and the resting state is scaleX(0), so releasing the
+               animation changes nothing visible, with the pointer on the link
+               or away from it. It is also no longer a layout property. */
+            width: 100%;
             height: 1px;
+            transform: scaleX(0);
+            transform-origin: left center;
             background: linear-gradient(90deg, var(--void-gold), var(--void-gold-soft));
             box-shadow: 0 0 8px rgba(199, 169, 108, 0.45);
-            transition: width 0.42s var(--ease-lux);
+            transition: transform 0.42s var(--ease-lux);
         }
 
         .nav-left a:hover,
@@ -4664,12 +4678,19 @@
             color: #fdf3df;
         }
 
+        /* Same reveal, same easing, same look — on the property the line is
+           now drawn with. Focus-visible is included because a line that only
+           answers the pointer is only half a control. */
         .nav-left a:hover::after,
         .nav-right a:hover::after,
         .nav-preorder-trigger:hover::after,
         .nav-menu-toggle:hover::after,
+        .nav-left a:focus-visible::after,
+        .nav-right a:focus-visible::after,
+        .nav-preorder-trigger:focus-visible::after,
+        .nav-menu-toggle:focus-visible::after,
         .nav-menu-toggle[aria-expanded="true"]::after {
-            width: 100%;
+            transform: scaleX(1);
         }
 
         /* =================================== */
@@ -5070,26 +5091,12 @@
            family, and the one that appears most often. Hover is untouched —
            an animation outranks the transition while it runs and hands the
            line straight back afterwards. */
-        /* Width is set once, to full, and the line is drawn with scaleX. It was
-           animating width itself, which is a layout property — six hairlines
-           each forcing layout every frame, for the cheapest effect in the whole
-           family. The width is now a single static declaration the swap classes
-           carry, and the motion is a transform the compositor owns.
-
-           Hover still uses width, untouched: that transition is on the base
-           rule and only runs when none of this is applied. */
-        .lang-swap-out .nav-left a::after,
-        .lang-swap-out .nav-right a::after,
-        .lang-swap-out .nav-preorder-trigger::after,
-        .lang-swap-out .nav-menu-toggle::after,
-        .lang-swap-in .nav-left a::after,
-        .lang-swap-in .nav-right a::after,
-        .lang-swap-in .nav-preorder-trigger::after,
-        .lang-swap-in .nav-menu-toggle::after {
-            width: 100%;
-            transform-origin: left center;
-        }
-
+        /* The swap sets no geometry of its own any more. It used to force
+           width: 100% here, which was the whole bug: the resting width is 0, so
+           the moment these classes came off the base transition drew the line
+           back across at full brightness. The line is full width at rest now
+           and scaled to nothing, so these rules only have to run the keyframes
+           and the handoff is silent. */
         .lang-swap-out .nav-left a::after,
         .lang-swap-out .nav-right a::after,
         .lang-swap-out .nav-preorder-trigger::after,
