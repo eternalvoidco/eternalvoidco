@@ -4661,8 +4661,19 @@
                One property now owns the line. The swap's keyframes end at
                scaleX(0) and the resting state is scaleX(0), so releasing the
                animation changes nothing visible, with the pointer on the link
-               or away from it. It is also no longer a layout property. */
-            width: 100%;
+               or away from it. It is also no longer a layout property.
+
+               --seam-w is how the line keeps still at the midpoint. It is
+               100% of the link, and the link's width snaps the instant the
+               label changes — "Style Guide" to "Guide de Style" is 28px wider.
+               The letters are invisible then so the text never shows that
+               jump, but this line is visible chrome riding on the same width,
+               and it lurched 28px right at exactly 50%. The swap freezes the
+               length the line was drawn at into this variable, so it holds its
+               geometry through the fade while the label resizes underneath it.
+               Unset at every other moment, which is when 100% is what is
+               wanted. */
+            width: var(--seam-w, 100%);
             height: 1px;
             transform: scaleX(0);
             transform-origin: left center;
@@ -14994,6 +15005,31 @@
                 }
             }
 
+            /* The nav hairlines are the one piece of visible chrome sized by a
+               label that is about to change length. Everything else either
+               draws no box — so its snap is invisible while the letters are —
+               or is a control that animateBoxes() scales. These are neither:
+               borderless text carrying a line at 100% of its own width.
+
+               So the length is frozen for the duration. Read one frame before
+               the text changes, while the line still measures what it was
+               drawn at, and released by settle() once it is no longer being
+               shown. */
+            const NAV_SEAMS = '.nav-left a, .nav-right a, .nav-preorder-trigger, .nav-menu-toggle';
+
+            function freezeNavSeams() {
+                document.querySelectorAll(NAV_SEAMS).forEach((el) => {
+                    const w = el.offsetWidth;
+                    if (w) el.style.setProperty('--seam-w', w + 'px');
+                });
+            }
+
+            function releaseNavSeams() {
+                document.querySelectorAll(NAV_SEAMS).forEach((el) => {
+                    el.style.removeProperty('--seam-w');
+                });
+            }
+
             function cancelBoxes() {
                 boxAnims.forEach((a) => { try { a.cancel(); } catch (e) {} });
                 boxAnims = [];
@@ -15098,6 +15134,7 @@
                     if (!t.fade) t.el.textContent = t.el.textContent;
                 });
                 active = [];
+                releaseNavSeams();
                 if (finalising) cancelBoxes();
             }
 
@@ -15174,6 +15211,8 @@
                        carry on from where the last one had got to instead of
                        starting with a jump. */
                     const boxesWere = measureBoxes(boxes);
+                    // Same frame, same reason: measured before the text changes.
+                    freezeNavSeams();
 
                     apply();
                     voidLanguagePortal.crossed();   // the midpoint, now that it is true
