@@ -15119,19 +15119,29 @@
                    exchange, and it comes out of the existing schedule. Nothing
                    waits for it.
 
-                   The second half runs until the last thing moving has stopped,
-                   whichever that is: the letters arriving, which carry the
-                   per-letter stagger, or the shutters retracting. The ring's
-                   own fade is not in it — that is an exit, not progress — and
-                   neither is the tidy-up afterwards, which only returns each
-                   element to the value it is already showing. */
+                   The second half is the shutters reopening, and only that.
+
+                   It used to run to whichever finished last, which meant the
+                   per-letter stagger — 1835 to 2307ms against the shutters'
+                   1180 — so the primary button sat finished while the counter
+                   climbed for another second. That was the complaint. The two
+                   cannot both be satisfied without retiming something, and the
+                   call was made explicitly: the counter belongs to ENTER THE
+                   BOUTIQUE. It reaches 100 as the shutters finish retracting,
+                   and quieter text in the periphery may still be arriving
+                   behind it. That is accepted, not overlooked.
+
+                   The ring's own fade is not in it either — that is an exit,
+                   not progress — and neither is the tidy-up afterwards, which
+                   only returns each element to the value it is already
+                   showing. */
                 const decMs = (name, fallback) => {
                     const v = parseFloat(getComputedStyle(document.documentElement)
                         .getPropertyValue(name));
                     return isFinite(v) && v > 0 ? v : fallback;
                 };
                 const closeSpan = Math.min(decMs('--lang-dec-out', 1040), outSpan + GAP_MS);
-                const revealSpan = Math.max(decMs('--lang-dec-in', 1180), inSpan);
+                const revealSpan = decMs('--lang-dec-in', 1180);
 
                 voidLanguagePortal.begin(closeSpan, revealSpan);
                 document.body.classList.add('lang-swap-out');
