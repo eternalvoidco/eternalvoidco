@@ -146,6 +146,19 @@
                zero velocity, which is what removes the snap at the phase
                boundary. */
             --lang-ease-mech: cubic-bezier(0.45, 0, 0.25, 1);
+            /* The decoration's own envelope, in milliseconds, declared where the
+               decoration lives. These are the numbers the shutters, the blade,
+               the rim and the nav hairline actually run on — the longest thing
+               moving in each half — and the indicator reads them to decide where
+               its halfway point falls and when it is finished.
+
+               The direction matters. An earlier pass had this backwards: the
+               animations were made to take the counter's spans, which stretched
+               them to fit a readout. The animations set the timing; the counter
+               is a reading of it. Changing a duration below changes only how
+               long that effect takes, and the indicator follows on its own. */
+            --lang-dec-out: 1040;   /* shutters shut; blade is 960 + 80 delay */
+            --lang-dec-in: 1180;    /* shutters fully retracted */
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
             --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
         }
@@ -4891,7 +4904,7 @@
            mechanism rather than as the animation having stopped. */
         .lang-swap-out .cta-button::before,
         .lang-swap-out .cta-button::after {
-            animation: ctaIrisClose var(--lang-out-ms, 1040ms) var(--lang-ease-mech) both;
+            animation: ctaIrisClose 1040ms var(--lang-ease-mech) both;
             will-change: transform, opacity;
         }
 
@@ -4899,7 +4912,7 @@
            at 72% and leaving the rest of the timeline to the text alone. */
         .lang-swap-in .cta-button::before,
         .lang-swap-in .cta-button::after {
-            animation: ctaIrisOpen var(--lang-in-ms, 1180ms) var(--lang-ease-arrive) both;
+            animation: ctaIrisOpen 1180ms var(--lang-ease-arrive) both;
             will-change: transform, opacity;
         }
 
@@ -4924,8 +4937,8 @@
            with it before, and a 30px shadow repainted every frame underneath a
            WebGL hero is real work for an effect nobody could name. The colour
            carries the whole read. */
-        .lang-swap-out .cta-button { animation: ctaFrameWake var(--lang-out-ms, 1040ms) var(--lang-ease-mech) both; }
-        .lang-swap-in  .cta-button { animation: ctaFrameSettle var(--lang-in-ms, 1180ms) var(--lang-ease-arrive) both; }
+        .lang-swap-out .cta-button { animation: ctaFrameWake 1040ms var(--lang-ease-mech) both; }
+        .lang-swap-in  .cta-button { animation: ctaFrameSettle 1180ms var(--lang-ease-arrive) both; }
 
         @keyframes ctaFrameWake {
             0%   { border-color: rgba(199, 169, 108, 0.62); }
@@ -4966,18 +4979,13 @@
         }
 
         .lang-swap-out .story-trigger-button::before {
-            /* No delay any more. It used to start 80ms late against a shorter,
-               fixed duration; now that the duration is the phase itself, a delay
-               would simply push the blade past the end of the phase and put it
-               out of step with everything it is meant to finish beside. The
-               secondary stays subordinate through its curve and its single
-               edge, not by running late. */
-            animation: ctaBladeIn var(--lang-out-ms, 960ms) var(--lang-ease-mech) both;
+            animation: ctaBladeIn 960ms var(--lang-ease-mech) both;
+            animation-delay: 80ms;
             will-change: transform, opacity;
         }
 
         .lang-swap-in .story-trigger-button::before {
-            animation: ctaBladeOut var(--lang-in-ms, 1100ms) var(--lang-ease-arrive) both;
+            animation: ctaBladeOut 1100ms var(--lang-ease-arrive) both;
             will-change: transform, opacity;
         }
 
@@ -5033,7 +5041,7 @@
         .lang-swap-out .collection-fragrance-trigger,
         .lang-swap-out .collection-nav-tab {
             outline-offset: 3px;
-            animation: boxRimWake var(--lang-out-ms, 1040ms) var(--lang-ease-mech) both;
+            animation: boxRimWake 1040ms var(--lang-ease-mech) both;
         }
 
         .lang-swap-in .size-guide-trigger,
@@ -5041,7 +5049,7 @@
         .lang-swap-in .collection-fragrance-trigger,
         .lang-swap-in .collection-nav-tab {
             outline-offset: 3px;
-            animation: boxRimSettle var(--lang-in-ms, 1180ms) var(--lang-ease-arrive) both;
+            animation: boxRimSettle 1180ms var(--lang-ease-arrive) both;
         }
 
         @keyframes boxRimWake {
@@ -5086,14 +5094,14 @@
         .lang-swap-out .nav-right a::after,
         .lang-swap-out .nav-preorder-trigger::after,
         .lang-swap-out .nav-menu-toggle::after {
-            animation: navSeamDraw var(--lang-out-ms, 1040ms) var(--lang-ease-mech) both;
+            animation: navSeamDraw 1040ms var(--lang-ease-mech) both;
         }
 
         .lang-swap-in .nav-left a::after,
         .lang-swap-in .nav-right a::after,
         .lang-swap-in .nav-preorder-trigger::after,
         .lang-swap-in .nav-menu-toggle::after {
-            animation: navSeamClear var(--lang-in-ms, 1180ms) var(--lang-ease-arrive) both;
+            animation: navSeamClear 1180ms var(--lang-ease-arrive) both;
         }
 
         @keyframes navSeamDraw  { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
@@ -15097,24 +15105,35 @@
 
                 const boxes = boxCandidates(active);
 
-                /* The two spans are published to CSS before anything starts, so
-                   the decoration runs on the same numbers the counter does.
-                   Every shutter, blade, rim and hairline takes its duration from
-                   these, which is what makes the ring a reading of the
-                   choreography rather than a stopwatch beside it.
+                /* The indicator's two halves, read off the choreography rather
+                   than imposed on it.
 
-                   This is the whole fix for the mismatch: the shutters were on
-                   fixed 1040ms and 1180ms while these spans carry the per-letter
-                   stagger and run several hundred milliseconds longer, so the
-                   buttons were done and the counter was still climbing. Derived,
-                   not guessed — nothing here is a constant that has to be kept
-                   in step with anything by hand. */
-                const root = document.documentElement.style;
-                root.setProperty('--lang-out-ms', outSpan + 'ms');
-                root.setProperty('--lang-in-ms', inSpan + 'ms');
-                root.setProperty('--lang-gap-ms', GAP_MS + 'ms');
+                   The first half belongs to the shutters: the counter climbs
+                   while they travel and arrives at 50 as they meet. That is
+                   --lang-dec-out, the decoration's own number, capped at the
+                   swap in the unlikely case a stagger ever runs shorter than
+                   the close.
 
-                voidLanguagePortal.begin(outSpan, inSpan);
+                   Then it rests. The hold is not a duration anyone chose — it
+                   is simply what is left between the shutters meeting and the
+                   exchange, and it comes out of the existing schedule. Nothing
+                   waits for it.
+
+                   The second half runs until the last thing moving has stopped,
+                   whichever that is: the letters arriving, which carry the
+                   per-letter stagger, or the shutters retracting. The ring's
+                   own fade is not in it — that is an exit, not progress — and
+                   neither is the tidy-up afterwards, which only returns each
+                   element to the value it is already showing. */
+                const decMs = (name, fallback) => {
+                    const v = parseFloat(getComputedStyle(document.documentElement)
+                        .getPropertyValue(name));
+                    return isFinite(v) && v > 0 ? v : fallback;
+                };
+                const closeSpan = Math.min(decMs('--lang-dec-out', 1040), outSpan + GAP_MS);
+                const revealSpan = Math.max(decMs('--lang-dec-in', 1180), inSpan);
+
+                voidLanguagePortal.begin(closeSpan, revealSpan);
                 document.body.classList.add('lang-swap-out');
 
                 timers.push(setTimeout(() => {
@@ -15162,15 +15181,14 @@
                        text. */
                     animateBoxes(boxesWere, boxesNow, boxes, inSpan);
 
-                    /* 100% lands on the frame the choreography ends, not a beat
-                       after it. inSpan is when the last letter arrives, when the
-                       box animation closes and when the shutters finish, because
-                       all three were given this number — so the counter is read
-                       out at exactly that moment. */
+                    /* 100% on the frame the last thing stops moving — the later
+                       of the letters arriving and the shutters retracting, which
+                       is what revealSpan is. Nothing is held back to meet it and
+                       nothing counts on past it. */
                     timers.push(setTimeout(() => {
                         if (run !== me) return;
                         voidLanguagePortal.complete();
-                    }, inSpan));
+                    }, revealSpan));
 
                     /* Tidying up happens after, and is invisible: collapsing the
                        letter spans and releasing the held box sizes only returns
