@@ -5122,7 +5122,10 @@
             animation: navSeamClear 1180ms var(--lang-ease-arrive) both;
         }
 
-        @keyframes navSeamDraw  { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
+        @keyframes navSeamDraw {
+            0%   { transform: translateX(var(--seam-dx, 0px)) scaleX(0); }
+            100% { transform: translateX(var(--seam-dx, 0px)) scaleX(1); }
+        }
         /* Out and back on the same edge. One line, one anchor, one moving
            point: it grows from the left so the tip travels right, stops at the
            far end for the length of the midpoint beat, then returns along the
@@ -5139,8 +5142,8 @@
            "the exact spot" true, by holding the length while the label
            underneath resizes. */
         @keyframes navSeamClear {
-            0%   { transform: scaleX(1); }
-            100% { transform: scaleX(0); }
+            0%   { transform: translateX(var(--seam-dx, 0px)) scaleX(1); }
+            100% { transform: translateX(var(--seam-dx, 0px)) scaleX(0); }
         }
 
         html.reduce-motion .size-guide-trigger,
@@ -15019,17 +15022,46 @@
                drawn at, and released by settle() once it is no longer being
                shown. */
             const NAV_SEAMS = '.nav-left a, .nav-right a, .nav-preorder-trigger, .nav-menu-toggle';
+            let seamLefts = null;
 
+            /* Freezing the length was only half of it. The row is a flex line,
+               so when MENU becomes MENÜ every link to its right slides: measured
+               10px between English and French and 48px into German, at the exact
+               frame of the exchange, while the seams' own lengths moved by 0.2px
+               at most. The line was the right length in the wrong place.
+
+               So the left edge is recorded here as well, and compensated below
+               once the new layout has settled. */
             function freezeNavSeams() {
+                seamLefts = new Map();
                 document.querySelectorAll(NAV_SEAMS).forEach((el) => {
                     const w = el.offsetWidth;
                     if (w) el.style.setProperty('--seam-w', w + 'px');
+                    seamLefts.set(el, el.getBoundingClientRect().left);
                 });
             }
 
+            /* Puts the line back where it was drawn. Whatever distance the link
+               travelled during the exchange, the seam is translated against it
+               by the same amount, so it holds the screen position it reached at
+               the midpoint while the label moves underneath it. Read after the
+               swap, when layout has settled and the displacement is final. */
+            function compensateNavSeams() {
+                if (!seamLefts) return;
+                seamLefts.forEach((was, el) => {
+                    const dx = was - el.getBoundingClientRect().left;
+                    if (Math.abs(dx) >= 0.5) el.style.setProperty('--seam-dx', dx.toFixed(2) + 'px');
+                });
+            }
+
+            /* Both are released together, by settle(), and only then: the line
+               is at zero length by that point, so handing the geometry back
+               cannot be seen. */
             function releaseNavSeams() {
+                seamLefts = null;
                 document.querySelectorAll(NAV_SEAMS).forEach((el) => {
                     el.style.removeProperty('--seam-w');
+                    el.style.removeProperty('--seam-dx');
                 });
             }
 
@@ -15237,6 +15269,10 @@
                     active.forEach((t) => {
                         if (!t.fade && lineCount(t.el) === 1) t.el.classList.add('lang-nowrap');
                     });
+
+                    // Layout is final here: the labels have changed and the
+                    // new widths are in. Now the seams can be put back.
+                    compensateNavSeams();
 
                     active.forEach((t) => { if (!t.fade) split(t.el, t.e); });
                     // Force a frame so the browser sees the start state before
