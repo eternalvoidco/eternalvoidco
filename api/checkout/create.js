@@ -1,15 +1,23 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/checkout/create
 //
-// Revalidates the bag, writes a pending order, opens a Stripe PaymentIntent for
-// the server-calculated total and returns only the client secret and the order
-// number. The response never contains a price the client could act on as truth.
+// Revalidates the bag, writes a pending order AND holds its stock in one
+// transaction, opens a Stripe PaymentIntent for the server-calculated total and
+// returns only the client secret and the order number. The response never
+// contains a price the client could act on as truth.
+//
+// The hold is what stops two customers buying the same last piece: it is taken
+// under a row lock, so of two simultaneous requests for one unit exactly one
+// succeeds. If anything after it fails, the hold is released before
+// responding — and since no client secret was returned, nothing can be charged.
 //
 // Nothing here marks anything paid — that is the webhook's job alone.
 // ─────────────────────────────────────────────────────────────────────────────
-import { validateLines, subtotalOf, shippingAmountFor, shippingMethodsFor, taxAmountFor, CURRENCY } from '../_catalog.js';
-import { createPaymentIntent, stripeConfigured } from '../_stripe.js';
-import { createPendingOrder, attachPaymentIntent, generateOrderNumber, ordersConfigured, describeSupabaseError } from '../_orders.js';
+import { validateLines, subtotalOf, shippingAmountFor, shippingMethodsFor, taxAmountFor, CURRENCY, lookupVariant } from '../_catalog.js';
+import { createPaymentIntent, cancelPaymentIntent, stripeConfigured } from '../_stripe.js';
+import { openOrder, attachPaymentIntent, generateOrderNumber, ordersConfigured, describeSupabaseError } from '../_orders.js';
+import { holdSeconds, releaseOrder, sweepExpired } from '../_inventory.js';
+import { resolveUser } from '../_auth.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -38,25 +46,33 @@ function addressProblems(address) {
     return missing;
 }
 
-// The signed-in customer is resolved from their access token against Supabase,
-// never read from the request body — a client-supplied user_id would let anyone
-// file an order under someone else's account.
-async function resolveUser(request) {
-    const header = request.headers.authorization || '';
-    const token = header.startsWith('Bearer ') ? header.slice(7) : '';
-    const base = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
-    const anon = process.env.SUPABASE_ANON_KEY || '';
-    if (!token || !base || !anon) return null;
+// The signed-in customer is resolved from their access token against Supabase
+// (see _auth.js), never read from the request body — a client-supplied user_id
+// would let anyone file an order under someone else's account.
 
+// Names and sizes for the issues the database reports, so the page can say
+// which piece ran out rather than quoting a variant id.
+function describeStockIssues(issues) {
+    return (issues || []).map((issue) => {
+        const found = lookupVariant(issue.variantId);
+        return {
+            variantId: issue.variantId,
+            reason: issue.reason === 'not_tracked' ? 'not_for_sale' : issue.reason,
+            name: found.name,
+            size: found.size,
+            available: Math.max(Number(issue.available) || 0, 0),
+            held: Boolean(issue.held)
+        };
+    });
+}
+
+async function releaseQuietly(orderId, reason) {
     try {
-        const res = await fetch(`${base}/auth/v1/user`, {
-            headers: { apikey: anon, Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) return null;
-        const user = await res.json();
-        return user && user.id ? user : null;
+        await releaseOrder(orderId, reason);
     } catch (error) {
-        return null;
+        // The hold carries a deadline and no intent was handed out, so the
+        // sweeper releases it on its own; this only makes it immediate.
+        console.error(describeSupabaseError(error, `checkout/create: release after ${reason}`));
     }
 }
 
@@ -114,14 +130,21 @@ export default async function handler(request, response) {
     const total = subtotal + shippingAmount + tax;
     if (total <= 0) return response.status(409).json({ error: 'invalid_total' });
 
-    // ── persist, then pay ───────────────────────────────────────────────────
+    // ── persist and hold, then pay ──────────────────────────────────────────
     const user = await resolveUser(request);
-    const orderNumber = generateOrderNumber();
 
-    let order;
+    // Expired holds are returned first, so a checkout abandoned an hour ago
+    // cannot keep the last piece from a customer who is here now.
     try {
-        order = await createPendingOrder({
-            order_number: orderNumber,
+        await sweepExpired({ limit: 5 });
+    } catch (error) {
+        console.error(describeSupabaseError(error, 'checkout/create: sweep'));
+    }
+
+    let opened;
+    try {
+        opened = await openOrder({
+            order_number: generateOrderNumber(),
             user_id: user ? user.id : null,
             customer_email: email,
             customer_first_name: firstName,
@@ -146,17 +169,26 @@ export default async function handler(request, response) {
             unit_amount: line.unitAmount,
             quantity: line.quantity,
             line_amount: line.lineAmount
-        })));
+        })), holdSeconds());
     } catch (error) {
         // Full diagnostics to the server log — status, PostgREST code, message,
         // details, hint, which operation, and the shape of the configured key.
-        // Never the key itself, the request body or any customer field.
-        console.error(describeSupabaseError(error, 'checkout/create: order write')
-            + (error.rolledBack === false ? ' | ROLLBACK FAILED: ' + error.cleanupFailure : '')
-            + (error.rolledBack === true ? ' | order row rolled back' : ''));
-        // The client is told nothing beyond "it did not work".
+        // Never the key itself, the request body or any customer field. The
+        // function is one transaction, so a failure leaves nothing behind.
+        console.error(describeSupabaseError(error, 'checkout/create: open order'));
         return response.status(500).json({ error: 'order_create_failed' });
     }
+
+    if (!opened || !opened.ok) {
+        // Someone else secured the piece, or it was never for sale. Nothing
+        // was written; the page gets enough detail to correct the bag.
+        return response.status(409).json({
+            error: 'line_issues',
+            issues: describeStockIssues(opened && opened.issues)
+        });
+    }
+
+    const order = opened.order;
 
     // Curated rather than automatic. `automatic_payment_methods` surfaces
     // everything switched on in the dashboard — Amazon Pay, Bancontact, EPS and
@@ -196,13 +228,22 @@ export default async function handler(request, response) {
         }, `order-${order.id}`);
     } catch (error) {
         console.error('checkout/create: payment intent failed', error.code || error.message);
-        return response.status(502).json({ error: 'payment_init_failed', orderNumber: order.order_number });
+        await releaseQuietly(order.id, 'payment_init_failed');
+        return response.status(502).json({ error: 'payment_init_failed' });
     }
 
     try {
-        await attachPaymentIntent(order.id, intent.id);
+        await attachPaymentIntent(order.id, intent.id, intent.livemode);
     } catch (error) {
         console.error(describeSupabaseError(error, 'checkout/create: attach intent'));
+        // The client secret is never returned, so this intent cannot be paid;
+        // it is cancelled anyway so it does not linger in the dashboard.
+        try {
+            await cancelPaymentIntent(intent.id, 'abandoned');
+        } catch (cancelError) {
+            console.error('checkout/create: cancel after attach failure', cancelError.code || cancelError.message);
+        }
+        await releaseQuietly(order.id, 'order_link_failed');
         return response.status(500).json({ error: 'order_link_failed' });
     }
 
@@ -214,6 +255,8 @@ export default async function handler(request, response) {
         subtotalAmount: subtotal,
         shippingAmount,
         taxAmount: tax,
-        totalAmount: total
+        totalAmount: total,
+        // When the pieces go back to the collection if payment is not made.
+        holdExpiresAt: opened.expiresAt
     });
 }

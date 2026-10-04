@@ -9,6 +9,10 @@
 
 const CART_KEY = 'voidCart';
 const PROGRESS_KEY = 'void-checkout-progress';   // contact + address only, never payment
+// The client secret of a checkout that is holding stock, so a reload can end
+// it and return its pieces at once instead of when the hold expires. Session
+// scoped; it can only cancel this tab's own unpaid checkout.
+const HOLD_KEY = 'void-checkout-hold';
 const STAGES = ['details', 'delivery', 'payment'];
 
 // Matches the catalogue slugs in api/_catalog.js. The bag stores display names
@@ -49,7 +53,8 @@ const state = {
     order: null,
     stripe: null,
     elements: null,
-    busy: false
+    busy: false,
+    releasing: null
 };
 
 // ── money ────────────────────────────────────────────────────────────────────
@@ -211,15 +216,56 @@ function showBlocker(title, body, neutral = false) {
 function hideBlocker() { $('ckBlocker').hidden = true; }
 
 const ISSUE_COPY = {
-    not_for_sale: (i) => `${i.name || 'This piece'} is not yet available for purchase.`,
+    not_for_sale: (i) => `${i.name || 'This piece'} is not available for purchase.`,
     unknown_variant: () => 'One of the pieces in your bag is no longer in the collection.',
     unknown_size: (i) => `${i.name || 'This piece'} is no longer cut in size ${i.size}.`,
-    insufficient_stock: (i) => `Only ${i.available} of ${i.name} remain in size ${i.size}.`,
+    insufficient_stock: (i) => {
+        if (i.available > 0) return `Only ${i.available} ${i.name} ${i.available === 1 ? 'remains' : 'remain'} in size ${i.size}.`;
+        // Honest about the difference: held elsewhere may come back; gone is gone.
+        if (i.held) return `The last ${i.name} in size ${i.size} is currently held in another checkout.`;
+        return `Another client has just secured the last ${i.name} in size ${i.size}.`;
+    },
     invalid_quantity: () => 'One of the quantities in your bag is not valid.'
 };
 
 function describeIssues(issues) {
     return issues.map((issue) => (ISSUE_COPY[issue.reason] || (() => 'This selection is no longer available.'))(issue)).join(' ');
+}
+
+// Brings the bag into line with what the server says can actually be bought:
+// a line is cut to what remains, or removed. Returns true if anything changed.
+const REMOVE_REASONS = new Set(['not_for_sale', 'unknown_variant', 'unknown_size']);
+
+function reconcileCart(issues) {
+    let changed = false;
+    issues.forEach((issue) => {
+        const index = state.cart.findIndex((item) => item.variantId === issue.variantId);
+        if (index === -1) return;
+        const available = Math.max(Number(issue.available) || 0, 0);
+        if (REMOVE_REASONS.has(issue.reason) || (issue.reason === 'insufficient_stock' && available === 0)) {
+            state.cart.splice(index, 1);
+            changed = true;
+        } else if (issue.reason === 'insufficient_stock' && state.cart[index].quantity > available) {
+            state.cart[index].quantity = available;
+            changed = true;
+        }
+    });
+    if (changed) writeCart(state.cart);
+    return changed;
+}
+
+// Says what changed and why, then shows the corrected bag. When nothing is
+// left, the empty state carries the explanation instead of a blank page.
+async function applyBagCorrection(issues) {
+    const message = `${describeIssues(issues)} Your bag has been updated.`;
+    resetPayment();
+    if (state.cart.length === 0) {
+        $('ckEmptyNote').textContent = message;
+        setCartState('empty');
+        return;
+    }
+    await refreshQuote();
+    showBlocker('Your bag has been updated', message);
 }
 
 // ── quote ────────────────────────────────────────────────────────────────────
@@ -245,6 +291,15 @@ async function refreshQuote() {
 
     if (!data.ok) {
         if (data.error === 'empty_cart') { setCartState('empty'); return null; }
+        if (data.error === 'inventory_unavailable') {
+            showBlocker('Checkout unavailable', 'Availability could not be confirmed just now. Please try again in a moment.');
+            return null;
+        }
+        // A stale bag: another client secured a piece since it was added.
+        if (reconcileCart(data.issues || [])) {
+            await applyBagCorrection(data.issues);
+            return null;
+        }
         showBlocker('Selection unavailable', describeIssues(data.issues || []));
         state.quote = null;
         renderSummary();
@@ -334,7 +389,9 @@ function quantityControl(line) {
     value.textContent = String(line.quantity);
     value.setAttribute('aria-live', 'polite');
 
-    wrap.append(make('−', -1, line.quantity <= 1), value, make('+', 1, line.quantity >= 10));
+    // Never more than genuinely remains in that size.
+    const ceiling = Math.min(10, line.available != null ? line.available : 10);
+    wrap.append(make('−', -1, line.quantity <= 1), value, make('+', 1, line.quantity >= ceiling));
     return wrap;
 }
 
@@ -343,7 +400,9 @@ async function changeQuantity(variantId, delta) {
     if (!item) return;
 
     const next = item.quantity + delta;
-    if (next < 1 || next > 10) return;
+    const line = state.quote && (state.quote.lines || []).find((l) => l.variantId === variantId);
+    const ceiling = Math.min(10, line && line.available != null ? line.available : 10);
+    if (next < 1 || (delta > 0 && next > ceiling)) return;
     item.quantity = next;
     writeCart(state.cart);
 
@@ -416,13 +475,51 @@ function renderMethods() {
 }
 
 // ── payment ──────────────────────────────────────────────────────────────────
+// Leaving the payment step — a quantity, the delivery method or the country
+// changed — ends that checkout, so its pieces go back to the collection now
+// rather than when the hold runs out.
 function resetPayment() {
+    const secret = state.order && state.order.clientSecret;
     state.order = null;
     state.elements = null;
     $('ckPaymentElement').textContent = '';
     $('ckExpress').hidden = true;
     $('ckPayError').hidden = true;
     $('ckPayError').classList.remove('is-failure');
+    $('ckHoldNote').hidden = true;
+    if (secret) releaseHold(secret);
+}
+
+function rememberHold(secret) {
+    try { sessionStorage.setItem(HOLD_KEY, secret); } catch (error) { /* ignore */ }
+}
+
+function forgetHold() {
+    try { sessionStorage.removeItem(HOLD_KEY); } catch (error) { /* ignore */ }
+}
+
+// The server cancels the PaymentIntent at Stripe first and releases only on
+// Stripe's word; if the payment had in fact gone through, it is confirmed
+// instead. keepalive lets it finish even if the page is closing.
+function releaseHold(secret) {
+    forgetHold();
+    const request = fetch('/api/checkout/order', {
+        method: 'POST',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'release', clientSecret: secret })
+    }).catch(() => { /* the hold expires on its own */ });
+    state.releasing = request.finally(() => { if (state.releasing === request) state.releasing = null; });
+    return state.releasing;
+}
+
+function showHoldNote(expiresAt) {
+    const note = $('ckHoldNote');
+    const until = expiresAt ? new Date(expiresAt) : null;
+    if (!note || !until || Number.isNaN(until.getTime())) return;
+    const time = until.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    note.textContent = `Your pieces are held for you until ${time}. If payment is not completed by then, they return to the collection.`;
+    note.hidden = false;
 }
 
 // Stripe's supported appearance API. The iframe is never touched directly.
@@ -474,6 +571,10 @@ async function preparePayment() {
     if (state.order) return true;
 
     setBusy(true, $('ckPayButton'));
+    // A checkout this page just ended must have returned its pieces before a
+    // new one asks for them — otherwise a customer could be refused their own
+    // last piece.
+    if (state.releasing) await state.releasing;
     $('ckPayError').hidden = true;
     $('ckPayError').classList.remove('is-failure');
 
@@ -525,7 +626,8 @@ async function preparePayment() {
             setStage('delivery');
             showBlocker('Delivery', 'That delivery method is no longer available. Please choose another.');
         } else if (error.data?.issues) {
-            showBlocker('Selection unavailable', describeIssues(error.data.issues));
+            if (reconcileCart(error.data.issues)) await applyBagCorrection(error.data.issues);
+            else showBlocker('Selection unavailable', describeIssues(error.data.issues));
         } else {
             showBlocker('Checkout', 'We could not start this payment. Please try again.');
         }
@@ -533,6 +635,8 @@ async function preparePayment() {
     }
 
     state.order = data;
+    rememberHold(data.clientSecret);
+    showHoldNote(data.holdExpiresAt);
 
     // The server's figure is the one shown from here on. If it moved, say so
     // before anything is charged.
@@ -758,6 +862,23 @@ async function confirmPayment() {
         redirect: 'if_required'
     });
 
+    if (error && error.code === 'payment_intent_unexpected_state'
+        && error.payment_intent && error.payment_intent.status === 'canceled') {
+        // The hold ran out and the checkout was ended, so this intent can no
+        // longer be paid. Nothing was charged. Start again from the bag, which
+        // is re-checked against what remains.
+        $('ckPayErrorTitle').textContent = 'Checkout expired';
+        $('ckPayErrorBody').textContent = 'Your pieces were held for a limited time and have returned to the collection. Nothing was charged. Review your bag and continue to payment again.';
+        await breakVeil();
+        state.order = null;
+        forgetHold();
+        resetPayment();
+        setBusy(false, $('ckPayButton'));
+        showPayFailure();
+        await refreshQuote();
+        return;
+    }
+
     if (error) {
         // Mapped copy only — Stripe's own message is never surfaced.
         const [title, body] = describeDecline(error);
@@ -796,6 +917,7 @@ function clearPurchasedItems() {
     try {
         localStorage.removeItem(CART_KEY);
         sessionStorage.removeItem(PROGRESS_KEY);
+        sessionStorage.removeItem(HOLD_KEY);
     } catch (error) { /* ignore */ }
 }
 
@@ -838,6 +960,12 @@ function buildCountries() {
 
 async function init() {
     loadProgress();
+
+    // A checkout left holding stock by a reload or a closed tab is ended now.
+    try {
+        const stale = sessionStorage.getItem(HOLD_KEY);
+        if (stale) releaseHold(stale);
+    } catch (error) { /* ignore */ }
 
     // Reading the bag is synchronous localStorage, so this resolves in the same
     // task the module starts in — the shell goes straight from loading to its
@@ -898,7 +1026,12 @@ async function init() {
         button.addEventListener('click', () => setStage(button.dataset.back));
     });
 
-    $('ckPayButton').addEventListener('click', () => confirmPayment());
+    $('ckPayButton').addEventListener('click', async () => {
+        // If the checkout could not be opened (a piece ran out, a connection
+        // dropped), the button opens it again instead of doing nothing.
+        if (!state.order) { await preparePayment(); return; }
+        confirmPayment();
+    });
 
     const toggle = $('ckSummaryToggle');
     toggle.addEventListener('click', () => {

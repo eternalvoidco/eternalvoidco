@@ -8627,6 +8627,232 @@
             border-color: rgba(199, 169, 108, 0.95);
         }
 
+        /* ── Live stock ─────────────────────────────────────────────────
+           Genuine availability only, written in a brighter antique gold than
+           the house accent so it is read, with a static halo rather than any
+           flashing. The one movement — a slow breath on the marker — is off
+           for reduced motion either way it is asked for. Every element here
+           keeps its height whatever it says, so a background update never
+           moves the page. */
+        :root {
+            --void-stock-gold: #e6c682;
+            --void-stock-glow: 0 0 14px rgba(230, 198, 130, 0.32);
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            max-width: calc(100% - 1.5rem);
+            padding: 0.38rem 0.62rem;
+            border: 1px solid rgba(230, 198, 130, 0.5);
+            background: rgba(6, 5, 3, 0.78);
+            color: var(--void-stock-gold);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.56rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            line-height: 1.2;
+            text-transform: uppercase;
+            text-shadow: var(--void-stock-glow);
+            box-shadow: 0 0 18px rgba(230, 198, 130, 0.12);
+            pointer-events: none;
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+
+        .stock-badge[hidden] { display: none; }
+
+        .stock-badge[data-state="sold_out"],
+        .stock-badge[data-state="reserved"] {
+            border-color: rgba(245, 242, 236, 0.28);
+            color: rgba(245, 242, 236, 0.86);
+            text-shadow: none;
+            box-shadow: none;
+        }
+
+        .stock-mark {
+            flex: 0 0 auto;
+            width: 5px;
+            height: 5px;
+            transform: rotate(45deg);
+            background: var(--void-stock-gold);
+            box-shadow: 0 0 8px rgba(230, 198, 130, 0.7);
+            animation: voidStockBreath 4.8s ease-in-out infinite;
+        }
+
+        [data-state="sold_out"] > .stock-mark,
+        [data-state="reserved"] > .stock-mark {
+            background: rgba(245, 242, 236, 0.55);
+            box-shadow: none;
+            animation: none;
+        }
+
+        @keyframes voidStockBreath {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.55; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .stock-mark { animation: none; }
+        }
+
+        html.reduce-motion .stock-mark { animation: none; }
+
+        .pd-stock {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 1.35rem;
+            margin: -0.95rem 0 1.25rem;
+            color: var(--void-stock-gold);
+            font-size: 0.66rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            text-shadow: var(--void-stock-glow);
+        }
+
+        .pd-stock[hidden],
+        .pd-size-stock[hidden] { display: none; }
+
+        .pd-stock[data-state="sold_out"],
+        .pd-stock[data-state="reserved"] {
+            color: rgba(245, 242, 236, 0.9);
+            text-shadow: none;
+        }
+
+        .pd-stock-note {
+            display: block;
+            margin-top: 0.2rem;
+            color: rgba(245, 242, 236, 0.58);
+            font-size: 0.6rem;
+            font-weight: 400;
+            letter-spacing: 0.06em;
+            text-transform: none;
+        }
+
+        .pd-stock[data-state="reserved"] {
+            align-items: flex-start;
+        }
+
+        .pd-size-stock {
+            min-height: 1.1rem;
+            margin: 0.7rem 0 0;
+            color: rgba(245, 242, 236, 0.78);
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .pd-size-stock[data-state="low"],
+        .pd-size-stock[data-state="last"] {
+            color: var(--void-stock-gold);
+            text-shadow: var(--void-stock-glow);
+        }
+
+        /* Tracked pieces: every size button is the same two-line height, so a
+           size changing state never reflows the row. */
+        .pd-sizes.is-tracked .pd-size {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* Wide enough for the longest flag, so every size is the same width. */
+            min-width: 76px;
+            min-height: 50px;
+            gap: 0.18rem;
+        }
+
+        .pd-size-flag {
+            display: none;
+        }
+
+        .pd-sizes.is-tracked .pd-size-flag {
+            display: block;
+            min-height: 0.6rem;
+            font-size: 0.44rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            line-height: 1;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .pd-size:disabled {
+            cursor: not-allowed;
+            color: rgba(245, 242, 236, 0.42);
+            border-color: rgba(245, 242, 236, 0.12);
+            background:
+                linear-gradient(to top right, transparent calc(50% - 0.5px), rgba(245, 242, 236, 0.16) 50%, transparent calc(50% + 0.5px)),
+                rgba(12, 12, 12, 0.55);
+        }
+
+        .pd-size:disabled .pd-size-flag {
+            color: rgba(245, 242, 236, 0.62);
+        }
+
+        .pd-size:disabled:hover,
+        .pd-size:disabled:focus-visible {
+            border-color: rgba(245, 242, 236, 0.22);
+        }
+
+        .pd-notify {
+            width: 100%;
+            min-height: 48px;
+            margin: 0 0 0.9rem;
+            border: 1px solid rgba(230, 198, 130, 0.62);
+            border-radius: 40px;
+            background: rgba(10, 8, 4, 0.6);
+            color: var(--void-stock-gold);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.64rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            text-shadow: var(--void-stock-glow);
+            cursor: pointer;
+            transition: border-color 0.24s ease, box-shadow 0.24s ease, color 0.24s ease;
+        }
+
+        .pd-notify[hidden] { display: none; }
+
+        .pd-notify:hover,
+        .pd-notify:focus-visible {
+            border-color: var(--void-stock-gold);
+            box-shadow: 0 0 22px rgba(230, 198, 130, 0.18);
+            color: var(--void-gold-bright);
+        }
+
+        .cart-item-stock {
+            display: block;
+            margin-top: 0.2rem;
+            color: var(--void-stock-gold);
+            font-size: 0.58rem;
+            letter-spacing: 0.08em;
+        }
+
+        @media (max-width: 480px) {
+            .stock-badge {
+                top: 0.55rem;
+                left: 0.55rem;
+                padding: 0.32rem 0.5rem;
+                font-size: 0.52rem;
+                letter-spacing: 0.14em;
+            }
+
+            .pd-stock { font-size: 0.62rem; letter-spacing: 0.16em; }
+
+            /* One even row on a phone, whatever the flags say. */
+            .pd-sizes.is-tracked { flex-wrap: nowrap; gap: 0.4rem; }
+            .pd-sizes.is-tracked .pd-size { flex: 1 1 0; min-width: 0; padding-left: 0.2rem; padding-right: 0.2rem; }
+            .pd-sizes.is-tracked .pd-size-flag { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: 0.4rem; letter-spacing: 0.06em; }
+        }
+
         /* In-panel "added to bag" confirmation (a cart cue that fits the detail page) */
         .pd-added {
             display: flex;
@@ -13219,6 +13445,10 @@
                     <p class="pd-code" id="pdCode">EV-ATELIER</p>
                     <h2 class="pd-name" id="pdName">Product</h2>
                     <p class="pd-price" id="pdPrice">€0</p>
+                    <!-- Live availability for the design as a whole. Kept in the
+                         flow at a fixed height while a tracked piece is open, so
+                         a background update never moves the panel. -->
+                    <p class="pd-stock" id="pdStock" hidden></p>
 
                     <div class="pd-size-block" id="pdSizeBlock">
                         <div class="pd-size-head">
@@ -13232,9 +13462,14 @@
                             <button type="button" class="pd-size" data-pd-size="L" aria-pressed="false">L</button>
                             <button type="button" class="pd-size" data-pd-size="XL" aria-pressed="false">XL</button>
                         </div>
+                        <!-- The selected size's own availability — never the
+                             design's total, which reads above. -->
+                        <p class="pd-size-stock" id="pdSizeStock" hidden></p>
                     </div>
 
                     <button type="button" class="pd-add" id="pdAdd" data-i18n="pdAddToBag">Add to shopping bag</button>
+                    <!-- Sold out only. Opens the existing pre-order signup. -->
+                    <button type="button" class="pd-notify" id="pdNotify" data-i18n="stockNotifyNextDrop" hidden>Get notified for the next drop</button>
                     <div class="pd-added" id="pdAdded" role="status" aria-live="polite" hidden>
                         <span class="pd-added-mark" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false"><path d="M5 12.5l4.2 4.2L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -13979,6 +14214,89 @@
         Object.assign(translations.fr, { selectLanguage: 'Sélectionner la langue', countryOther: 'Autre', countryTheme: 'Thème pays', switchCountryTheme: 'Changer le thème pays' });
         Object.assign(translations.it, { selectLanguage: 'Seleziona lingua', countryOther: 'Altro', countryTheme: 'Tema paese', switchCountryTheme: 'Cambia tema paese' });
         Object.assign(translations.de, { selectLanguage: 'Sprache auswählen', countryOther: 'Andere', countryTheme: 'Länder-Theme', switchCountryTheme: 'Länder-Theme wechseln' });
+
+        // Live stock. Every figure in these is genuine availability read from
+        // /api/inventory — nothing here is ever shown without it.
+        Object.assign(translations.en, {
+            stockOnlyLeft: 'Only {count} pieces left',
+            stockLastPiece: 'Last piece available',
+            stockSoldOut: 'Sold out',
+            stockReserved: 'Currently reserved',
+            stockReservedNote: 'The remaining pieces are held in another checkout and return if it is not completed.',
+            stockReservedButton: 'Temporarily unavailable',
+            stockNotifyNextDrop: 'Get notified for the next drop',
+            sizeInStock: 'Size {size} · available',
+            sizeOnlyLeft: 'Size {size} · only {count} left',
+            sizeLastPiece: 'Size {size} · last piece',
+            sizeNoLongerAvailable: 'Size {size} is no longer available',
+            sizeFlagSoldOut: 'Sold out',
+            sizeFlagReserved: 'Reserved',
+            sizeFlagUnavailable: 'Unavailable',
+            sizeAriaState: 'Size {size}, {state}',
+            stockMaxInBag: 'Your bag already holds every available piece in size {size}',
+            cartLineUnavailable: 'No longer available in this size',
+            cartLineReduced: 'Only {count} available in this size'
+        });
+        Object.assign(translations.fr, {
+            stockOnlyLeft: 'Plus que {count} pièces',
+            stockLastPiece: 'Dernière pièce disponible',
+            stockSoldOut: 'Épuisé',
+            stockReserved: 'Actuellement réservé',
+            stockReservedNote: 'Les dernières pièces sont retenues dans une autre commande et reviennent si elle n’est pas finalisée.',
+            stockReservedButton: 'Momentanément indisponible',
+            stockNotifyNextDrop: 'Être averti du prochain drop',
+            sizeInStock: 'Taille {size} · disponible',
+            sizeOnlyLeft: 'Taille {size} · plus que {count}',
+            sizeLastPiece: 'Taille {size} · dernière pièce',
+            sizeNoLongerAvailable: 'La taille {size} n’est plus disponible',
+            sizeFlagSoldOut: 'Épuisé',
+            sizeFlagReserved: 'Réservé',
+            sizeFlagUnavailable: 'Indisponible',
+            sizeAriaState: 'Taille {size}, {state}',
+            stockMaxInBag: 'Votre sac contient déjà toutes les pièces disponibles en taille {size}',
+            cartLineUnavailable: 'Plus disponible dans cette taille',
+            cartLineReduced: 'Seulement {count} disponible(s) dans cette taille'
+        });
+        Object.assign(translations.it, {
+            stockOnlyLeft: 'Solo {count} pezzi rimasti',
+            stockLastPiece: 'Ultimo pezzo disponibile',
+            stockSoldOut: 'Esaurito',
+            stockReserved: 'Attualmente riservato',
+            stockReservedNote: 'Gli ultimi pezzi sono trattenuti in un altro acquisto e tornano disponibili se non viene completato.',
+            stockReservedButton: 'Temporaneamente non disponibile',
+            stockNotifyNextDrop: 'Ricevi un avviso per il prossimo drop',
+            sizeInStock: 'Taglia {size} · disponibile',
+            sizeOnlyLeft: 'Taglia {size} · solo {count} rimasti',
+            sizeLastPiece: 'Taglia {size} · ultimo pezzo',
+            sizeNoLongerAvailable: 'La taglia {size} non è più disponibile',
+            sizeFlagSoldOut: 'Esaurito',
+            sizeFlagReserved: 'Riservato',
+            sizeFlagUnavailable: 'Non disp.',
+            sizeAriaState: 'Taglia {size}, {state}',
+            stockMaxInBag: 'La tua borsa contiene già tutti i pezzi disponibili in taglia {size}',
+            cartLineUnavailable: 'Non più disponibile in questa taglia',
+            cartLineReduced: 'Solo {count} disponibili in questa taglia'
+        });
+        Object.assign(translations.de, {
+            stockOnlyLeft: 'Nur noch {count} Stück',
+            stockLastPiece: 'Letztes verfügbares Stück',
+            stockSoldOut: 'Ausverkauft',
+            stockReserved: 'Derzeit reserviert',
+            stockReservedNote: 'Die letzten Stücke sind in einem anderen Checkout reserviert und werden wieder frei, falls er nicht abgeschlossen wird.',
+            stockReservedButton: 'Vorübergehend nicht verfügbar',
+            stockNotifyNextDrop: 'Beim nächsten Drop benachrichtigen',
+            sizeInStock: 'Größe {size} · verfügbar',
+            sizeOnlyLeft: 'Größe {size} · nur noch {count}',
+            sizeLastPiece: 'Größe {size} · letztes Stück',
+            sizeNoLongerAvailable: 'Größe {size} ist nicht mehr verfügbar',
+            sizeFlagSoldOut: 'Ausverk.',
+            sizeFlagReserved: 'Reserviert',
+            sizeFlagUnavailable: 'Nicht verf.',
+            sizeAriaState: 'Größe {size}, {state}',
+            stockMaxInBag: 'Deine Tasche enthält bereits alle verfügbaren Stücke in Größe {size}',
+            cartLineUnavailable: 'In dieser Größe nicht mehr verfügbar',
+            cartLineReduced: 'Nur {count} in dieser Größe verfügbar'
+        });
 
         // New UI strings (product detail + style guide + category menu). English is the
         // source; other languages fall back to English via t() until translated.
@@ -15337,6 +15655,9 @@
             const apply = () => {
                 applyTranslations();
                 refreshCartTranslations();
+                // Stock labels are composed in JS (counts, sizes), so they are
+                // rewritten rather than left to data-i18n.
+                renderStock();
                 // The fit archive renders its table and fit names from JS, so
                 // it has to be re-rendered rather than re-labelled in place.
                 if (typeof window.voidFitArchiveRefresh === 'function') window.voidFitArchiveRefresh();
@@ -17736,6 +18057,7 @@
                     <div>
                         <span class="cart-item-name">${safeName}</span>
                         <span class="cart-item-meta">${safeSize} · ${item.quantity} x ${formatEuro(item.price)}</span>
+                        ${cartLineStockNote(item)}
                     </div>
                     <div class="cart-item-actions">
                         <button type="button" class="cart-item-remove" data-cart-delete-name="${safeName}" data-cart-delete-size="${safeSize}" aria-label="${escapeMarkup(t('removeItemLabel', { name: item.name, size: item.size }))}" title="${escapeMarkup(t('removeItemLabel', { name: item.name, size: item.size }))}">
@@ -18012,6 +18334,9 @@
 
         function addToCart(name, price, size, buttonElement) {
             if (isUnreleasedProduct(name)) return;
+            // The bag never holds more of a size than genuinely remains. The
+            // checkout re-checks on the server; this keeps the bag honest.
+            if (!stockAllowsAdd(name, size)) return;
 
             const existingItem = cart.find((item) => item.name === name && item.size === size);
             if (existingItem) {
@@ -18398,6 +18723,7 @@
                 button.classList.toggle('active', isActive);
                 button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
+            renderPdStock();
         }
 
         // Populates the detail panel's media/info from a product card. Shared
@@ -18460,6 +18786,9 @@
             closeCartPopup();
 
             const name = applyProductDetailContent(productCard);
+            // Freshest figures for the piece being looked at; the render above
+            // already used the last known ones, so nothing waits on this.
+            refreshStock(false);
 
             productDetailOverlay.classList.add('open');
             productDetailOverlay.scrollTop = 0;
@@ -18472,6 +18801,284 @@
                 focusElementSafely(pdClose);
             });
         }
+
+        // ============== Live stock ==============
+        // Availability comes from /api/inventory, which reads the inventory
+        // tables — never from anything stored in the browser. It is polled
+        // while the tab is visible and refreshed the moment the tab regains
+        // focus or the connection returns. Updates are written in place into
+        // elements that keep their size, and nothing is announced: the state is
+        // in the controls' labels for anyone who reaches them.
+        //
+        // Before the first answer arrives (or if it never does) the page shows
+        // no stock language at all and purchasing works as before; the server
+        // enforces availability at checkout either way.
+        var voidStock = { data: null, timer: null, inflight: null, last: 0, failures: 0 };
+        var VOID_STOCK_POLL_MS = 15000;
+        // `var`, like the state above: the saved-language restore earlier in
+        // this script can call renderStock() before this block has run.
+        var pdStockEl = document.getElementById('pdStock');
+        var pdSizeStockEl = document.getElementById('pdSizeStock');
+        var pdNotify = document.getElementById('pdNotify');
+
+        function stockForName(name) {
+            if (!voidStock || !voidStock.data || !name) return null;
+            const products = voidStock.data.products || {};
+            const key = Object.keys(products).find((slug) => products[slug].name === name);
+            return key ? products[key] : null;
+        }
+
+        function sizeStockFor(name, size) {
+            const product = stockForName(name);
+            return product && product.sizes ? product.sizes[size] || null : null;
+        }
+
+        function cartQuantityFor(name, size) {
+            const line = cart.find((item) => item.name === name && item.size === size);
+            return line ? line.quantity : 0;
+        }
+
+        function stockAllowsAdd(name, size) {
+            const sizeStock = sizeStockFor(name, size);
+            if (!sizeStock) return true;   // untracked, or not loaded yet
+            return cartQuantityFor(name, size) + 1 <= sizeStock.available;
+        }
+
+        function productStockLabel(product) {
+            switch (product.state) {
+                case 'low': return t('stockOnlyLeft', { count: String(product.available) });
+                case 'last': return t('stockLastPiece');
+                case 'reserved': return t('stockReserved');
+                case 'sold_out': return t('stockSoldOut');
+                default: return '';
+            }
+        }
+
+        function sizeStockLabel(size, sizeStock) {
+            switch (sizeStock.state) {
+                case 'low': return t('sizeOnlyLeft', { size, count: String(sizeStock.available) });
+                case 'last': return t('sizeLastPiece', { size });
+                case 'in_stock': return t('sizeInStock', { size });
+                default: return t('sizeNoLongerAvailable', { size });
+            }
+        }
+
+        function sizeFlagLabel(state) {
+            if (state === 'sold_out') return t('sizeFlagSoldOut');
+            if (state === 'reserved') return t('sizeFlagReserved');
+            if (state === 'unavailable') return t('sizeFlagUnavailable');
+            return '';
+        }
+
+        // Text is only written when it changes, so an unchanged poll touches
+        // nothing at all.
+        function setText(el, text) {
+            if (el && el.textContent !== text) el.textContent = text;
+        }
+
+        function renderCardStock() {
+            document.querySelectorAll('.product-card[data-product-name]').forEach((card) => {
+                const product = stockForName(card.dataset.productName);
+                const image = card.querySelector('.product-image');
+                let badge = card.querySelector('[data-stock-badge]');
+                if (!product || !image) {
+                    if (badge) badge.hidden = true;
+                    return;
+                }
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'stock-badge';
+                    badge.dataset.stockBadge = '';
+                    badge.innerHTML = '<span class="stock-mark" aria-hidden="true"></span><span class="stock-text"></span>';
+                    badge.hidden = true;
+                    image.appendChild(badge);
+                }
+                const label = productStockLabel(product);
+                badge.dataset.state = product.state;
+                setText(badge.querySelector('.stock-text'), label);
+                badge.hidden = !label;
+                card.dataset.stockState = product.state;
+            });
+        }
+
+        function showPdSizeStockMessage(text, state) {
+            if (!pdSizeStockEl) return;
+            pdSizeStockEl.hidden = false;
+            pdSizeStockEl.dataset.state = state || 'notice';
+            setText(pdSizeStockEl, text);
+        }
+
+        function renderPdStock() {
+            if (!pdSizes) return;
+            const product = pdState && pdState.card && !isUnreleasedProduct(pdState.card) ? stockForName(pdState.name) : null;
+            const buttons = Array.from(pdSizes.querySelectorAll('[data-pd-size]'));
+
+            pdSizes.classList.toggle('is-tracked', Boolean(product));
+            // A message about the previous piece's size never carries over.
+            if (pdSizeStockEl && pdSizeStockEl.dataset.product !== pdState.name) {
+                pdSizeStockEl.dataset.product = pdState.name;
+                pdSizeStockEl.dataset.state = '';
+                pdSizeStockEl.textContent = '';
+            }
+            buttons.forEach((button) => {
+                const size = button.dataset.pdSize;
+                let nameEl = button.querySelector('.pd-size-name');
+                let flagEl = button.querySelector('.pd-size-flag');
+                if (!nameEl) {
+                    button.textContent = '';
+                    nameEl = document.createElement('span');
+                    nameEl.className = 'pd-size-name';
+                    nameEl.textContent = size;
+                    flagEl = document.createElement('span');
+                    flagEl.className = 'pd-size-flag';
+                    flagEl.setAttribute('aria-hidden', 'true');
+                    button.append(nameEl, flagEl);
+                }
+                const sizeStock = product && product.sizes ? product.sizes[size] : null;
+                const open = !sizeStock || sizeStock.available > 0;
+                const flag = open ? '' : sizeFlagLabel(sizeStock.state);
+                button.disabled = !open;
+                setText(flagEl, flag);
+                if (flag) button.setAttribute('aria-label', t('sizeAriaState', { size, state: flag }));
+                else button.removeAttribute('aria-label');
+            });
+
+            if (!product) {
+                if (pdStockEl) pdStockEl.hidden = true;
+                if (pdSizeStockEl) pdSizeStockEl.hidden = true;
+                if (pdNotify) pdNotify.hidden = true;
+                return;
+            }
+
+            // The design as a whole.
+            if (pdStockEl) {
+                pdStockEl.hidden = false;
+                pdStockEl.dataset.state = product.state;
+                const label = productStockLabel(product);
+                const signature = product.state + '|' + label;
+                if (pdStockEl.dataset.signature !== signature) {
+                    pdStockEl.dataset.signature = signature;
+                    pdStockEl.textContent = '';
+                    if (label) {
+                        const mark = document.createElement('span');
+                        mark.className = 'stock-mark';
+                        mark.setAttribute('aria-hidden', 'true');
+                        const text = document.createElement('span');
+                        text.textContent = label;
+                        if (product.state === 'reserved') {
+                            const note = document.createElement('span');
+                            note.className = 'pd-stock-note';
+                            note.textContent = t('stockReservedNote');
+                            text.appendChild(note);
+                        }
+                        pdStockEl.append(mark, text);
+                    }
+                }
+            }
+
+            // The selected size, separately. A size that has gone while the
+            // panel was open is deselected and said so, rather than left
+            // selected and refused at the button.
+            if (pdState.size) {
+                const sizeStock = product.sizes[pdState.size];
+                if (sizeStock && sizeStock.available <= 0) {
+                    const gone = pdState.size;
+                    pdState.size = '';
+                    buttons.forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+                    showPdSizeStockMessage(t('sizeNoLongerAvailable', { size: gone }), 'gone');
+                } else if (sizeStock) {
+                    showPdSizeStockMessage(sizeStockLabel(pdState.size, sizeStock), sizeStock.state);
+                }
+            } else if (pdSizeStockEl && pdSizeStockEl.dataset.state !== 'gone') {
+                pdSizeStockEl.hidden = false;
+                pdSizeStockEl.dataset.state = '';
+                setText(pdSizeStockEl, '');
+            }
+
+            // Purchasing. Only ever closes it; the unreleased and price-pending
+            // rules in applyProductDetailContent are never reopened here.
+            const closedForOtherReasons = !pdState.card || pdState.card.dataset.pricePending === 'true';
+            if (pdAdd && !closedForOtherReasons) {
+                let label = t('pdAddToBag');
+                let disabled = false;
+                if (product.state === 'sold_out') { label = t('stockSoldOut'); disabled = true; }
+                else if (product.state === 'reserved') { label = t('stockReservedButton'); disabled = true; }
+                pdAdd.dataset.defaultLabel = label;
+                pdAdd.disabled = disabled;
+                if (!pdAdd.classList.contains('added') && !pdAdd.classList.contains('needs-size')) setText(pdAdd, label);
+            }
+            if (pdNotify) pdNotify.hidden = product.state !== 'sold_out';
+        }
+
+        function cartLineStockNote(item) {
+            const sizeStock = sizeStockFor(item.name, item.size);
+            if (!sizeStock || item.quantity <= sizeStock.available) return '';
+            const text = sizeStock.available <= 0
+                ? t('cartLineUnavailable')
+                : t('cartLineReduced', { count: String(sizeStock.available) });
+            return `<span class="cart-item-stock">${escapeMarkup(text)}</span>`;
+        }
+
+        function renderStock() {
+            if (!voidStock) return;
+            renderCardStock();
+            if (productDetailOverlay && productDetailOverlay.classList.contains('open')) renderPdStock();
+            // The bag is rebuilt only when what it would say has changed, so a
+            // routine poll never pulls focus out from under someone using it.
+            const cartSignature = currentLanguage + '|' + cart.map(cartLineStockNote).join('|');
+            if (cartSignature !== voidStock.cartSignature) {
+                voidStock.cartSignature = cartSignature;
+                updateCartUI();
+            }
+        }
+        window.voidStockRender = renderStock;
+
+        function scheduleStockPoll() {
+            window.clearTimeout(voidStock.timer);
+            if (document.hidden) return;
+            const backoff = voidStock.failures ? Math.min(60000, VOID_STOCK_POLL_MS * Math.pow(2, voidStock.failures)) : VOID_STOCK_POLL_MS;
+            voidStock.timer = window.setTimeout(() => refreshStock(true), backoff);
+        }
+
+        // `cache: 'no-cache'` makes the browser revalidate with the ETag every
+        // time, so an unchanged picture costs a 304 and no body.
+        function refreshStock(force) {
+            if (voidStock.inflight) return voidStock.inflight;
+            if (!force && Date.now() - voidStock.last < 2000) return Promise.resolve(voidStock.data);
+            voidStock.inflight = fetch('/api/inventory', { cache: 'no-cache', headers: { Accept: 'application/json' } })
+                .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+                .then((data) => {
+                    if (!data || !data.ok || !data.products) throw new Error('bad_payload');
+                    voidStock.data = data;
+                    voidStock.failures = 0;
+                    voidStock.last = Date.now();
+                    renderStock();
+                    return data;
+                })
+                .catch(() => { voidStock.failures += 1; return voidStock.data; })
+                .finally(() => { voidStock.inflight = null; scheduleStockPoll(); });
+            return voidStock.inflight;
+        }
+        window.voidStockRefresh = refreshStock;
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) window.clearTimeout(voidStock.timer);
+            else refreshStock(true);
+        });
+        window.addEventListener('focus', () => refreshStock(false));
+        window.addEventListener('online', () => refreshStock(true));
+        window.addEventListener('pageshow', (event) => { if (event.persisted) refreshStock(true); });
+
+        if (pdNotify) {
+            // The existing pre-order signup — same form, consent and copy. The
+            // detail panel closes first so the two dialogs never stack.
+            pdNotify.addEventListener('click', () => {
+                closeProductDetail();
+                window.setTimeout(openPreorderModal, 240);
+            });
+        }
+
+        refreshStock(true);
 
         // ============== Product detail: sibling-product switcher ==============
         function setPdSwitchImages() {
@@ -18997,6 +19604,10 @@
                         void pdSizes.offsetWidth;
                         pdSizes.classList.add('nudge');
                     }
+                    return;
+                }
+                if (!stockAllowsAdd(pdState.name, pdState.size)) {
+                    showPdSizeStockMessage(t('stockMaxInBag', { size: pdState.size }));
                     return;
                 }
                 if (pdState.card) setProductCardSize(pdState.card, pdState.size);

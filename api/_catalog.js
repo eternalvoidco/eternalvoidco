@@ -13,6 +13,10 @@
 //
 // When a real products table lands, replace lookupVariant() with a query and
 // nothing else in the checkout has to change.
+//
+// Stock is not here. It lives in the database (inventory_items) and is checked
+// and held by api/_inventory.js and the checkout_open_order function. A variant
+// with no inventory row is not for sale, whatever `active` says below.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const CURRENCY = 'eur';
@@ -142,14 +146,10 @@ export function lookupVariant(id) {
     };
 }
 
-// ── Stock ────────────────────────────────────────────────────────────────────
-// No inventory exists anywhere in this project: there is no stock column, no
-// warehouse feed and no reservation model. Rather than pretend, this returns
-// `null` meaning "not tracked", and the checkout treats every active variant as
-// available. When a stock source appears, return a number here and
-// validateLines() will start enforcing it with no other changes.
-export function stockFor() {
-    return null;
+// Name and size run for a slug, for the inventory payload. Null when unknown.
+export function productInfo(slug) {
+    const product = PRODUCTS[slug];
+    return product ? { name: product.name, sizes: product.sizes.slice() } : null;
 }
 
 export const MAX_QTY_PER_LINE = 10;
@@ -238,12 +238,6 @@ export function validateLines(rawLines) {
         const found = lookupVariant(id);
         if (!found.ok) {
             issues.push({ variantId: id, reason: found.reason, name: found.name, size: found.size });
-            continue;
-        }
-
-        const stock = stockFor(found.variantId);
-        if (stock != null && qty > stock) {
-            issues.push({ variantId: id, reason: 'insufficient_stock', name: found.name, size: found.size, available: stock });
             continue;
         }
 

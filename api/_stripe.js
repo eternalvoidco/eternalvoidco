@@ -80,6 +80,28 @@ export function retrievePaymentIntent(id) {
     return call(`/payment_intents/${encodeURIComponent(id)}`, { method: 'GET' });
 }
 
+// Once this succeeds the intent can never be charged, which is the only point
+// at which its stock hold may be released. Stripe refuses it for an intent that
+// has already succeeded or is still processing at the bank; callers re-read the
+// intent and act on its real state when that happens.
+export function cancelPaymentIntent(id, reason = 'abandoned') {
+    return call(`/payment_intents/${encodeURIComponent(id)}/cancel`, {
+        payload: { cancellation_reason: reason }
+    });
+}
+
+// A PaymentIntent client secret is `<intent id>_secret_<random>`.
+export function intentIdFromClientSecret(secret) {
+    const match = /^(pi_[A-Za-z0-9]+)_secret_[A-Za-z0-9]+$/.exec(String(secret || ''));
+    return match ? match[1] : null;
+}
+
+export function secretsEqual(a, b) {
+    const left = Buffer.from(String(a || ''), 'utf8');
+    const right = Buffer.from(String(b || ''), 'utf8');
+    return left.length > 0 && left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
 // ── Webhook signature ────────────────────────────────────────────────────────
 // Stripe signs `${timestamp}.${rawBody}` with the endpoint secret. Verified
 // against the raw bytes — a parsed-and-restringified body will not match.

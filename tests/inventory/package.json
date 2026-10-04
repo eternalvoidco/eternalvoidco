@@ -1,0 +1,13 @@
+{
+  "name": "void-inventory-tests",
+  "private": true,
+  "type": "module",
+  "description": "Integration tests for the inventory system: real Postgres + PostgREST, the real api/ handlers, a Stripe test double, and Chromium.",
+  "scripts": {
+    "test": "node --test --test-concurrency=1 --test-timeout=240000 *.test.mjs"
+  },
+  "devDependencies": {
+    "pg": "^8.13.0",
+    "playwright-core": "^1.55.0"
+  }
+}
