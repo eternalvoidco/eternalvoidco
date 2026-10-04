@@ -8772,6 +8772,11 @@
             display: none;
         }
 
+        /* A size the design is not cut in stays out, as on every other piece. */
+        .pd-sizes.is-tracked .pd-size[hidden] {
+            display: none;
+        }
+
         .pd-sizes.is-tracked .pd-size-flag {
             display: block;
             min-height: 0.6rem;
@@ -14153,6 +14158,9 @@
         // Remembers exactly where the visitor was before the preorder modal
         // opened, so a successful join returns them there seamlessly.
         let preorderReturnScrollY = 0;
+        // Set only when the popup is opened from a sold-out piece ("Get
+        // notified for the next drop"), so the signup records that design.
+        let preorderInterest = '';
         let preorderSuccessTimer = null;
         const newsletterForm = document.getElementById('newsletterForm');
         const newsletterEmail = document.getElementById('newsletterEmail');
@@ -14458,6 +14466,7 @@
             preorderModal.classList.remove('active', 'success-dismiss');
             preorderModal.setAttribute('aria-hidden', 'true');
             document.body.classList.remove('preorder-open');
+            preorderInterest = '';
             stopEdgeAmbience();
 
             // Body scroll was locked while open; snap back to the exact prior
@@ -16368,7 +16377,8 @@
                         },
                         body: JSON.stringify({
                             email: preorderEmail.value.trim(),
-                            country: selectedCountry
+                            country: selectedCountry,
+                            interest: preorderInterest || undefined
                         })
                     });
 
@@ -18654,6 +18664,9 @@
         // size the garment's own specification does not document.
         const DEFAULT_SIZES = guideSizes('tshirt');
         const PRODUCT_SIZES = {
+            // The Fallen is cut in S–XL only; XS is never offered for either.
+            'Levitate Tee': ['S', 'M', 'L', 'XL'],
+            'Endzustand Tee': ['S', 'M', 'L', 'XL'],
             'Sweatshirt': guideSizes('sweatshirt'),
             'Track Pants': guideSizes('trackpants'),
             'Ensemble': guideSizes('ensemble')
@@ -19073,8 +19086,12 @@
             // The existing pre-order signup — same form, consent and copy. The
             // detail panel closes first so the two dialogs never stack.
             pdNotify.addEventListener('click', () => {
+                const product = stockForName(pdState.name);
                 closeProductDetail();
-                window.setTimeout(openPreorderModal, 240);
+                window.setTimeout(() => {
+                    openPreorderModal();
+                    preorderInterest = product ? product.slug : '';
+                }, 240);
             });
         }
 

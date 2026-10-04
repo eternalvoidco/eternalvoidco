@@ -118,17 +118,16 @@ create trigger inventory_movements_append_only
 
 -- ── Initial allocation ──────────────────────────────────────────────────────
 -- Levitate and Endzustand: S 2 · M 16 · L 10 · XL 2 = 30 each, 60 in total.
--- The catalogue also cuts both tees in XS, which this allocation does not
--- include, so XS is tracked at zero and shown as unavailable.
+-- Both designs are cut in S–XL only.
 --
 -- Reconciled first: units already sold through a paid (or since refunded)
 -- order are subtracted, so the shop never offers a piece that has already
 -- left. Rows that already exist are left exactly as they are.
 with allocation (product_slug, size, initial) as (
     values
-        ('levitate-tee',   'XS', 0), ('levitate-tee',   'S', 2), ('levitate-tee',   'M', 16),
+        ('levitate-tee',   'S', 2), ('levitate-tee',   'M', 16),
         ('levitate-tee',   'L', 10), ('levitate-tee',   'XL', 2),
-        ('endzustand-tee', 'XS', 0), ('endzustand-tee', 'S', 2), ('endzustand-tee', 'M', 16),
+        ('endzustand-tee', 'S', 2), ('endzustand-tee', 'M', 16),
         ('endzustand-tee', 'L', 10), ('endzustand-tee', 'XL', 2)
 ),
 paid as (
@@ -760,5 +759,5 @@ end $$;
 --   select variant_id, on_hand, reserved, on_hand - reserved as available, sold
 --     from public.inventory_items order by variant_id;
 --
--- Expected on a store with no prior sales: S 2, M 16, L 10, XL 2, XS 0 for both
+-- Expected on a store with no prior sales: S 2, M 16, L 10, XL 2 for both
 -- tees — 30 per design, 60 in total.

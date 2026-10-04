@@ -1,6 +1,6 @@
 # Inventory tests
 
-Integration tests that run the real `api/` handlers against real Postgres and
+Integration tests for inventory, checkout and the newsletter that run the real `api/` handlers against real Postgres and
 PostgREST (what Supabase serves `/rest/v1` with), plus the storefront, checkout
 and dashboard in Chromium. Stripe is an in-process test double
 (`stripe-double.mjs`): no request reaches Stripe and nothing can be charged.
@@ -25,4 +25,5 @@ Every test file creates and drops its own database.
 ```sh
 npm install
 npm test
+STRICT_GRANTS=1 npm test   # as a newer Supabase project: no default grants
 ```

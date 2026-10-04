@@ -25,13 +25,16 @@ export const CURRENCY = 'eur';
 // avoids float arithmetic on money.
 const TEE_SIZES = ['XS', 'S', 'M', 'L', 'XL'];
 const SET_SIZES = ['S', 'M', 'L', 'XL'];
+// The Fallen (Levitate, Endzustand) is cut in S–XL only. An XS line for either
+// is refused as unknown_size, so an old bag holding one is corrected at checkout.
+const FALLEN_SIZES = ['S', 'M', 'L', 'XL'];
 
 const PRODUCTS = {
     'levitate-tee': {
         name: 'Levitate Tee',
         sku: 'EV-S1-LVT',
         unitAmount: 20000,
-        sizes: TEE_SIZES,
+        sizes: FALLEN_SIZES,
         image: '/assets/levitate-white.png',
         active: true
     },
@@ -39,7 +42,7 @@ const PRODUCTS = {
         name: 'Endzustand Tee',
         sku: 'EV-S1-END',
         unitAmount: 20000,
-        sizes: TEE_SIZES,
+        sizes: FALLEN_SIZES,
         image: '/assets/endzustand-black.png',
         active: true
     },

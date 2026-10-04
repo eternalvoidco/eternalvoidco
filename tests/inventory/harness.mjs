@@ -55,7 +55,10 @@ async function freePort() {
 }
 
 // ── database ────────────────────────────────────────────────────────────────
-async function createDatabase(name) {
+// `strict` mimics newer Supabase projects, which no longer grant new tables,
+// functions and sequences in `public` to the API roles by default: the
+// migrations must grant everything they need themselves.
+async function createDatabase(name, { strict = false } = {}) {
     const admin = new pg.Client({ ...PG, database: 'postgres' });
     await admin.connect();
     // Roles are cluster-wide: created once, reused by every test database.
@@ -67,6 +70,7 @@ async function createDatabase(name) {
     await db.connect();
     let bootstrap = fs.readFileSync(path.join(HERE, 'supabase-bootstrap.sql'), 'utf8');
     if (roles.rowCount) bootstrap = bootstrap.replace(/^create role .*$/gm, '').replace(/^grant anon, authenticated, service_role to authenticator;$/m, '');
+    if (strict) bootstrap = bootstrap.replace(/^alter default privileges .*$/gm, '');
     await db.query(bootstrap);
     for (const file of fs.readdirSync(path.join(ROOT, 'supabase', 'migrations')).sort()) {
         await db.query(fs.readFileSync(path.join(ROOT, 'supabase', 'migrations', file), 'utf8'));
@@ -144,12 +148,31 @@ async function readBody(req) {
     return Buffer.concat(chunks).toString('utf8');
 }
 
-export async function startStack({ env = {} } = {}) {
+export async function startStack({ env = {}, strict = process.env.STRICT_GRANTS === '1' } = {}) {
     const dbName = `ev_${crypto.randomBytes(5).toString('hex')}`;
-    const db = await createDatabase(dbName);
+    const db = await createDatabase(dbName, { strict });
     const rest = await startPostgrest(dbName);
     const stripe = createStripeDouble({ webhookSecret: WEBHOOK_SECRET });
     stripe.install();
+
+    // Resend, captured: every email the handlers send lands in `emails`
+    // instead of leaving the machine. `emailFailures` > 0 makes the next
+    // sends fail, as a provider outage would.
+    const emails = [];
+    const mail = { failures: 0 };
+    const withStripe = globalThis.fetch;
+    globalThis.fetch = async (input, init = {}) => {
+        const url = typeof input === 'string' ? input : input.url;
+        if (url.startsWith('https://api.resend.com/')) {
+            if (mail.failures > 0) {
+                mail.failures -= 1;
+                return new Response(JSON.stringify({ message: 'injected failure' }), { status: 500 });
+            }
+            emails.push(JSON.parse(init.body));
+            return new Response(JSON.stringify({ id: `email_${emails.length}` }), { status: 200 });
+        }
+        return withStripe(input, init);
+    };
 
     const users = new Map();   // access token → Supabase user
     const handlers = new Map();
@@ -167,7 +190,8 @@ export async function startStack({ env = {} } = {}) {
         VOID_SHIP_HU_STANDARD: '990',
         VOID_SHIP_EU_STANDARD: '1490',
         VOID_ADMIN_EMAILS: 'owner@eternalvoid.co',
-        RESEND_API_KEY: '',
+        VOID_SITE_URL: origin,
+        RESEND_API_KEY: 're_test_double',
         ...env
     });
 
@@ -210,7 +234,9 @@ export async function startStack({ env = {} } = {}) {
                 if (!raw) {
                     const text = await readBody(req);
                     const type = req.headers['content-type'] || '';
-                    req.body = type.includes('application/json') && text ? JSON.parse(text) : (text || undefined);
+                    if (type.includes('application/json') && text) req.body = JSON.parse(text);
+                    else if (type.includes('application/x-www-form-urlencoded')) req.body = Object.fromEntries(new URLSearchParams(text));
+                    else req.body = text || undefined;
                 }
                 return await mod.default(req, res);
             }
@@ -288,6 +314,7 @@ export async function startStack({ env = {} } = {}) {
     }
 
     async function stop() {
+        globalThis.fetch = withStripe;
         stripe.uninstall();
         await new Promise((resolve) => server.close(resolve));
         server.closeAllConnections?.();
@@ -297,7 +324,7 @@ export async function startStack({ env = {} } = {}) {
         fs.rmSync(rest.conf, { force: true });
     }
 
-    return { origin, db, dbName, stripe, api, deliver, redeliver, addUser, stock, setStock, stop, signJwt, restUrl: rest.url };
+    return { origin, db, dbName, stripe, emails, mail, api, deliver, redeliver, addUser, stock, setStock, stop, signJwt, restUrl: rest.url };
 }
 
 // A complete, valid checkout body for the given lines.

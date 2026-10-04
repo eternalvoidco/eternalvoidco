@@ -36,10 +36,10 @@ describe('initial allocation', () => {
             assert.equal(p.state, 'in_stock');
             assert.deepEqual(
                 Object.fromEntries(Object.entries(p.sizes).map(([s, v]) => [s, v.available])),
-                { XS: 0, S: 2, M: 16, L: 10, XL: 2 }
+                { S: 2, M: 16, L: 10, XL: 2 }
             );
-            // XS was never allocated: unavailable, not "sold out".
-            assert.equal(p.sizes.XS.state, 'unavailable');
+            // Both designs are cut in S–XL only; XS does not exist for them.
+            assert.equal(p.sizes.XS, undefined);
             assert.equal(p.sizes.S.state, 'low');
         }
         // Only the two tracked designs are exposed, and nothing about holders.
@@ -474,6 +474,11 @@ describe('stale carts and direct requests', () => {
         assert.equal(insigne.data.issues[0].reason, 'not_for_sale');
         const xs = await openCheckout(stack, [{ variantId: LVT('XS'), quantity: 1 }]);
         assert.equal(xs.status, 409);
+        assert.equal(xs.data.issues[0].reason, 'unknown_size', 'XS is not a size of this design');
+        const quote = await stack.api('POST', '/api/checkout/quote', { items: [{ variantId: END('XS'), quantity: 1 }] });
+        assert.equal(quote.data.issues[0].reason, 'unknown_size');
+        const { rows } = await stack.db.query("select count(*)::int as n from inventory_items where size = 'XS'");
+        assert.equal(rows[0].n, 0);
     });
 
     it('ignores any price or stock figure the browser sends', async () => {

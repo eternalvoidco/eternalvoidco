@@ -160,6 +160,14 @@
                 <p class="notice" id="adjResult" role="status" hidden></p>
             </div>
 
+            <h2>Newsletter</h2>
+            <div class="card">
+                <div class="totals" id="newsletterTotals"></div>
+                <p class="help" id="newsletterInterests"></p>
+                <p class="help">Both signup forms save here. Unsubscribed addresses are kept only so they are never emailed again, and are never in the export.</p>
+                <button class="btn" type="button" id="exportAudience">Download subscribed list (CSV)</button>
+            </div>
+
             <h2>Needs attention</h2>
             <div id="attention"><p class="muted">Nothing to review.</p></div>
 
@@ -345,6 +353,27 @@
             });
             if (current) select.value = current;
 
+            // Newsletter
+            const nl = data.newsletter;
+            const nlTotals = $('newsletterTotals');
+            nlTotals.textContent = '';
+            if (nl) {
+                [['Subscribed', nl.subscribed, 'gold'], ['Unsubscribed', nl.unsubscribed]].forEach(([label, value, cls]) => {
+                    const box = document.createElement('div');
+                    box.className = `total ${cls || ''}`;
+                    const b = document.createElement('b');
+                    b.textContent = String(value);
+                    const span = document.createElement('span');
+                    span.textContent = label;
+                    box.append(b, span);
+                    nlTotals.appendChild(box);
+                });
+                const interests = Object.entries(nl.interests || {}).map(([slug, n]) => `${NAMES[slug] || slug} ${n}`);
+                $('newsletterInterests').textContent = interests.length
+                    ? `Asked to be notified from a sold-out piece: ${interests.join(' · ')}`
+                    : '';
+            }
+
             // Attention
             const attention = $('attention');
             attention.textContent = '';
@@ -451,6 +480,25 @@
             } finally {
                 $('signinButton').disabled = false;
             }
+        });
+
+        $('exportAudience').addEventListener('click', async () => {
+            const res = await fetch('/api/inventory?scope=admin&export=audience', {
+                cache: 'no-store', headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) {
+                $('dashError').textContent = 'The list could not be exported.';
+                $('dashError').hidden = false;
+                return;
+            }
+            const url = URL.createObjectURL(await res.blob());
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'void-newsletter-subscribed.csv';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
         });
 
         $('refreshButton').addEventListener('click', refresh);

@@ -6,15 +6,14 @@ the browser never holds a stock figure it is trusted on.
 
 | Size | Levitate | Endzustand |
 |---|---:|---:|
-| XS | 0 | 0 |
 | S | 2 | 2 |
 | M | 16 | 16 |
 | L | 10 | 10 |
 | XL | 2 | 2 |
 | **Total** | **30** | **30** |
 
-XS is in the catalogue but not in the allocation, so it is tracked at 0 and shown
-as *Unavailable*. To stock it, use the dashboard (Adjust).
+Both designs are cut in S–XL only. XS is not offered on the storefront, and an
+XS line for either (an old bag, a direct request) is refused at checkout.
 
 ## How it works
 
@@ -43,8 +42,10 @@ as *Unavailable*. To stock it, use the dashboard (Adjust).
 
 ## Setup
 
+Step-by-step for a new project: [database-setup.md](database-setup.md).
+
 1. **Apply the migration** `supabase/migrations/20261004120000_inventory.sql`
-   (Supabase → SQL editor, or `supabase db push`). It is safe to run more than once:
+   (Supabase → SQL editor, or `supabase db push`) after the two orders migrations. It is safe to run more than once:
    it never resets existing stock. On first run it subtracts units already sold in
    orders marked `paid`/`refunded`, and records that as a *Reconciliation* row.
    If test-mode orders were ever marked paid in this database, they are counted
@@ -74,6 +75,27 @@ against the production database would consume production stock.
 | `GET /api/inventory?scope=admin` | admin | full counts, holds, attention list, audit trail |
 | `POST /api/inventory` `{action:'adjust'}` | admin | adjust / stocktake / restock a return |
 | `POST /api/checkout/order` `{action:'release', clientSecret}` | the checkout's own browser | end that checkout now |
+| `GET /api/inventory?scope=admin&export=audience` | admin | CSV of subscribed newsletter addresses |
+
+## Newsletter
+
+Both signup forms save to `newsletter_subscribers` before the welcome email is
+sent: the pre-order popup (`/api/preorder`, also opened by "Get notified for the
+next drop", which records that design under `interests`) and the footer form
+(`/api/newsletter`). One row per address.
+
+- **Send drop notifications to `newsletter_audience`** (or the dashboard's CSV
+  export). It lists subscribed addresses only, each with its own unsubscribe link.
+- **Unsubscribes stick.** The email link (`/unsubscribe.html?token=…`, confirmed
+  with a button), RFC 8058 one-click from the mail client, and the unsubscribe
+  page form all set `status = 'unsubscribed'`. Only a new signup through a form
+  sets it back. An address unsubscribed without ever signing up is kept as
+  suppressed.
+- Signup is single opt-in, as before. A repeat signup does not re-send the
+  welcome within a day.
+- Every email carries `List-Unsubscribe` and `List-Unsubscribe-Post` headers.
+  When you send a drop notification yourself, include each row's
+  `unsubscribe_url` in the email and those two headers.
 
 ## Tests
 

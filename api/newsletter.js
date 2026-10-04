@@ -1,38 +1,18 @@
-export default async function handler(request, response) {
-    if (request.method !== 'POST') {
-        response.setHeader('Allow', 'POST');
-        return response.status(405).json({ message: 'Method not allowed.' });
-    }
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/newsletter — the footer newsletter form.
+//
+// Saves the address first (newsletter_subscribers), then sends the welcome
+// email. Nothing is emailed for a signup that was not recorded. A repeat
+// signup does not re-send the welcome within a day of the last one.
+// ─────────────────────────────────────────────────────────────────────────────
+import {
+    EMAIL_RE, newsletterConfigured, subscribe, markWelcomeSent, sendEmail,
+    unsubscribePageUrl, unsubscribeHeaders
+} from './_newsletter.js';
+import { describeSupabaseError } from './_orders.js';
 
-    const email = typeof request.body?.email === 'string' ? request.body.email.trim() : '';
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!isValidEmail) {
-        return response.status(400).json({ message: 'Please enter a valid email address.' });
-    }
-
-    const resendApiKey = process.env.RESEND_API_KEY;
-
-    if (!resendApiKey) {
-        return response.status(500).json({ message: 'Newsletter email service is not configured yet.' });
-    }
-
-    const unsubscribeUrl = `https://eternalvoid.co/unsubscribe.html?email=${encodeURIComponent(email)}`;
-
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            from: 'VOID <support@eternalvoid.co>',
-            to: email,
-            subject: 'Thank you for signing up to VOID',
-            headers: {
-                'List-Unsubscribe': `<${unsubscribeUrl}>, <mailto:support@eternalvoid.co?subject=Unsubscribe>`
-            },
-            html: `
+function welcomeHtml(unsubscribeUrl) {
+    return `
                 <div style="margin:0;background:#000;color:#f5f2ec;font-family:Arial,Helvetica,sans-serif;padding:28px 16px;line-height:1.7;">
                     <div style="max-width:760px;margin:0 auto;border-top:1px solid rgba(199,169,108,0.58);border-bottom:1px solid rgba(255,255,255,0.08);background:#000;">
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
@@ -58,13 +38,52 @@ export default async function handler(request, response) {
                         </table>
                     </div>
                 </div>
-            `
-        })
-    });
+            `;
+}
 
-    if (!resendResponse.ok) {
-        return response.status(502).json({ message: 'Unable to send confirmation email right now.' });
+export default async function handler(request, response) {
+    if (request.method !== 'POST') {
+        response.setHeader('Allow', 'POST');
+        return response.status(405).json({ message: 'Method not allowed.' });
     }
 
-    return response.status(200).json({ message: 'Thank you for signing up to the VOID newsletter. Please check your email.' });
+    const email = typeof request.body?.email === 'string' ? request.body.email.trim() : '';
+    if (!EMAIL_RE.test(email)) {
+        return response.status(400).json({ message: 'Please enter a valid email address.' });
+    }
+
+    if (!newsletterConfigured()) {
+        return response.status(503).json({ message: 'Newsletter signup is not available right now.' });
+    }
+
+    let saved;
+    try {
+        saved = await subscribe({ email, source: 'newsletter' });
+    } catch (error) {
+        console.error(describeSupabaseError(error, 'newsletter: save'));
+        return response.status(502).json({ message: 'We could not sign you up right now. Please try again.' });
+    }
+    if (!saved || !saved.ok) {
+        return response.status(400).json({ message: 'Please enter a valid email address.' });
+    }
+
+    let sent = true;
+    if (saved.sendWelcome) {
+        sent = await sendEmail({
+            from: 'VOID <support@eternalvoid.co>',
+            to: email,
+            subject: 'Thank you for signing up to VOID',
+            headers: unsubscribeHeaders(saved.token),
+            html: welcomeHtml(unsubscribePageUrl(saved.token))
+        });
+        if (sent) await markWelcomeSent(saved.token);
+    }
+
+    // The same answer whether or not the address was already on the list, so
+    // the form cannot be used to find out who is subscribed.
+    return response.status(200).json({
+        message: sent
+            ? 'Thank you for signing up to the VOID newsletter. Please check your email.'
+            : 'You are on the VOID newsletter list. We could not send the confirmation email just now.'
+    });
 }

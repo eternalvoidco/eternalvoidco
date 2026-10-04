@@ -14,7 +14,11 @@
 //                              finds expired holds, and before every checkout.
 //                              Harmless to trigger: it only cancels what is
 //                              already past its deadline.
-//   GET  ?scope=admin          admin only. Full counts, holds, audit trail.
+//   GET  ?scope=admin          admin only. Full counts, holds, audit trail,
+//                              newsletter subscriber counts.
+//   GET  ?scope=admin&export=audience
+//                              admin only. CSV of subscribed newsletter
+//                              addresses, for sending a drop notification.
 //   POST { action: 'adjust' }  admin only. Adjust, stocktake, or restock a
 //                              return — through inventory_admin_adjust, which
 //                              writes the audit row in the same transaction.
@@ -27,6 +31,7 @@ import { ordersConfigured, describeSupabaseError } from './_orders.js';
 import { stripeConfigured } from './_stripe.js';
 import { requireAdmin } from './_auth.js';
 import { snapshot, summarize, sweepExpired, adminSnapshot, adminAdjust } from './_inventory.js';
+import { stats as newsletterStats, audienceCsv } from './_newsletter.js';
 
 const ADJUST_MODES = new Set(['adjust', 'set', 'return']);
 
@@ -69,8 +74,21 @@ async function adminRead(request, response) {
     const auth = await requireAdmin(request);
     if (!auth.ok) return response.status(auth.status).json({ error: auth.error });
 
+    if ((request.query || {}).export === 'audience') {
+        const csv = await audienceCsv();
+        response.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        response.setHeader('Content-Disposition', 'attachment; filename="void-newsletter-subscribed.csv"');
+        return response.status(200).send(csv);
+    }
+
     const data = await adminSnapshot();
-    return response.status(200).json({ ok: true, admin: auth.user.email, ...data });
+    let newsletter = null;
+    try {
+        newsletter = await newsletterStats();
+    } catch (error) {
+        console.error(describeSupabaseError(error, 'inventory: newsletter stats'));
+    }
+    return response.status(200).json({ ok: true, admin: auth.user.email, ...data, newsletter });
 }
 
 async function adminWrite(request, response) {

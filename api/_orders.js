@@ -226,3 +226,9 @@ export async function findOrderIdByIntent(paymentIntentId) {
     );
     return (rows && rows[0] && rows[0].id) || null;
 }
+
+// A plain read for server-side admin exports. The path is always built by the
+// caller from constants, never from request input.
+export function selectRows(path, op) {
+    return rest(path, { op: op || `select ${path.split('?')[0]}` });
+}

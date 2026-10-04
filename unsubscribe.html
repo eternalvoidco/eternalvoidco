@@ -124,6 +124,10 @@
             max-width: 620px;
         }
 
+        form[hidden] {
+            display: none;
+        }
+
         input {
             flex: 1;
             min-width: 0;
@@ -205,6 +209,12 @@
                 <input type="email" id="unsubscribeEmail" name="email" placeholder="Enter your email" autocomplete="email" required>
                 <button type="submit" id="unsubscribeButton">Unsubscribe</button>
             </form>
+            <!-- Reached from the link in an email: one button, no address to
+                 type. Opening the page does nothing on its own, because mail
+                 scanners open links. -->
+            <form id="unsubscribeTokenForm" hidden>
+                <button type="submit" id="unsubscribeTokenButton">Confirm unsubscribe</button>
+            </form>
             <p class="response" id="unsubscribeResponse" aria-live="polite"></p>
         </section>
 
@@ -217,6 +227,9 @@
         const button = document.getElementById('unsubscribeButton');
         const response = document.getElementById('unsubscribeResponse');
         const queryEmail = new URLSearchParams(window.location.search).get('email');
+        const queryToken = new URLSearchParams(window.location.search).get('token');
+        const tokenForm = document.getElementById('unsubscribeTokenForm');
+        const tokenButton = document.getElementById('unsubscribeTokenButton');
 
         function escapeMarkup(value) {
             return String(value)
@@ -235,39 +248,52 @@
             emailInput.value = queryEmail;
         }
 
+        async function requestUnsubscribe(payload, activeButton) {
+            response.classList.remove('error');
+            response.textContent = 'Processing your request...';
+            activeButton.disabled = true;
+            try {
+                const result = await fetch('/api/unsubscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await result.json().catch(() => ({}));
+                if (!result.ok) {
+                    throw Object.assign(new Error(data.message || 'Unable to unsubscribe right now.'), { status: result.status });
+                }
+                response.innerHTML = formatBrandMarkup(data.message || 'You have been unsubscribed from VOID© emails.');
+                return true;
+            } catch (error) {
+                response.classList.add('error');
+                response.textContent = error.message;
+                return error.status;
+            } finally {
+                activeButton.disabled = false;
+            }
+        }
+
+        if (queryToken && tokenForm && form) {
+            form.hidden = true;
+            tokenForm.hidden = false;
+            tokenForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const outcome = await requestUnsubscribe({ token: queryToken }, tokenButton);
+                if (outcome === true) {
+                    tokenForm.hidden = true;
+                } else if (outcome === 404) {
+                    // An unknown link: fall back to the address form.
+                    tokenForm.hidden = true;
+                    form.hidden = false;
+                }
+            });
+        }
+
         if (form) {
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
-
-                response.classList.remove('error');
-                response.textContent = 'Processing your request...';
-                button.disabled = true;
-
-                try {
-                    const result = await fetch('/api/unsubscribe', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            email: emailInput.value.trim()
-                        })
-                    });
-
-                    const data = await result.json().catch(() => ({}));
-
-                    if (!result.ok) {
-                        throw new Error(data.message || 'Unable to unsubscribe right now.');
-                    }
-
-                    response.innerHTML = formatBrandMarkup(data.message || 'You have been unsubscribed from VOID© emails.');
-                    form.reset();
-                } catch (error) {
-                    response.classList.add('error');
-                    response.textContent = error.message;
-                } finally {
-                    button.disabled = false;
-                }
+                const outcome = await requestUnsubscribe({ email: emailInput.value.trim() }, button);
+                if (outcome === true) form.reset();
             });
         }
     </script>

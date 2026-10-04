@@ -1,65 +1,26 @@
-function escapeHtml(value) {
-    return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/unsubscribe
+//
+// Three ways in, one effect: the address is marked unsubscribed in
+// newsletter_subscribers and is never emailed again unless that person signs
+// up through a form once more.
+//
+//   POST ?token=…  body List-Unsubscribe=One-Click   RFC 8058 one-click, sent
+//                                                     by mail clients from the
+//                                                     List-Unsubscribe header
+//   POST { token }                                    the link in an email,
+//                                                     confirmed on the page
+//   POST { email }                                    the unsubscribe page form
+//
+// A GET never unsubscribes: mail scanners open links.
+// ─────────────────────────────────────────────────────────────────────────────
+import { EMAIL_RE, newsletterConfigured, unsubscribe, sendEmail } from './_newsletter.js';
+import { describeSupabaseError } from './_orders.js';
 
-export default async function handler(request, response) {
-    if (request.method !== 'POST') {
-        response.setHeader('Allow', 'POST');
-        return response.status(405).json({ message: 'Method not allowed.' });
-    }
+const DONE = 'You have been unsubscribed from VOID emails.';
 
-    const email = typeof request.body?.email === 'string' ? request.body.email.trim() : '';
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!isValidEmail) {
-        return response.status(400).json({ message: 'Please enter a valid email address.' });
-    }
-
-    const resendApiKey = process.env.RESEND_API_KEY;
-
-    if (!resendApiKey) {
-        return response.status(500).json({ message: 'Unsubscribe service is not configured yet.' });
-    }
-
-    const headers = {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json'
-    };
-    const safeEmail = escapeHtml(email);
-
-    const ownerNotification = fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-            from: 'VOID <support@eternalvoid.co>',
-            to: 'support@eternalvoid.co',
-            reply_to: email,
-            subject: 'VOID unsubscribe request',
-            html: `
-                <div style="background:#000;color:#f5f2ec;font-family:Arial,Helvetica,sans-serif;padding:28px;line-height:1.7;">
-                    <div style="max-width:620px;margin:0 auto;border-top:1px solid rgba(199,169,108,0.58);padding-top:24px;">
-                        <h1 style="font-family:Georgia,serif;font-weight:400;margin:0 0 16px;">Unsubscribe request</h1>
-                        <p style="color:#bdb5a8;margin:0 0 12px;">Please remove this address from VOID newsletter and preorder email communications:</p>
-                        <p style="color:#c7a96c;margin:0;font-size:16px;">${safeEmail}</p>
-                    </div>
-                </div>
-            `
-        })
-    });
-
-    const userConfirmation = fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-            from: 'VOID <support@eternalvoid.co>',
-            to: email,
-            subject: 'You have been unsubscribed from VOID emails',
-            html: `
+function confirmationHtml() {
+    return `
                 <div style="margin:0;background:#000;color:#f5f2ec;font-family:Arial,Helvetica,sans-serif;padding:28px 16px;line-height:1.7;">
                     <div style="max-width:760px;margin:0 auto;border-top:1px solid rgba(199,169,108,0.58);border-bottom:1px solid rgba(255,255,255,0.08);background:#000;">
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
@@ -73,7 +34,7 @@ export default async function handler(request, response) {
                                 <td style="padding:34px 26px 34px 22px;vertical-align:top;">
                                     <div style="color:#f5f2ec;font-family:Georgia,serif;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:16px;">Unsubscribe Confirmed</div>
                                     <h1 style="color:#f8f1e4;font-family:Georgia,serif;font-size:27px;font-weight:400;line-height:1.18;margin:0 0 16px;">Your request has been received.</h1>
-                                    <p style="color:#bdb5a8;font-size:13px;line-height:1.8;margin:0 0 18px;max-width:420px;">We will remove this address from VOID newsletter and preorder email communications.</p>
+                                    <p style="color:#bdb5a8;font-size:13px;line-height:1.8;margin:0 0 18px;max-width:420px;">This address has been removed from VOID newsletter and pre-order email communications.</p>
                                     <a href="mailto:support@eternalvoid.co" style="color:#8f8778;text-decoration:none;font-size:11px;">support@eternalvoid.co</a>
                                     <div style="height:1px;background:rgba(255,255,255,0.08);margin:16px 0 12px;"></div>
                                     <p style="color:#6f675b;font-size:10px;line-height:1.6;margin:0;">Read our <a href="https://eternalvoid.co/privacy-policy.html" style="color:#8f8778;text-decoration:underline;">Privacy Policy</a>.</p>
@@ -82,15 +43,60 @@ export default async function handler(request, response) {
                         </table>
                     </div>
                 </div>
-            `
-        })
-    });
+            `;
+}
 
-    const results = await Promise.all([ownerNotification, userConfirmation]);
-
-    if (results.some((result) => !result.ok)) {
-        return response.status(502).json({ message: 'Unable to process unsubscribe request right now.' });
+export default async function handler(request, response) {
+    response.setHeader('Cache-Control', 'no-store');
+    if (request.method !== 'POST') {
+        response.setHeader('Allow', 'POST');
+        return response.status(405).json({ message: 'Method not allowed.' });
     }
 
-    return response.status(200).json({ message: 'You have been unsubscribed from VOID emails.' });
+    if (!newsletterConfigured()) {
+        return response.status(503).json({ message: 'Unsubscribe service is not configured yet.' });
+    }
+
+    const body = request.body && typeof request.body === 'object' ? request.body : {};
+    const queryToken = typeof (request.query || {}).token === 'string' ? request.query.token : '';
+    const bodyToken = typeof body.token === 'string' ? body.token : '';
+    const token = (queryToken || bodyToken).trim().slice(0, 128);
+    const email = typeof body.email === 'string' ? body.email.trim() : '';
+
+    if (!token && !EMAIL_RE.test(email)) {
+        return response.status(400).json({ message: 'Please enter a valid email address.' });
+    }
+
+    let result;
+    try {
+        result = await unsubscribe({
+            token,
+            email: token ? null : email,
+            source: queryToken ? 'one_click' : token ? 'email_link' : 'unsubscribe_page'
+        });
+    } catch (error) {
+        console.error(describeSupabaseError(error, 'unsubscribe'));
+        return response.status(502).json({ message: 'Unable to process unsubscribe request right now.' });
+    }
+    if (!result || !result.ok) {
+        return response.status(400).json({ message: 'Please enter a valid email address.' });
+    }
+    if (result.outcome === 'not_found') {
+        return response.status(404).json({ message: 'This unsubscribe link is not valid. Enter your email address below instead.' });
+    }
+
+    // The page form also confirms by email, as it always has — which tells the
+    // owner of an address if someone else removed it. Link and one-click
+    // unsubscribes are silent, as RFC 8058 expects. The removal itself is
+    // already recorded either way, so a failed email does not fail the request.
+    if (!token && result.outcome === 'unsubscribed') {
+        await sendEmail({
+            from: 'VOID <support@eternalvoid.co>',
+            to: email,
+            subject: 'You have been unsubscribed from VOID emails',
+            html: confirmationHtml()
+        });
+    }
+
+    return response.status(200).json({ message: DONE });
 }
