@@ -1,5 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// POST /api/newsletter — the footer newsletter form.
+// POST /api/newsletter — the footer newsletter form, and the "Get Drop
+// Updates" scene inside the product view, which also sends the piece being
+// viewed as `interest` (validated against the catalogue in _newsletter.js).
 //
 // Saves the address first (newsletter_subscribers), then sends the welcome
 // email. Nothing is emailed for a signup that was not recorded. A repeat
@@ -48,6 +50,7 @@ export default async function handler(request, response) {
     }
 
     const email = typeof request.body?.email === 'string' ? request.body.email.trim() : '';
+    const interest = typeof request.body?.interest === 'string' ? request.body.interest : '';
     if (!EMAIL_RE.test(email)) {
         return response.status(400).json({ message: 'Please enter a valid email address.' });
     }
@@ -58,7 +61,7 @@ export default async function handler(request, response) {
 
     let saved;
     try {
-        saved = await subscribe({ email, source: 'newsletter' });
+        saved = await subscribe({ email, source: 'newsletter', interest });
     } catch (error) {
         console.error(describeSupabaseError(error, 'newsletter: save'));
         return response.status(502).json({ message: 'We could not sign you up right now. Please try again.' });
@@ -82,6 +85,10 @@ export default async function handler(request, response) {
     // The same answer whether or not the address was already on the list, so
     // the form cannot be used to find out who is subscribed.
     return response.status(200).json({
+        ok: true,
+        // Lets a page show its own translated copy; `message` stays for the
+        // footer form, which displays it as is.
+        welcomeSent: sent,
         message: sent
             ? 'Thank you for signing up to the VOID newsletter. Please check your email.'
             : 'You are on the VOID newsletter list. We could not send the confirmation email just now.'

@@ -196,7 +196,7 @@ describe('storefront', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PATH)
         await context.close();
     });
 
-    it('when sold out, closes purchasing and opens the existing pre-order signup', async () => {
+    it('when sold out, closes purchasing and opens the drop-updates scene in the same dialog', async () => {
         await setLevitate(stack, { S: 0, M: 0, L: 0, XL: 0 });
         await stack.db.query("update inventory_items set sold = 1 where product_slug = 'levitate-tee'");
         const { context, page } = await newShopper(browser, stack);
@@ -211,14 +211,11 @@ describe('storefront', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PATH)
         assert.equal(pd.notify, true);
         assert.equal(await page.locator('#pdNotify').textContent(), 'Get notified for the next drop');
 
-        assert.equal(await page.locator('.preorder-modal-backdrop').count(), 1, 'one signup popup, not a second');
         await page.locator('#pdNotify').click();
-        await page.waitForSelector('#preorderModal.active');
-        assert.equal(await page.locator('#productDetailOverlay.open').count(), 0);
-        assert.equal(await page.locator('#preorderModal').getAttribute('aria-hidden'), 'false');
-        // Its own form, consent copy and submit path, unchanged.
-        assert.equal(await page.locator('#preorderModal #preorderForm').count(), 1);
-        assert.match(await page.locator('#preorderModal .privacy-note').textContent(), /agree to receive pre-order emails/);
+        await page.waitForFunction(() => window.pdNl && pdNl.view === 'newsletter');
+        assert.equal(await page.locator('#productDetailOverlay.open').count(), 1, 'the same dialog stays open');
+        assert.equal(await page.locator('#preorderModal.active').count(), 0, 'no second popup');
+        assert.equal(await page.evaluate(() => pdNl.interest), 'levitate-tee');
 
         // The add control cannot be forced: the bag refuses the piece.
         await page.evaluate(() => addToCart('Levitate Tee', 200, 'M', null));

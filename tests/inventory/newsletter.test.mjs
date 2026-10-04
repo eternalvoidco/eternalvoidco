@@ -324,14 +324,18 @@ describe('the real forms', { skip: !CHROME && 'no Chromium found (set CHROMIUM_P
         await context.close();
     });
 
-    it('saves the design when the popup is opened from a sold-out piece', async () => {
+    it('records the design when a visitor joins from a sold-out piece', async () => {
         await stack.db.query("update inventory_items set on_hand = 0, sold = 1 where product_slug = 'endzustand-tee'");
         const { context, page } = await shop();
         await page.locator('.product-card[data-product-name="Endzustand Tee"] .product-image').click();
         await page.waitForSelector('#pdNotify:not([hidden])');
         await page.click('#pdNotify');
-        await joinThroughPopup(page, 'soldout@example.com');
-        assert.deepEqual((await subscriber(stack, 'soldout@example.com')).interests, ['endzustand-tee']);
+        await page.waitForFunction(() => pdNl.view === 'newsletter');
+        await page.fill('#pdNlEmail', 'soldout@example.com');
+        await page.click('#pdNlSubmit');
+        await page.waitForFunction(() => document.getElementById('pdNlStatus').dataset.state === 'success');
+        const row = await subscriber(stack, 'soldout@example.com');
+        assert.deepEqual([row.status, row.interests, row.sources], ['subscribed', ['endzustand-tee'], ['newsletter']]);
         await context.close();
     });
 

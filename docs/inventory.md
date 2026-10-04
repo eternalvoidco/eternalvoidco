@@ -79,10 +79,13 @@ against the production database would consume production stock.
 
 ## Newsletter
 
-Both signup forms save to `newsletter_subscribers` before the welcome email is
-sent: the pre-order popup (`/api/preorder`, also opened by "Get notified for the
-next drop", which records that design under `interests`) and the footer form
-(`/api/newsletter`). One row per address.
+Every signup saves to `newsletter_subscribers` before the welcome email is sent,
+one row per address:
+- the pre-order popup (`/api/preorder`, with country);
+- the footer form (`/api/newsletter`);
+- the "Get Drop Updates" scene inside the product view, also opened by "Get
+  notified for the next drop" on a sold-out piece (`/api/newsletter`, recording
+  the piece being viewed under `interests`).
 
 - **Send drop notifications to `newsletter_audience`** (or the dashboard's CSV
   export). It lists subscribed addresses only, each with its own unsubscribe link.
