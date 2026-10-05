@@ -103,3 +103,17 @@ one row per address:
 ## Tests
 
 See `tests/inventory/README.md`.
+
+## Publishing before the drop
+
+Set `VOID_SALES_OPEN=false` in the Vercel Production environment and deploy.
+The public storefront shows Coming Soon, while newsletter signup and the admin
+inventory dashboard stay available. Both checkout endpoints reject requests
+before database writes, reservations or Stripe calls. Production defaults closed
+if this variable is absent; preview/development allow sandbox testing unless
+explicitly closed. Public stock responses include `salesOpen`.
+
+When the physical pieces arrive: reconcile old test orders and count actual
+stock, configure live Stripe credentials and the production webhook, then set
+`VOID_SALES_OPEN=true` and redeploy. Recheck stock and payments before announcing
+the drop. Changing a Vercel variable takes effect on a new deployment.

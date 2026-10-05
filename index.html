@@ -18886,6 +18886,10 @@
         if (cartCheckout) {
             cartCheckout.addEventListener('click', (event) => {
                 event.preventDefault();
+                if (!storefrontSalesOpen()) {
+                    showVoidNotice({ title: t('comingSoon'), message: t('pdNlCopy'), button: t('closeLabel') });
+                    return;
+                }
 
                 if (cart.length === 0) {
                     // Branded modal instead of a native browser alert; cart logic unchanged.
@@ -19307,13 +19311,19 @@
             return line ? line.quantity : 0;
         }
 
+        function storefrontSalesOpen() {
+            return Boolean(voidStock && voidStock.data && voidStock.data.salesOpen === true);
+        }
+
         function stockAllowsAdd(name, size) {
+            if (!storefrontSalesOpen()) return false;
             const sizeStock = sizeStockFor(name, size);
             if (!sizeStock) return true;   // untracked, or not loaded yet
             return cartQuantityFor(name, size) + 1 <= sizeStock.available;
         }
 
         function productStockLabel(product) {
+            if (!storefrontSalesOpen()) return t('comingSoon');
             switch (product.state) {
                 case 'low': return t('stockOnlyLeft', { count: String(product.available) });
                 case 'last': return t('stockLastPiece');
@@ -19379,6 +19389,17 @@
 
         function renderPdStock() {
             if (!pdSizes) return;
+            if (!storefrontSalesOpen()) {
+                if (pdAdd) {
+                    pdAdd.disabled = true;
+                    pdAdd.dataset.defaultLabel = t('comingSoon');
+                    setText(pdAdd, t('comingSoon'));
+                }
+                if (pdStockEl) { pdStockEl.hidden = false; setText(pdStockEl, t('comingSoon')); pdStockEl.dataset.signature = ''; }
+                if (pdSizeStockEl) pdSizeStockEl.hidden = true;
+                if (pdNotify) pdNotify.hidden = true;
+                return;
+            }
             const product = pdState && pdState.card && !isUnreleasedProduct(pdState.card) ? stockForName(pdState.name) : null;
             const buttons = Array.from(pdSizes.querySelectorAll('[data-pd-size]'));
 
@@ -19491,6 +19512,16 @@
         function renderStock() {
             if (!voidStock) return;
             renderCardStock();
+            document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
+                if (isUnreleasedProduct(button.closest('.product-card'))) return;
+                button.disabled = !storefrontSalesOpen();
+                button.dataset.defaultLabel = t(storefrontSalesOpen() ? 'addToCart' : 'comingSoon');
+                setText(button, button.dataset.defaultLabel);
+            });
+            if (cartCheckout) {
+                cartCheckout.disabled = !storefrontSalesOpen();
+                setText(cartCheckout, t(storefrontSalesOpen() ? 'checkout' : 'comingSoon'));
+            }
             if (productDetailOverlay && productDetailOverlay.classList.contains('open')) renderPdStock();
             // The bag is rebuilt only when what it would say has changed, so a
             // routine poll never pulls focus out from under someone using it.
@@ -19544,6 +19575,7 @@
             pdNotify.addEventListener('click', () => openPdNewsletter(pdNotify));
         }
 
+        renderStock();
         refreshStock(true);
 
         // ============== Product detail: sibling-product switcher ==============

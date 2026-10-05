@@ -1,3 +1,4 @@
+import { salesOpen } from '../_sales.js';
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/checkout/create
 //
@@ -83,6 +84,8 @@ export default async function handler(request, response) {
         response.setHeader('Allow', 'POST');
         return response.status(405).json({ error: 'method_not_allowed' });
     }
+
+    if (!salesOpen()) return response.status(409).json({ ok: false, error: 'sales_not_open', message: 'Coming soon. Join the newsletter for drop updates.' });
 
     if (!stripeConfigured()) return response.status(503).json({ error: 'stripe_not_configured' });
     if (!ordersConfigured()) return response.status(503).json({ error: 'orders_not_configured' });

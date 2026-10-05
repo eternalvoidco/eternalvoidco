@@ -1,3 +1,4 @@
+import { salesOpen } from '../_sales.js';
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/checkout/quote
 //
@@ -22,6 +23,8 @@ export default async function handler(request, response) {
         response.setHeader('Allow', 'POST');
         return response.status(405).json({ error: 'method_not_allowed' });
     }
+
+    if (!salesOpen()) return response.status(409).json({ ok: false, error: 'sales_not_open', message: 'Coming soon. Join the newsletter for drop updates.' });
 
     const body = request.body || {};
     const result = validateLines(body.items);

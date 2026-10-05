@@ -290,6 +290,11 @@ async function refreshQuote() {
     }
 
     if (!data.ok) {
+        if (data.error === 'sales_not_open') {
+            showBlocker('Coming soon', 'The collection has not launched yet. Return to the shop and choose Get Drop Updates to hear when it opens.');
+            document.querySelectorAll('[data-advance], #ckPayButton').forEach((button) => { button.disabled = true; });
+            return null;
+        }
         if (data.error === 'empty_cart') { setCartState('empty'); return null; }
         if (data.error === 'inventory_unavailable') {
             showBlocker('Checkout unavailable', 'Availability could not be confirmed just now. Please try again in a moment.');
