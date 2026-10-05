@@ -1,3 +1,4 @@
+import { salesOpen } from '../_sales.js';
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/checkout/quote
 //
@@ -6,10 +7,14 @@
 // here. The browser may show its own running total while the customer edits,
 // but this is the figure the payment is built from.
 //
-// Deliberately does not touch the database — it is a pure read of the
-// catalogue, so it stays cheap enough to call on every quantity change.
+// Prices come from the catalogue; availability from one read of the inventory
+// snapshot. Both are advisory here — nothing is held. The hold is taken, under
+// a lock, when checkout starts (/api/checkout/create), which is what actually
+// stops two customers buying the same last piece.
 // ─────────────────────────────────────────────────────────────────────────────
 import { validateLines, subtotalOf, shippingMethodsFor, shippingAmountFor, taxAmountFor, CURRENCY } from '../_catalog.js';
+import { snapshot, stockIssues, availableFor } from '../_inventory.js';
+import { ordersConfigured, describeSupabaseError } from '../_orders.js';
 
 export default async function handler(request, response) {
     response.setHeader('Cache-Control', 'no-store');
@@ -18,6 +23,8 @@ export default async function handler(request, response) {
         response.setHeader('Allow', 'POST');
         return response.status(405).json({ error: 'method_not_allowed' });
     }
+
+    if (!salesOpen()) return response.status(409).json({ ok: false, error: 'sales_not_open', message: 'Coming soon. Join the newsletter for drop updates.' });
 
     const body = request.body || {};
     const result = validateLines(body.items);
@@ -32,6 +39,22 @@ export default async function handler(request, response) {
             issues: result.issues,
             lines: result.lines
         });
+    }
+
+    // A stale bag — an old tab, a cart saved before the drop sold through — is
+    // caught here, with the detail the page needs to correct it.
+    if (!ordersConfigured()) return response.status(503).json({ ok: false, error: 'inventory_unavailable' });
+    let snap;
+    try {
+        snap = await snapshot();
+    } catch (error) {
+        console.error(describeSupabaseError(error, 'checkout/quote: inventory'));
+        return response.status(503).json({ ok: false, error: 'inventory_unavailable' });
+    }
+    const lines = result.lines.map((line) => ({ ...line, available: availableFor(line.variantId, snap) }));
+    const issues = stockIssues(result.lines, snap);
+    if (issues.length) {
+        return response.status(200).json({ ok: false, error: 'line_issues', issues, lines });
     }
 
     const country = typeof body.country === 'string' ? body.country : '';
@@ -53,7 +76,7 @@ export default async function handler(request, response) {
     return response.status(200).json({
         ok: true,
         currency: CURRENCY,
-        lines: result.lines,
+        lines,
         subtotalAmount: subtotal,
         shippingAmount,
         shippingMethod,

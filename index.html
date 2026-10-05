@@ -8627,6 +8627,604 @@
             border-color: rgba(199, 169, 108, 0.95);
         }
 
+        /* ── Live stock ─────────────────────────────────────────────────
+           Genuine availability only, written in a brighter antique gold than
+           the house accent so it is read, with a static halo rather than any
+           flashing. The one movement — a slow breath on the marker — is off
+           for reduced motion either way it is asked for. Every element here
+           keeps its height whatever it says, so a background update never
+           moves the page. */
+        :root {
+            --void-stock-gold: #e6c682;
+            --void-stock-glow: 0 0 14px rgba(230, 198, 130, 0.32);
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            max-width: calc(100% - 1.5rem);
+            padding: 0.38rem 0.62rem;
+            border: 1px solid rgba(230, 198, 130, 0.5);
+            background: rgba(6, 5, 3, 0.78);
+            color: var(--void-stock-gold);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.56rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            line-height: 1.2;
+            text-transform: uppercase;
+            text-shadow: var(--void-stock-glow);
+            box-shadow: 0 0 18px rgba(230, 198, 130, 0.12);
+            pointer-events: none;
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+
+        .stock-badge[hidden] { display: none; }
+
+        .stock-badge[data-state="sold_out"],
+        .stock-badge[data-state="reserved"] {
+            border-color: rgba(245, 242, 236, 0.28);
+            color: rgba(245, 242, 236, 0.86);
+            text-shadow: none;
+            box-shadow: none;
+        }
+
+        .stock-mark {
+            flex: 0 0 auto;
+            width: 5px;
+            height: 5px;
+            transform: rotate(45deg);
+            background: var(--void-stock-gold);
+            box-shadow: 0 0 8px rgba(230, 198, 130, 0.7);
+            animation: voidStockBreath 4.8s ease-in-out infinite;
+        }
+
+        [data-state="sold_out"] > .stock-mark,
+        [data-state="reserved"] > .stock-mark {
+            background: rgba(245, 242, 236, 0.55);
+            box-shadow: none;
+            animation: none;
+        }
+
+        @keyframes voidStockBreath {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.55; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .stock-mark { animation: none; }
+        }
+
+        html.reduce-motion .stock-mark { animation: none; }
+
+        .pd-stock {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 1.35rem;
+            margin: -0.95rem 0 1.25rem;
+            color: var(--void-stock-gold);
+            font-size: 0.66rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            text-shadow: var(--void-stock-glow);
+        }
+
+        .pd-stock[hidden],
+        .pd-size-stock[hidden] { display: none; }
+
+        .pd-stock[data-state="sold_out"],
+        .pd-stock[data-state="reserved"] {
+            color: rgba(245, 242, 236, 0.9);
+            text-shadow: none;
+        }
+
+        .pd-stock-note {
+            display: block;
+            margin-top: 0.2rem;
+            color: rgba(245, 242, 236, 0.58);
+            font-size: 0.6rem;
+            font-weight: 400;
+            letter-spacing: 0.06em;
+            text-transform: none;
+        }
+
+        .pd-stock[data-state="reserved"] {
+            align-items: flex-start;
+        }
+
+        .pd-size-stock {
+            min-height: 1.1rem;
+            margin: 0.7rem 0 0;
+            color: rgba(245, 242, 236, 0.78);
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .pd-size-stock[data-state="low"],
+        .pd-size-stock[data-state="last"] {
+            color: var(--void-stock-gold);
+            text-shadow: var(--void-stock-glow);
+        }
+
+        /* Tracked pieces: every size button is the same two-line height, so a
+           size changing state never reflows the row. */
+        .pd-sizes.is-tracked .pd-size {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* Wide enough for the longest flag, so every size is the same width. */
+            min-width: 76px;
+            min-height: 50px;
+            gap: 0.18rem;
+        }
+
+        .pd-size-flag {
+            display: none;
+        }
+
+        /* A size the design is not cut in stays out, as on every other piece. */
+        .pd-sizes.is-tracked .pd-size[hidden] {
+            display: none;
+        }
+
+        .pd-sizes.is-tracked .pd-size-flag {
+            display: block;
+            min-height: 0.6rem;
+            font-size: 0.44rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            line-height: 1;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .pd-size:disabled {
+            cursor: not-allowed;
+            color: rgba(245, 242, 236, 0.42);
+            border-color: rgba(245, 242, 236, 0.12);
+            background:
+                linear-gradient(to top right, transparent calc(50% - 0.5px), rgba(245, 242, 236, 0.16) 50%, transparent calc(50% + 0.5px)),
+                rgba(12, 12, 12, 0.55);
+        }
+
+        .pd-size:disabled .pd-size-flag {
+            color: rgba(245, 242, 236, 0.62);
+        }
+
+        .pd-size:disabled:hover,
+        .pd-size:disabled:focus-visible {
+            border-color: rgba(245, 242, 236, 0.22);
+        }
+
+        .pd-notify {
+            width: 100%;
+            min-height: 48px;
+            margin: 0 0 0.9rem;
+            border: 1px solid rgba(230, 198, 130, 0.62);
+            border-radius: 40px;
+            background: rgba(10, 8, 4, 0.6);
+            color: var(--void-stock-gold);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.64rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            text-shadow: var(--void-stock-glow);
+            cursor: pointer;
+            transition: border-color 0.24s ease, box-shadow 0.24s ease, color 0.24s ease;
+        }
+
+        .pd-notify[hidden] { display: none; }
+
+        .pd-notify:hover,
+        .pd-notify:focus-visible {
+            border-color: var(--void-stock-gold);
+            box-shadow: 0 0 22px rgba(230, 198, 130, 0.18);
+            color: var(--void-gold-bright);
+        }
+
+        .cart-item-stock {
+            display: block;
+            margin-top: 0.2rem;
+            color: var(--void-stock-gold);
+            font-size: 0.58rem;
+            letter-spacing: 0.08em;
+        }
+
+        @media (max-width: 480px) {
+            .stock-badge {
+                top: 0.55rem;
+                left: 0.55rem;
+                padding: 0.32rem 0.5rem;
+                font-size: 0.52rem;
+                letter-spacing: 0.14em;
+            }
+
+            .pd-stock { font-size: 0.62rem; letter-spacing: 0.16em; }
+
+            /* One even row on a phone, whatever the flags say. */
+            .pd-sizes.is-tracked { flex-wrap: nowrap; gap: 0.4rem; }
+            .pd-sizes.is-tracked .pd-size { flex: 1 1 0; min-width: 0; padding-left: 0.2rem; padding-right: 0.2rem; }
+            .pd-sizes.is-tracked .pd-size-flag { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: 0.4rem; letter-spacing: 0.06em; }
+        }
+
+        /* ── Drop updates: the product dialog, transformed ─────────────────
+           One dialog, two compositions. The scene is laid over exactly the
+           visible part of the panel (its top and height are set from JS,
+           because the panel — or, on phones, the overlay — is the scroll
+           container) and the product composition recedes behind it without
+           ever leaving the DOM, so it comes back exactly as it was.
+
+           Every rule below is the scene's FINAL, resting state. The entrance
+           is a Web Animations timeline that fills from the first frame, and
+           the return is the same timeline played backwards — so CSS never has
+           to describe an in-between, and an interrupted transition can simply
+           turn round where it stands. Motion is transforms and opacity; the
+           only filters are the short blurs on content that is receding or
+           resolving, as in the language transition. */
+        .pd-nl {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: var(--pd-nl-top, 0px);
+            height: var(--pd-nl-h, 100%);
+            z-index: 4;
+            display: flex;
+            overflow: hidden;
+            isolation: isolate;
+            contain: layout paint;
+            /* Also the shield: it catches every click while it is up, so
+               nothing behind it can be reached mid-transition. */
+            pointer-events: auto;
+            color: var(--void-white);
+            text-align: center;
+        }
+
+        .pd-nl[hidden] { display: none; }
+
+        /* The frame belongs to the dialog, not to either composition: its
+           corner brackets and orbiting light stay above the scene, so the
+           outer frame never changes while the inside transforms. It paints
+           only the edges and takes no pointer events. The close button (5,
+           later in the document) still sits above it. */
+        .product-detail-panel > .panel-frame { z-index: 5; }
+
+        .pd-nl-atmos,
+        .pd-nl-atmos > span,
+        .pd-nl-filament,
+        .pd-nl-sweep {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .pd-nl-atmos {
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(120% 90% at 50% 46%, rgba(26, 21, 12, 0.94) 0%, rgba(7, 6, 5, 0.985) 58%, #030303 100%);
+        }
+
+        /* The quiet centre: a pool of antique light behind the type. It
+           breathes very slowly, on its own layer, so the timeline can fade and
+           scale the pool without fighting the breath. */
+        .pd-nl-glow {
+            left: 50%;
+            top: 44%;
+            width: min(760px, 120%);
+            aspect-ratio: 1.45;
+            transform: translate(-50%, -50%) scale(1);
+            background: radial-gradient(closest-side, rgba(226, 199, 138, 0.2), rgba(199, 169, 108, 0.07) 46%, transparent 72%);
+        }
+
+        .pd-nl-glow::after {
+            content: '';
+            position: absolute;
+            inset: 18%;
+            border-radius: 50%;
+            background: radial-gradient(closest-side, rgba(248, 236, 206, 0.12), transparent 70%);
+            animation: pdNlBreath 6.4s ease-in-out infinite;
+        }
+
+        @keyframes pdNlBreath {
+            0%, 100% { opacity: 0.55; }
+            50%      { opacity: 1; }
+        }
+
+        .pd-nl-motes { inset: 0; }
+
+        .pd-nl-mote {
+            position: absolute;
+            width: var(--s, 2px);
+            height: var(--s, 2px);
+            border-radius: 50%;
+            background: #f0dca8;
+            box-shadow: 0 0 6px 1px rgba(226, 199, 138, 0.55);
+            opacity: 0;
+            animation: pdNlMote var(--d, 8s) linear var(--w, 0s) infinite;
+        }
+
+        @keyframes pdNlMote {
+            0%   { opacity: 0;    transform: translate3d(0, 0, 0); }
+            18%  { opacity: var(--o, 0.6); }
+            80%  { opacity: calc(var(--o, 0.6) * 0.7); }
+            100% { opacity: 0;    transform: translate3d(var(--dx, 0px), -70px, 0); }
+        }
+
+        .pd-nl-vignette {
+            inset: 0;
+            background: radial-gradient(130% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.62) 100%);
+        }
+
+        /* The filament: a resting hairline on the frame, and two sparks that
+           travel the full perimeter once during the transition — the panel's
+           own orbiting light, made deliberate. */
+        .pd-nl-filament {
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            overflow: visible;
+        }
+
+        .pd-nl-filament rect {
+            fill: none;
+            vector-effect: non-scaling-stroke;
+        }
+
+        .pd-nl-rail {
+            stroke: rgba(199, 169, 108, 0.5);
+            stroke-width: 1;
+            opacity: 0.55;
+        }
+
+        .pd-nl-spark {
+            stroke: #f6e7c1;
+            stroke-width: 1.6;
+            stroke-linecap: round;
+            stroke-dasharray: 9 91;
+            stroke-dashoffset: 0;
+            opacity: 0;
+            filter: drop-shadow(0 0 4px rgba(240, 215, 160, 0.95)) drop-shadow(0 0 10px rgba(199, 169, 108, 0.6));
+        }
+
+        /* A single restrained pass of light across the interior. */
+        .pd-nl-sweep {
+            top: -10%;
+            bottom: -10%;
+            left: 15%;
+            width: 70%;
+            z-index: 1;
+            opacity: 0;
+            background: linear-gradient(100deg,
+                transparent 30%,
+                rgba(245, 232, 202, 0.05) 42%,
+                rgba(232, 210, 160, 0.17) 50%,
+                rgba(245, 232, 202, 0.05) 58%,
+                transparent 70%);
+            transform: translate3d(60%, 0, 0) skewX(-14deg);
+        }
+
+        .pd-nl-content {
+            position: relative;
+            z-index: 2;
+            box-sizing: border-box;
+            width: 100%;
+            max-height: 100%;
+            margin: auto;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(3.4rem, 9vh, 5.5rem) clamp(1.25rem, 6vw, 4rem) clamp(2.2rem, 6vh, 3.6rem);
+        }
+
+        .pd-nl-content > * {
+            width: min(520px, 100%);
+        }
+
+        .pd-nl-kicker {
+            margin: 0 0 1.1rem;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 500;
+            letter-spacing: 0.42em;
+            text-transform: uppercase;
+            color: var(--void-gold, #c7a96c);
+        }
+
+        .pd-nl-title {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            font-size: clamp(2.3rem, 5.4vw, 3.7rem);
+            line-height: 1.04;
+            letter-spacing: 0.015em;
+            color: #f6f1e7;
+            text-shadow: 0 0 34px rgba(226, 199, 138, 0.18);
+        }
+
+        .pd-nl-copy {
+            margin: 1.15rem auto 0;
+            max-width: 34ch;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.05rem, 1.9vw, 1.22rem);
+            font-style: italic;
+            line-height: 1.5;
+            color: rgba(245, 242, 236, 0.7);
+        }
+
+        /* The letter reveal is the language transition's own: words carry the
+           blur and the light, letters carry the opacity. */
+        .pd-nl-word { display: inline-block; white-space: pre; }
+        .pd-nl-glyph { display: inline; }
+
+        .pd-nl-form {
+            margin-top: clamp(1.8rem, 4.4vh, 2.6rem);
+            text-align: left;
+        }
+
+        .pd-nl-label {
+            display: block;
+            margin-bottom: 0.55rem;
+            font-size: 0.58rem;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            color: rgba(245, 242, 236, 0.5);
+        }
+
+        .pd-nl-row {
+            display: flex;
+            align-items: stretch;
+            border: 1px solid rgba(199, 169, 108, 0.38);
+            background: rgba(4, 4, 4, 0.55);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .pd-nl-row:focus-within {
+            border-color: rgba(226, 199, 138, 0.8);
+            box-shadow: 0 0 0 1px rgba(226, 199, 138, 0.18), 0 0 24px rgba(199, 169, 108, 0.12);
+        }
+
+        .pd-nl-input {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 0.95rem 1rem;
+            border: 0;
+            background: transparent;
+            color: var(--void-white);
+            font-family: 'Jost', sans-serif;
+            /* 16px: iOS zooms into anything smaller when it is focused. */
+            font-size: 16px;
+            letter-spacing: 0.02em;
+            outline: none;
+        }
+
+        .pd-nl-input::placeholder { color: rgba(245, 242, 236, 0.3); }
+        .pd-nl-input[aria-invalid="true"] { color: #f0c2b3; }
+
+        .pd-nl-submit {
+            flex: 0 0 auto;
+            padding: 0 1.45rem;
+            border: 0;
+            background: var(--void-gold-gradient);
+            color: #120d05;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.64rem;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: filter 0.24s ease, box-shadow 0.24s ease;
+        }
+
+        .pd-nl-submit:hover,
+        .pd-nl-submit:focus-visible {
+            filter: brightness(1.06);
+            box-shadow: 0 0 22px rgba(226, 199, 138, 0.3);
+        }
+
+        .pd-nl-submit:focus-visible,
+        .pd-nl-back:focus-visible {
+            outline: 1px solid var(--void-gold-bright, #f2e2bd);
+            outline-offset: 3px;
+        }
+
+        .pd-nl-submit:disabled {
+            cursor: default;
+            filter: grayscale(0.3) brightness(0.8);
+        }
+
+        /* Room for one line is always held, so a message never moves the form. */
+        .pd-nl-status {
+            min-height: 1.35rem;
+            margin: 0.75rem 0 0;
+            font-size: 0.74rem;
+            letter-spacing: 0.04em;
+            line-height: 1.5;
+            color: rgba(245, 242, 236, 0.62);
+        }
+
+        .pd-nl-status[data-state="error"] { color: #e6a893; }
+
+        .pd-nl-status[data-state="success"] {
+            color: var(--void-stock-gold, #e6c682);
+            text-shadow: 0 0 14px rgba(230, 198, 130, 0.25);
+        }
+
+        .pd-nl-form.is-joined .pd-nl-row { opacity: 0.55; }
+
+        .pd-nl-consent {
+            margin: 0.5rem 0 0;
+            font-size: 0.66rem;
+            line-height: 1.65;
+            color: rgba(245, 242, 236, 0.5);
+        }
+
+        .pd-nl-consent a {
+            color: var(--void-gold-soft, #d8c08a);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .pd-nl-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            width: auto !important;
+            margin-top: clamp(1.6rem, 4vh, 2.3rem);
+            padding: 0.55rem 0.3rem 0.35rem;
+            border: 0;
+            border-bottom: 1px solid rgba(199, 169, 108, 0.45);
+            background: none;
+            color: var(--void-gold-soft, #d8c08a);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.24s ease, border-color 0.24s ease;
+        }
+
+        .pd-nl-back svg { width: 14px; height: 14px; }
+
+        .pd-nl-back:hover,
+        .pd-nl-back:focus-visible {
+            color: var(--void-gold-bright, #f2e2bd);
+            border-color: rgba(226, 199, 138, 0.95);
+        }
+
+        .product-detail-panel.is-newsletter .pd-layout {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        @media (max-width: 520px) {
+            .pd-nl-row { flex-direction: column; }
+            .pd-nl-submit { min-height: 50px; }
+            .pd-nl-kicker { letter-spacing: 0.34em; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .pd-nl-mote,
+            .pd-nl-glow::after { animation: none; }
+            .pd-nl-mote { opacity: 0.35; }
+        }
+
+        html.reduce-motion .pd-nl-mote,
+        html.reduce-motion .pd-nl-glow::after { animation: none; }
+
         /* In-panel "added to bag" confirmation (a cart cue that fits the detail page) */
         .pd-added {
             display: flex;
@@ -13219,6 +13817,10 @@
                     <p class="pd-code" id="pdCode">EV-ATELIER</p>
                     <h2 class="pd-name" id="pdName">Product</h2>
                     <p class="pd-price" id="pdPrice">€0</p>
+                    <!-- Live availability for the design as a whole. Kept in the
+                         flow at a fixed height while a tracked piece is open, so
+                         a background update never moves the panel. -->
+                    <p class="pd-stock" id="pdStock" hidden></p>
 
                     <div class="pd-size-block" id="pdSizeBlock">
                         <div class="pd-size-head">
@@ -13232,9 +13834,14 @@
                             <button type="button" class="pd-size" data-pd-size="L" aria-pressed="false">L</button>
                             <button type="button" class="pd-size" data-pd-size="XL" aria-pressed="false">XL</button>
                         </div>
+                        <!-- The selected size's own availability — never the
+                             design's total, which reads above. -->
+                        <p class="pd-size-stock" id="pdSizeStock" hidden></p>
                     </div>
 
                     <button type="button" class="pd-add" id="pdAdd" data-i18n="pdAddToBag">Add to shopping bag</button>
+                    <!-- Sold out only. Opens the existing pre-order signup. -->
+                    <button type="button" class="pd-notify" id="pdNotify" data-i18n="stockNotifyNextDrop" hidden>Get notified for the next drop</button>
                     <div class="pd-added" id="pdAdded" role="status" aria-live="polite" hidden>
                         <span class="pd-added-mark" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false"><path d="M5 12.5l4.2 4.2L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -13245,7 +13852,7 @@
                         </span>
                         <button type="button" class="pd-added-view" id="pdAddedView"><span data-i18n="pdViewBag">View bag</span><span class="pd-added-count" id="pdAddedCount">0</span></button>
                     </div>
-                    <button type="button" class="pd-advisor" id="pdAdvisor" data-i18n="pdContactAdvisor">Contact an Advisor</button>
+                    <button type="button" class="pd-advisor" id="pdAdvisor" data-i18n="pdDropUpdates" aria-haspopup="dialog">Get Drop Updates</button>
 
                     <div class="pd-desc-wrap">
                         <p class="pd-desc collapsed" id="pdDesc"></p>
@@ -13293,6 +13900,44 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ── Drop updates: the same dialog, transformed ──
+                 The product composition is never removed or rebuilt: it
+                 recedes behind this scene and comes back exactly as it was
+                 (size, image, accordions, scroll). The scene is positioned
+                 over the visible part of the panel by JS and is inert
+                 whenever it is not the view in use. -->
+            <section class="pd-nl" id="pdNewsletter" aria-labelledby="pdNlTitle" hidden>
+                <div class="pd-nl-atmos" aria-hidden="true">
+                    <span class="pd-nl-glow"></span>
+                    <span class="pd-nl-motes"></span>
+                    <span class="pd-nl-vignette"></span>
+                </div>
+                <svg class="pd-nl-filament" aria-hidden="true" focusable="false" preserveAspectRatio="none">
+                    <rect class="pd-nl-rail" x="0.75" y="0.75" pathLength="100"/>
+                    <rect class="pd-nl-spark" x="0.75" y="0.75" pathLength="100"/>
+                    <rect class="pd-nl-spark is-twin" x="0.75" y="0.75" pathLength="100"/>
+                </svg>
+                <span class="pd-nl-sweep" aria-hidden="true"></span>
+                <div class="pd-nl-content">
+                    <p class="pd-nl-kicker" data-i18n="privateAccess">Private Access</p>
+                    <h2 class="pd-nl-title" id="pdNlTitle" data-i18n="pdNlTitle">Enter the inner circle</h2>
+                    <p class="pd-nl-copy" data-i18n="pdNlCopy">Be first to discover upcoming drops and new releases.</p>
+                    <form class="pd-nl-form" id="pdNlForm" novalidate>
+                        <label class="pd-nl-label" for="pdNlEmail" data-i18n="email">Email</label>
+                        <div class="pd-nl-row">
+                            <input class="pd-nl-input" id="pdNlEmail" name="email" type="email" inputmode="email" autocomplete="email" spellcheck="false" placeholder="you@example.com" required aria-describedby="pdNlStatus pdNlConsent">
+                            <button type="submit" class="pd-nl-submit" id="pdNlSubmit" data-i18n="pdNlJoin">Join the list</button>
+                        </div>
+                        <p class="pd-nl-status" id="pdNlStatus" role="status" aria-live="polite"></p>
+                        <p class="pd-nl-consent" id="pdNlConsent" data-i18n-html="pdNlConsent">By joining, you agree to receive emails about VOID<sup class="brand-copyright">©</sup> drops and new releases. You can unsubscribe at any time. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+                    </form>
+                    <button type="button" class="pd-nl-back" id="pdNlBack">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M14.5 6L9 12L14.5 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span data-i18n="pdNlBack">Back to the piece</span>
+                    </button>
+                </div>
+            </section>
         </section>
     </div>
 
@@ -13979,6 +14624,143 @@
         Object.assign(translations.fr, { selectLanguage: 'Sélectionner la langue', countryOther: 'Autre', countryTheme: 'Thème pays', switchCountryTheme: 'Changer le thème pays' });
         Object.assign(translations.it, { selectLanguage: 'Seleziona lingua', countryOther: 'Altro', countryTheme: 'Tema paese', switchCountryTheme: 'Cambia tema paese' });
         Object.assign(translations.de, { selectLanguage: 'Sprache auswählen', countryOther: 'Andere', countryTheme: 'Länder-Theme', switchCountryTheme: 'Länder-Theme wechseln' });
+
+        // Live stock. Every figure in these is genuine availability read from
+        // /api/inventory — nothing here is ever shown without it.
+        Object.assign(translations.en, {
+            stockOnlyLeft: 'Only {count} pieces left',
+            stockLastPiece: 'Last piece available',
+            stockSoldOut: 'Sold out',
+            stockReserved: 'Currently reserved',
+            stockReservedNote: 'The remaining pieces are held in another checkout and return if it is not completed.',
+            stockReservedButton: 'Temporarily unavailable',
+            stockNotifyNextDrop: 'Get notified for the next drop',
+            sizeInStock: 'Size {size} · available',
+            sizeOnlyLeft: 'Size {size} · only {count} left',
+            sizeLastPiece: 'Size {size} · last piece',
+            sizeNoLongerAvailable: 'Size {size} is no longer available',
+            sizeFlagSoldOut: 'Sold out',
+            sizeFlagReserved: 'Reserved',
+            sizeFlagUnavailable: 'Unavailable',
+            sizeAriaState: 'Size {size}, {state}',
+            stockMaxInBag: 'Your bag already holds every available piece in size {size}',
+            cartLineUnavailable: 'No longer available in this size',
+            cartLineReduced: 'Only {count} available in this size'
+        });
+        Object.assign(translations.fr, {
+            stockOnlyLeft: 'Plus que {count} pièces',
+            stockLastPiece: 'Dernière pièce disponible',
+            stockSoldOut: 'Épuisé',
+            stockReserved: 'Actuellement réservé',
+            stockReservedNote: 'Les dernières pièces sont retenues dans une autre commande et reviennent si elle n’est pas finalisée.',
+            stockReservedButton: 'Momentanément indisponible',
+            stockNotifyNextDrop: 'Être averti du prochain drop',
+            sizeInStock: 'Taille {size} · disponible',
+            sizeOnlyLeft: 'Taille {size} · plus que {count}',
+            sizeLastPiece: 'Taille {size} · dernière pièce',
+            sizeNoLongerAvailable: 'La taille {size} n’est plus disponible',
+            sizeFlagSoldOut: 'Épuisé',
+            sizeFlagReserved: 'Réservé',
+            sizeFlagUnavailable: 'Indisponible',
+            sizeAriaState: 'Taille {size}, {state}',
+            stockMaxInBag: 'Votre sac contient déjà toutes les pièces disponibles en taille {size}',
+            cartLineUnavailable: 'Plus disponible dans cette taille',
+            cartLineReduced: 'Seulement {count} disponible(s) dans cette taille'
+        });
+        Object.assign(translations.it, {
+            stockOnlyLeft: 'Solo {count} pezzi rimasti',
+            stockLastPiece: 'Ultimo pezzo disponibile',
+            stockSoldOut: 'Esaurito',
+            stockReserved: 'Attualmente riservato',
+            stockReservedNote: 'Gli ultimi pezzi sono trattenuti in un altro acquisto e tornano disponibili se non viene completato.',
+            stockReservedButton: 'Temporaneamente non disponibile',
+            stockNotifyNextDrop: 'Ricevi un avviso per il prossimo drop',
+            sizeInStock: 'Taglia {size} · disponibile',
+            sizeOnlyLeft: 'Taglia {size} · solo {count} rimasti',
+            sizeLastPiece: 'Taglia {size} · ultimo pezzo',
+            sizeNoLongerAvailable: 'La taglia {size} non è più disponibile',
+            sizeFlagSoldOut: 'Esaurito',
+            sizeFlagReserved: 'Riservato',
+            sizeFlagUnavailable: 'Non disp.',
+            sizeAriaState: 'Taglia {size}, {state}',
+            stockMaxInBag: 'La tua borsa contiene già tutti i pezzi disponibili in taglia {size}',
+            cartLineUnavailable: 'Non più disponibile in questa taglia',
+            cartLineReduced: 'Solo {count} disponibili in questa taglia'
+        });
+        Object.assign(translations.de, {
+            stockOnlyLeft: 'Nur noch {count} Stück',
+            stockLastPiece: 'Letztes verfügbares Stück',
+            stockSoldOut: 'Ausverkauft',
+            stockReserved: 'Derzeit reserviert',
+            stockReservedNote: 'Die letzten Stücke sind in einem anderen Checkout reserviert und werden wieder frei, falls er nicht abgeschlossen wird.',
+            stockReservedButton: 'Vorübergehend nicht verfügbar',
+            stockNotifyNextDrop: 'Beim nächsten Drop benachrichtigen',
+            sizeInStock: 'Größe {size} · verfügbar',
+            sizeOnlyLeft: 'Größe {size} · nur noch {count}',
+            sizeLastPiece: 'Größe {size} · letztes Stück',
+            sizeNoLongerAvailable: 'Größe {size} ist nicht mehr verfügbar',
+            sizeFlagSoldOut: 'Ausverk.',
+            sizeFlagReserved: 'Reserviert',
+            sizeFlagUnavailable: 'Nicht verf.',
+            sizeAriaState: 'Größe {size}, {state}',
+            stockMaxInBag: 'Deine Tasche enthält bereits alle verfügbaren Stücke in Größe {size}',
+            cartLineUnavailable: 'In dieser Größe nicht mehr verfügbar',
+            cartLineReduced: 'Nur {count} in dieser Größe verfügbar'
+        });
+
+        // Drop updates, inside the product view.
+        Object.assign(translations.en, {
+            pdDropUpdates: 'Get Drop Updates',
+            pdNlTitle: 'Enter the inner circle',
+            pdNlCopy: 'Be first to discover upcoming drops and new releases.',
+            pdNlJoin: 'Join the list',
+            pdNlConsent: 'By joining, you agree to receive emails about ' + brandMarkup + ' drops and new releases. You can unsubscribe at any time. Read our <a href="/privacy-policy.html">Privacy Policy</a>.',
+            pdNlBack: 'Back to the piece',
+            pdNlJoining: 'Joining…',
+            pdNlInvalid: 'Please enter a valid email address.',
+            pdNlError: 'We could not add you just now. Please try again.',
+            pdNlSuccess: 'You are on the list. Please check your email.',
+            pdNlSuccessNoEmail: 'You are on the list. We could not send the confirmation email just now.'
+        });
+        Object.assign(translations.fr, {
+            pdDropUpdates: 'Être informé des drops',
+            pdNlTitle: 'Entrez dans le cercle intime',
+            pdNlCopy: 'Soyez les premiers à découvrir les prochains drops et les nouvelles sorties.',
+            pdNlJoin: 'Rejoindre la liste',
+            pdNlConsent: 'En vous inscrivant, vous acceptez de recevoir des e-mails sur les drops et les nouvelles sorties ' + brandMarkup + '. Vous pouvez vous désinscrire à tout moment. Consultez notre <a href="/privacy-policy.html">Politique de confidentialité</a>.',
+            pdNlBack: 'Retour à la pièce',
+            pdNlJoining: 'Inscription…',
+            pdNlInvalid: 'Veuillez saisir une adresse e-mail valide.',
+            pdNlError: 'Impossible de vous inscrire pour le moment. Veuillez réessayer.',
+            pdNlSuccess: 'Vous êtes sur la liste. Consultez votre boîte mail.',
+            pdNlSuccessNoEmail: 'Vous êtes sur la liste. L’e-mail de confirmation n’a pas pu être envoyé pour le moment.'
+        });
+        Object.assign(translations.it, {
+            pdDropUpdates: 'Ricevi aggiornamenti sui drop',
+            pdNlTitle: 'Entra nella cerchia ristretta',
+            pdNlCopy: 'Scopri per primo i prossimi drop e le nuove uscite.',
+            pdNlJoin: 'Unisciti alla lista',
+            pdNlConsent: 'Iscrivendoti accetti di ricevere email sui drop e sulle nuove uscite ' + brandMarkup + '. Puoi annullare l’iscrizione in qualsiasi momento. Leggi la nostra <a href="/privacy-policy.html">Informativa sulla privacy</a>.',
+            pdNlBack: 'Torna al capo',
+            pdNlJoining: 'Iscrizione…',
+            pdNlInvalid: 'Inserisci un indirizzo email valido.',
+            pdNlError: 'Non è stato possibile iscriverti ora. Riprova.',
+            pdNlSuccess: 'Sei nella lista. Controlla la tua email.',
+            pdNlSuccessNoEmail: 'Sei nella lista. Non è stato possibile inviare l’email di conferma per ora.'
+        });
+        Object.assign(translations.de, {
+            pdDropUpdates: 'Drop-Updates erhalten',
+            pdNlTitle: 'Tritt in den inneren Kreis ein',
+            pdNlCopy: 'Erfahre als Erstes von kommenden Drops und neuen Releases.',
+            pdNlJoin: 'Der Liste beitreten',
+            pdNlConsent: 'Mit deiner Anmeldung stimmst du zu, E-Mails zu Drops und neuen Releases von ' + brandMarkup + ' zu erhalten. Du kannst dich jederzeit abmelden. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.',
+            pdNlBack: 'Zurück zum Stück',
+            pdNlJoining: 'Wird eingetragen…',
+            pdNlInvalid: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+            pdNlError: 'Die Anmeldung ist gerade nicht möglich. Bitte versuche es erneut.',
+            pdNlSuccess: 'Du bist auf der Liste. Bitte sieh in deinem Postfach nach.',
+            pdNlSuccessNoEmail: 'Du bist auf der Liste. Die Bestätigungs-E-Mail konnte gerade nicht gesendet werden.'
+        });
 
         // New UI strings (product detail + style guide + category menu). English is the
         // source; other languages fall back to English via t() until translated.
@@ -15337,6 +16119,10 @@
             const apply = () => {
                 applyTranslations();
                 refreshCartTranslations();
+                // Stock labels are composed in JS (counts, sizes), so they are
+                // rewritten rather than left to data-i18n.
+                renderStock();
+                refreshPdNewsletterCopy();
                 // The fit archive renders its table and fit names from JS, so
                 // it has to be re-rendered rather than re-labelled in place.
                 if (typeof window.voidFitArchiveRefresh === 'function') window.voidFitArchiveRefresh();
@@ -17736,6 +18522,7 @@
                     <div>
                         <span class="cart-item-name">${safeName}</span>
                         <span class="cart-item-meta">${safeSize} · ${item.quantity} x ${formatEuro(item.price)}</span>
+                        ${cartLineStockNote(item)}
                     </div>
                     <div class="cart-item-actions">
                         <button type="button" class="cart-item-remove" data-cart-delete-name="${safeName}" data-cart-delete-size="${safeSize}" aria-label="${escapeMarkup(t('removeItemLabel', { name: item.name, size: item.size }))}" title="${escapeMarkup(t('removeItemLabel', { name: item.name, size: item.size }))}">
@@ -18012,6 +18799,9 @@
 
         function addToCart(name, price, size, buttonElement) {
             if (isUnreleasedProduct(name)) return;
+            // The bag never holds more of a size than genuinely remains. The
+            // checkout re-checks on the server; this keeps the bag honest.
+            if (!stockAllowsAdd(name, size)) return;
 
             const existingItem = cart.find((item) => item.name === name && item.size === size);
             if (existingItem) {
@@ -18096,6 +18886,10 @@
         if (cartCheckout) {
             cartCheckout.addEventListener('click', (event) => {
                 event.preventDefault();
+                if (!storefrontSalesOpen()) {
+                    showVoidNotice({ title: t('comingSoon'), message: t('pdNlCopy'), button: t('closeLabel') });
+                    return;
+                }
 
                 if (cart.length === 0) {
                     // Branded modal instead of a native browser alert; cart logic unchanged.
@@ -18329,6 +19123,9 @@
         // size the garment's own specification does not document.
         const DEFAULT_SIZES = guideSizes('tshirt');
         const PRODUCT_SIZES = {
+            // The Fallen is cut in S–XL only; XS is never offered for either.
+            'Levitate Tee': ['S', 'M', 'L', 'XL'],
+            'Endzustand Tee': ['S', 'M', 'L', 'XL'],
             'Sweatshirt': guideSizes('sweatshirt'),
             'Track Pants': guideSizes('trackpants'),
             'Ensemble': guideSizes('ensemble')
@@ -18398,6 +19195,7 @@
                 button.classList.toggle('active', isActive);
                 button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
+            renderPdStock();
         }
 
         // Populates the detail panel's media/info from a product card. Shared
@@ -18458,8 +19256,12 @@
 
             lastProductDetailFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
             closeCartPopup();
+            resetPdNewsletter();
 
             const name = applyProductDetailContent(productCard);
+            // Freshest figures for the piece being looked at; the render above
+            // already used the last known ones, so nothing waits on this.
+            refreshStock(false);
 
             productDetailOverlay.classList.add('open');
             productDetailOverlay.scrollTop = 0;
@@ -18472,6 +19274,309 @@
                 focusElementSafely(pdClose);
             });
         }
+
+        // ============== Live stock ==============
+        // Availability comes from /api/inventory, which reads the inventory
+        // tables — never from anything stored in the browser. It is polled
+        // while the tab is visible and refreshed the moment the tab regains
+        // focus or the connection returns. Updates are written in place into
+        // elements that keep their size, and nothing is announced: the state is
+        // in the controls' labels for anyone who reaches them.
+        //
+        // Before the first answer arrives (or if it never does) the page shows
+        // no stock language at all and purchasing works as before; the server
+        // enforces availability at checkout either way.
+        var voidStock = { data: null, timer: null, inflight: null, last: 0, failures: 0 };
+        var VOID_STOCK_POLL_MS = 15000;
+        // `var`, like the state above: the saved-language restore earlier in
+        // this script can call renderStock() before this block has run.
+        var pdStockEl = document.getElementById('pdStock');
+        var pdSizeStockEl = document.getElementById('pdSizeStock');
+        var pdNotify = document.getElementById('pdNotify');
+
+        function stockForName(name) {
+            if (!voidStock || !voidStock.data || !name) return null;
+            const products = voidStock.data.products || {};
+            const key = Object.keys(products).find((slug) => products[slug].name === name);
+            return key ? products[key] : null;
+        }
+
+        function sizeStockFor(name, size) {
+            const product = stockForName(name);
+            return product && product.sizes ? product.sizes[size] || null : null;
+        }
+
+        function cartQuantityFor(name, size) {
+            const line = cart.find((item) => item.name === name && item.size === size);
+            return line ? line.quantity : 0;
+        }
+
+        function storefrontSalesOpen() {
+            return Boolean(voidStock && voidStock.data && voidStock.data.salesOpen === true);
+        }
+
+        function stockAllowsAdd(name, size) {
+            if (!storefrontSalesOpen()) return false;
+            const sizeStock = sizeStockFor(name, size);
+            if (!sizeStock) return true;   // untracked, or not loaded yet
+            return cartQuantityFor(name, size) + 1 <= sizeStock.available;
+        }
+
+        function productStockLabel(product) {
+            if (!storefrontSalesOpen()) return t('comingSoon');
+            switch (product.state) {
+                case 'low': return t('stockOnlyLeft', { count: String(product.available) });
+                case 'last': return t('stockLastPiece');
+                case 'reserved': return t('stockReserved');
+                case 'sold_out': return t('stockSoldOut');
+                default: return '';
+            }
+        }
+
+        function sizeStockLabel(size, sizeStock) {
+            switch (sizeStock.state) {
+                case 'low': return t('sizeOnlyLeft', { size, count: String(sizeStock.available) });
+                case 'last': return t('sizeLastPiece', { size });
+                case 'in_stock': return t('sizeInStock', { size });
+                default: return t('sizeNoLongerAvailable', { size });
+            }
+        }
+
+        function sizeFlagLabel(state) {
+            if (state === 'sold_out') return t('sizeFlagSoldOut');
+            if (state === 'reserved') return t('sizeFlagReserved');
+            if (state === 'unavailable') return t('sizeFlagUnavailable');
+            return '';
+        }
+
+        // Text is only written when it changes, so an unchanged poll touches
+        // nothing at all.
+        function setText(el, text) {
+            if (el && el.textContent !== text) el.textContent = text;
+        }
+
+        function renderCardStock() {
+            document.querySelectorAll('.product-card[data-product-name]').forEach((card) => {
+                const product = stockForName(card.dataset.productName);
+                const image = card.querySelector('.product-image');
+                let badge = card.querySelector('[data-stock-badge]');
+                if (!product || !image) {
+                    if (badge) badge.hidden = true;
+                    return;
+                }
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'stock-badge';
+                    badge.dataset.stockBadge = '';
+                    badge.innerHTML = '<span class="stock-mark" aria-hidden="true"></span><span class="stock-text"></span>';
+                    badge.hidden = true;
+                    image.appendChild(badge);
+                }
+                const label = productStockLabel(product);
+                badge.dataset.state = product.state;
+                setText(badge.querySelector('.stock-text'), label);
+                badge.hidden = !label;
+                card.dataset.stockState = product.state;
+            });
+        }
+
+        function showPdSizeStockMessage(text, state) {
+            if (!pdSizeStockEl) return;
+            pdSizeStockEl.hidden = false;
+            pdSizeStockEl.dataset.state = state || 'notice';
+            setText(pdSizeStockEl, text);
+        }
+
+        function renderPdStock() {
+            if (!pdSizes) return;
+            if (!storefrontSalesOpen()) {
+                if (pdAdd) {
+                    pdAdd.disabled = true;
+                    pdAdd.dataset.defaultLabel = t('comingSoon');
+                    setText(pdAdd, t('comingSoon'));
+                }
+                if (pdStockEl) { pdStockEl.hidden = false; setText(pdStockEl, t('comingSoon')); pdStockEl.dataset.signature = ''; }
+                if (pdSizeStockEl) pdSizeStockEl.hidden = true;
+                if (pdNotify) pdNotify.hidden = true;
+                return;
+            }
+            const product = pdState && pdState.card && !isUnreleasedProduct(pdState.card) ? stockForName(pdState.name) : null;
+            const buttons = Array.from(pdSizes.querySelectorAll('[data-pd-size]'));
+
+            pdSizes.classList.toggle('is-tracked', Boolean(product));
+            // A message about the previous piece's size never carries over.
+            if (pdSizeStockEl && pdSizeStockEl.dataset.product !== pdState.name) {
+                pdSizeStockEl.dataset.product = pdState.name;
+                pdSizeStockEl.dataset.state = '';
+                pdSizeStockEl.textContent = '';
+            }
+            buttons.forEach((button) => {
+                const size = button.dataset.pdSize;
+                let nameEl = button.querySelector('.pd-size-name');
+                let flagEl = button.querySelector('.pd-size-flag');
+                if (!nameEl) {
+                    button.textContent = '';
+                    nameEl = document.createElement('span');
+                    nameEl.className = 'pd-size-name';
+                    nameEl.textContent = size;
+                    flagEl = document.createElement('span');
+                    flagEl.className = 'pd-size-flag';
+                    flagEl.setAttribute('aria-hidden', 'true');
+                    button.append(nameEl, flagEl);
+                }
+                const sizeStock = product && product.sizes ? product.sizes[size] : null;
+                const open = !sizeStock || sizeStock.available > 0;
+                const flag = open ? '' : sizeFlagLabel(sizeStock.state);
+                button.disabled = !open;
+                setText(flagEl, flag);
+                if (flag) button.setAttribute('aria-label', t('sizeAriaState', { size, state: flag }));
+                else button.removeAttribute('aria-label');
+            });
+
+            if (!product) {
+                if (pdStockEl) pdStockEl.hidden = true;
+                if (pdSizeStockEl) pdSizeStockEl.hidden = true;
+                if (pdNotify) pdNotify.hidden = true;
+                return;
+            }
+
+            // The design as a whole.
+            if (pdStockEl) {
+                pdStockEl.hidden = false;
+                pdStockEl.dataset.state = product.state;
+                const label = productStockLabel(product);
+                const signature = product.state + '|' + label;
+                if (pdStockEl.dataset.signature !== signature) {
+                    pdStockEl.dataset.signature = signature;
+                    pdStockEl.textContent = '';
+                    if (label) {
+                        const mark = document.createElement('span');
+                        mark.className = 'stock-mark';
+                        mark.setAttribute('aria-hidden', 'true');
+                        const text = document.createElement('span');
+                        text.textContent = label;
+                        if (product.state === 'reserved') {
+                            const note = document.createElement('span');
+                            note.className = 'pd-stock-note';
+                            note.textContent = t('stockReservedNote');
+                            text.appendChild(note);
+                        }
+                        pdStockEl.append(mark, text);
+                    }
+                }
+            }
+
+            // The selected size, separately. A size that has gone while the
+            // panel was open is deselected and said so, rather than left
+            // selected and refused at the button.
+            if (pdState.size) {
+                const sizeStock = product.sizes[pdState.size];
+                if (sizeStock && sizeStock.available <= 0) {
+                    const gone = pdState.size;
+                    pdState.size = '';
+                    buttons.forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+                    showPdSizeStockMessage(t('sizeNoLongerAvailable', { size: gone }), 'gone');
+                } else if (sizeStock) {
+                    showPdSizeStockMessage(sizeStockLabel(pdState.size, sizeStock), sizeStock.state);
+                }
+            } else if (pdSizeStockEl && pdSizeStockEl.dataset.state !== 'gone') {
+                pdSizeStockEl.hidden = false;
+                pdSizeStockEl.dataset.state = '';
+                setText(pdSizeStockEl, '');
+            }
+
+            // Purchasing. Only ever closes it; the unreleased and price-pending
+            // rules in applyProductDetailContent are never reopened here.
+            const closedForOtherReasons = !pdState.card || pdState.card.dataset.pricePending === 'true';
+            if (pdAdd && !closedForOtherReasons) {
+                let label = t('pdAddToBag');
+                let disabled = false;
+                if (product.state === 'sold_out') { label = t('stockSoldOut'); disabled = true; }
+                else if (product.state === 'reserved') { label = t('stockReservedButton'); disabled = true; }
+                pdAdd.dataset.defaultLabel = label;
+                pdAdd.disabled = disabled;
+                if (!pdAdd.classList.contains('added') && !pdAdd.classList.contains('needs-size')) setText(pdAdd, label);
+            }
+            if (pdNotify) pdNotify.hidden = product.state !== 'sold_out';
+        }
+
+        function cartLineStockNote(item) {
+            const sizeStock = sizeStockFor(item.name, item.size);
+            if (!sizeStock || item.quantity <= sizeStock.available) return '';
+            const text = sizeStock.available <= 0
+                ? t('cartLineUnavailable')
+                : t('cartLineReduced', { count: String(sizeStock.available) });
+            return `<span class="cart-item-stock">${escapeMarkup(text)}</span>`;
+        }
+
+        function renderStock() {
+            if (!voidStock) return;
+            renderCardStock();
+            document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
+                if (isUnreleasedProduct(button.closest('.product-card'))) return;
+                button.disabled = !storefrontSalesOpen();
+                button.dataset.defaultLabel = t(storefrontSalesOpen() ? 'addToCart' : 'comingSoon');
+                setText(button, button.dataset.defaultLabel);
+            });
+            if (cartCheckout) {
+                cartCheckout.disabled = !storefrontSalesOpen();
+                setText(cartCheckout, t(storefrontSalesOpen() ? 'checkout' : 'comingSoon'));
+            }
+            if (productDetailOverlay && productDetailOverlay.classList.contains('open')) renderPdStock();
+            // The bag is rebuilt only when what it would say has changed, so a
+            // routine poll never pulls focus out from under someone using it.
+            const cartSignature = currentLanguage + '|' + cart.map(cartLineStockNote).join('|');
+            if (cartSignature !== voidStock.cartSignature) {
+                voidStock.cartSignature = cartSignature;
+                updateCartUI();
+            }
+        }
+        window.voidStockRender = renderStock;
+
+        function scheduleStockPoll() {
+            window.clearTimeout(voidStock.timer);
+            if (document.hidden) return;
+            const backoff = voidStock.failures ? Math.min(60000, VOID_STOCK_POLL_MS * Math.pow(2, voidStock.failures)) : VOID_STOCK_POLL_MS;
+            voidStock.timer = window.setTimeout(() => refreshStock(true), backoff);
+        }
+
+        // `cache: 'no-cache'` makes the browser revalidate with the ETag every
+        // time, so an unchanged picture costs a 304 and no body.
+        function refreshStock(force) {
+            if (voidStock.inflight) return voidStock.inflight;
+            if (!force && Date.now() - voidStock.last < 2000) return Promise.resolve(voidStock.data);
+            voidStock.inflight = fetch('/api/inventory', { cache: 'no-cache', headers: { Accept: 'application/json' } })
+                .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+                .then((data) => {
+                    if (!data || !data.ok || !data.products) throw new Error('bad_payload');
+                    voidStock.data = data;
+                    voidStock.failures = 0;
+                    voidStock.last = Date.now();
+                    renderStock();
+                    return data;
+                })
+                .catch(() => { voidStock.failures += 1; return voidStock.data; })
+                .finally(() => { voidStock.inflight = null; scheduleStockPoll(); });
+            return voidStock.inflight;
+        }
+        window.voidStockRefresh = refreshStock;
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) window.clearTimeout(voidStock.timer);
+            else refreshStock(true);
+        });
+        window.addEventListener('focus', () => refreshStock(false));
+        window.addEventListener('online', () => refreshStock(true));
+        window.addEventListener('pageshow', (event) => { if (event.persisted) refreshStock(true); });
+
+        if (pdNotify) {
+            // The drop-updates scene, inside this same dialog, recording this
+            // design as the interest. See openPdNewsletter().
+            pdNotify.addEventListener('click', () => openPdNewsletter(pdNotify));
+        }
+
+        renderStock();
+        refreshStock(true);
 
         // ============== Product detail: sibling-product switcher ==============
         function setPdSwitchImages() {
@@ -18637,6 +19742,8 @@
 
         function closeProductDetail() {
             if (!productDetailOverlay || !productDetailOverlay.classList.contains('open')) return;
+            // Whatever the drop-updates scene was doing stops here, at once.
+            resetPdNewsletter();
 
             productDetailOverlay.classList.remove('open');
             productDetailOverlay.setAttribute('aria-hidden', 'true');
@@ -18999,6 +20106,10 @@
                     }
                     return;
                 }
+                if (!stockAllowsAdd(pdState.name, pdState.size)) {
+                    showPdSizeStockMessage(t('stockMaxInBag', { size: pdState.size }));
+                    return;
+                }
                 if (pdState.card) setProductCardSize(pdState.card, pdState.size);
                 resetAddButtonState(pdAdd);
                 addToCart(pdState.name, pdState.price, pdState.size, pdAdd);
@@ -19014,11 +20125,10 @@
             });
         }
 
+        // "Get Drop Updates" turns this dialog into the newsletter scene. It no
+        // longer leaves the piece or scrolls the page to the footer form.
         if (pdAdvisor) {
-            pdAdvisor.addEventListener('click', () => {
-                closeProductDetail();
-                if (window.voidNavigate) window.voidNavigate('/newsletter'); else window.location.href = '/newsletter';
-            });
+            pdAdvisor.addEventListener('click', () => openPdNewsletter(pdAdvisor));
         }
 
         if (pdSeeMore && pdDesc) {
@@ -19034,6 +20144,586 @@
             productDetailOverlay.addEventListener('click', (event) => {
                 if (event.target === productDetailOverlay) closeProductDetail();
             });
+        }
+
+        // ============== Drop updates: the newsletter scene ==============
+        // The product dialog becomes a newsletter signup inside its own frame,
+        // and back. Four states: 'product' → 'entering' → 'newsletter' →
+        // 'leaving' → 'product'.
+        //
+        // The transition is one Web Animations timeline in which every
+        // animation ends at the same instant (endDelay pads the short ones), so
+        // the return is literally the entrance played backwards, and anything
+        // that interrupts it — Escape, the close button, the backdrop — just
+        // reverses the animations from wherever they are. Nothing is rebuilt:
+        // the product composition only recedes, so its size, image, zoom,
+        // accordions and scroll position are still there when it comes back.
+        //
+        // `var` and function declarations throughout: closeProductDetail() and
+        // the language switch can call into this before the block has run.
+        var pdNl = {
+            view: 'product',
+            anims: [],
+            total: 0,
+            run: 0,
+            saved: null,
+            returnFocus: null,
+            interest: '',
+            status: null,      // { state, key } so a language change re-translates it
+            submitting: 0,
+            split: []
+        };
+        var pdNlPanel = productDetailOverlay ? productDetailOverlay.querySelector('.product-detail-panel') : null;
+        var pdNlScene = document.getElementById('pdNewsletter');
+        var PD_NL_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // The language transition's own curves (see --lang-ease-* in :root).
+        var PD_NL_ARRIVE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+        var PD_NL_MECH = 'cubic-bezier(0.45, 0, 0.25, 1)';
+        var PD_NL_RECEDE = 'cubic-bezier(0.5, 0, 0.3, 1)';
+        var PD_NL_SETTLE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+        function pdNlEl(selector) { return pdNlScene ? pdNlScene.querySelector(selector) : null; }
+
+        function pdNlReduced() {
+            return document.documentElement.classList.contains('reduce-motion')
+                || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
+        // Catalogue slugs are the display names, lower-cased and hyphenated
+        // ("Levitate Tee" → "levitate-tee"); the server checks it against the
+        // catalogue before recording it.
+        function pdNlSlug(name) {
+            return String(name || '').trim().toLowerCase().replace(/\s+/g, '-');
+        }
+
+        // ---- the motes: a few, placed once, deterministic ----
+        (function buildPdNlMotes() {
+            const host = pdNlEl('.pd-nl-motes');
+            if (!host) return;
+            for (let i = 0; i < 16; i += 1) {
+                const mote = document.createElement('span');
+                mote.className = 'pd-nl-mote';
+                const r = (n) => ((Math.sin((i + 1) * n) + 1) / 2);   // stable 0..1
+                mote.style.left = (6 + r(12.9898) * 88).toFixed(1) + '%';
+                mote.style.top = (30 + r(78.233) * 62).toFixed(1) + '%';
+                mote.style.setProperty('--s', (1.4 + r(3.1) * 1.6).toFixed(2) + 'px');
+                mote.style.setProperty('--d', (6.5 + r(5.7) * 5).toFixed(2) + 's');
+                mote.style.setProperty('--w', (-r(9.3) * 10).toFixed(2) + 's');
+                mote.style.setProperty('--dx', ((r(2.2) - 0.5) * 36).toFixed(1) + 'px');
+                mote.style.setProperty('--o', (0.35 + r(4.4) * 0.4).toFixed(2));
+                host.appendChild(mote);
+            }
+        })();
+
+        // ---- geometry: lay the scene over exactly what is visible ----
+        function pdNlScroller() {
+            const overflowY = getComputedStyle(pdNlPanel).overflowY;
+            return (overflowY === 'auto' || overflowY === 'scroll') ? pdNlPanel : productDetailOverlay;
+        }
+
+        function placePdNewsletter() {
+            if (!pdNl.saved || !pdNlScene) return;
+            let top;
+            let height;
+            if (pdNl.saved.scroller === pdNlPanel) {
+                top = pdNlPanel.scrollTop;
+                height = pdNlPanel.clientHeight;
+            } else {
+                // Phones: the overlay scrolls and the panel is a long sheet. The
+                // scene covers the viewport — the visual viewport when the
+                // keyboard is open, so the field stays above it.
+                const panelTop = pdNlPanel.getBoundingClientRect().top + pdNlPanel.clientTop;
+                const vv = window.visualViewport;
+                const viewTop = vv ? vv.offsetTop : 0;
+                top = Math.max(0, viewTop - panelTop);
+                height = Math.min(vv ? vv.height : productDetailOverlay.clientHeight, productDetailOverlay.clientHeight);
+            }
+            pdNlScene.style.setProperty('--pd-nl-top', Math.round(top) + 'px');
+            pdNlScene.style.setProperty('--pd-nl-h', Math.round(height) + 'px');
+            const w = pdNlScene.clientWidth;
+            pdNlScene.querySelectorAll('.pd-nl-filament rect').forEach((rect) => {
+                rect.setAttribute('width', Math.max(0, w - 1.5));
+                rect.setAttribute('height', Math.max(0, Math.round(height) - 1.5));
+            });
+        }
+
+        // ---- the letter reveal (the language transition's structure) ----
+        function pdNlSplit(el) {
+            const text = el.textContent;
+            const words = [];
+            const glyphs = [];
+            const frag = document.createDocumentFragment();
+            const seg = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+            text.split(/(\s+)/).forEach((chunk) => {
+                if (!chunk) return;
+                if (/^\s+$/.test(chunk)) { frag.appendChild(document.createTextNode(chunk)); return; }
+                const w = document.createElement('span');
+                w.className = 'pd-nl-word';
+                (seg ? Array.from(seg.segment(chunk), (x) => x.segment) : Array.from(chunk)).forEach((ch) => {
+                    const g = document.createElement('span');
+                    g.className = 'pd-nl-glyph';
+                    g.textContent = ch;
+                    w.appendChild(g);
+                    glyphs.push(g);
+                });
+                words.push(w);
+                frag.appendChild(w);
+            });
+            el.textContent = '';
+            el.appendChild(frag);
+            pdNl.split.push({ el, text });
+            return { words, glyphs };
+        }
+
+        function pdNlUnsplit() {
+            pdNl.split.forEach(({ el, text }) => { el.textContent = text; });
+            pdNl.split = [];
+        }
+
+        // ---- the timeline ----
+        // Times in ms from the start of the entrance. Every spec ends by
+        // `total`; shorter ones are padded with endDelay so the reverse is a
+        // true mirror.
+        function buildPdNlTimeline() {
+            const specs = [];
+            const add = (el, frames, delay, duration, easing) => {
+                if (el) specs.push({ el, frames, delay, duration, easing: easing || 'linear' });
+            };
+            const content = pdNlEl('.pd-nl-content');
+
+            if (pdNlReduced()) {
+                // Short and simple: a crossfade, nothing travels.
+                add(pdLayout, [{ opacity: 1 }, { opacity: 0 }], 0, 180, 'ease');
+                add(pdNlEl('.pd-nl-atmos'), [{ opacity: 0 }, { opacity: 1 }], 60, 200, 'ease');
+                add(pdNlEl('.pd-nl-filament'), [{ opacity: 0 }, { opacity: 1 }], 60, 200, 'ease');
+                add(content, [{ opacity: 0 }, { opacity: 1 }], 100, 200, 'ease');
+            } else {
+                // 1 · The piece recedes, with depth: the image further and
+                //     softer than the details, a beat apart.
+                const switcher = pdLayout.querySelector('.pd-switcher');
+                add(pdMediaEl, [
+                    { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)', filter: 'blur(0px)' },
+                    { opacity: 0, transform: 'translate3d(0, 10px, 0) scale(0.94)', filter: 'blur(9px)' }
+                ], 0, 760, PD_NL_RECEDE);
+                add(pdInfoEl, [
+                    { opacity: 1, transform: 'translate3d(0, 0, 0)', filter: 'blur(0px)' },
+                    { opacity: 0, transform: 'translate3d(0, 22px, 0)', filter: 'blur(6px)' }
+                ], 70, 700, PD_NL_RECEDE);
+                if (switcher && !switcher.hidden) add(switcher, [{ opacity: 1 }, { opacity: 0 }], 0, 520, PD_NL_RECEDE);
+
+                // 2 · The dark comes up, the light gathers at the centre.
+                add(pdNlEl('.pd-nl-atmos'), [{ opacity: 0 }, { opacity: 1 }], 140, 780, PD_NL_ARRIVE);
+                add(pdNlEl('.pd-nl-glow'), [
+                    { opacity: 0, transform: 'translate(-50%, -50%) scale(0.8)' },
+                    { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }
+                ], 420, 1150, PD_NL_ARRIVE);
+                add(pdNlEl('.pd-nl-motes'), [{ opacity: 0 }, { opacity: 1 }], 720, 900, PD_NL_ARRIVE);
+
+                // 3 · A gold filament runs the whole frame, two sparks from
+                //     opposite corners, and a single pass of light crosses it.
+                add(pdNlEl('.pd-nl-rail'), [{ opacity: 0 }, { opacity: 0.55 }], 300, 1000, PD_NL_ARRIVE);
+                pdNlScene.querySelectorAll('.pd-nl-spark').forEach((spark, i) => {
+                    const from = i === 0 ? 0 : -50;
+                    add(spark, [
+                        { strokeDashoffset: from, opacity: 0 },
+                        { opacity: 1, offset: 0.1 },
+                        { opacity: 1, offset: 0.78 },
+                        { strokeDashoffset: from - 100, opacity: 0 }
+                    ], 240, 1320, PD_NL_MECH);
+                });
+                add(pdNlEl('.pd-nl-sweep'), [
+                    { opacity: 0, transform: 'translate3d(-60%, 0, 0) skewX(-14deg)' },
+                    { opacity: 1, offset: 0.4 },
+                    { opacity: 0.8, offset: 0.65 },
+                    { opacity: 0, transform: 'translate3d(60%, 0, 0) skewX(-14deg)' }
+                ], 380, 1080, PD_NL_MECH);
+
+                // 4 · The words emerge, letter by letter, exactly as a
+                //     language change writes them: letters fade on the arrive
+                //     curve, words resolve their blur and let the light go.
+                const reveal = (el, start, perGlyph, glyphMs) => {
+                    if (!el) return;
+                    const { words, glyphs } = pdNlSplit(el);
+                    const step = Math.min(perGlyph, 380 / Math.max(glyphs.length, 1));
+                    glyphs.forEach((g, i) => add(g, [{ opacity: 0 }, { opacity: 1 }], start + i * step, glyphMs, PD_NL_ARRIVE));
+                    let seen = 0;
+                    words.forEach((w) => {
+                        add(w, [
+                            { filter: 'blur(2.6px) drop-shadow(0 0 0px rgba(226, 199, 138, 0))' },
+                            { filter: 'blur(1.69px) drop-shadow(0 0 9px rgba(226, 199, 138, 0.28))', offset: 0.4 },
+                            { filter: 'blur(0.55px) drop-shadow(0 0 7px rgba(226, 199, 138, 0.18))', offset: 0.7 },
+                            { filter: 'blur(0px) drop-shadow(0 0 0px rgba(226, 199, 138, 0))' }
+                        ], start + seen * step, 900, 'linear');
+                        seen += w.childNodes.length;
+                    });
+                };
+                reveal(pdNlEl('.pd-nl-kicker'), 760, 22, 700);
+                reveal(pdNlEl('.pd-nl-title'), 880, 14, 760);
+                add(pdNlEl('.pd-nl-copy'), [
+                    { opacity: 0, filter: 'blur(2.6px)' },
+                    { opacity: 1, filter: 'blur(0px)' }
+                ], 1080, 760, PD_NL_ARRIVE);
+
+                // 5 · The field and the button settle into place.
+                add(pdNlEl('.pd-nl-form'), [
+                    { opacity: 0, transform: 'translate3d(0, 18px, 0)', filter: 'blur(3px)' },
+                    { opacity: 1, transform: 'translate3d(0, 0, 0)', filter: 'blur(0px)' }
+                ], 1200, 700, PD_NL_SETTLE);
+                add(pdNlEl('.pd-nl-back'), [
+                    { opacity: 0, transform: 'translate3d(0, 8px, 0)' },
+                    { opacity: 1, transform: 'translate3d(0, 0, 0)' }
+                ], 1380, 560, PD_NL_SETTLE);
+            }
+
+            const total = specs.reduce((max, sp) => Math.max(max, sp.delay + sp.duration), 0);
+            const anims = specs.map((sp) => {
+                const anim = sp.el.animate(sp.frames, {
+                    delay: sp.delay,
+                    duration: sp.duration,
+                    endDelay: total - sp.delay - sp.duration,
+                    easing: sp.easing,
+                    fill: 'both'
+                });
+                anim.pause();
+                return anim;
+            });
+            return { anims, total };
+        }
+
+        // ---- focus and reachability ----
+        // Exactly one composition is reachable at a time; during a transition
+        // neither is, and focus rests on the dialog itself.
+        function setPdNlReach(mode) {
+            if (pdLayout) pdLayout.inert = mode !== 'product';
+            if (pdNlScene) pdNlScene.inert = mode !== 'newsletter';
+            if (pdNlPanel) {
+                pdNlPanel.setAttribute('aria-labelledby', mode === 'newsletter' ? 'pdNlTitle' : 'pdName');
+                pdNlPanel.dataset.pdView = mode;
+            }
+            if (pdClose) {
+                if (mode === 'product') pdClose.setAttribute('aria-label', t('pdClose'));
+                else pdClose.setAttribute('aria-label', t('pdNlBack'));
+            }
+        }
+
+        function focusPdNlDialog() {
+            if (!pdNlPanel) return;
+            if (!pdNlPanel.hasAttribute('tabindex')) pdNlPanel.setAttribute('tabindex', '-1');
+            focusElementSafely(pdNlPanel);
+        }
+
+        // The scroll container is never re-styled — removing its scrollbar
+        // would reflow the piece underneath. Scrolling is refused instead
+        // while the scene is up (see wirePdNewsletter), and if anything does
+        // move it (a phone keyboard), the scene follows and the position is
+        // put back on return.
+
+        // ---- running the timeline ----
+        function playPdNl(direction) {
+            const id = ++pdNl.run;
+            pdNl.view = direction > 0 ? 'entering' : 'leaving';
+            setPdNlReach('transition');
+            pdNl.anims.forEach((anim) => {
+                anim.playbackRate = direction > 0 ? 1 : -1.15;
+                anim.play();
+            });
+            watchPdNl(id);
+        }
+
+        function watchPdNl(id) {
+            Promise.all(pdNl.anims.map((anim) => anim.finished))
+                .then(() => { if (id === pdNl.run) settlePdNl(pdNl.view === 'entering' ? 'newsletter' : 'product'); })
+                .catch(() => { /* cancelled by a reset; that path settles itself */ });
+        }
+
+        // Turn round where it stands: the same animations, reversed.
+        function turnPdNl() {
+            const id = ++pdNl.run;
+            pdNl.view = pdNl.view === 'entering' ? 'leaving' : 'entering';
+            pdNl.anims.forEach((anim) => anim.reverse());
+            watchPdNl(id);
+        }
+
+        function clearPdNlAnims() {
+            pdNl.anims.forEach((anim) => { try { anim.cancel(); } catch (e) {} });
+            pdNl.anims = [];
+        }
+
+        function settlePdNl(final) {
+            if (final === 'newsletter') {
+                // Resting state first, then let go of the animations, in the
+                // same frame: there is no instant where neither holds.
+                pdNlPanel.classList.add('is-newsletter');
+                clearPdNlAnims();
+                pdNlUnsplit();
+                pdNl.view = 'newsletter';
+                setPdNlReach('newsletter');
+                focusElementSafely(document.getElementById('pdNlEmail'));
+                return;
+            }
+            clearPdNlAnims();
+            pdNlUnsplit();
+            pdNlPanel.classList.remove('is-newsletter');
+            pdNlScene.hidden = true;
+            if (pdNl.saved) pdNl.saved.scroller.scrollTop = pdNl.saved.scrollTop;
+            pdNl.view = 'product';
+            setPdNlReach('product');
+            const back = pdNl.returnFocus;
+            pdNl.saved = null;
+            pdNl.returnFocus = null;
+            const usable = back && back.isConnected && !back.hidden && !back.disabled && back.getClientRects().length;
+            focusElementSafely(usable ? back : pdClose);
+        }
+
+        function openPdNewsletter(trigger) {
+            if (!pdNlPanel || !pdNlScene || !productDetailOverlay.classList.contains('open')) return;
+            if (pdNl.view === 'entering' || pdNl.view === 'newsletter') return;
+            if (pdNl.view === 'leaving') { turnPdNl(); return; }
+
+            pdNl.returnFocus = trigger || null;
+            pdNl.interest = pdNlSlug(pdState && pdState.name);
+            resetPdNlForm();
+
+            const scroller = pdNlScroller();
+            pdNl.saved = { scroller, scrollTop: scroller.scrollTop };
+            pdNlScene.hidden = false;
+            placePdNewsletter();
+            focusPdNlDialog();
+
+            const timeline = buildPdNlTimeline();
+            pdNl.anims = timeline.anims;
+            pdNl.total = timeline.total;
+            playPdNl(1);
+        }
+
+        function closePdNewsletter() {
+            if (pdNl.view === 'product' || pdNl.view === 'leaving') return;
+            if (pdNl.view === 'entering') { turnPdNl(); return; }
+
+            // From rest: put the scroll back first (a phone keyboard may have
+            // moved it), rebuild the timeline at its last frame, hand over
+            // from the resting class to it, and play it backwards.
+            if (pdNl.saved) pdNl.saved.scroller.scrollTop = pdNl.saved.scrollTop;
+            placePdNewsletter();
+            focusPdNlDialog();
+            const timeline = buildPdNlTimeline();
+            pdNl.anims = timeline.anims;
+            pdNl.total = timeline.total;
+            pdNl.anims.forEach((anim) => { anim.currentTime = timeline.total; });
+            pdNlPanel.classList.remove('is-newsletter');
+            playPdNl(-1);
+        }
+
+        // Instant and silent: the dialog is closing or showing another piece.
+        function resetPdNewsletter() {
+            if (!pdNlPanel || !pdNlScene) return;
+            pdNl.run += 1;
+            clearPdNlAnims();
+            pdNlUnsplit();
+            pdNlPanel.classList.remove('is-newsletter');
+            pdNlScene.hidden = true;
+            pdNl.view = 'product';
+            pdNl.saved = null;
+            pdNl.returnFocus = null;
+            setPdNlReach('product');
+        }
+
+        // ---- the form ----
+        function setPdNlStatus(state, key) {
+            const el = document.getElementById('pdNlStatus');
+            pdNl.status = key ? { state, key } : null;
+            if (!el) return;
+            el.dataset.state = state || '';
+            el.textContent = key ? t(key) : '';
+        }
+
+        function refreshPdNewsletterCopy() {
+            if (!pdNl) return;   // the saved-language restore runs before this block
+            if (pdNl.status) setPdNlStatus(pdNl.status.state, pdNl.status.key);
+            if (pdNl.view !== 'product') setPdNlReach(pdNl.view === 'newsletter' ? 'newsletter' : 'transition');
+        }
+
+        function resetPdNlForm() {
+            const form = document.getElementById('pdNlForm');
+            const input = document.getElementById('pdNlEmail');
+            const submit = document.getElementById('pdNlSubmit');
+            pdNl.submitting += 1;   // a reply still in flight no longer applies
+            if (form && form.classList.contains('is-joined')) {
+                form.classList.remove('is-joined');
+                if (input) input.value = '';
+            }
+            if (input) { input.readOnly = false; input.removeAttribute('aria-invalid'); }
+            if (submit) submit.disabled = false;
+            setPdNlStatus('', null);
+        }
+
+        (function initPdNlForm() {
+            const form = document.getElementById('pdNlForm');
+            const input = document.getElementById('pdNlEmail');
+            const submit = document.getElementById('pdNlSubmit');
+            if (!form || !input || !submit) return;
+
+            input.addEventListener('input', () => {
+                if (input.getAttribute('aria-invalid') === 'true') {
+                    input.removeAttribute('aria-invalid');
+                    setPdNlStatus('', null);
+                }
+            });
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                if (pdNl.view !== 'newsletter' || submit.disabled || form.classList.contains('is-joined')) return;
+
+                const email = input.value.trim();
+                if (!PD_NL_EMAIL_RE.test(email)) {
+                    input.setAttribute('aria-invalid', 'true');
+                    setPdNlStatus('error', 'pdNlInvalid');
+                    focusElementSafely(input);
+                    return;
+                }
+
+                const ticket = ++pdNl.submitting;
+                submit.disabled = true;
+                input.readOnly = true;
+                setPdNlStatus('loading', 'pdNlJoining');
+
+                let outcome = 'error';
+                let welcomeSent = true;
+                try {
+                    const response = await fetch('/api/newsletter', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, interest: pdNl.interest || undefined })
+                    });
+                    const result = await response.json().catch(() => ({}));
+                    // Success is only what the server confirms it saved.
+                    if (response.ok && result && result.ok === true) {
+                        outcome = 'success';
+                        welcomeSent = result.welcomeSent !== false;
+                    } else if (response.status === 400) {
+                        outcome = 'invalid';
+                    }
+                } catch (error) { /* offline or unreachable: an error, not a success */ }
+
+                if (ticket !== pdNl.submitting) return;   // the form was reset meanwhile
+
+                if (outcome === 'success') {
+                    form.classList.add('is-joined');
+                    setPdNlStatus('success', welcomeSent ? 'pdNlSuccess' : 'pdNlSuccessNoEmail');
+                    trackAnalyticsEvent('sign_up', { method: 'drop_updates', item_name: pdState && pdState.name });
+                    return;
+                }
+                input.readOnly = false;
+                submit.disabled = false;
+                if (outcome === 'invalid') {
+                    input.setAttribute('aria-invalid', 'true');
+                    setPdNlStatus('error', 'pdNlInvalid');
+                } else {
+                    setPdNlStatus('error', 'pdNlError');
+                }
+                focusElementSafely(input);
+            });
+        })();
+
+        // ---- wiring ----
+        (function wirePdNewsletter() {
+            if (!pdNlPanel || !pdNlScene || !productDetailOverlay) return;
+            setPdNlReach('product');
+
+            const back = document.getElementById('pdNlBack');
+            if (back) back.addEventListener('click', closePdNewsletter);
+
+            // Capture, so these run before the dialog's own close handlers:
+            // in the scene, close and the backdrop mean "back to the piece".
+            productDetailOverlay.addEventListener('click', (event) => {
+                if (pdNl.view === 'product') return;
+                const onClose = event.target.closest && event.target.closest('#pdClose');
+                if (onClose || event.target === productDetailOverlay) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closePdNewsletter();
+                }
+            }, true);
+
+            // Window capture runs before every document-level key handler.
+            window.addEventListener('keydown', (event) => {
+                if (!productDetailOverlay.classList.contains('open')) return;
+                if (event.key === 'Tab') { trapPdFocus(event); return; }
+                if (pdNl.view === 'product') return;
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    closePdNewsletter();
+                    return;
+                }
+                const inField = event.target && event.target.matches && event.target.matches('input, textarea');
+                // The product gallery's arrow keys must not reach a hidden piece.
+                if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight') && !inField) {
+                    event.stopImmediatePropagation();
+                }
+                // Nor may the keyboard scroll the piece behind the scene. Space
+                // is only refused on the dialog itself, so it still presses
+                // buttons.
+                const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'];
+                if ((scrollKeys.includes(event.key) && !inField) || (event.key === ' ' && event.target === pdNlPanel)) {
+                    event.preventDefault();
+                }
+            }, true);
+
+            // Wheel and touch: the scene's own content may scroll (a short
+            // phone screen with the keyboard open); nothing behind it may.
+            const holdStill = (event) => {
+                if (pdNl.view === 'product') return;
+                const content = pdNlEl('.pd-nl-content');
+                const canScroll = content && content.contains(event.target) && content.scrollHeight > content.clientHeight + 1;
+                if (!canScroll) event.preventDefault();
+            };
+            pdNlScene.addEventListener('wheel', holdStill, { passive: false });
+            pdNlScene.addEventListener('touchmove', holdStill, { passive: false });
+
+            const replace = () => { if (pdNl.view !== 'product') placePdNewsletter(); };
+            window.addEventListener('resize', replace);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => {
+                    replace();
+                    const input = document.getElementById('pdNlEmail');
+                    if (pdNl.view === 'newsletter' && input && document.activeElement === input) {
+                        input.scrollIntoView({ block: 'nearest' });
+                    }
+                });
+                window.visualViewport.addEventListener('scroll', replace);
+            }
+            // A phone keyboard can scroll the overlay even while it is held;
+            // the scene follows rather than sliding out of view.
+            productDetailOverlay.addEventListener('scroll', replace, { passive: true });
+            pdNlPanel.addEventListener('scroll', replace, { passive: true });
+        })();
+
+        // One dialog, one focus trap, in both compositions: Tab cycles through
+        // whatever is reachable right now and never leaves the panel. Another
+        // dialog opened on top (the size guide) keeps its own focus.
+        function trapPdFocus(event) {
+            if (!pdNlPanel) return;
+            const active = document.activeElement;
+            if (active && active !== document.body && !productDetailOverlay.contains(active)) return;
+            const candidates = Array.from(pdNlPanel.querySelectorAll(
+                'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+            const focusable = candidates.filter((el) => !el.disabled
+                && !el.closest('[inert]')
+                && !el.closest('[hidden]')
+                && el.getClientRects().length
+                && getComputedStyle(el).visibility !== 'hidden');
+            if (!focusable.length) { event.preventDefault(); return; }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            const index = focusable.indexOf(active);
+            if (event.shiftKey && (index <= 0)) {
+                event.preventDefault();
+                focusElementSafely(last);
+            } else if (!event.shiftKey && (index === -1 || index === focusable.length - 1)) {
+                event.preventDefault();
+                focusElementSafely(first);
+            }
         }
 
         // Clicking a product image opens the detail overlay

@@ -15,7 +15,8 @@
     { "source": "/newsletter", "destination": "/index.html" },
     { "source": "/contact", "destination": "/index.html" },
     { "source": "/checkout", "destination": "/checkout/index.html" },
-    { "source": "/checkout/success", "destination": "/checkout/success/index.html" }
+    { "source": "/checkout/success", "destination": "/checkout/success/index.html" },
+    { "source": "/admin/inventory", "destination": "/admin/inventory/index.html" }
   ],
   "headers": [
     {
@@ -38,10 +39,20 @@
       ]
     },
     {
+      "source": "/admin/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
+  ],
+  "crons": [
+    { "path": "/api/inventory?sweep=1", "schedule": "17 4 * * *" }
   ]
 }

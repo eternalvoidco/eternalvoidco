@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Inventory | VOID©</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg?v=20260713-ev">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!--
+        The private inventory dashboard.
+
+        This page is a shell: it holds no data and grants nothing. Every figure is
+        fetched from /api/inventory?scope=admin and every change is posted to
+        /api/inventory, and the server checks the caller on each request — a
+        valid Supabase session, a confirmed email, and that email listed in
+        VOID_ADMIN_EMAILS. Anyone else who opens this page gets a sign-in form
+        and, after signing in, a refusal.
+    -->
+    <style>
+        :root {
+            --black: #000;
+            --white: #f5f2ec;
+            --muted: #bdb5a8;
+            --grey: #8f8778;
+            --line: rgba(199, 169, 108, 0.22);
+            --gold: #c7a96c;
+            --gold-bright: #e6c682;
+            --gold-gradient: linear-gradient(135deg, #e7d4a6 0%, #c7a96c 46%, #9c7c46 100%);
+            --warn: #d99a86;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            background: radial-gradient(120% 80% at 12% -10%, rgba(199, 169, 108, 0.07), transparent 46%), var(--black);
+            color: var(--white);
+            font-family: 'Jost', system-ui, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            padding: 2rem clamp(1rem, 4vw, 3rem) 4rem;
+        }
+        a { color: var(--gold); }
+        h1, h2 { font-family: 'Cormorant Garamond', serif; font-weight: 500; letter-spacing: 0.03em; }
+        h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); }
+        h2 { font-size: 1.35rem; margin: 2.4rem 0 0.8rem; }
+        .eyebrow { color: var(--gold); font-size: 0.62rem; letter-spacing: 0.34em; text-transform: uppercase; }
+        .muted { color: var(--grey); font-size: 0.82rem; }
+        .shell { max-width: 1120px; margin: 0 auto; }
+        header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.6rem; }
+        .who { color: var(--muted); font-size: 0.85rem; }
+        button, input, select, textarea { font: inherit; color: inherit; }
+        .btn {
+            border: 1px solid rgba(199, 169, 108, 0.55); background: transparent; color: var(--white);
+            padding: 0.55rem 1rem; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer;
+        }
+        .btn:hover, .btn:focus-visible { border-color: var(--gold-bright); }
+        .btn.primary { background: var(--gold-gradient); color: #120d05; font-weight: 600; border-color: transparent; }
+        .btn:disabled { opacity: 0.5; cursor: default; }
+        .card { border: 1px solid var(--line); background: linear-gradient(145deg, rgba(14, 13, 11, 0.96), rgba(0, 0, 0, 0.98)); padding: 1.4rem; }
+        .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+        .totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-top: 0.9rem; }
+        .total b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 500; line-height: 1.1; }
+        .total span { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); }
+        .total.gold b { color: var(--gold-bright); }
+        .table-wrap { overflow-x: auto; border: 1px solid var(--line); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+        th, td { padding: 0.6rem 0.8rem; text-align: right; border-bottom: 1px solid rgba(245, 242, 236, 0.06); white-space: nowrap; }
+        th:first-child, td:first-child, th.left, td.left { text-align: left; }
+        th { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); font-weight: 500; }
+        td.reason { white-space: normal; min-width: 220px; text-align: left; color: var(--muted); }
+        tr.group td { background: rgba(199, 169, 108, 0.06); color: var(--gold); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; }
+        .zero { color: var(--grey); }
+        .neg { color: var(--warn); }
+        form.adjust { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); align-items: end; }
+        label span { display: block; font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.3rem; }
+        input, select, textarea {
+            width: 100%; background: transparent; border: 0; border-bottom: 1px solid rgba(245, 242, 236, 0.16);
+            padding: 0.45rem 0; outline: none;
+        }
+        select option { background: #0b0b0b; }
+        input:focus, select:focus, textarea:focus { border-bottom-color: var(--gold); }
+        .wide { grid-column: 1 / -1; }
+        .notice { border-left: 2px solid var(--gold); padding: 0.7rem 1rem; background: rgba(199, 169, 108, 0.06); font-size: 0.86rem; margin: 1rem 0; }
+        .notice.error { border-left-color: var(--warn); background: rgba(217, 154, 134, 0.07); }
+        .notice[hidden], [hidden] { display: none !important; }
+        .signin { max-width: 420px; margin: 8vh auto 0; }
+        .signin form { display: grid; gap: 1.1rem; margin-top: 1.4rem; }
+        .help { margin-top: 0.4rem; color: var(--grey); font-size: 0.78rem; }
+        @media (max-width: 640px) { .totals { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <!-- Signed out -->
+        <section class="signin card" id="signinView" hidden>
+            <p class="eyebrow">VOID© Atelier</p>
+            <h1>Inventory</h1>
+            <p class="muted">Sign in with an authorised VOID account.</p>
+            <form id="signinForm">
+                <label><span>Email</span><input type="email" id="signinEmail" autocomplete="username" required></label>
+                <label><span>Password</span><input type="password" id="signinPassword" autocomplete="current-password" required></label>
+                <button class="btn primary" type="submit" id="signinButton">Sign in</button>
+            </form>
+            <p class="notice error" id="signinError" role="alert" hidden></p>
+        </section>
+
+        <!-- Signed in -->
+        <main id="dashView" hidden>
+            <header class="top">
+                <div>
+                    <p class="eyebrow">VOID© Atelier · Private</p>
+                    <h1>Inventory</h1>
+                    <p class="who">Signed in as <strong id="whoEmail"></strong> · <span id="updatedAt" class="muted"></span></p>
+                </div>
+                <div>
+                    <button class="btn" type="button" id="refreshButton">Refresh</button>
+                    <button class="btn" type="button" id="signoutButton">Sign out</button>
+                </div>
+            </header>
+
+            <p class="notice error" id="dashError" role="alert" hidden></p>
+            <p class="notice" id="expiredNotice" hidden></p>
+
+            <div class="grid" id="productCards"></div>
+
+            <h2>By size</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Size</th><th>Available</th><th>Reserved</th><th>On hand</th><th>Sold</th><th>Returned</th><th>Adjustments</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sizeRows"></tbody>
+                </table>
+            </div>
+            <p class="help">Available = on hand − reserved. Reserved units are held by open checkouts and are never counted as sold; they return on their own if the checkout ends unpaid. Adjustments are the net of manual adjustments, stocktakes and the initial reconciliation.</p>
+
+            <h2>Adjust stock</h2>
+            <div class="card">
+                <form class="adjust" id="adjustForm">
+                    <label><span>Piece and size</span><select id="adjVariant" required></select></label>
+                    <label><span>Action</span>
+                        <select id="adjMode">
+                            <option value="adjust">Adjust by (+/−)</option>
+                            <option value="set">Set on-hand count (stocktake)</option>
+                            <option value="return">Restock an approved return</option>
+                        </select>
+                    </label>
+                    <label><span id="adjQtyLabel">Change</span><input type="number" id="adjQuantity" step="1" required></label>
+                    <label id="adjOrderField" hidden><span>Order number</span><input type="text" id="adjOrder" placeholder="EV-26-XXXXXX" autocomplete="off"></label>
+                    <label class="wide"><span>Reason (recorded in the audit trail)</span><input type="text" id="adjReason" maxlength="500" required placeholder="e.g. Two damaged in transit"></label>
+                    <div class="wide">
+                        <button class="btn primary" type="submit" id="adjSubmit">Apply</button>
+                    </div>
+                </form>
+                <p class="help" id="adjHelp"></p>
+                <p class="notice" id="adjResult" role="status" hidden></p>
+            </div>
+
+            <h2>Newsletter</h2>
+            <div class="card">
+                <div class="totals" id="newsletterTotals"></div>
+                <p class="help" id="newsletterInterests"></p>
+                <p class="help">Both signup forms save here. Unsubscribed addresses are kept only so they are never emailed again, and are never in the export.</p>
+                <button class="btn" type="button" id="exportAudience">Download subscribed list (CSV)</button>
+            </div>
+
+            <h2>Needs attention</h2>
+            <div id="attention"><p class="muted">Nothing to review.</p></div>
+
+            <h2>Open checkout holds</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Order</th><th class="left">Piece</th><th>Units</th><th>Payment</th><th>Held until</th></tr></thead>
+                    <tbody id="holdRows"></tbody>
+                </table>
+            </div>
+
+            <h2>Audit trail</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>When</th><th class="left">Piece</th><th class="left">Kind</th><th>Change</th><th>On hand after</th><th class="left">Order</th><th class="left">By</th><th class="left">Reason</th></tr></thead>
+                    <tbody id="movementRows"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { getSession, signIn, signOut } from '/assets/supabase-client.js';
+
+        const $ = (id) => document.getElementById(id);
+        const NAMES = { 'levitate-tee': 'Levitate', 'endzustand-tee': 'Endzustand' };
+        const KIND = {
+            initial: 'Initial allocation', reconciliation: 'Reconciliation', adjustment: 'Adjustment',
+            stocktake: 'Stocktake', return_restock: 'Return restocked', sale: 'Sale', sale_shortfall: 'Paid without stock'
+        };
+        const ERRORS = {
+            reason_required: 'A reason of at least three characters is required.',
+            invalid_quantity: 'Enter a whole number (non-zero for an adjustment).',
+            below_reserved: 'That would leave fewer units on hand than are currently held in open checkouts.',
+            would_go_negative: 'That would take on-hand stock below zero.',
+            no_change: 'That count matches what is already on hand.',
+            order_not_found: 'No order with that number.',
+            order_not_paid: 'That order was never paid, so nothing from it can be returned.',
+            variant_not_in_order: 'That order did not include this piece in this size.',
+            exceeds_returnable: 'More than that order bought, less what has already been restocked.',
+            unknown_variant: 'Unknown piece or size.',
+            forbidden: 'This account is not authorised to manage inventory.',
+            admin_not_configured: 'No administrators are configured. Set VOID_ADMIN_EMAILS in the deployment environment.'
+        };
+        let token = null;
+        let data = null;
+        let pollTimer = null;
+
+        const pieceName = (variantId) => {
+            const [slug, size] = variantId.split(':');
+            return `${NAMES[slug] || slug} · ${size}`;
+        };
+        const when = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—');
+
+        function cell(text, cls) {
+            const td = document.createElement('td');
+            td.textContent = text == null ? '—' : String(text);
+            if (cls) td.className = cls;
+            return td;
+        }
+        function num(n, { signed = false } = {}) {
+            const td = cell(signed && n > 0 ? `+${n}` : n);
+            if (n === 0) td.classList.add('zero');
+            if (n < 0) td.classList.add('neg');
+            return td;
+        }
+
+        function show(view) {
+            $('signinView').hidden = view !== 'signin';
+            $('dashView').hidden = view !== 'dash';
+        }
+
+        async function api(method, url, body) {
+            const res = await fetch(url, {
+                method,
+                cache: 'no-store',
+                headers: { Authorization: `Bearer ${token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+                body: body ? JSON.stringify(body) : undefined
+            });
+            const payload = await res.json().catch(() => ({}));
+            return { status: res.status, payload };
+        }
+
+        async function load() {
+            const session = await getSession().catch(() => null);
+            token = session ? session.access_token : null;
+            if (!token) { show('signin'); return; }
+
+            const { status, payload } = await api('GET', '/api/inventory?scope=admin');
+            if (status === 401) { show('signin'); return; }
+            if (status !== 200) {
+                show('signin');
+                $('signinError').textContent = ERRORS[payload.error] || 'The dashboard could not be loaded.';
+                $('signinError').hidden = false;
+                return;
+            }
+            data = payload;
+            render();
+            show('dash');
+            schedule();
+        }
+
+        function schedule() {
+            window.clearTimeout(pollTimer);
+            if (!document.hidden) pollTimer = window.setTimeout(refresh, 30000);
+        }
+
+        async function refresh() {
+            const { status, payload } = await api('GET', '/api/inventory?scope=admin');
+            if (status === 200) { data = payload; render(); $('dashError').hidden = true; }
+            else if (status === 401) { show('signin'); return; }
+            else { $('dashError').textContent = ERRORS[payload.error] || 'Refresh failed.'; $('dashError').hidden = false; }
+            schedule();
+        }
+
+        function render() {
+            $('whoEmail').textContent = data.admin;
+            $('updatedAt').textContent = `updated ${when(data.serverTime)}`;
+
+            const expired = Number(data.expiredHolds) || 0;
+            $('expiredNotice').hidden = expired === 0;
+            $('expiredNotice').textContent = `${expired} hold(s) have passed their deadline and are being returned once Stripe confirms their checkouts can no longer be paid.`;
+
+            // Per design
+            const bySlug = {};
+            data.items.forEach((item) => {
+                const t = bySlug[item.productSlug] || (bySlug[item.productSlug] = { available: 0, reserved: 0, sold: 0, returned: 0, onHand: 0 });
+                ['available', 'reserved', 'sold', 'returned', 'onHand'].forEach((k) => { t[k] += item[k]; });
+            });
+            const cards = $('productCards');
+            cards.textContent = '';
+            Object.entries(bySlug).forEach(([slug, t]) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const title = document.createElement('h2');
+                title.style.margin = '0';
+                title.textContent = NAMES[slug] || slug;
+                const totals = document.createElement('div');
+                totals.className = 'totals';
+                [['Available', t.available, 'gold'], ['Reserved', t.reserved], ['Sold', t.sold], ['Returned', t.returned]].forEach(([label, value, cls]) => {
+                    const box = document.createElement('div');
+                    box.className = `total ${cls || ''}`;
+                    const b = document.createElement('b');
+                    b.textContent = String(value);
+                    const span = document.createElement('span');
+                    span.textContent = label;
+                    box.append(b, span);
+                    totals.appendChild(box);
+                });
+                card.append(title, totals);
+                cards.appendChild(card);
+            });
+
+            // Per size
+            const rows = $('sizeRows');
+            rows.textContent = '';
+            let group = null;
+            data.items.forEach((item) => {
+                if (item.productSlug !== group) {
+                    group = item.productSlug;
+                    const tr = document.createElement('tr');
+                    tr.className = 'group';
+                    const td = cell(NAMES[group] || group);
+                    td.colSpan = 7;
+                    tr.appendChild(td);
+                    rows.appendChild(tr);
+                }
+                const tr = document.createElement('tr');
+                tr.append(cell(item.size), num(item.available), num(item.reserved), num(item.onHand),
+                    num(item.sold), num(item.returned), num(item.adjustments, { signed: true }));
+                rows.appendChild(tr);
+            });
+
+            // Variant picker, keeping the current choice
+            const select = $('adjVariant');
+            const current = select.value;
+            select.textContent = '';
+            data.items.forEach((item) => {
+                const option = document.createElement('option');
+                option.value = item.variantId;
+                option.textContent = `${pieceName(item.variantId)} — ${item.onHand} on hand, ${item.reserved} held`;
+                select.appendChild(option);
+            });
+            if (current) select.value = current;
+
+            // Newsletter
+            const nl = data.newsletter;
+            const nlTotals = $('newsletterTotals');
+            nlTotals.textContent = '';
+            if (nl) {
+                [['Subscribed', nl.subscribed, 'gold'], ['Unsubscribed', nl.unsubscribed]].forEach(([label, value, cls]) => {
+                    const box = document.createElement('div');
+                    box.className = `total ${cls || ''}`;
+                    const b = document.createElement('b');
+                    b.textContent = String(value);
+                    const span = document.createElement('span');
+                    span.textContent = label;
+                    box.append(b, span);
+                    nlTotals.appendChild(box);
+                });
+                const interests = Object.entries(nl.interests || {}).map(([slug, n]) => `${NAMES[slug] || slug} ${n}`);
+                $('newsletterInterests').textContent = interests.length
+                    ? `Asked to be notified from a sold-out piece: ${interests.join(' · ')}`
+                    : '';
+            }
+
+            // Attention
+            const attention = $('attention');
+            attention.textContent = '';
+            if (!data.attention.length) {
+                const p = document.createElement('p');
+                p.className = 'muted';
+                p.textContent = 'Nothing to review.';
+                attention.appendChild(p);
+            } else {
+                data.attention.forEach((a) => {
+                    const p = document.createElement('p');
+                    p.className = 'notice error';
+                    p.textContent = a.inventoryStatus === 'shortfall'
+                        ? `${a.orderNumber}: paid for more units than were left to allocate. Refund or source the piece, then correct stock if needed.`
+                        : `${a.orderNumber}: Stripe reported a different amount than the order total. Not fulfilled; its pieces stay held until you review it in Stripe.`;
+                    attention.appendChild(p);
+                });
+            }
+
+            // Holds
+            const holds = $('holdRows');
+            holds.textContent = '';
+            if (!data.holds.length) {
+                const tr = document.createElement('tr');
+                const td = cell('No open holds.', 'left zero');
+                td.colSpan = 5;
+                tr.appendChild(td);
+                holds.appendChild(tr);
+            }
+            data.holds.forEach((h) => {
+                const tr = document.createElement('tr');
+                tr.append(cell(h.orderNumber), cell(pieceName(h.variantId), 'left'), num(h.quantity), cell(h.paymentStatus),
+                    cell(h.expiresAt ? when(h.expiresAt) : 'Payment processing — held'));
+                holds.appendChild(tr);
+            });
+
+            // Audit trail
+            const moves = $('movementRows');
+            moves.textContent = '';
+            data.movements.forEach((m) => {
+                const tr = document.createElement('tr');
+                tr.append(cell(when(m.createdAt)), cell(pieceName(m.variantId), 'left'), cell(KIND[m.kind] || m.kind, 'left'),
+                    num(m.delta, { signed: true }), num(m.onHandAfter), cell(m.orderNumber || '', 'left'),
+                    cell(m.actorEmail || (m.kind === 'sale' ? 'Payment' : 'System'), 'left'), cell(m.reason || '', 'reason'));
+                moves.appendChild(tr);
+            });
+        }
+
+        function syncModeFields() {
+            const mode = $('adjMode').value;
+            $('adjOrderField').hidden = mode !== 'return';
+            $('adjOrder').required = mode === 'return';
+            $('adjQtyLabel').textContent = mode === 'adjust' ? 'Change (+/−)' : mode === 'set' ? 'Units physically on hand' : 'Units returned';
+            $('adjQuantity').min = mode === 'adjust' ? '' : mode === 'set' ? '0' : '1';
+            $('adjHelp').textContent = mode === 'return'
+                ? 'Only for a piece that has physically come back and been approved for resale. A refund on its own never restocks anything.'
+                : mode === 'set'
+                    ? 'Sets on-hand stock to a counted figure. Units held in open checkouts are included in on hand.'
+                    : 'Adds or removes units — damage, loss, a found piece. Use a negative number to remove.';
+        }
+
+        $('adjMode').addEventListener('change', syncModeFields);
+        syncModeFields();
+
+        $('adjustForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const body = {
+                action: 'adjust',
+                variantId: $('adjVariant').value,
+                mode: $('adjMode').value,
+                quantity: Number($('adjQuantity').value),
+                reason: $('adjReason').value,
+                orderNumber: $('adjOrder').value
+            };
+            $('adjSubmit').disabled = true;
+            const { status, payload } = await api('POST', '/api/inventory', body);
+            $('adjSubmit').disabled = false;
+            const result = $('adjResult');
+            result.hidden = false;
+            if (status === 200) {
+                result.className = 'notice';
+                result.textContent = `${pieceName(body.variantId)}: ${payload.item.onHand} on hand, ${payload.item.available} available.`;
+                $('adjQuantity').value = '';
+                $('adjReason').value = '';
+                await refresh();
+            } else {
+                result.className = 'notice error';
+                result.textContent = ERRORS[payload.error] || (status === 401 ? 'Your session has ended. Sign in again.' : 'That change was not applied.');
+                if (payload.error === 'exceeds_returnable' && payload.returnable != null) result.textContent += ` Returnable: ${payload.returnable}.`;
+            }
+        });
+
+        $('signinForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            $('signinError').hidden = true;
+            $('signinButton').disabled = true;
+            try {
+                const { error } = await signIn($('signinEmail').value.trim(), $('signinPassword').value);
+                if (error) throw error;
+                await load();
+            } catch (error) {
+                $('signinError').textContent = 'Those details were not accepted.';
+                $('signinError').hidden = false;
+            } finally {
+                $('signinButton').disabled = false;
+            }
+        });
+
+        $('exportAudience').addEventListener('click', async () => {
+            const res = await fetch('/api/inventory?scope=admin&export=audience', {
+                cache: 'no-store', headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) {
+                $('dashError').textContent = 'The list could not be exported.';
+                $('dashError').hidden = false;
+                return;
+            }
+            const url = URL.createObjectURL(await res.blob());
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'void-newsletter-subscribed.csv';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        });
+
+        $('refreshButton').addEventListener('click', refresh);
+        $('signoutButton').addEventListener('click', async () => { await signOut().catch(() => {}); token = null; show('signin'); });
+        document.addEventListener('visibilitychange', () => { if (!document.hidden && token) refresh(); });
+
+        load().catch(() => {
+            show('signin');
+            $('signinError').textContent = 'Sign-in is not available right now.';
+            $('signinError').hidden = false;
+        });
+    </script>
+</body>
+</html>

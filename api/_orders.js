@@ -121,146 +121,76 @@ export function generateOrderNumber(now = new Date()) {
     return `EV-${yy}-${tail}`;
 }
 
+// ── Calls into the database functions ───────────────────────────────────────
+// Every write that touches stock is a Postgres function (see
+// supabase/migrations/20261004120000_inventory.sql) so it runs as one
+// transaction with row locks. PostgREST exposes them at /rpc/<name>; EXECUTE is
+// granted to service_role only.
+export function rpc(name, args, op) {
+    return rest(`/rpc/${name}`, { method: 'POST', body: args || {}, op: op || `rpc ${name}` });
+}
+
 // ── Writes ───────────────────────────────────────────────────────────────────
 
-export async function createPendingOrder(order, items) {
+// Writes the order, its lines and the stock hold in one transaction. Returns
+// either { ok: true, order, expiresAt } or { ok: false, error, issues } with
+// nothing written.
+export async function openOrder(order, items, ttlSeconds) {
     // order_number is random rather than sequential, so a collision is possible
     // even if vanishingly rare (32^6 ≈ 1.07e9). The unique constraint catches
-    // it; retrying with a fresh number is cheaper than making the customer pay
-    // for a birthday-paradox draw.
-    let row;
+    // it (PostgREST answers 409) and the whole transaction rolls back, holds
+    // included; retrying with a fresh number is cheaper than making the
+    // customer pay for a birthday-paradox draw.
     for (let attempt = 0; ; attempt += 1) {
         try {
-            [row] = await rest('/orders', {
-                method: 'POST',
-                body: [order],
-                prefer: 'return=representation',
-                op: 'insert orders'
-            });
-            break;
+            return await rpc('checkout_open_order', {
+                p_order: order,
+                p_items: items,
+                p_ttl_seconds: ttlSeconds
+            }, 'open order');
         } catch (error) {
             if (error.status !== 409 || attempt >= 4) throw error;
             order = { ...order, order_number: generateOrderNumber() };
         }
     }
-
-    // order_items.order_id is a FK onto orders.id, so it must be the primary key
-    // the database actually persisted — not the order number, not the intent id,
-    // not anything generated here. If the representation came back empty we do
-    // not have that value, and inserting the lines would fail the constraint
-    // with a far less obvious message than this one.
-    if (!row || !row.id) {
-        throw Object.assign(new Error('orders insert returned no representation'), {
-            code: 'supabase_error',
-            op: 'insert orders',
-            status: 200,
-            details: 'Prefer: return=representation did not yield a row with an id'
-        });
-    }
-
-    if (items.length) {
-        try {
-            await rest('/order_items', {
-                method: 'POST',
-                body: items.map((item) => ({ ...item, order_id: row.id })),
-                prefer: 'return=minimal',
-                op: 'insert order_items'
-            });
-        } catch (error) {
-            // An order with no lines is worse than no order: it would sit
-            // pending forever and could never be fulfilled. Roll the header
-            // back so the failure is clean, and keep the original cause.
-            try {
-                await rest(`/orders?id=eq.${encodeURIComponent(row.id)}`, {
-                    method: 'DELETE',
-                    prefer: 'return=minimal',
-                    op: 'rollback orders'
-                });
-                error.rolledBack = true;
-            } catch (cleanupError) {
-                error.rolledBack = false;
-                error.cleanupFailure = cleanupError.message;
-            }
-            throw error;
-        }
-    }
-    return row;
 }
 
-export function attachPaymentIntent(orderId, paymentIntentId) {
+export function attachPaymentIntent(orderId, paymentIntentId, livemode) {
     return rest(`/orders?id=eq.${encodeURIComponent(orderId)}`, {
         method: 'PATCH',
-        body: { stripe_payment_intent_id: paymentIntentId, updated_at: new Date().toISOString() },
+        body: {
+            stripe_payment_intent_id: paymentIntentId,
+            livemode: typeof livemode === 'boolean' ? livemode : null,
+            updated_at: new Date().toISOString()
+        },
         prefer: 'return=minimal',
         op: 'attach payment_intent'
     });
 }
 
-// Only ever moves a pending order forward, so a replayed or out-of-order
-// webhook cannot resurrect an order that was already settled or cancelled.
-export async function markOrderPaid(paymentIntentId, { amountReceived, currency }) {
+// ── Webhook ledger ───────────────────────────────────────────────────────────
+// Every transition the webhook drives is idempotent in the database, so the
+// ledger is a fast path and a record rather than the lock: an event is written
+// here only AFTER it has been processed. Claiming first would mean a delivery
+// that failed halfway was then skipped on every retry.
+export async function eventSeen(eventId) {
     const rows = await rest(
-        `/orders?stripe_payment_intent_id=eq.${encodeURIComponent(paymentIntentId)}&select=*`,
-        { op: 'find order by intent' }
+        `/stripe_events?event_id=eq.${encodeURIComponent(eventId)}&select=event_id`,
+        { op: 'find event' }
     );
-    const order = rows && rows[0];
-    if (!order) return { ok: false, reason: 'order_not_found' };
-    if (order.payment_status === 'paid') return { ok: true, order, alreadyPaid: true };
-
-    // The webhook is authoritative, but it should still agree with what we
-    // asked for. A mismatch is a bug or a tamper — record, do not fulfil.
-    if (Number(amountReceived) !== Number(order.total_amount)
-        || String(currency).toLowerCase() !== String(order.currency).toLowerCase()) {
-        await rest(`/orders?id=eq.${encodeURIComponent(order.id)}`, {
-            method: 'PATCH',
-            body: { payment_status: 'failed', updated_at: new Date().toISOString() },
-            prefer: 'return=minimal'
-        });
-        return { ok: false, reason: 'amount_mismatch', order };
-    }
-
-    const now = new Date().toISOString();
-    const [updated] = await rest(
-        `/orders?id=eq.${encodeURIComponent(order.id)}&payment_status=eq.pending`,
-        {
-            method: 'PATCH',
-            body: { payment_status: 'paid', status: 'confirmed', paid_at: now, updated_at: now },
-            prefer: 'return=representation'
-        }
-    );
-
-    // Lost the race to a concurrent delivery of the same event; that delivery
-    // owns the side effects.
-    if (!updated) return { ok: true, order, alreadyPaid: true };
-    return { ok: true, order: updated, alreadyPaid: false };
+    return Array.isArray(rows) && rows.length > 0;
 }
 
-export async function markPaymentFailed(paymentIntentId) {
-    await rest(
-        `/orders?stripe_payment_intent_id=eq.${encodeURIComponent(paymentIntentId)}&payment_status=eq.pending`,
-        {
-            method: 'PATCH',
-            body: { payment_status: 'failed', updated_at: new Date().toISOString() },
-            prefer: 'return=minimal'
-        }
-    );
-}
-
-// ── Idempotency ──────────────────────────────────────────────────────────────
-// The insert is the lock: stripe_events.event_id is a primary key, so a
-// duplicate delivery loses on conflict and returns false. Nothing downstream —
-// stock, email — runs twice.
-export async function claimEvent(eventId, type) {
+export async function recordEvent(eventId, type) {
     try {
         await rest('/stripe_events', {
             method: 'POST',
             body: [{ event_id: eventId, type }],
-            prefer: 'return=minimal'
+            prefer: 'return=minimal',
+            op: 'record event'
         });
-        return true;
     } catch (error) {
-        if (error.status === 409) return false;
-        throw error;
+        if (error.status !== 409) throw error;
     }
 }
 
@@ -287,4 +217,18 @@ export async function findOrderItems(orderId) {
         `/order_items?order_id=eq.${encodeURIComponent(orderId)}`
         + '&select=product_name,size,sku,unit_amount,quantity,image_path'
     );
+}
+
+export async function findOrderIdByIntent(paymentIntentId) {
+    const rows = await rest(
+        `/orders?stripe_payment_intent_id=eq.${encodeURIComponent(paymentIntentId)}&select=id`,
+        { op: 'find order by intent' }
+    );
+    return (rows && rows[0] && rows[0].id) || null;
+}
+
+// A plain read for server-side admin exports. The path is always built by the
+// caller from constants, never from request input.
+export function selectRows(path, op) {
+    return rest(path, { op: op || `select ${path.split('?')[0]}` });
 }

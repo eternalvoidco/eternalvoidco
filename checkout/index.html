@@ -53,7 +53,7 @@
         <!-- Empty bag. Rendered instead of the form, never alongside it. -->
         <section class="ck-empty" id="ckEmpty">
             <h1 class="ck-empty-title">Your selection is empty</h1>
-            <p class="ck-empty-note">Nothing has been placed in your bag yet. The season one pieces are in the collection.</p>
+            <p class="ck-empty-note" id="ckEmptyNote">Nothing has been placed in your bag yet. The season one pieces are in the collection.</p>
             <a class="ck-cta" href="/shop" style="display:grid;place-items:center;text-decoration:none;">Return to Collection</a>
         </section>
 
@@ -180,6 +180,9 @@
 
                 <div id="ckPaymentElement" aria-live="polite"></div>
 
+                <!-- When the held pieces return to the collection if unpaid. -->
+                <p class="ck-summary-note ck-hold-note" id="ckHoldNote" hidden></p>
+
                 <label class="ck-check">
                     <input type="checkbox" id="ckBillingSame" checked>
                     <span class="ck-check-box" aria-hidden="true"></span>
@@ -253,6 +256,6 @@
         </div>
     </div>
 
-    <script type="module" src="/assets/void-checkout.js?v=20260908a"></script>
+    <script type="module" src="/assets/void-checkout.js?v=20261004a"></script>
 </body>
 </html>
