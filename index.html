@@ -12259,8 +12259,10 @@
         .void-auth-toast {
             position: fixed;
             left: 50%;
-            /* Sits above the bottom dock so it never covers it. */
-            bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+            /* Low in the frame, clear of the hero's content. (The bottom dock
+               it used to sit above is gone.) Centred, so it never meets the
+               cart button in the bottom-right corner. */
+            bottom: calc(1.6rem + env(safe-area-inset-bottom, 0px));
             transform: translate(-50%, 160%);
             z-index: 1900;
             max-width: min(92vw, 430px);
@@ -12330,7 +12332,8 @@
             .void-auth-toast {
                 left: 0.8rem;
                 right: 0.8rem;
-                bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+                /* Full width on phones, so it stays just above the cart button. */
+                bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
                 max-width: none;
                 transform: translateY(160%);
             }
