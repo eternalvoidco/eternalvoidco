@@ -193,7 +193,7 @@
         import { getSession, signIn, signOut } from '/assets/supabase-client.js';
 
         const $ = (id) => document.getElementById(id);
-        const NAMES = { 'levitate-tee': 'Levitate', 'endzustand-tee': 'Endzustand' };
+        const NAMES = { 'levitate-tee': 'Levitate', 'endzustand-tee': 'Endzustand', neant: 'NÉANT' };
         const KIND = {
             initial: 'Initial allocation', reconciliation: 'Reconciliation', adjustment: 'Adjustment',
             stocktake: 'Stocktake', return_restock: 'Return restocked', sale: 'Sale', sale_shortfall: 'Paid without stock'
@@ -370,7 +370,7 @@
                 });
                 const interests = Object.entries(nl.interests || {}).map(([slug, n]) => `${NAMES[slug] || slug} ${n}`);
                 $('newsletterInterests').textContent = interests.length
-                    ? `Asked to be notified from a sold-out piece: ${interests.join(' · ')}`
+                    ? `Asked to be notified about: ${interests.join(' · ')}`
                     : '';
             }
 

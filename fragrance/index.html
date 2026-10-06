@@ -10,9 +10,20 @@
         gtag('js', new Date());
         gtag('config', 'G-0J10500JCQ');
     </script>
+    <script>
+        // Before first paint: the chapters are a sequence only when the script
+        // can run them. Without it the page is one readable scroll.
+        document.documentElement.classList.add('nt-js');
+        try {
+            if (localStorage.getItem('void-reduce-motion') === '1'
+                && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.documentElement.classList.add('reduce-motion');
+            }
+        } catch (e) { /* storage blocked */ }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>NÉANT — Extrait de Parfum | VOID©</title>
-    <meta name="description" content="NÉANT, Extrait de Parfum by VOID©. The first fragrance of Eternal Void, revealed in fragments.">
+    <meta name="description" content="NÉANT, Extrait de Parfum by Eternal Void. Coming soon. Receive the unveiling.">
     <link rel="canonical" href="https://eternalvoid.co/fragrance">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#030302">
@@ -21,303 +32,247 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png?v=20260713-ev">
     <meta property="og:type" content="website">
     <meta property="og:title" content="NÉANT — Extrait de Parfum | VOID©">
-    <meta property="og:description" content="The first fragrance of Eternal Void, revealed in fragments.">
+    <meta property="og:description" content="The void has a scent. NÉANT, Extrait de Parfum by Eternal Void. Coming soon.">
     <meta property="og:url" content="https://eternalvoid.co/fragrance">
     <meta property="og:image" content="https://eternalvoid.co/assets/fragrance/neant-bottle-transparent.webp">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="NÉANT — Extrait de Parfum | VOID©">
-    <meta name="twitter:description" content="The first fragrance of Eternal Void, revealed in fragments.">
+    <meta name="twitter:description" content="The void has a scent. NÉANT, Extrait de Parfum by Eternal Void. Coming soon.">
     <meta name="twitter:image" content="https://eternalvoid.co/assets/fragrance/neant-bottle-transparent.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="image" href="/assets/fragrance/neant-bottle-transparent.webp">
-    <!-- Two voices, no more. Bodoni Moda is the display: high contrast, fine
-         hairlines, a properly drawn É, and a roman and an italic cut from one
-         family, so the statement never needs a third typeface. Jost carries
-         every piece of microcopy, as it does across the rest of the house. -->
+    <!-- Two voices, no more: Bodoni Moda for display, Jost for microcopy. -->
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/void-fragrance.css">
+    <!-- /assets is served immutable for a year: bump ?v= with every change. -->
+    <link rel="stylesheet" href="/assets/void-fragrance.css?v=20261006-neant">
 </head>
-<body>
-    <div class="fr-atmos" aria-hidden="true"></div>
+<body data-step="0">
+    <!-- One room, lit differently for each passage. The timeline fades these
+         layers; nothing else changes the light. -->
+    <div class="nt-atmos" aria-hidden="true">
+        <span class="nt-light nt-light--gold" data-light="gold"></span>
+        <span class="nt-light nt-light--citrus" data-light="citrus"></span>
+        <span class="nt-light nt-light--rose" data-light="rose"></span>
+        <span class="nt-light nt-light--smoke" data-light="smoke"></span>
+        <span class="nt-light nt-light--amber" data-light="amber"></span>
+        <span class="nt-vignette"></span>
+    </div>
 
-    <nav class="fr-nav" aria-label="Fragrance">
-        <a href="/shop">← Collection</a>
-        <span class="fr-nav-mark" aria-hidden="true"></span>
-        <a href="/">Eternal Void</a>
-    </nav>
+    <!-- The bottle as it is first suggested: a shape against light, with a
+         slow reflection crossing the glass. Shared by both announcement
+         passages so it never cuts between them. -->
+    <div class="nt-ghost" id="ntGhost" aria-hidden="true">
+        <span class="nt-ghost-halo"></span>
+        <img class="nt-ghost-shape" src="/assets/fragrance/neant-bottle-transparent.webp" alt="" width="1024" height="1536" decoding="async">
+        <img class="nt-ghost-lit" src="/assets/fragrance/neant-bottle-transparent.webp" alt="" width="1024" height="1536" decoding="async">
+        <span class="nt-ghost-sweep"></span>
+    </div>
 
-    <main>
-        <section class="fr-hero">
-            <!-- Product stage. Every layer is separate so each can respond to
-                 the pointer with its own weight — see PARALLAX in the script. -->
-            <div class="fr-stage" id="frStage">
-                <span class="fr-backglow" aria-hidden="true"></span>
-                <span class="fr-floor" aria-hidden="true"></span>
-                <span class="fr-shadow" aria-hidden="true"></span>
+    <header class="nt-nav">
+        <a href="/shop" data-i18n="navCollection">← Collection</a>
+        <a class="nt-nav-mark" href="/" aria-label="Eternal Void"><span aria-hidden="true"></span></a>
+        <a href="/" data-i18n="navHouse">Eternal Void</a>
+    </header>
 
-                <div class="fr-bottle-wrap">
-                    <div class="fr-bottle" id="frBottle">
-                        <img class="fr-bottle-img" src="/assets/fragrance/neant-bottle-transparent.webp"
-                             alt="The NÉANT bottle: black faceted glass with a gold serpent coiled at the neck, amber extrait within."
-                             width="1024" height="1536" fetchpriority="high" decoding="async">
-                        <span class="fr-glare" aria-hidden="true"></span>
-                        <span class="fr-edge" aria-hidden="true"></span>
+    <h1 class="nt-sr">NÉANT — Extrait de Parfum</h1>
+
+    <main id="ntMain">
+        <!-- ── 01 · The Announcement ───────────────────────────────── -->
+        <section class="nt-scene nt-prologue" id="prologue" data-step="0" data-chapter="1" aria-labelledby="ntPrologueTitle">
+            <h2 class="nt-sr" id="ntPrologueTitle" data-i18n="ch1">The Announcement</h2>
+            <div class="nt-prologue-lines">
+                <p class="nt-line" data-reveal="glyphs" data-at="500" data-per="34" data-i18n="mono1">Some presences are felt before they are seen.</p>
+                <p class="nt-line" data-reveal="glyphs" data-at="2500" data-per="34" data-i18n="mono2">They move through silence.</p>
+                <p class="nt-line nt-line--answer" data-reveal="glyphs" data-at="4300" data-per="34" data-i18n="mono3">And remain after they have gone.</p>
+            </div>
+        </section>
+
+        <section class="nt-scene nt-announce" id="announcement" data-step="1" data-chapter="1" aria-labelledby="ntAnnounceTitle">
+            <p class="nt-kicker" data-reveal="glyphs" data-at="300" data-per="40" data-i18n="presents">Eternal Void presents</p>
+            <div class="nt-announce-name">
+                <h2 class="nt-display" id="ntAnnounceTitle" data-reveal="glyphs" data-at="900" data-per="110" data-glyph-ms="1200">Néant</h2>
+                <p class="nt-kind" data-reveal="rise" data-at="1750">Extrait de Parfum</p>
+            </div>
+            <span class="nt-rule" data-reveal="rule" data-at="2050" aria-hidden="true"></span>
+            <p class="nt-tagline" data-reveal="glyphs" data-at="2350" data-per="45" data-i18n="tagline">The void has a scent.</p>
+        </section>
+
+        <!-- ── 02 · The Olfactory World ────────────────────────────── -->
+        <section class="nt-scene nt-accord nt-accord--opening" id="opening" data-step="2" data-chapter="2" aria-labelledby="ntOpeningTitle">
+            <div class="nt-accord-grid">
+                <header class="nt-accord-head" data-reveal="fade" data-at="150">
+                    <p class="nt-kicker"><span data-i18n="chapterWord">Chapter</span> 02 — <span data-i18n="ch2">The Olfactory World</span></p>
+                    <ol class="nt-movements" aria-hidden="true">
+                        <li aria-current="step"><span>I</span> <span data-i18n="opening">Opening</span></li>
+                        <li><span>II</span> <span data-i18n="heart">Heart</span></li>
+                        <li><span>III</span> <span data-i18n="base">Base</span></li>
+                    </ol>
+                </header>
+                <div class="nt-accord-story">
+                    <span class="nt-numeral" data-reveal="depth" data-at="200" aria-hidden="true">I</span>
+                    <p class="nt-movement-name" data-reveal="glyphs" data-at="420" data-per="40" data-i18n="opening">Opening</p>
+                    <h2 class="nt-accord-title" id="ntOpeningTitle" data-reveal="glyphs" data-at="640" data-per="45" data-i18n="openingTitle">First Light</h2>
+                    <p class="nt-accord-copy" data-reveal="rise" data-at="1100" data-i18n="openingCopy">A cold spark breaks the dark. Bergamot and blackcurrant sharpen the air; pink pepper flickers, and saffron draws a thread of gilded heat.</p>
+                </div>
+                <aside class="nt-notes" aria-labelledby="ntOpeningNotes">
+                    <p class="nt-notes-label" id="ntOpeningNotes" data-reveal="fade" data-at="1150" data-i18n="notesLabel">Notes</p>
+                    <ul>
+                        <li data-reveal="rise" data-at="1250" data-i18n="bergamot">Bergamot</li>
+                        <li data-reveal="rise" data-at="1370" data-i18n="blackcurrant">Blackcurrant</li>
+                        <li data-reveal="rise" data-at="1490" data-i18n="saffron">Saffron</li>
+                        <li data-reveal="rise" data-at="1610" data-i18n="pinkPepper">Pink pepper</li>
+                    </ul>
+                    <p class="nt-direction" data-reveal="fade" data-at="1800" data-i18n="direction">Creative direction — the composition is still being refined.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section class="nt-scene nt-accord nt-accord--heart" id="heart" data-step="3" data-chapter="2" aria-labelledby="ntHeartTitle">
+            <div class="nt-accord-grid">
+                <header class="nt-accord-head" data-reveal="fade" data-at="150">
+                    <p class="nt-kicker"><span data-i18n="chapterWord">Chapter</span> 02 — <span data-i18n="ch2">The Olfactory World</span></p>
+                    <ol class="nt-movements" aria-hidden="true">
+                        <li><span>I</span> <span data-i18n="opening">Opening</span></li>
+                        <li aria-current="step"><span>II</span> <span data-i18n="heart">Heart</span></li>
+                        <li><span>III</span> <span data-i18n="base">Base</span></li>
+                    </ol>
+                </header>
+                <div class="nt-accord-story">
+                    <span class="nt-numeral" data-reveal="depth" data-at="200" aria-hidden="true">II</span>
+                    <p class="nt-movement-name" data-reveal="glyphs" data-at="420" data-per="40" data-i18n="heart">Heart</p>
+                    <h2 class="nt-accord-title" id="ntHeartTitle" data-reveal="glyphs" data-at="640" data-per="45" data-i18n="heartTitle">The Inner Chamber</h2>
+                    <p class="nt-accord-copy" data-reveal="rise" data-at="1100" data-i18n="heartCopy">Behind closed doors, rose and jasmine open in the half-light. Incense rises from smoked woods: slow, devotional, close.</p>
+                </div>
+                <aside class="nt-notes" aria-labelledby="ntHeartNotes">
+                    <p class="nt-notes-label" id="ntHeartNotes" data-reveal="fade" data-at="1150" data-i18n="notesLabel">Notes</p>
+                    <ul>
+                        <li data-reveal="rise" data-at="1250" data-i18n="rose">Rose</li>
+                        <li data-reveal="rise" data-at="1370" data-i18n="jasmine">Jasmine</li>
+                        <li data-reveal="rise" data-at="1490" data-i18n="incense">Incense</li>
+                        <li data-reveal="rise" data-at="1610" data-i18n="smokyWoods">Smoky woods</li>
+                    </ul>
+                    <p class="nt-direction" data-reveal="fade" data-at="1800" data-i18n="direction">Creative direction — the composition is still being refined.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section class="nt-scene nt-accord nt-accord--base" id="base" data-step="4" data-chapter="2" aria-labelledby="ntBaseTitle">
+            <div class="nt-accord-grid">
+                <header class="nt-accord-head" data-reveal="fade" data-at="150">
+                    <p class="nt-kicker"><span data-i18n="chapterWord">Chapter</span> 02 — <span data-i18n="ch2">The Olfactory World</span></p>
+                    <ol class="nt-movements" aria-hidden="true">
+                        <li><span>I</span> <span data-i18n="opening">Opening</span></li>
+                        <li><span>II</span> <span data-i18n="heart">Heart</span></li>
+                        <li aria-current="step"><span>III</span> <span data-i18n="base">Base</span></li>
+                    </ol>
+                </header>
+                <div class="nt-accord-story">
+                    <span class="nt-numeral" data-reveal="depth" data-at="200" aria-hidden="true">III</span>
+                    <p class="nt-movement-name" data-reveal="glyphs" data-at="420" data-per="40" data-i18n="base">Base</p>
+                    <h2 class="nt-accord-title" id="ntBaseTitle" data-reveal="glyphs" data-at="640" data-per="45" data-i18n="baseTitle">What Remains</h2>
+                    <p class="nt-accord-copy" data-reveal="rise" data-at="1100" data-i18n="baseCopy">Oud and leather settle into the dark, softened by amber and vanilla. Patchouli and musk hold what is left: a presence, not a trace.</p>
+                </div>
+                <aside class="nt-notes" aria-labelledby="ntBaseNotes">
+                    <p class="nt-notes-label" id="ntBaseNotes" data-reveal="fade" data-at="1150" data-i18n="notesLabel">Notes</p>
+                    <ul>
+                        <li data-reveal="rise" data-at="1250" data-i18n="oud">Oud</li>
+                        <li data-reveal="rise" data-at="1340" data-i18n="amber">Amber</li>
+                        <li data-reveal="rise" data-at="1430" data-i18n="vanilla">Vanilla</li>
+                        <li data-reveal="rise" data-at="1520" data-i18n="leather">Leather</li>
+                        <li data-reveal="rise" data-at="1610" data-i18n="patchouli">Patchouli</li>
+                        <li data-reveal="rise" data-at="1700" data-i18n="musk">Musk</li>
+                    </ul>
+                    <p class="nt-direction" data-reveal="fade" data-at="1850" data-i18n="direction">Creative direction — the composition is still being refined.</p>
+                </aside>
+            </div>
+        </section>
+
+        <!-- ── 03 · NÉANT / The Unveiling ──────────────────────────── -->
+        <section class="nt-scene nt-unveil" id="unveiling" data-step="5" data-chapter="3" aria-labelledby="ntUnveilTitle">
+            <div class="nt-unveil-grid">
+                <!-- Product stage. Every layer is separate so each can answer
+                     the pointer with its own weight; the shadow, floor and
+                     reflection all key off one floor line. -->
+                <div class="fr-stage" id="frStage">
+                    <span class="fr-backglow" data-reveal="fade" data-at="0" data-ms="1200" aria-hidden="true"></span>
+                    <span class="fr-floor" data-reveal="fade" data-at="300" data-ms="1200" aria-hidden="true"></span>
+                    <span class="fr-shadow" data-reveal="fade" data-at="250" data-ms="1000" aria-hidden="true"></span>
+
+                    <div class="fr-bottle-wrap">
+                        <div class="fr-bottle" id="frBottle" data-reveal="fade" data-at="60" data-ms="900">
+                            <img class="fr-bottle-img" id="ntBottleImg" src="/assets/fragrance/neant-bottle-transparent.webp"
+                                 alt="The NÉANT bottle: black faceted glass with a gold serpent coiled at the neck, amber extrait within."
+                                 data-i18n-alt="bottleAlt"
+                                 width="1024" height="1536" fetchpriority="high" decoding="async">
+                            <span class="fr-amber" aria-hidden="true"></span>
+                            <span class="fr-glare" aria-hidden="true"></span>
+                            <span class="fr-edge" aria-hidden="true"></span>
+                            <!-- The glass is lit from darkness: a bottle-shaped
+                                 veil lifts, then one pass of light crosses it. -->
+                            <span class="fr-veil" data-reveal="unveil" data-at="120" data-ms="1500" aria-hidden="true"></span>
+                            <span class="fr-pass" data-reveal="pass" data-at="1150" data-ms="1500" aria-hidden="true"></span>
+                        </div>
+                    </div>
+
+                    <div class="fr-reflection" data-reveal="fade" data-at="600" data-ms="1300" aria-hidden="true">
+                        <img src="/assets/fragrance/neant-bottle-transparent.webp" alt="" width="1024" height="1536" decoding="async">
                     </div>
                 </div>
 
-                <div class="fr-reflection" aria-hidden="true">
-                    <img src="/assets/fragrance/neant-bottle-transparent.webp" alt="" width="1024" height="1536" decoding="async">
+                <div class="nt-unveil-copy">
+                    <p class="nt-kicker" data-reveal="glyphs" data-at="350" data-per="30"><span data-i18n="chapterWord">Chapter</span> 03 — <span data-i18n="ch3">The Unveiling</span></p>
+                    <h2 class="nt-display nt-display--unveil" id="ntUnveilTitle" data-reveal="glyphs" data-at="700" data-per="90" data-glyph-ms="1000">Néant</h2>
+                    <p class="nt-kind" data-reveal="rise" data-at="1250">Extrait de Parfum</p>
+                    <span class="nt-rule nt-rule--start" data-reveal="rule" data-at="1450" aria-hidden="true"></span>
+                    <p class="nt-unveil-text" data-reveal="rise" data-at="1600" data-i18n="unveilCopy">Composed in shadow and amber — the first fragrance of Eternal Void. Leave your address, and the unveiling will find you.</p>
+                    <p class="nt-status" data-reveal="rise" data-at="1750"><span data-i18n="comingSoon">Coming Soon</span></p>
+
+                    <form class="nt-form" id="ntForm" data-reveal="rise" data-at="1900" novalidate>
+                        <label class="nt-form-label" for="ntEmail" data-i18n="emailLabel">Email address</label>
+                        <div class="nt-form-row">
+                            <input class="nt-form-input" id="ntEmail" name="email" type="email" autocomplete="email" inputmode="email"
+                                   required maxlength="254" placeholder="your@email.com" aria-describedby="ntFormStatus ntFormNote">
+                            <button class="nt-form-submit" id="ntSubmit" type="submit" data-i18n="submit">Receive the unveiling</button>
+                        </div>
+                        <p class="nt-form-status" id="ntFormStatus" role="status" aria-live="polite"></p>
+                        <p class="nt-form-note" id="ntFormNote"><span data-i18n="formNote">Occasional letters from Eternal Void. Unsubscribe at any time.</span> <a href="/privacy-policy.html" data-i18n="privacy">Privacy Policy</a></p>
+                    </form>
                 </div>
             </div>
 
-            <!-- The identity sits directly under the glass, tight to it, so the
-                 bottle and its name read as one object rather than a product
-                 with a caption floating somewhere else on the page. -->
-            <div class="fr-identity">
-                <h1 class="fr-name">Néant</h1>
-                <p class="fr-kind">Extrait de Parfum</p>
-                <span class="fr-id-rule" aria-hidden="true"></span>
-                <p class="fr-maison">Eternal Void Fragrance</p>
-            </div>
-        </section>
-
-        <!-- The quiet chamber after the bottle. One statement, one seal.
-             Everything the hero already says (name, concentration, house) is
-             deliberately not repeated here. -->
-        <section class="fr-manifesto" id="frManifesto">
-            <span class="fr-ambient" aria-hidden="true"></span>
-            <!-- SVG rather than a text node: textLength forces the wordmark to
-                 an exact width, so it scales with the container instead of
-                 being sized in vw against the viewport. Previously the two
-                 diverged above 1180px and the section clipped 250px off each
-                 side. Now it can never overflow. -->
-            <svg class="fr-ghost" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet"
-                 role="presentation" aria-hidden="true" focusable="false">
-                <text x="500" y="228" text-anchor="middle" textLength="1000" lengthAdjust="spacing">NÉANT</text>
-            </svg>
-
-            <h2 class="fr-say">
-                <span class="fr-say-lead fr-reveal">The Void</span>
-                <span class="fr-say-tail fr-reveal">has a scent.</span>
-            </h2>
-
-            <div class="fr-seal fr-reveal">
-                <span class="fr-crest" aria-hidden="true">
-                    <span class="fr-crest-sweep"></span>
-                </span>
-                <span class="fr-seal-rule" aria-hidden="true"></span>
-                <p class="fr-seal-status">Private Unveiling</p>
-            </div>
+            <footer class="nt-footer" data-reveal="fade" data-at="2100">
+                <p>&copy; 2026 Eternal Void</p>
+            </footer>
         </section>
     </main>
 
-    <footer class="fr-footer">
-        <p>&copy; 2026 Eternal Void</p>
-    </footer>
+    <!-- Progression is always the visitor's: nothing here is hidden while a
+         transition runs, and every control interrupts it cleanly. -->
+    <nav class="nt-controls" id="ntControls" aria-label="Chapters" data-i18n-aria-label="progressLabel">
+        <button type="button" class="nt-ctl nt-ctl--back" id="ntBack" data-i18n="back">Back</button>
+        <ol class="nt-progress">
+            <li><button type="button" data-goto="0"><span class="nt-progress-num">01</span><span class="nt-progress-name" data-i18n="ch1">The Announcement</span><span class="nt-progress-bar" aria-hidden="true"><i></i></span></button></li>
+            <li><button type="button" data-goto="2"><span class="nt-progress-num">02</span><span class="nt-progress-name" data-i18n="ch2">The Olfactory World</span><span class="nt-progress-bar" aria-hidden="true"><i></i></span></button></li>
+            <li><button type="button" data-goto="5"><span class="nt-progress-num">03</span><span class="nt-progress-name" data-i18n="ch3">The Unveiling</span><span class="nt-progress-bar" aria-hidden="true"><i></i></span></button></li>
+        </ol>
+        <div class="nt-ctl-end">
+            <button type="button" class="nt-ctl nt-ctl--skip" id="ntSkip" data-i18n="skip">Skip introduction</button>
+            <button type="button" class="nt-ctl nt-ctl--next" id="ntNext" data-i18n="next">Next</button>
+            <button type="button" class="nt-ctl nt-ctl--replay" id="ntReplay" data-i18n="replay" hidden>Replay</button>
+        </div>
+    </nav>
 
+    <p class="nt-sr" id="ntLive" aria-live="polite"></p>
+
+    <script src="/assets/void-fragrance.js?v=20261006-neant" defer
+            onerror="document.documentElement.classList.remove('nt-js')"></script>
     <script>
-        (function initNeantStage() {
-            const stage = document.getElementById('frStage');
-            if (!stage) return;
-
-            const root = document.documentElement;
-            const reduced = () => root.classList.contains('reduce-motion');
-            const readVar = (name, fallback) => {
-                const v = parseFloat(getComputedStyle(root).getPropertyValue(name));
-                return Number.isFinite(v) ? v : fallback;
-            };
-
-            // Inertia constants come from the same :root block as the visuals,
-            // so tuning happens in one place.
-            const DAMPING = readVar('--fr-damping', 0.055);
-            const RELEASE_DAMPING = readVar('--fr-release-damping', 0.035);
-
-            // target = where the pointer says we should be; current = where the
-            // glass actually is. The gap between them is the weight.
-            let targetX = 0, targetY = 0, targetActive = 0;
-            let curX = 0, curY = 0, curActive = 0;
-            let rafId = null, running = false, onScreen = true;
-
-            const EPS = 0.0005;
-
-            function frame() {
-                if (!running) return;
-                const d = targetActive > 0 ? DAMPING : RELEASE_DAMPING;
-                curX += (targetX - curX) * d;
-                curY += (targetY - curY) * d;
-                curActive += (targetActive - curActive) * 0.06;
-
-                root.style.setProperty('--fr-px', curX.toFixed(4));
-                root.style.setProperty('--fr-py', curY.toFixed(4));
-                root.style.setProperty('--fr-active', curActive.toFixed(4));
-
-                // Settle and stop rather than spinning a loop forever.
-                const settled = Math.abs(targetX - curX) < EPS
-                    && Math.abs(targetY - curY) < EPS
-                    && Math.abs(targetActive - curActive) < EPS;
-                if (settled) { running = false; rafId = null; return; }
-                rafId = window.requestAnimationFrame(frame);
-            }
-
-            function kick() {
-                if (running || reduced() || !onScreen || document.hidden) return;
-                running = true;
-                rafId = window.requestAnimationFrame(frame);
-            }
-
-            // Pointer handling writes only to plain numbers; the rAF loop is the
-            // single writer of CSS variables, so rapid movement can never queue
-            // up style writes or thrash layout.
-            function onMove(e) {
-                if (reduced()) return;
-                const r = stage.getBoundingClientRect();
-                if (!r.width || !r.height) return;
-                targetX = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) * 2));
-                targetY = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height - 0.5) * 2));
-                targetActive = 1;
-                kick();
-            }
-
-            function onLeave() {
-                targetX = 0; targetY = 0; targetActive = 0;
-                kick();
-            }
-
-            // Fine pointers only — a touch device gets the ambient drift below
-            // instead, with no hover state to get stuck in.
-            const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
-
-            function bindPointer() {
-                stage.addEventListener('pointermove', onMove, { passive: true });
-                stage.addEventListener('pointerleave', onLeave, { passive: true });
-            }
-            function unbindPointer() {
-                stage.removeEventListener('pointermove', onMove);
-                stage.removeEventListener('pointerleave', onLeave);
-            }
-
-            // ── Ambient drift (touch / coarse pointers) ──
-            // A slow figure-eight so the glass is never entirely static, well
-            // under the tilt used for hover.
-            let driftId = null, driftT = 0;
-            function drift() {
-                if (reduced() || !onScreen || document.hidden) { driftId = null; return; }
-                driftT += 0.0045;
-                curX = Math.sin(driftT) * 0.32;
-                curY = Math.sin(driftT * 0.6) * 0.18;
-                root.style.setProperty('--fr-px', curX.toFixed(4));
-                root.style.setProperty('--fr-py', curY.toFixed(4));
-                root.style.setProperty('--fr-active', '0.35');
-                driftId = window.requestAnimationFrame(drift);
-            }
-            function startDrift() { if (!driftId) driftId = window.requestAnimationFrame(drift); }
-            function stopDrift() {
-                if (driftId) { window.cancelAnimationFrame(driftId); driftId = null; }
-            }
-
-            function applyMode() {
-                unbindPointer(); stopDrift();
-                if (reduced()) {
-                    root.style.setProperty('--fr-px', '0');
-                    root.style.setProperty('--fr-py', '0');
-                    root.style.setProperty('--fr-active', '0');
-                    return;
-                }
-                if (finePointer.matches) bindPointer(); else startDrift();
-            }
-
-            applyMode();
-            if (finePointer.addEventListener) finePointer.addEventListener('change', applyMode);
-
-            // Never animate off-screen or in a background tab.
-            if ('IntersectionObserver' in window) {
-                new IntersectionObserver((entries) => {
-                    onScreen = entries.some((en) => en.isIntersecting);
-                    if (!onScreen) { running = false; stopDrift(); }
-                    else if (!finePointer.matches) startDrift();
-                }, { threshold: 0.01 }).observe(stage);
-            }
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) { running = false; stopDrift(); }
-                else if (onScreen && !finePointer.matches && !reduced()) startDrift();
-            });
-
-            // ── Entrance ──
-            // Content is in the DOM and readable immediately; this only starts
-            // the opacity reveal, so nothing is gated behind the animation.
-            window.setTimeout(() => document.body.classList.add('is-ready'), 60);
-
-            // ── Editorial reveals ──
-            const reveals = Array.from(document.querySelectorAll('.fr-reveal'));
-            if ('IntersectionObserver' in window && reveals.length) {
-                const io = new IntersectionObserver((entries) => {
-                    entries.forEach((en) => {
-                        if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
-                    });
-                }, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
-                reveals.forEach((el) => io.observe(el));
-            } else {
-                reveals.forEach((el) => el.classList.add('is-in'));
-            }
-
-            // ── Manifesto ambient light ──────────────────────────────────
-            // One very large, very dim warm pool and a specular pass over the
-            // crest. Heavily damped and tiny in amplitude, so it reads as the
-            // room's light shifting rather than as a cursor effect. Shares the
-            // same "targets are plain numbers, one rAF writes the vars" shape
-            // as the bottle stage above.
-            const manifesto = document.getElementById('frManifesto');
-            if (manifesto) {
-                let mTx = 0, mTy = 0, mX = 0, mY = 0, mLit = 0, mTargetLit = 0;
-                let mRaf = null, mRunning = false, mOn = false;
-
-                function mFrame() {
-                    if (!mRunning) return;
-                    mX += (mTx - mX) * 0.045;
-                    mY += (mTy - mY) * 0.045;
-                    mLit += (mTargetLit - mLit) * 0.05;
-                    root.style.setProperty('--fr-mx', mX.toFixed(4));
-                    root.style.setProperty('--fr-my', mY.toFixed(4));
-                    root.style.setProperty('--fr-crest-lit', mLit.toFixed(4));
-                    if (Math.abs(mTx - mX) < 0.0005 && Math.abs(mTy - mY) < 0.0005
-                        && Math.abs(mTargetLit - mLit) < 0.0005) {
-                        mRunning = false; mRaf = null; return;
-                    }
-                    mRaf = window.requestAnimationFrame(mFrame);
-                }
-                function mKick() {
-                    if (mRunning || reduced() || !mOn || document.hidden) return;
-                    mRunning = true; mRaf = window.requestAnimationFrame(mFrame);
-                }
-                function mMove(e) {
-                    if (reduced()) return;
-                    const r = manifesto.getBoundingClientRect();
-                    if (!r.width || !r.height) return;
-                    mTx = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) * 2));
-                    mTy = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height - 0.5) * 2));
-                    mTargetLit = 1;
-                    mKick();
-                }
-                function mLeave() { mTx = 0; mTy = 0; mTargetLit = 0; mKick(); }
-
-                if (finePointer.matches) {
-                    manifesto.addEventListener('pointermove', mMove, { passive: true });
-                    manifesto.addEventListener('pointerleave', mLeave, { passive: true });
-                }
-
-                if ('IntersectionObserver' in window) {
-                    new IntersectionObserver((entries) => {
-                        mOn = entries.some((en) => en.isIntersecting);
-                        if (!mOn) mRunning = false;
-                    }, { threshold: 0.01 }).observe(manifesto);
-                } else { mOn = true; }
-
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden) mRunning = false;
-                });
-            }
-        })();
+        // Should the script never run at all, fall back to the readable page.
+        setTimeout(function () {
+            var html = document.documentElement;
+            if (!html.classList.contains('nt-ready')) html.classList.remove('nt-js');
+        }, 8000);
     </script>
 </body>
 </html>

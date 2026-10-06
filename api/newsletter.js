@@ -1,7 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/newsletter — the footer newsletter form, and the "Get Drop
 // Updates" scene inside the product view, which also sends the piece being
-// viewed as `interest` (validated against the catalogue in _newsletter.js).
+// viewed as `interest` (validated against the catalogue in _newsletter.js),
+// and "Receive the unveiling" on /fragrance, which sends `neant`.
 //
 // Saves the address first (newsletter_subscribers), then sends the welcome
 // email. Nothing is emailed for a signup that was not recorded. A repeat

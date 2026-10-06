@@ -82,6 +82,16 @@ describe('signing up', () => {
         assert.deepEqual((await subscriber(stack, 'cleo@example.com')).interests, ['levitate-tee', 'endzustand-tee']);
     });
 
+    it('records NÉANT from "Receive the unveiling" without making it a catalogue piece', async () => {
+        assert.equal((await stack.api('POST', '/api/newsletter', { email: 'iris@example.com', interest: ' NEANT ' })).status, 200);
+        await stack.api('POST', '/api/newsletter', { email: 'iris@example.com', interest: 'neant-parfum' });
+        await stack.api('POST', '/api/newsletter', { email: 'iris@example.com', interest: 'toString' });
+        assert.deepEqual((await subscriber(stack, 'iris@example.com')).interests, ['neant']);
+        // Announced, not on sale: nothing can quote or hold it.
+        const quote = await stack.api('POST', '/api/checkout/quote', { items: [{ variantId: 'neant:M', quantity: 1 }] });
+        assert.notEqual(quote.data.ok, true);
+    });
+
     it('rejects invalid input without saving or emailing', async () => {
         const before = stack.emails.length;
         assert.equal((await stack.api('POST', '/api/preorder', { email: 'nope', country: 'Hungary' })).status, 400);

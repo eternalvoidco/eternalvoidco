@@ -41,10 +41,16 @@ export function unsubscribeHeaders(token) {
     };
 }
 
-// Only a design that exists in the catalogue is recorded as an interest.
+// Pieces a visitor can ask to hear about that are not in the catalogue, so
+// can never be quoted, held or sold. NÉANT is announced but not on sale.
+export const UPCOMING_INTERESTS = Object.freeze({ neant: 'NÉANT' });
+
+// Only a design that exists in the catalogue, or an announced piece above, is
+// recorded as an interest.
 function cleanInterest(value) {
     const slug = typeof value === 'string' ? value.trim().toLowerCase() : '';
-    return slug && productInfo(slug) ? slug : null;
+    if (!slug) return null;
+    return productInfo(slug) || Object.hasOwn(UPCOMING_INTERESTS, slug) ? slug : null;
 }
 
 // { ok, outcome, token, sendWelcome } or { ok: false, error }.
