@@ -2,7 +2,8 @@
 
 Integration tests for inventory, checkout and the newsletter that run the real `api/` handlers against real Postgres and
 PostgREST (what Supabase serves `/rest/v1` with), plus the storefront, checkout
-and dashboard in Chromium. Stripe is an in-process test double
+and dashboard in Chromium, and the /fragrance NÉANT teaser (`fragrance.test.mjs`).
+Stripe is an in-process test double
 (`stripe-double.mjs`): no request reaches Stripe and nothing can be charged.
 Every test file creates and drops its own database.
 
