@@ -1,19 +1,23 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// /fragrance — NÉANT. Three chapters, six passages:
+// /fragrance — NÉANT. A scroll-driven story on one pinned stage.
 //
-//   01 The Announcement     prologue · announcement
-//   02 The Olfactory World  opening · heart · base
-//   03 The Unveiling        the bottle, Coming Soon, the list
+// The page's own scroll position is the timeline, measured in screens (s):
 //
-// Every change of passage is ONE timeline: the outgoing passage recedes, the
-// room's light turns, the silhouette moves, the incoming words emerge — all
-// Web Animations created in the same task and settled together. A new request
-// at any moment freezes the running timeline where it stands (commitStyles)
-// and starts the next one from there, so rapid or interrupted navigation never
-// queues, jumps or leaves anything half-drawn. Resting states are plain CSS;
-// when a timeline settles its animations are cancelled and nothing remains
-// running except the slow reflection on the chapter 01 silhouette, which
-// exists only while that chapter is shown and pauses with the page.
+//   0    – 1.6   darkness; a narrow light discovers the crown, the glass
+//                edges, then the silhouette. The poetry keeps its own time.
+//   1.6  – 3.3   the light rises; at 2.35 the bottle and NÉANT arrive
+//                together — one flash, light through the glass — and hold.
+//   3.3  – 6.4   the olfactory world: opening, heart, base. The bottle
+//                stands aside and each movement lights a part of it.
+//   6.4  – 8.0   the construction: crown, glass, insignia and amber core
+//                separate, hold, and come back together.
+//   8.0  – 9.0   the bottle settles into the final scene as it scrolls in.
+//
+// Everything that is a function of position is computed from the scroll in
+// frame(); only the poetry, the title's arrival and the flash run on a clock,
+// and each is triggered by the scroll. Back/Next/Skip/Replay only ever move
+// the scroll position, so the controls and the story cannot disagree. The
+// rAF loop runs only while something is actually changing.
 // ─────────────────────────────────────────────────────────────────────────────
 (function () {
     'use strict';
@@ -22,7 +26,7 @@
     const $ = (id) => document.getElementById(id);
 
     // ── Words ────────────────────────────────────────────────────────────────
-    // The storefront's own language choice (localStorage voidLanguage) and the
+    // The storefront's own language choice (localStorage voidLanguage), in the
     // same four languages. German addresses the reader as "du", as the site does.
     const I18N = {
         en: {
@@ -45,6 +49,16 @@
             rose: 'Rose', jasmine: 'Jasmine', incense: 'Incense', smokyWoods: 'Smoky woods',
             oud: 'Oud', amber: 'Amber', vanilla: 'Vanilla', leather: 'Leather', patchouli: 'Patchouli', musk: 'Musk',
             direction: 'Creative direction — the composition is still being refined.',
+            constructionTitle: 'Four elements, one presence.',
+            crown: 'The Crown', glass: 'The Glass', insignia: 'The Insignia', amberCore: 'The Amber Core',
+            crownText: 'A faceted cap, set in gold',
+            glassText: 'Shadowed glass, squared shoulders',
+            insigniaText: 'The serpent and the V',
+            amberCoreText: 'Where the light is held',
+            discover: 'Discover the bottle',
+            discoverHint: 'Move closer to discover',
+            discoverHintTouch: 'Tap the bottle to discover',
+            scrollHint: 'Scroll',
             unveilCopy: 'Composed in shadow and amber — the first fragrance of Eternal Void. Leave your address, and the unveiling will find you.',
             comingSoon: 'Coming Soon',
             emailLabel: 'Email address',
@@ -81,6 +95,16 @@
             rose: 'Rose', jasmine: 'Jasmin', incense: 'Encens', smokyWoods: 'Bois fumés',
             oud: 'Oud', amber: 'Ambre', vanilla: 'Vanille', leather: 'Cuir', patchouli: 'Patchouli', musk: 'Musc',
             direction: 'Direction créative — la composition est encore en cours d’affinage.',
+            constructionTitle: 'Quatre éléments, une seule présence.',
+            crown: 'La Couronne', glass: 'Le Verre', insignia: 'L’Insigne', amberCore: 'Le Cœur d’ambre',
+            crownText: 'Un bouchon à facettes, serti d’or',
+            glassText: 'Un verre ombré, aux épaules carrées',
+            insigniaText: 'Le serpent et le V',
+            amberCoreText: 'Là où la lumière demeure',
+            discover: 'Découvrir le flacon',
+            discoverHint: 'Approchez pour découvrir',
+            discoverHintTouch: 'Touchez le flacon pour découvrir',
+            scrollHint: 'Défiler',
             unveilCopy: 'Composé d’ombre et d’ambre — le premier parfum d’Eternal Void. Laissez votre adresse, et le dévoilement viendra à vous.',
             comingSoon: 'Bientôt',
             emailLabel: 'Adresse e-mail',
@@ -117,6 +141,16 @@
             rose: 'Rosa', jasmine: 'Gelsomino', incense: 'Incenso', smokyWoods: 'Legni affumicati',
             oud: 'Oud', amber: 'Ambra', vanilla: 'Vaniglia', leather: 'Cuoio', patchouli: 'Patchouli', musk: 'Muschio',
             direction: 'Direzione creativa — la composizione è ancora in fase di definizione.',
+            constructionTitle: 'Quattro elementi, una sola presenza.',
+            crown: 'La Corona', glass: 'Il Vetro', insignia: 'L’Insegna', amberCore: 'Il Cuore d’ambra',
+            crownText: 'Un tappo sfaccettato, incastonato d’oro',
+            glassText: 'Vetro in ombra, spalle squadrate',
+            insigniaText: 'Il serpente e la V',
+            amberCoreText: 'Dove la luce resta',
+            discover: 'Scopri il flacone',
+            discoverHint: 'Avvicinati per scoprire',
+            discoverHintTouch: 'Tocca il flacone per scoprire',
+            scrollHint: 'Scorri',
             unveilCopy: 'Composta di ombra e ambra — la prima fragranza di Eternal Void. Lascia il tuo indirizzo, e lo svelamento verrà da te.',
             comingSoon: 'Prossimamente',
             emailLabel: 'Indirizzo email',
@@ -153,6 +187,16 @@
             rose: 'Rose', jasmine: 'Jasmin', incense: 'Weihrauch', smokyWoods: 'Rauchige Hölzer',
             oud: 'Oud', amber: 'Amber', vanilla: 'Vanille', leather: 'Leder', patchouli: 'Patchouli', musk: 'Moschus',
             direction: 'Kreative Richtung — die Komposition wird noch verfeinert.',
+            constructionTitle: 'Vier Elemente, eine Gegenwart.',
+            crown: 'Die Krone', glass: 'Das Glas', insignia: 'Das Insignium', amberCore: 'Der Bernsteinkern',
+            crownText: 'Ein facettierter Verschluss, in Gold gefasst',
+            glassText: 'Schattiertes Glas, kantige Schultern',
+            insigniaText: 'Die Schlange und das V',
+            amberCoreText: 'Wo das Licht verweilt',
+            discover: 'Den Flakon entdecken',
+            discoverHint: 'Komm näher, um zu entdecken',
+            discoverHintTouch: 'Tippe auf den Flakon, um zu entdecken',
+            scrollHint: 'Scrollen',
             unveilCopy: 'Komponiert aus Schatten und Amber — der erste Duft von Eternal Void. Hinterlass deine Adresse, und die Enthüllung findet dich.',
             comingSoon: 'Demnächst',
             emailLabel: 'E-Mail-Adresse',
@@ -178,6 +222,8 @@
     } catch (e) { /* storage blocked */ }
     const t = (key) => (I18N[lang] && I18N[lang][key]) || I18N.en[key] || '';
 
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+
     function applyLanguage() {
         root.lang = lang;
         document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
@@ -185,60 +231,210 @@
         document.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
             el.setAttribute('aria-label', t(el.dataset.i18nAriaLabel));
         });
+        const hint = $('ntCaptionHint');
+        if (hint) hint.textContent = t(finePointer.matches ? 'discoverHint' : 'discoverHintTouch');
     }
 
-    // ── The passages ─────────────────────────────────────────────────────────
-    const STEPS = [
-        { id: 'prologue', chapter: 1 },
-        { id: 'announcement', chapter: 1 },
-        { id: 'opening', chapter: 2, sub: 'opening' },
-        { id: 'heart', chapter: 2, sub: 'heart' },
-        { id: 'base', chapter: 2, sub: 'base' },
-        { id: 'unveiling', chapter: 3 }
+    // ── The story's geometry ────────────────────────────────────────────────
+    const SCREENS = 9;   // = --nt-screens in the stylesheet
+    const STOPS = [
+        { id: 'prologue', s: 0, chapter: 1 },
+        { id: 'announcement', s: 2.75, chapter: 1 },
+        { id: 'opening', s: 3.85, chapter: 2 },
+        { id: 'heart', s: 4.85, chapter: 2 },
+        { id: 'base', s: 5.85, chapter: 2 },
+        { id: 'construction', s: 7.35, chapter: 3 },
+        { id: 'unveiling', s: SCREENS, chapter: 3 }
     ];
-    const LAST = STEPS.length - 1;
-    const CHAPTERS = { 1: [0, 1], 2: [2, 3, 4], 3: [5] };
+    const CHAPTERS = { 1: [0, 3.35], 2: [3.35, 6.4], 3: [6.4, SCREENS] };
+    const CHAPTER_STOP = { 1: 0, 2: 2, 3: 5 };
+    const REVEAL_AT = 2.35;
 
-    // The room's light for each passage, by layer.
-    const LIGHTS = {
-        gold:   [0.42, 0.9, 0.3, 0.14, 0.16, 0.55],
-        citrus: [0, 0, 1, 0, 0, 0],
-        rose:   [0, 0, 0, 1, 0, 0],
-        smoke:  [0, 0, 0, 0, 1, 0.25],
-        amber:  [0, 0.5, 0.1, 0.4, 0.6, 0.95]
+    // Where each part of the artwork is, as fractions of the bottle box.
+    const SPOTS = {
+        crown: { x: 0.5, y: 0.105, rx: 0.24, ry: 0.095 },
+        insignia: { x: 0.5, y: 0.488, rx: 0.16, ry: 0.125 },
+        amber: { x: 0.5, y: 0.805, rx: 0.26, ry: 0.085 },
+        glass: { x: 0.25, y: 0.62, rx: 0.32, ry: 0.32 }
     };
+    const TAP_ORDER = ['crown', 'insignia', 'amber', 'glass'];
 
-    const EASE = {
-        arrive: 'cubic-bezier(0.4, 0, 0.2, 1)',
-        recede: 'cubic-bezier(0.5, 0, 0.3, 1)',
-        settle: 'cubic-bezier(0.16, 1, 0.3, 1)',
-        mech: 'cubic-bezier(0.45, 0, 0.25, 1)'
+    // ── Small maths ──────────────────────────────────────────────────────────
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+    const smooth = (x) => x * x * (3 - 2 * x);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const mix = (a, b, k) => a + (b - a) * k;
+
+    // Piecewise track: [[s, value], …], eased between points, held outside.
+    function kf(points, s) {
+        if (s <= points[0][0]) return points[0][1];
+        for (let i = 1; i < points.length; i++) {
+            const [s1, v1] = points[i];
+            if (s <= s1) {
+                const [s0, v0] = points[i - 1];
+                return s1 === s0 ? v1 : mix(v0, v1, smooth((s - s0) / (s1 - s0)));
+            }
+        }
+        return points[points.length - 1][1];
+    }
+
+    // ── Elements ─────────────────────────────────────────────────────────────
+    const story = $('ntStory');
+    const stage = $('ntStage');
+    const bottle = $('ntBottle');
+    const finalSection = $('unveiling');
+    const anchor = $('ntAnchor');
+    if (!story || !stage || !bottle || !finalSection || !anchor) return;
+
+    const q = (sel) => bottle.querySelector(sel);
+    const els = {
+        halo: q('.nt-b-halo'),
+        shape: q('.nt-b-shape'),
+        art: q('.nt-b-art'),
+        cap: q('.nt-b-cap'),
+        ins: q('.nt-b-ins'),
+        amber: q('.nt-b-amber'),
+        glass: q('.nt-b-glass'),
+        insGlow: q('.nt-b-ins .nt-b-glow'),
+        amberGlow: q('.nt-b-amber .nt-b-glow'),
+        hollowIns: q('.nt-b-hollow--ins'),
+        hollowAmb: q('.nt-b-hollow--amb'),
+        pass: q('.nt-b-pass'),
+        passBand: q('.nt-b-pass i'),
+        sheen: q('.nt-b-sheen'),
+        spot: q('.nt-b-spot'),
+        spotIn: q('.nt-b-spot-in'),
+        flash: q('.nt-b-flash'),
+        floor: q('.nt-b-floor'),
+        parts: q('.nt-parts'),
+        flashRoom: $('ntFlashRoom'),
+        hint: $('ntHint')
     };
-
-    const scenes = STEPS.map((s) => $(s.id));
-    const ghost = $('ntGhost');
-    const lights = Array.from(document.querySelectorAll('[data-light]'));
+    const lights = {};
+    document.querySelectorAll('[data-light]').forEach((el) => { lights[el.dataset.light] = el; });
+    const beats = {};
+    document.querySelectorAll('[data-beat]').forEach((el) => { beats[el.dataset.beat] = el; });
+    const lines = Array.from(document.querySelectorAll('.nt-line[data-line]'));
+    const announceKicker = document.querySelector('.nt-announce-kicker');
+    const announceName = $('ntAnnounceName');
+    const unveilCopy = $('ntUnveilCopy');
+    const caption = $('ntCaption');
+    const captionTitle = $('ntCaptionTitle');
+    const captionText = $('ntCaptionText');
+    const discover = $('ntDiscover');
     const backBtn = $('ntBack');
     const nextBtn = $('ntNext');
     const skipBtn = $('ntSkip');
     const replayBtn = $('ntReplay');
     const live = $('ntLive');
-    const progressBtns = Array.from(document.querySelectorAll('.nt-progress [data-goto]'));
+    const progressBtns = Array.from(document.querySelectorAll('.nt-progress [data-chapter]'));
 
-    if (scenes.some((s) => !s) || !ghost) return;
+    const reducedQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const calm = () => root.classList.contains('reduce-motion') || reducedQuery.matches;
 
-    const reduced = () => root.classList.contains('reduce-motion')
-        || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Write a style only when it changes: most frames change little.
+    function put(el, prop, value) {
+        if (!el) return;
+        const cache = el.__nt || (el.__nt = {});
+        if (cache[prop] === value) return;
+        cache[prop] = value;
+        if (prop.startsWith('--')) el.style.setProperty(prop, value);
+        else el.style[prop] = value;
+    }
+    const op = (v) => (Math.round(clamp(v, 0, 1) * 1000) / 1000).toString();
+    const px = (v) => `${Math.round(v * 10) / 10}px`;
 
-    let current = -1;   // the passage at rest
-    let target = -1;    // the passage being shown (= current when at rest)
-    let run = null;     // the timeline in flight
-    let runSeq = 0;
-    let autoAdvance = true;
-    let autoTimer = null;
-    let ghostBroken = false;
+    // ── Measuring ────────────────────────────────────────────────────────────
+    const geo = { vw: 0, vh: 0, bw: 0, bh: 0, top: 0, wide: true, final: { x: 0, y: 0, h: 0.7 } };
 
-    // ── Splitting text for the letter reveal ─────────────────────────────────
+    function measure() {
+        geo.vw = window.innerWidth;
+        geo.vh = stage.clientHeight || window.innerHeight;
+        geo.wide = geo.vw > 960;
+        geo.bh = Math.round(geo.vh * 0.72);
+        geo.bw = Math.round(geo.bh * 2 / 3);
+        put(bottle, '--bw', `${geo.bw}px`);
+        put(bottle, '--bh', `${geo.bh}px`);
+        root.style.setProperty('--bw', `${geo.bw}px`);
+        root.style.setProperty('--bh', `${geo.bh}px`);
+        geo.top = story.getBoundingClientRect().top + window.scrollY;
+
+        // Where the settled bottle stands: the final section's anchor, read
+        // as it will be once that section has scrolled to the top.
+        const f = finalSection.getBoundingClientRect();
+        const a = anchor.getBoundingClientRect();
+        const ax = a.left + a.width / 2;
+        const ay = a.top - f.top + a.height / 2;
+        const h = Math.min(a.height * 0.94, a.width * 1.5 * 0.94);
+        geo.final = { x: (ax - geo.vw / 2) / geo.vw, y: (ay - geo.vh / 2) / geo.vh, h: h / geo.vh };
+    }
+
+    // Each composition of the bottle: offset from the stage centre (x as a
+    // share of the width, y of the height) and box height (share of height).
+    function pose(name) {
+        const w = geo.wide;
+        switch (name) {
+            case 'dark': return w ? { x: 0.17, y: 0.02, h: 0.72 } : { x: 0, y: -0.03, h: 0.62 };
+            case 'reveal': return w ? { x: 0, y: -0.075, h: 0.7 } : { x: 0, y: -0.1, h: 0.6 };
+            case 'scent': return w ? { x: 0.25, y: 0.01, h: 0.66 } : { x: 0, y: 0.17, h: 0.62 };
+            case 'parts': return w ? { x: 0, y: 0.03, h: 0.64 } : { x: 0, y: 0.04, h: 0.5 };
+            default: return geo.final;
+        }
+    }
+
+    const POSE_TRACK = [
+        [0, 'dark'], [1.35, 'dark'], [2.2, 'reveal'], [3.15, 'reveal'],
+        [3.75, 'scent'], [6.25, 'scent'], [6.8, 'parts'], [7.95, 'parts'], [8.95, 'final']
+    ];
+
+    function poseAt(s) {
+        let i = 1;
+        while (i < POSE_TRACK.length && s > POSE_TRACK[i][0]) i++;
+        if (i >= POSE_TRACK.length) return pose('final');
+        const [s0, n0] = POSE_TRACK[i - 1];
+        const [s1, n1] = POSE_TRACK[i];
+        const a = pose(n0);
+        const b = pose(n1);
+        const k = s <= s0 ? 0 : smooth(clamp((s - s0) / (s1 - s0), 0, 1));
+        return { x: mix(a.x, b.x, k), y: mix(a.y, b.y, k), h: mix(a.h, b.h, k) };
+    }
+
+    // ── State ────────────────────────────────────────────────────────────────
+    const state = {
+        sTarget: 0,          // where the scroll is
+        s: 0,                // where the story is (eased toward sTarget)
+        last: 0,             // previous frame time
+        t0: performance.now(),
+        snapped: false,
+        revealed: false,
+        revealAt: -1e9,
+        flashes: 0,
+        lastFlash: -1e9,
+        crossedUp: false,
+        sepPeak: 0,
+        pulseAt: -1e9,
+        linesShown: [false, false, false],
+        finalShown: false,
+        scrolled: false,
+        stop: -1,
+        chapter: 0,
+        endMode: null,
+        lamp: { x: 0.5, y: 0.5, i: 0, tx: 0.5, ty: 0.5, ti: 0, key: '', tapIndex: -1 },
+        raf: 0,
+        running: false,
+        paused: false,
+        programmatic: null
+    };
+
+    function readScroll() {
+        state.sTarget = clamp((window.scrollY - geo.top) / geo.vh, 0, SCREENS);
+    }
+
+    // ── Letter reveals (the house's language-transition style) ──────────────
+    const ARRIVE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+    const SETTLE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+    const MECH = 'cubic-bezier(0.45, 0, 0.25, 1)';
+
     function split(el) {
         if (el.__ntText === undefined) el.__ntText = el.textContent;
         const text = el.__ntText;
@@ -264,7 +460,6 @@
         });
         el.textContent = '';
         el.appendChild(frag);
-        // The sentence stays one sentence for assistive technology.
         el.setAttribute('aria-label', text);
         return { words, glyphs };
     }
@@ -276,507 +471,634 @@
         el.removeAttribute('aria-label');
     }
 
-    // Back to the resting page: no inline styles, whole text nodes.
-    function resetScene(scene) {
-        scene.removeAttribute('style');
-        scene.querySelectorAll('[data-reveal]').forEach((el) => {
-            unsplit(el);
-            el.removeAttribute('style');
-        });
-        delete scene.dataset.revealed;
+    function revealTargets(scope) {
+        return scope.matches('[data-reveal]') ? [scope] : Array.from(scope.querySelectorAll('[data-reveal]'));
     }
 
-    // ── Building one timeline ────────────────────────────────────────────────
-    // A spec is { el, frames, delay, duration, easing }. Single-keyframe
-    // frames animate from wherever the element currently is.
-    function revealSpecs(scene, specs, base) {
-        scene.querySelectorAll('[data-reveal]').forEach((el) => {
+    // Show a scope: its [data-reveal] children arrive on one shared clock.
+    // `instant` shows it at rest straight away (arriving by a jump, or calm).
+    function reveal(scope, opts) {
+        opts = opts || {};
+        if (!scope || scope.classList.contains('is-shown')) return;
+        stopReveal(scope);
+        scope.classList.add('is-shown');
+        if (opts.instant || calm()) return;
+        const anims = [];
+        const add = (el, frames, delay, duration, easing) => {
+            anims.push(el.animate(frames, { delay, duration, easing: easing || 'linear', fill: 'both' }));
+        };
+        revealTargets(scope).forEach((el) => {
             const kind = el.dataset.reveal;
-            const at = base + Number(el.dataset.at || 0);
-            const ms = Number(el.dataset.ms || 0);
-            const add = (frames, delay, duration, easing) => specs.push({ el, frames, delay, duration, easing });
-
+            const at = Number(el.dataset.at || 0);
             if (kind === 'glyphs') {
                 const per = Number(el.dataset.per || 40);
                 const glyphMs = Number(el.dataset.glyphMs || 760);
                 const { words, glyphs } = split(el);
-                glyphs.forEach((g, i) => add([{ opacity: 0 }, { opacity: 1 }], at + i * per, glyphMs, EASE.arrive));
+                glyphs.forEach((g, i) => add(g, [{ opacity: 0 }, { opacity: 1 }], at + i * per, glyphMs, ARRIVE));
                 let seen = 0;
+                // Display-size titles resolve from blur without the glint:
+                // a drop-shadow on letters that large costs whole frames.
+                const glint = el.dataset.glow !== '0';
+                const glow = (blur, r, a) => (glint
+                    ? `blur(${blur}px) drop-shadow(0 0 ${r}px rgba(233, 211, 161, ${a}))`
+                    : `blur(${blur}px)`);
                 words.forEach((w) => {
-                    add([
-                        { filter: 'blur(3px) drop-shadow(0 0 0px rgba(233, 211, 161, 0))' },
-                        { filter: 'blur(1.7px) drop-shadow(0 0 10px rgba(233, 211, 161, 0.3))', offset: 0.4 },
-                        { filter: 'blur(0.55px) drop-shadow(0 0 7px rgba(233, 211, 161, 0.18))', offset: 0.7 },
-                        { filter: 'blur(0px) drop-shadow(0 0 0px rgba(233, 211, 161, 0))' }
-                    ], at + seen * per, Math.max(900, glyphMs + 140), 'linear');
+                    add(w, [
+                        { filter: glow(3, 0, 0) },
+                        { filter: glow(1.7, 10, 0.3), offset: 0.4 },
+                        { filter: glow(0.55, 7, 0.18), offset: 0.7 },
+                        { filter: glow(0, 0, 0) }
+                    ], at + seen * per, Math.max(900, glyphMs + 140));
                     seen += w.childNodes.length;
                 });
             } else if (kind === 'rise') {
-                add([
-                    { opacity: 0, transform: 'translate3d(0, 16px, 0)', filter: 'blur(3px)' },
+                add(el, [
+                    { opacity: 0, transform: 'translate3d(0, 14px, 0)', filter: 'blur(3px)' },
                     { opacity: 1, transform: 'translate3d(0, 0, 0)', filter: 'blur(0px)' }
-                ], at, ms || 950, EASE.settle);
-            } else if (kind === 'fade') {
-                const rest = parseFloat(getComputedStyle(el).opacity);
-                add([{ opacity: 0 }, { opacity: Number.isFinite(rest) ? rest : 1 }], at, ms || 900, EASE.arrive);
+                ], at, 950, SETTLE);
             } else if (kind === 'rule') {
-                add([
-                    { opacity: 0, transform: 'scaleX(0)' },
-                    { opacity: 1, transform: 'scaleX(1)' }
-                ], at, ms || 1100, EASE.mech);
+                add(el, [{ opacity: 0, transform: 'scaleX(0)' }, { opacity: 1, transform: 'scaleX(1)' }], at, 1000, MECH);
             } else if (kind === 'depth') {
-                add([
-                    { opacity: 0, transform: 'scale(1.14)', filter: 'blur(16px)' },
+                add(el, [
+                    { opacity: 0, transform: 'scale(1.14)', filter: 'blur(12px)' },
                     { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' }
-                ], at, ms || 1900, EASE.arrive);
-            } else if (kind === 'unveil') {
-                add([{ opacity: 1 }, { opacity: 1, offset: 0.12 }, { opacity: 0 }], at, ms || 1800, EASE.arrive);
-            } else if (kind === 'pass') {
-                add([
-                    { opacity: 0, backgroundPosition: '100% 0' },
-                    { opacity: 1, offset: 0.3 },
-                    { opacity: 1, offset: 0.7 },
-                    { opacity: 0, backgroundPosition: '0% 0' }
-                ], at, ms || 1500, EASE.mech);
+                ], at, 1500, ARRIVE);
+            } else {
+                add(el, [{ opacity: 0 }, { opacity: 1 }], at, 900, ARRIVE);
             }
         });
+        scope.__ntAnims = anims;
+        Promise.all(anims.map((a) => a.finished)).then(() => {
+            if (scope.__ntAnims !== anims) return;
+            anims.forEach((a) => a.cancel());
+            revealTargets(scope).forEach(unsplit);
+            scope.__ntAnims = null;
+        }).catch(() => { /* cancelled */ });
     }
 
-    // Reduced motion: each element simply fades in, close together. No
-    // letters, no blur, nothing travels.
-    function calmSpecs(scene, specs, base) {
-        scene.querySelectorAll('[data-reveal]').forEach((el) => {
-            const kind = el.dataset.reveal;
-            if (kind === 'unveil' || kind === 'pass') return;
-            const rest = parseFloat(getComputedStyle(el).opacity);
-            specs.push({
-                el,
-                frames: [{ opacity: 0 }, { opacity: Number.isFinite(rest) ? rest : 1 }],
-                delay: base,
-                duration: 320,
-                easing: 'ease'
-            });
-        });
+    function stopReveal(scope) {
+        if (scope.__ntAnims) scope.__ntAnims.forEach((a) => { try { a.cancel(); } catch (e) { /* ignore */ } });
+        scope.__ntAnims = null;
+        revealTargets(scope).forEach(unsplit);
     }
 
-    function ghostState(step) {
-        const wide = window.innerWidth > 960;
-        if (step === 0) {
-            return {
-                box: { opacity: wide ? 1 : 0.55, transform: `translate3d(${wide ? Math.round(window.innerWidth * 0.17) : 0}px, 0, 0) scale(0.94)` },
-                halo: 0.55, lit: 0, sweep: 0.5
-            };
+    function hide(scope) {
+        if (!scope || !scope.classList.contains('is-shown')) return;
+        stopReveal(scope);
+        scope.classList.remove('is-shown');
+    }
+
+    // ── The flash ────────────────────────────────────────────────────────────
+    // Lightning, not a strobe: a source above and behind the bottle strikes
+    // twice and dies away. It lights only what light would reach — the glass
+    // (the artwork, screened) and a warm falloff in the room — never the
+    // whole frame, so the blacks stay black.
+    function flash() {
+        if (calm()) return;
+        const now = performance.now();
+        if (now - state.lastFlash < 3000) return;
+        state.lastFlash = now;
+        state.flashes += 1;
+        const r = bottle.getBoundingClientRect();
+        put(els.flashRoom, '--fx', px(r.left + r.width * 0.5));
+        put(els.flashRoom, '--fy', px(r.top + r.height * 0.18));
+        const strike = (peak) => [
+            { opacity: 0 },
+            { opacity: peak, offset: 0.045 },
+            { opacity: peak * 0.22, offset: 0.12 },
+            { opacity: peak * 0.86, offset: 0.19 },
+            { opacity: peak * 0.16, offset: 0.36 },
+            { opacity: peak * 0.3, offset: 0.44 },
+            { opacity: 0 }
+        ];
+        els.flashRoom.animate(strike(1), { duration: 1150, easing: 'linear' });
+        els.flash.animate(strike(0.78), { duration: 1150, easing: 'linear' });
+    }
+
+    // ── The decisive reveal ──────────────────────────────────────────────────
+    function setRevealed(on, withFlash) {
+        if (on === state.revealed) return;
+        state.revealed = on;
+        if (on) {
+            const instant = !withFlash || calm();
+            state.revealAt = instant ? -1e9 : performance.now();
+            reveal(announceName, { instant });
+            if (withFlash) flash();
+        } else {
+            hide(announceName);
         }
-        if (step === 1) {
-            // Drawn back and lifted so the name crosses the foot of the glass,
-            // below the bottle's own engraved label, never over it. Measured
-            // from the title's real box, so it holds at any size or language.
-            const S = 0.72;
-            const H = ghost.offsetHeight;
-            const top = ghost.offsetTop - H / 2;            // `translate: 0 -50%`
-            const origin = top + H * 0.6;                   // transform-origin y
-            const base = top + H * 0.9655;                  // where the glass ends
-            const title = $('ntAnnounceTitle').getBoundingClientRect();
-            const wantBase = title.height ? title.top + title.height * 0.62 : origin;
-            const lift = Math.max(0, Math.round(origin + (base - origin) * S - wantBase));
-            return { box: { opacity: 1, transform: `translate3d(0px, -${lift}px, 0) scale(${S})` }, halo: 1, lit: 0.6, sweep: 0.85 };
-        }
-        return null;
     }
 
-    function ghostSpecs(to, specs, calm, initial) {
-        if (ghostBroken) return;
-        const state = ghostState(to);
-        const halo = ghost.querySelector('.nt-ghost-halo');
-        const lit = ghost.querySelector('.nt-ghost-lit');
-        const sweep = ghost.querySelector('.nt-ghost-sweep');
-        if (state) {
-            if (ghost.hidden) {
-                ghost.hidden = false;
-                ghost.style.opacity = '0';
-                ghost.style.transform = state.box.transform.replace(/scale\([^)]*\)/, 'scale(0.9)');
+    // ── One frame of the story ───────────────────────────────────────────────
+    function frame(now) {
+        const s = state.s;
+        const time = (now - state.t0) / 1000;
+        const isCalm = calm();
+        const w = geo.wide;
+
+        // Bottle placement.
+        const p = poseAt(s);
+        const revealK = clamp((now - state.revealAt) / 900, 0, 1);
+        const arrive = kf([[1.5, 0], [1.8, 1], [3.1, 1], [3.4, 0]], s);
+        let k = (p.h * geo.vh) / geo.bh;
+        k *= 1 - 0.035 * arrive * (state.revealed ? 1 - easeOut(revealK) : 1);
+        const lamp = state.lamp;
+        let tilt = '';
+        if (s >= SCREENS - 0.15 && lamp.i > 0.001 && !isCalm) {
+            const ry = (lamp.x - 0.5) * 6 * lamp.i;
+            const rx = -(lamp.y - 0.5) * 3.5 * lamp.i;
+            tilt = ` perspective(1600px) rotateX(${rx.toFixed(3)}deg) rotateY(${ry.toFixed(3)}deg)`;
+        }
+        put(bottle, 'transform', `translate3d(${px(p.x * geo.vw)}, ${px(p.y * geo.vh)}, 0) scale(${k.toFixed(4)})${tilt}`);
+
+        // Prologue: the light's own progress — scroll, or time if the
+        // visitor simply waits in the dark.
+        const pl = clamp(Math.max(s / 1.35, (time - 0.9) / 11), 0, 1);
+
+        // Light levels.
+        // On a phone the bottle stands behind the words, so it stays low.
+        const scentLit = w ? 0.55 : 0.16;
+        let lit = kf([[0, 0], [1.5, 0], [2.3, 0.5], [2.6, 1], [3.15, 1], [3.75, scentLit], [6.25, scentLit], [6.8, 0.92], [7.95, 0.92], [8.7, 1]], s);
+        if (state.revealed && s < 3.4) lit = Math.max(lit, mix(0.5, 1, easeOut(revealK)));
+        put(els.art, 'opacity', op(lit));
+
+        const sep = isCalm
+            ? (s >= 6.8 && s < 7.95 ? 1 : 0)
+            : kf([[6.75, 0], [7.2, 1], [7.5, 1], [7.95, 0]], s);
+        put(els.shape, 'opacity', op(1 - sep));
+
+        const haloScroll = kf([[0, 0], [1.0, 0.12], [1.5, 0.6], [2.3, 1], [3.15, 0.9], [3.75, 0.5], [6.25, 0.5], [6.8, 0.7], [7.95, 0.7], [8.8, 0.6]], s);
+        const haloTime = kf([[0, 0.04], [0.8, 0.12], [1, 0.6]], pl) * clamp((time - 0.4) / 1.6, 0, 1);
+        put(els.halo, 'opacity', op(Math.max(haloScroll, s < 2 ? haloTime : 0)));
+
+        put(els.floor, 'opacity', op(kf([[2.0, 0], [2.55, 0.65], [3.15, 0.65], [3.75, 0.2], [6.25, 0.2], [6.8, 0.35], [7.95, 0.35], [8.8, 1]], s)));
+
+        // The construction: parts lift away along their own axes.
+        const H = geo.bh;
+        const W = geo.bw;
+        // Small, believable distances: the crown lifts off its ring, the
+        // insignia comes forward off the glass, the amber core sinks and
+        // swells within the walls that hold it.
+        put(els.cap, 'transform', `translate3d(0, ${px(-0.09 * H * sep)}, 0) rotate(${(-3 * sep).toFixed(3)}deg)`);
+        put(els.ins, 'transform', `translate3d(${px(-0.11 * W * sep)}, ${px(-0.015 * H * sep)}, 0) scale(${(1 + 0.1 * sep).toFixed(4)})`);
+        put(els.amber, 'transform', `translate3d(${px(0.05 * W * sep)}, ${px(0.035 * H * sep)}, 0) scale(${(1 + 0.12 * sep).toFixed(4)})`);
+        put(els.glass, 'transform', `scale(${(1 - 0.02 * sep).toFixed(4)})`);
+        put(els.hollowIns, 'opacity', op(sep * 0.92));
+        put(els.hollowAmb, 'opacity', op(sep * 0.85));
+        put(els.parts, 'opacity', op(isCalm ? sep : kf([[7.0, 0], [7.2, 1], [7.5, 1], [7.7, 0]], s)));
+
+        // Reassembly: when the parts close (after having been fully open) the
+        // light runs through the whole bottle once.
+        if (sep > 0.95) state.sepPeak = 1;
+        if (state.sepPeak && sep < 0.02 && s > 7.9 && !state.snapped && !isCalm) {
+            state.sepPeak = 0;
+            state.pulseAt = now;
+        }
+        if (s < 6.75) state.sepPeak = 0;
+        const pulse = clamp((now - state.pulseAt) / 1400, 0, 1);
+        const pulseOn = pulse < 1;
+        const revealPass = state.revealed ? clamp((now - state.revealAt - 250) / 1300, 0, 1) : 1;
+
+        // Light through the glass.
+        let passPos = -1;
+        let passOp = 0;
+        if (pulseOn) { passPos = pulse; passOp = Math.sin(Math.PI * pulse) * 0.9; }
+        else if (revealPass < 1 && !isCalm) { passPos = revealPass; passOp = Math.sin(Math.PI * revealPass) * 0.95; }
+        else if (s > 1.85 && s < 2.5 && !isCalm) {
+            const x = (s - 1.85) / 0.65;
+            passPos = x; passOp = Math.sin(Math.PI * x) * 0.8;
+        }
+        put(els.pass, 'opacity', op(passOp));
+        if (passPos >= 0) put(els.passBand, 'transform', `translate3d(${px(mix(-0.55, 1.1, passPos) * W)}, 0, 0) skewX(-12deg)`);
+
+        // Amber core and insignia glows; the amber catches the passing light.
+        const passOnAmber = passOp * Math.exp(-Math.pow((passPos - 0.45) / 0.18, 2));
+        let amberGlow = kf([[1.95, 0], [2.35, 0.55], [2.6, 0.8], [3.15, 0.6], [3.75, 0.15], [5.3, 0.15], [5.6, 1], [6.1, 1], [6.35, 0.3], [7.95, 0.3], [8.8, 0.5]], s);
+        amberGlow = Math.max(amberGlow, passOnAmber * 1.1);
+        put(els.amberGlow, 'opacity', op(amberGlow));
+        put(els.insGlow, 'opacity', op(kf([[4.3, 0], [4.6, 0.95], [5.1, 0.95], [5.4, 0]], s)));
+
+        // The settled scene's slow reflection.
+        put(els.sheen, 'opacity', op(kf([[8.4, 0], [8.95, 1]], s)));
+
+        // The narrow light.
+        spotFrame(s, pl, time, isCalm);
+
+        // The room.
+        put(lights.gold, 'opacity', op(kf([[0, 0.12], [1.2, 0.22], [2.3, 0.9], [3.2, 0.8], [3.7, 0.3], [6.3, 0.3], [6.8, 0.6], [8.0, 0.6], [8.8, 0.55]], s)));
+        put(lights.citrus, 'opacity', op(kf([[3.3, 0], [3.6, 1], [4.1, 1], [4.45, 0]], s)));
+        put(lights.rose, 'opacity', op(kf([[4.2, 0], [4.5, 1], [5.1, 1], [5.45, 0]], s)));
+        put(lights.smoke, 'opacity', op(kf([[5.2, 0], [5.5, 1], [6.2, 1], [6.6, 0.2], [8.8, 0.25]], s)));
+        put(lights.amber, 'opacity', op(kf([[1.8, 0], [2.4, 0.5], [3.2, 0.4], [3.7, 0.1], [5.3, 0.2], [5.6, 0.6], [6.3, 0.4], [8.0, 0.4], [8.8, 0.95]], s)));
+        put(lights.haze, 'opacity', op(kf([[8.2, 0], [8.9, 1]], s)));
+        root.classList.toggle('nt-final', s >= 8.6);
+
+        beatsFrame(s, time, isCalm, now);
+        lampFrame();
+    }
+
+    // The narrow light: where it is and what shape it has, in box pixels.
+    function spotFrame(s, pl, time, isCalm) {
+        const W = geo.bw;
+        const H = geo.bh;
+        let o = 0;
+        let cx = 0.5, cy = 0.5, sw = 0.3, sh = 0.15, rot = 0;
+        if (s < 1.8 && !isCalm) {
+            // Crown → down the left edge → down the right edge.
+            const P = [
+                [0.00, 0.30, 0.09, 0.26, 0.12, -10],
+                [0.30, 0.70, 0.11, 0.26, 0.12, 8],
+                [0.38, 0.60, 0.25, 0.20, 0.12, 0],
+                [0.48, 0.23, 0.40, 0.10, 0.22, 4],
+                [0.66, 0.215, 0.86, 0.10, 0.22, 2],
+                [0.72, 0.5, 0.62, 0.12, 0.2, 0],
+                [0.76, 0.785, 0.40, 0.10, 0.22, -4],
+                [0.94, 0.80, 0.86, 0.10, 0.22, -2],
+                [1.00, 0.5, 0.6, 0.5, 0.5, 0]
+            ];
+            let i = 1;
+            while (i < P.length - 1 && pl > P[i][0]) i++;
+            const a = P[i - 1];
+            const b = P[i];
+            const k = smooth(clamp((pl - a[0]) / (b[0] - a[0]), 0, 1));
+            cx = mix(a[1], b[1], k); cy = mix(a[2], b[2], k);
+            sw = mix(a[3], b[3], k); sh = mix(a[4], b[4], k); rot = mix(a[5], b[5], k);
+            // Never quite still: the light breathes and wanders a little.
+            cx += Math.sin(time * 0.55) * 0.012;
+            cy += Math.cos(time * 0.42) * 0.008;
+            const intro = clamp((time - 0.9) / 1.3, 0, 1);
+            const traverse = kf([[0.66, 1], [0.7, 0.12], [0.74, 0.12], [0.78, 1]], pl);
+            const settle = kf([[0.92, 1], [1, 0.3]], pl);
+            o = intro * traverse * settle * kf([[1.35, 1], [1.75, 0]], s);
+        } else if (s > 3.35 && s < 4.4 && !isCalm && geo.wide) {
+            // Opening: first light finds the crown.
+            o = kf([[3.4, 0], [3.7, 0.85], [4.05, 0.85], [4.35, 0]], s);
+            cx = mix(0.38, 0.62, clamp((s - 3.4) / 0.95, 0, 1)); cy = 0.1; sw = 0.42; sh = 0.17; rot = -6;
+        } else if (s >= SCREENS - 0.15 && state.lamp.i > 0.002) {
+            // Final scene: the visitor's own lamp.
+            const l = state.lamp;
+            o = l.i * 0.95; cx = l.x; cy = l.y; sw = 0.34; sh = 0.22; rot = 0;
+        }
+        const lampMode = s >= SCREENS - 0.15;
+        if (lampMode !== els.spot.__lamp) { els.spot.__lamp = lampMode; els.spot.classList.toggle('is-lamp', lampMode); }
+        put(els.spot, 'opacity', op(o));
+        if (o <= 0.001) return;
+        const S = W;
+        const sx = Math.max(0.02, (sw * W) / S);
+        const sy = Math.max(0.02, (sh * H) / S);
+        const X = cx * W;
+        const Y = cy * H;
+        put(els.spot, 'transform', `translate(${px(X)}, ${px(Y)}) rotate(${rot.toFixed(2)}deg) scale(${sx.toFixed(4)}, ${sy.toFixed(4)}) translate(${px(-S / 2)}, ${px(-S / 2)})`);
+        put(els.spotIn, 'transform', `translate(${px(S / 2)}, ${px(S / 2)}) scale(${(1 / sx).toFixed(4)}, ${(1 / sy).toFixed(4)}) rotate(${(-rot).toFixed(2)}deg) translate(${px(-X)}, ${px(-Y)})`);
+    }
+
+    // Text compositions: their visibility follows the scroll; their words
+    // arrive on their own clock the first time each is reached.
+    function beatsFrame(s, time, isCalm, now) {
+        const show = (el, v, lift) => {
+            put(el, 'opacity', op(v));
+            if (!isCalm) put(el, 'transform', `translate3d(0, ${px((1 - v) * (lift || 18))}, 0)`);
+        };
+
+        // Prologue: each line when its moment comes — by time if the visitor
+        // waits, sooner if they scroll.
+        const pro = isCalm ? (s < 1.6 ? 1 : 0) : kf([[0, 1], [1.4, 1], [1.7, 0]], s);
+        show(beats.prologue, pro, 0);
+        const LINE_T = [1.6, 4.4, 7.2];
+        const LINE_S = [0.02, 0.45, 0.9];
+        lines.forEach((line, i) => {
+            if (!state.linesShown[i] && (isCalm || time >= LINE_T[i] || s >= LINE_S[i])) {
+                state.linesShown[i] = true;
+                reveal(line, { instant: s > 1.4 });
             }
-            const long = calm ? 320 : (initial ? 2800 : 1800);
-            specs.push({ el: ghost, frames: [state.box], delay: 0, duration: long, easing: EASE.arrive });
-            specs.push({ el: halo, frames: [{ opacity: state.halo }], delay: 0, duration: long, easing: EASE.arrive });
-            specs.push({ el: lit, frames: [{ opacity: state.lit }], delay: calm ? 0 : 300, duration: long, easing: EASE.arrive });
-            specs.push({ el: sweep, frames: [{ opacity: state.sweep }], delay: 0, duration: long, easing: EASE.arrive });
-        } else if (!ghost.hidden) {
-            specs.push({ el: ghost, frames: [{ opacity: 0 }], delay: 0, duration: calm ? 240 : 900, easing: EASE.recede });
+        });
+
+        // The name: arrives once, decisively, at the threshold.
+        show(beats.announcement, kf([[1.5, 0], [1.6, 1], [3.05, 1], [3.35, 0]], s), 0);
+        // The kicker holds the name's place, then gives way to it.
+        const named = state.revealed ? easeOut(clamp((now - state.revealAt) / 500, 0, 1)) : 0;
+        put(announceKicker, 'opacity', op(kf([[1.55, 0], [1.9, 1]], s) * (1 - named)));
+        if (!state.revealed && s >= REVEAL_AT && s < 3.4) setRevealed(true, state.crossedUp && !state.snapped);
+        else if (state.revealed && (s < 2.15 || s > 3.6)) setRevealed(false);
+
+        const accord = [
+            ['opening', [[3.35, 0], [3.6, 1], [4.1, 1], [4.35, 0]]],
+            ['heart', [[4.35, 0], [4.6, 1], [5.1, 1], [5.35, 0]]],
+            ['base', [[5.35, 0], [5.6, 1], [6.1, 1], [6.35, 0]]],
+            ['construction', [[6.45, 0], [6.75, 1], [7.75, 1], [8.0, 0]]]
+        ];
+        accord.forEach(([id, track]) => {
+            const v = kf(track, s);
+            show(beats[id], v);
+            if (v >= 0.6) reveal(beats[id], { instant: state.snapped });
+            else if (v <= 0.001) hide(beats[id]);
+        });
+
+        // The final copy, the first time the bottle begins to settle.
+        if (!state.finalShown && s >= 8.3) {
+            state.finalShown = true;
+            reveal(unveilCopy);
+        }
+
+        // "Scroll", for a visitor who waits at the top.
+        if (s > 0.05) state.scrolled = true;
+        if (els.hint) els.hint.classList.toggle('is-on', !state.scrolled && time > 3.4 && s < 0.05);
+    }
+
+    // ── Hover and tap discovery (final scene) ───────────────────────────────
+    function lampFrame() {
+        const l = state.lamp;
+        let key = '';
+        if (l.i > 0.35) {
+            key = 'glass';
+            for (const name of ['crown', 'insignia', 'amber']) {
+                const h = SPOTS[name];
+                const dx = (l.x - h.x) / h.rx;
+                const dy = (l.y - h.y) / h.ry;
+                if (dx * dx + dy * dy <= 1) { key = name; break; }
+            }
+            if (key === 'glass' && (l.x < 0.16 || l.x > 0.84 || l.y < 0.32 || l.y > 0.97)) key = '';
+        }
+        if (key !== l.key) {
+            l.key = key;
+            const labelKey = key === 'amber' ? 'amberCore' : key;
+            if (key) {
+                captionTitle.textContent = t(labelKey);
+                captionText.textContent = t(`${labelKey}Text`);
+            }
+            caption.classList.toggle('is-on', Boolean(key));
         }
     }
 
-    function ghostRest(to) {
-        const state = ghostState(to);
-        if (!state || ghostBroken) {
-            ghost.hidden = true;
-            ghost.removeAttribute('style');
-            ghost.querySelectorAll('[style]').forEach((el) => el.removeAttribute('style'));
+    function stepLamp(dt) {
+        const l = state.lamp;
+        const kp = 1 - Math.exp(-dt / 140);
+        const ki = 1 - Math.exp(-dt / (l.ti > l.i ? 220 : 420));
+        l.x += (l.tx - l.x) * kp;
+        l.y += (l.ty - l.y) * kp;
+        l.i += (l.ti - l.i) * ki;
+        if (Math.abs(l.ti - l.i) < 0.002) l.i = l.ti;
+        return Math.abs(l.tx - l.x) > 0.0008 || Math.abs(l.ty - l.y) > 0.0008 || l.i !== l.ti;
+    }
+
+    const atFinal = () => state.s >= SCREENS - 0.15;
+
+    function boxPoint(clientX, clientY) {
+        const r = bottle.getBoundingClientRect();
+        return { x: (clientX - r.left) / r.width, y: (clientY - r.top) / r.height };
+    }
+
+    anchor.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'touch' || !atFinal()) return;
+        const b = boxPoint(e.clientX, e.clientY);
+        const l = state.lamp;
+        const near = b.x > -0.12 && b.x < 1.12 && b.y > -0.06 && b.y < 1.04;
+        l.tx = clamp(b.x, 0.12, 0.88);
+        l.ty = clamp(b.y, 0.05, 0.94);
+        l.ti = near ? 1 : 0;
+        l.tapIndex = -1;
+        kick();
+    }, { passive: true });
+
+    anchor.addEventListener('pointerleave', (e) => {
+        if (e.pointerType === 'touch') return;
+        state.lamp.ti = 0;
+        kick();
+    });
+
+    // Touch and keyboard: each tap lights the next part, then rests.
+    let lastPointer = '';
+    discover.addEventListener('pointerdown', (e) => { lastPointer = e.pointerType; });
+    discover.addEventListener('click', (e) => {
+        const viaMouse = lastPointer === 'mouse' && e.detail > 0;
+        lastPointer = '';
+        if (viaMouse) return;   // the pointer itself is the lamp
+        const l = state.lamp;
+        l.tapIndex = l.tapIndex + 1 >= TAP_ORDER.length ? -1 : l.tapIndex + 1;
+        if (l.tapIndex < 0) { l.ti = 0; } else {
+            const h = SPOTS[TAP_ORDER[l.tapIndex]];
+            l.tx = h.x; l.ty = h.y; l.ti = 1;
+            if (l.i < 0.05) { l.x = h.x; l.y = h.y; }
+        }
+        kick();
+    });
+
+    // ── The loop ─────────────────────────────────────────────────────────────
+    function tick(now) {
+        state.raf = 0;
+        if (state.paused) { state.running = false; return; }
+        const dt = Math.min(64, now - (state.last || now));
+        state.last = now;
+
+        const prev = state.s;
+        const gap = state.sTarget - state.s;
+        state.snapped = Math.abs(gap) > 2.5;
+        if (state.snapped || calm()) state.s = state.sTarget;
+        else {
+            const k = 1 - Math.exp(-dt / 110);
+            state.s += gap * k;
+            if (Math.abs(state.sTarget - state.s) < 0.0004) state.s = state.sTarget;
+        }
+        state.crossedUp = prev < REVEAL_AT && state.s >= REVEAL_AT;
+
+        const lampMoving = stepLamp(dt);
+        frame(now);
+        chrome();
+
+        const time = (now - state.t0) / 1000;
+        const busy = state.s !== state.sTarget
+            || lampMoving
+            || (state.s < 1.8 && !calm())                       // the prologue's light is alive
+            || time < 8                                          // the poetry's clock
+            || now - state.revealAt < 1800
+            || now - state.pulseAt < 1500
+            || state.programmatic;
+        if (busy) state.raf = requestAnimationFrame(tick);
+        else { state.running = false; state.last = 0; }
+    }
+
+    function kick() {
+        if (state.paused || state.raf) return;
+        state.running = true;
+        state.raf = requestAnimationFrame(tick);
+    }
+
+    // ── Controls, progress, address, announcements ──────────────────────────
+    function currentStop(s) {
+        let idx = 0;
+        STOPS.forEach((st, i) => { if (s >= st.s - 0.35) idx = i; });
+        return idx;
+    }
+
+    function chrome() {
+        const sT = state.sTarget;
+        const s = state.s;
+        const end = sT >= SCREENS - 0.1;
+        if (end !== state.endMode) {
+            // Read before hiding: hiding a focused button blurs it.
+            const had = document.activeElement;
+            const lostControl = had === nextBtn || had === skipBtn || had === replayBtn;
+            state.endMode = end;
+            root.classList.toggle('nt-end', end);
+            nextBtn.hidden = end;
+            skipBtn.hidden = end;
+            replayBtn.hidden = !end;
+            if (end) {
+                try { localStorage.setItem('void-neant-seen', '1'); } catch (e) { /* ignore */ }
+                if (lostControl) focusQuietly(replayBtn);
+            } else if (lostControl) {
+                focusQuietly(nextBtn);
+            }
+        }
+        backBtn.disabled = sT <= 0.02;
+
+        let chapter = 1;
+        if (s >= CHAPTERS[3][0]) chapter = 3; else if (s >= CHAPTERS[2][0]) chapter = 2;
+        progressBtns.forEach((btn) => {
+            const c = Number(btn.dataset.chapter);
+            const [a, b] = CHAPTERS[c];
+            const fill = c < chapter ? 1 : c > chapter ? 0 : clamp((s - a) / (b - a), 0, 1);
+            put(btn.querySelector('.nt-progress-bar i'), '--fill', (Math.round(fill * 200) / 200).toString());
+            if (c === chapter) btn.setAttribute('aria-current', 'step'); else btn.removeAttribute('aria-current');
+        });
+        if (chapter !== state.chapter) {
+            if (state.chapter) live.textContent = t('live').replace('{n}', String(chapter)).replace('{title}', t(`ch${chapter}`));
+            state.chapter = chapter;
+        }
+
+        const stop = currentStop(s);
+        if (stop !== state.stop) {
+            state.stop = stop;
+            if (root.classList.contains('nt-ready')) {
+                const hash = stop === 0 ? '' : `#${STOPS[stop].id}`;
+                if (location.hash !== hash) {
+                    try { history.replaceState(history.state, '', `${location.pathname}${location.search}${hash}`); } catch (e) { /* ignore */ }
+                }
+            }
+        }
+    }
+
+    // Moving the scroll position: the story follows it.
+    function scrollToS(s, instant) {
+        cancelProgrammatic();
+        const y = Math.round(geo.top + s * geo.vh);
+        if (instant || calm()) {
+            window.scrollTo(0, y);
+            readScroll();
+            kick();
             return;
         }
-        ghost.style.opacity = String(state.box.opacity);
-        ghost.style.transform = state.box.transform;
-        ghost.querySelector('.nt-ghost-halo').style.opacity = String(state.halo);
-        ghost.querySelector('.nt-ghost-lit').style.opacity = String(state.lit);
-        ghost.querySelector('.nt-ghost-sweep').style.opacity = String(state.sweep);
+        const from = window.scrollY;
+        const dist = y - from;
+        const duration = clamp(650 + Math.abs(dist / geo.vh) * 300, 750, 2200);
+        const start = performance.now();
+        const anim = { cancelled: false, toS: s };
+        state.programmatic = anim;
+        const step = (now) => {
+            if (anim.cancelled) return;
+            const x = clamp((now - start) / duration, 0, 1);
+            const e = x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+            window.scrollTo(0, from + dist * e);
+            if (x < 1) requestAnimationFrame(step);
+            else if (state.programmatic === anim) state.programmatic = null;
+        };
+        requestAnimationFrame(step);
+        kick();
     }
 
-    // ── Running it ───────────────────────────────────────────────────────────
-    function go(to, opts) {
-        opts = opts || {};
-        to = Math.max(0, Math.min(LAST, to));
-        if (opts.user) stopAutoAdvance();
-        clearTimeout(autoTimer);
-        if (run && to === target) return;   // already on its way there
-        if (run) freeze();
-        if (to === current && to === target && !opts.initial) return;
-
-        const from = target;
-        const calm = reduced();
-        const specs = [];
-        target = to;
-
-        // Out: every passage still showing, from wherever it stands.
-        scenes.forEach((scene, i) => {
-            if (i === to || scene.hidden) return;
-            scene.inert = true;
-            specs.push({
-                el: scene,
-                frames: calm ? [{ opacity: 0 }] : [{ opacity: 0, filter: 'blur(5px)', transform: 'scale(0.985)' }],
-                delay: 0,
-                duration: calm ? 220 : 720,
-                easing: EASE.recede
-            });
-        });
-
-        // In.
-        const scene = scenes[to];
-        if (!scene.hidden && scene.dataset.revealed === '1') {
-            // Turned back while it was still leaving: it simply comes back.
-            specs.push({
-                el: scene,
-                frames: [{ opacity: 1, filter: 'blur(0px)', transform: 'scale(1)' }],
-                delay: 0,
-                duration: calm ? 220 : 620,
-                easing: EASE.settle
-            });
-        } else {
-            resetScene(scene);
-            scene.hidden = false;
-            const base = opts.initial ? 250 : (calm ? 140 : 480);
-            if (calm) calmSpecs(scene, specs, base); else revealSpecs(scene, specs, base);
-        }
-        scene.inert = false;
-
-        // The light and the silhouette.
-        lights.forEach((el) => {
-            specs.push({
-                el,
-                frames: [{ opacity: LIGHTS[el.dataset.light][to] }],
-                delay: 0,
-                duration: calm ? 320 : (opts.initial ? 2600 : 1600),
-                easing: EASE.arrive
-            });
-        });
-        ghostSpecs(to, specs, calm, opts.initial);
-
-        // Chapter 03 is a page that scrolls; the passages before it are not.
-        const toPage = STEPS[to].chapter === 3;
-        root.classList.toggle('nt-intro', !toPage);
-        if (toPage && from !== to) window.scrollTo(0, 0);
-        stage.setActive(false);
-
-        updateChrome(to, opts);
-        play(specs, to);
+    function cancelProgrammatic() {
+        if (state.programmatic) state.programmatic.cancelled = true;
+        state.programmatic = null;
     }
 
-    function play(specs, to) {
-        const id = ++runSeq;
-        const anims = specs.map((sp) => sp.el.animate(sp.frames, {
-            delay: sp.delay,
-            duration: sp.duration,
-            easing: sp.easing || 'linear',
-            fill: 'both'
-        }));
-        run = { id, anims, to };
-        if (!anims.length) { settle(); return; }
-        Promise.all(anims.map((a) => a.finished))
-            .then(() => { if (run && run.id === id) settle(); })
-            .catch(() => { /* cancelled by freeze(); the next run settles */ });
+    // A visitor's own scrolling always wins over a control's.
+    ['wheel', 'touchstart'].forEach((type) => window.addEventListener(type, cancelProgrammatic, { passive: true }));
+
+    // Where the story is headed: a control pressed twice moves on from where
+    // the first press is going, not from where the scroll happens to be.
+    const destination = () => (state.programmatic ? state.programmatic.toS : state.sTarget);
+    function next() {
+        const s = destination();
+        const st = STOPS.find((x) => x.s > s + 0.12);
+        if (st) scrollToS(st.s);
+    }
+    function back() {
+        const s = destination();
+        const prior = STOPS.filter((x) => x.s < s - 0.12);
+        if (prior.length) scrollToS(prior[prior.length - 1].s);
+    }
+    function skip() { scrollToS(SCREENS, true); }
+    function replay() {
+        scrollToS(0, true);
+        state.t0 = performance.now();
+        state.linesShown = [false, false, false];
+        lines.forEach((l) => hide(l));
+        state.scrolled = false;
+        state.revealed = false;
+        hide(announceName);
+        state.lamp.ti = 0; state.lamp.i = 0; state.lamp.tapIndex = -1;
+        focusQuietly(nextBtn);
+        kick();
     }
 
-    // Hold everything exactly where it is, as inline style, and let go of the
-    // animations. The next timeline starts from here.
-    function freeze() {
-        const r = run;
-        run = null;
-        r.anims.forEach((a) => {
-            try { a.commitStyles(); } catch (e) { /* not rendered */ }
-            a.cancel();
-        });
-    }
-
-    function settle() {
-        const r = run;
-        if (!r) return;
-        run = null;
-        const to = r.to;
-        const wasPage = current !== -1 && STEPS[current].chapter === 3;
-
-        // Resting state first, then release the animations, in one task, so
-        // there is no frame where neither holds.
-        scenes.forEach((scene, i) => {
-            if (i === to) return;
-            scene.hidden = true;
-            scene.inert = false;
-            resetScene(scene);
-        });
-        lights.forEach((el) => { el.style.opacity = String(LIGHTS[el.dataset.light][to]); });
-        ghostRest(to);
-        r.anims.forEach((a) => a.cancel());
-        resetScene(scenes[to]);
-        scenes[to].dataset.revealed = '1';
-        current = to;
-
-        if (wasPage && STEPS[to].chapter !== 3) window.scrollTo(0, 0);
-        stage.setActive(STEPS[to].chapter === 3);
-        scheduleAutoAdvance();
-    }
-
-    // Land at rest immediately (the page is being left or hidden).
-    function settleNow() {
-        if (!run) return;
-        run.anims.forEach((a) => { try { a.finish(); } catch (e) { /* ignore */ } });
-        settle();
-    }
-
-    // The monologue flows once into the announcement, unless the visitor has
-    // already taken the controls. Nothing else ever moves on by itself.
-    function scheduleAutoAdvance() {
-        clearTimeout(autoTimer);
-        if (!autoAdvance || current !== 0 || reduced() || document.hidden) return;
-        autoTimer = setTimeout(() => {
-            if (autoAdvance && current === 0 && !run) go(1, { auto: true });
-        }, 2200);
-    }
-
-    function stopAutoAdvance() {
-        autoAdvance = false;
-        clearTimeout(autoTimer);
-    }
-
-    // ── Controls, progress, address bar, announcement ─────────────────────────
-    function updateChrome(to, opts) {
-        const step = STEPS[to];
-        // Read before any control is hidden: hiding a focused element blurs it.
-        const hadFocus = document.activeElement;
-        document.body.dataset.step = String(to);
-        backBtn.disabled = to === 0;
-        nextBtn.hidden = to === LAST;
-        skipBtn.hidden = to === LAST;
-        replayBtn.hidden = to !== LAST;
-
-        progressBtns.forEach((btn) => {
-            const chapter = STEPS[Number(btn.dataset.goto)].chapter;
-            const members = CHAPTERS[chapter];
-            let fill = 0;
-            if (chapter < step.chapter) fill = 1;
-            else if (chapter === step.chapter) fill = (members.indexOf(to) + 1) / members.length;
-            btn.querySelector('.nt-progress-bar i').style.setProperty('--fill', String(fill));
-            if (chapter === step.chapter) btn.setAttribute('aria-current', 'step');
-            else btn.removeAttribute('aria-current');
-        });
-
-        if (!opts.initial || location.hash) {
-            try { history.replaceState(history.state, '', `#${step.id}`); } catch (e) { /* ignore */ }
-        }
-
-        let title = t(`ch${step.chapter}`);
-        if (step.sub) title += ` — ${t(step.sub)}`;
-        if (!opts.initial) live.textContent = t('live').replace('{n}', String(step.chapter)).replace('{title}', title);
-
-        // Keep focus somewhere sensible when the control that had it goes away.
-        const active = hadFocus;
-        if (active && active !== document.body
-            && (active.hidden || active.disabled || (active.closest && active.closest('[hidden]')))) {
-            if (to === LAST) focusQuietly($('ntUnveilTitle'));
-            else focusQuietly(nextBtn);
-        }
-    }
-
-    function focusQuietly(el) {
-        if (!el) return;
-        if (!el.hasAttribute('tabindex') && !/^(A|BUTTON|INPUT)$/.test(el.tagName)) el.setAttribute('tabindex', '-1');
-        try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
-    }
-
-    const next = () => { if (target < LAST) go(target + 1, { user: true }); };
-    const back = () => { if (target > 0) go(target - 1, { user: true }); };
-    const skip = () => go(LAST, { user: true });
+    function focusQuietly(el) { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } }
 
     backBtn.addEventListener('click', back);
     nextBtn.addEventListener('click', next);
     skipBtn.addEventListener('click', skip);
-    replayBtn.addEventListener('click', () => {
-        autoAdvance = true;
-        go(0, { replay: true });
-        focusQuietly(nextBtn);
-    });
-    progressBtns.forEach((btn) => btn.addEventListener('click', () => go(Number(btn.dataset.goto), { user: true })));
+    replayBtn.addEventListener('click', replay);
+    progressBtns.forEach((btn) => btn.addEventListener('click', () => {
+        const c = Number(btn.dataset.chapter);
+        scrollToS(STOPS[CHAPTER_STOP[c]].s);
+    }));
 
-    const inIntro = () => target < LAST;
-
+    // Arrow keys step through the story; vertical keys stay native scrolling.
     document.addEventListener('keydown', (e) => {
         if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
         const el = e.target;
         if (el && el.closest && el.closest('input, textarea, select, [contenteditable="true"]')) return;
-        if (!inIntro()) return;   // chapter 03 scrolls like any page
-        const onControl = el && el.closest && el.closest('button, a');
-        switch (e.key) {
-            case 'ArrowRight': case 'ArrowDown': case 'PageDown':
-                e.preventDefault(); next(); break;
-            case ' ':
-                if (onControl) return;
-                e.preventDefault(); next(); break;
-            case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
-                e.preventDefault(); back(); break;
-            case 'Home':
-                e.preventDefault(); go(0, { user: true }); break;
-            case 'End': case 'Escape':
-                e.preventDefault(); skip(); break;
-            default:
-        }
+        if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
+        else if (e.key === 'Escape' && state.sTarget < SCREENS - 0.1) { e.preventDefault(); skip(); }
+        else cancelProgrammatic();
     });
 
-    // A deliberate scroll gesture moves one passage; a trackpad's momentum
-    // tail cannot fire a second.
-    let wheelSum = 0;
-    let wheelIdle = null;
-    let wheelLock = 0;
-    window.addEventListener('wheel', (e) => {
-        if (!inIntro() || e.ctrlKey) return;
-        wheelSum += e.deltaY;
-        clearTimeout(wheelIdle);
-        wheelIdle = setTimeout(() => { wheelSum = 0; }, 220);
-        const now = performance.now();
-        if (now < wheelLock || Math.abs(wheelSum) < 60) return;
-        wheelLock = now + 1100;
-        const dir = wheelSum > 0 ? 1 : -1;
-        wheelSum = 0;
-        if (dir > 0) next(); else back();
-    }, { passive: true });
+    window.addEventListener('scroll', () => { readScroll(); kick(); }, { passive: true });
 
-    let touch = null;
-    window.addEventListener('touchstart', (e) => {
-        if (!inIntro() || e.touches.length !== 1) { touch = null; return; }
-        if (e.target.closest && e.target.closest('.nt-controls, a, button, input')) { touch = null; return; }
-        touch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }, { passive: true });
-    window.addEventListener('touchend', (e) => {
-        if (!touch || !inIntro()) return;
-        const p = e.changedTouches[0];
-        const dx = p.clientX - touch.x;
-        const dy = p.clientY - touch.y;
-        touch = null;
-        if (Math.max(Math.abs(dx), Math.abs(dy)) < 56) return;
-        const forward = Math.abs(dx) > Math.abs(dy) ? dx < 0 : dy < 0;
-        if (forward) next(); else back();
-    }, { passive: true });
+    let resizeTimer = 0;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => { measure(); readScroll(); kick(); }, 80);
+    });
 
     // ── Leaving or hiding the page stops every effect ─────────────────────────
     function pause() {
+        state.paused = true;
         root.classList.add('nt-paused');
-        settleNow();
-        clearTimeout(autoTimer);
-        stage.setActive(false);
+        cancelProgrammatic();
+        if (state.raf) cancelAnimationFrame(state.raf);
+        state.raf = 0;
+        state.running = false;
+        const css = typeof CSSAnimation === 'function' ? CSSAnimation : null;
+        document.getAnimations().forEach((a) => {
+            if (a.playState === 'running' && !(css && a instanceof css)) { try { a.finish(); } catch (e) { /* ignore */ } }
+        });
     }
     function resume() {
+        state.paused = false;
         root.classList.remove('nt-paused');
-        if (current === LAST) stage.setActive(true);
-        scheduleAutoAdvance();
+        state.last = 0;
+        measure();
+        readScroll();
+        kick();
     }
     document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); else resume(); });
     window.addEventListener('pagehide', pause);
     window.addEventListener('pageshow', (e) => { if (e.persisted) resume(); });
 
-    window.addEventListener('resize', () => {
-        if (!run && current <= 1 && current >= 0 && !ghost.hidden) ghostRest(current);
-    });
-
-    // ── Chapter 03 · the bottle stage ────────────────────────────────────────
-    const stage = (function bottleStage() {
-        const el = $('frStage');
-        const img = $('ntBottleImg');
-        if (img) {
-            const missing = () => { if (el) el.dataset.missing = ''; };
-            img.addEventListener('error', missing);
-            if (img.complete && img.naturalWidth === 0 && img.currentSrc) missing();
-        }
-        const readVar = (name, fallback) => {
-            const v = parseFloat(getComputedStyle(root).getPropertyValue(name));
-            return Number.isFinite(v) ? v : fallback;
-        };
-        const DAMPING = readVar('--fr-damping', 0.055);
-        const RELEASE = readVar('--fr-release-damping', 0.035);
-        const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
-        let tx = 0, ty = 0, ta = 0, cx = 0, cy = 0, ca = 0;
-        let raf = null;
-        let active = false;
-
-        const write = () => {
-            root.style.setProperty('--fr-px', cx.toFixed(4));
-            root.style.setProperty('--fr-py', cy.toFixed(4));
-            root.style.setProperty('--fr-active', ca.toFixed(4));
-        };
-
-        function frame() {
-            raf = null;
-            if (!active) return;
-            const d = ta > 0 ? DAMPING : RELEASE;
-            cx += (tx - cx) * d;
-            cy += (ty - cy) * d;
-            ca += (ta - ca) * 0.06;
-            write();
-            if (Math.abs(tx - cx) < 0.0005 && Math.abs(ty - cy) < 0.0005 && Math.abs(ta - ca) < 0.0005) return;
-            raf = requestAnimationFrame(frame);
-        }
-        const kick = () => { if (active && !raf && !reduced() && !document.hidden) raf = requestAnimationFrame(frame); };
-
-        function onMove(e) {
-            const r = el.getBoundingClientRect();
-            if (!r.width || !r.height) return;
-            tx = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) * 2));
-            ty = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height - 0.5) * 2));
-            ta = 1;
-            kick();
-        }
-        function onLeave() { tx = 0; ty = 0; ta = 0; kick(); }
-
-        return {
-            setActive(on) {
-                if (!el) return;
-                on = Boolean(on) && fine.matches && !reduced();
-                if (on === active) return;
-                active = on;
-                if (on) {
-                    el.addEventListener('pointermove', onMove, { passive: true });
-                    el.addEventListener('pointerleave', onLeave, { passive: true });
-                } else {
-                    el.removeEventListener('pointermove', onMove);
-                    el.removeEventListener('pointerleave', onLeave);
-                    if (raf) { cancelAnimationFrame(raf); raf = null; }
-                    tx = ty = ta = cx = cy = ca = 0;
-                    write();
-                }
-            },
-            get running() { return raf !== null; }
-        };
-    })();
-
-    ghost.querySelectorAll('img').forEach((img) => img.addEventListener('error', () => {
-        ghostBroken = true;
-        ghost.hidden = true;
-    }));
+    // If the artwork cannot load, the bottle stays out of the scene rather
+    // than showing a broken image.
+    bottle.querySelector('.nt-b-glass img').addEventListener('error', () => root.classList.add('nt-noart'));
 
     // ── The list ─────────────────────────────────────────────────────────────
     (function unveilingList() {
@@ -788,8 +1110,8 @@
         const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         let sending = false;
 
-        function setState(state, message) {
-            if (state) form.dataset.state = state; else delete form.dataset.state;
+        function setState(st, message) {
+            if (st) form.dataset.state = st; else delete form.dataset.state;
             status.textContent = message || '';
         }
 
@@ -827,6 +1149,7 @@
                 if (res.ok && data && data.ok) {
                     setState('success', data.welcomeSent === false ? t('successNoMail') : t('success'));
                     root.classList.remove('nt-typing');
+                    status.setAttribute('tabindex', '-1');
                     focusQuietly(status);
                     if (typeof window.gtag === 'function') window.gtag('event', 'sign_up', { method: 'neant_unveiling' });
                     return;
@@ -851,17 +1174,55 @@
 
     // ── Begin ────────────────────────────────────────────────────────────────
     applyLanguage();
-    const fromHash = STEPS.findIndex((s) => `#${s.id}` === location.hash);
-    if (fromHash > 0) autoAdvance = false;
-    scenes.forEach((scene) => { scene.hidden = true; });
-    go(fromHash >= 0 ? fromHash : 0, { initial: true });
+    root.classList.toggle('nt-calm', calm());
+    const onCalmChange = () => { root.classList.toggle('nt-calm', calm()); kick(); };
+    if (reducedQuery.addEventListener) reducedQuery.addEventListener('change', onCalmChange);
+    measure();
+
+    // Where to begin. Back/forward and reload keep the browser's own position.
+    // A link to a passage opens on it. A visitor who has already seen the
+    // story opens on the final scene, with Replay to see it again.
+    const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
+    const fromHash = STOPS.findIndex((st) => `#${st.id}` === location.hash);
+    if (nav.type !== 'back_forward' && nav.type !== 'reload') {
+        let seen = false;
+        try { seen = localStorage.getItem('void-neant-seen') === '1'; } catch (e) { /* ignore */ }
+        if (fromHash >= 0) window.scrollTo(0, Math.round(geo.top + STOPS[fromHash].s * geo.vh));
+        else if (seen) window.scrollTo(0, Math.round(geo.top + SCREENS * geo.vh));
+        else window.scrollTo(0, 0);
+    }
+    readScroll();
+    state.s = state.sTarget;
+    state.snapped = true;
+    if (state.s > 1.4) {
+        state.linesShown = [true, true, true];
+        lines.forEach((l) => reveal(l, { instant: true }));
+    }
+    if (state.s >= 8.3) {
+        state.finalShown = true;
+        reveal(unveilCopy);
+    }
+    const now = performance.now();
+    frame(now);
+    state.snapped = false;
+    chrome();
     root.classList.add('nt-ready');
+    kick();
 
     // Read-only, for tests and debugging.
     window.__neant = {
-        get step() { return current; },
-        get target() { return target; },
-        get busy() { return run !== null; },
-        get stageRunning() { return stage.running; }
+        get s() { return state.s; },
+        get target() { return state.sTarget; },
+        get stop() { return STOPS[currentStop(state.s)].id; },
+        get busy() { return state.running || Boolean(state.programmatic); },
+        get settled() { return !state.programmatic && Math.abs(state.s - state.sTarget) < 0.0005; },
+        get running() { return state.running; },
+        get revealed() { return state.revealed; },
+        get flashes() { return state.flashes; },
+        get lamp() { return { x: state.lamp.x, y: state.lamp.y, i: state.lamp.i, key: state.lamp.key }; },
+        stops: STOPS.map((st) => ({ id: st.id, s: st.s })),
+        screens: SCREENS,
+        get vh() { return geo.vh; },
+        get top() { return geo.top; }
     };
 })();

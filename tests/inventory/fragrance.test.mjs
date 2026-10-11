@@ -1,7 +1,9 @@
-// /fragrance — the NÉANT teaser in Chromium: the three chapters, their
-// controls, rapid and interrupted navigation, reduced motion, phones, the
-// "Receive the unveiling" signup against the real newsletter backend, return
-// navigation, and that every effect stops when it should.
+// /fragrance — the NÉANT scroll story in Chromium: the dark opening and its
+// moving light, the decisive reveal and its single flash, the construction
+// (parts apart and back), the controls staying in step with the scroll,
+// returning visitors, hover and tap discovery, reduced motion, phones, the
+// "Receive the unveiling" signup against the real backend, and that every
+// effect stops when the page is hidden.
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,19 +13,22 @@ import { startStack } from './harness.mjs';
 const CHROME = process.env.CHROMIUM_PATH
     || ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome'].find((p) => fs.existsSync(p));
 
-const IDS = ['prologue', 'announcement', 'opening', 'heart', 'base', 'unveiling'];
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
 
-async function visitor(browser, { viewport = DESKTOP, reducedMotion = 'no-preference', lang = 'en', touch = false } = {}) {
+async function visitor(browser, { viewport = DESKTOP, reducedMotion = 'no-preference', lang = 'en', touch = false, seen = false } = {}) {
     const context = await browser.newContext({ viewport, reducedMotion, hasTouch: touch, isMobile: touch });
     await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort());
-    await context.addInitScript((l) => {
+    await context.addInitScript(([l, sn]) => {
         try {
             localStorage.setItem('void-gate-disabled', '1');
             localStorage.setItem('voidLanguage', l);
+            if (sn && !sessionStorage.getItem('nt-seeded')) {
+                localStorage.setItem('void-neant-seen', '1');
+                sessionStorage.setItem('nt-seeded', '1');
+            }
         } catch (e) { /* ignore */ }
-    }, lang);
+    }, [lang, seen]);
     const page = await context.newPage();
     page.setDefaultTimeout(20000);
     page.errors = [];
@@ -31,37 +36,51 @@ async function visitor(browser, { viewport = DESKTOP, reducedMotion = 'no-prefer
     return { context, page };
 }
 
-const settled = (page) => page.waitForFunction(
-    () => window.__neant && !window.__neant.busy && window.__neant.step === window.__neant.target);
+const ready = (page) => page.waitForFunction(() => window.__neant && document.documentElement.classList.contains('nt-ready'));
+const settled = (page) => page.waitForFunction(() => window.__neant.settled);
 
-// Everything that must be true of a passage at rest.
-const rest = (page) => page.evaluate(() => {
-    const scenes = Array.from(document.querySelectorAll('.nt-scene'));
-    const shown = scenes.filter((s) => !s.hidden);
+async function open(page, origin, hash = '') {
+    await page.goto(`${origin}/fragrance${hash}`, { waitUntil: 'load' });
+    await ready(page);
+}
+
+// Scroll to a point in the story and wait until the story has arrived there
+// (not merely until it is at rest: the scroll event may not have landed yet).
+async function toS(page, s) {
+    await page.evaluate((v) => window.scrollTo(0, Math.round(window.__neant.top + v * window.__neant.vh)), s);
+    await page.waitForFunction((v) => Math.abs(window.__neant.target - v) < 0.01 && window.__neant.settled, s);
+}
+
+const story = (page) => page.evaluate(() => {
+    const n = window.__neant;
+    const style = (sel, prop) => getComputedStyle(document.querySelector(sel))[prop];
     return {
-        step: window.__neant.step,
-        shown: shown.map((s) => s.id),
+        s: Math.round(n.s * 1000) / 1000,
+        stop: n.stop,
+        revealed: n.revealed,
+        flashes: n.flashes,
         hash: location.hash,
-        words: document.querySelectorAll('.nt-word, .nt-glyph').length,
-        styled: shown.flatMap((s) => [s, ...s.querySelectorAll('[data-reveal]')]).filter((el) => el.getAttribute('style')).length,
-        inert: shown.filter((s) => s.inert).length,
-        ghost: !document.getElementById('ntGhost').hidden,
-        current: document.querySelector('.nt-progress [aria-current]')?.dataset.goto,
+        art: Number(style('.nt-b-art', 'opacity')),
+        halo: Number(style('.nt-b-halo', 'opacity')),
+        spot: Number(style('.nt-b-spot', 'opacity')),
+        parts: Number(style('.nt-parts', 'opacity')),
+        current: document.querySelector('.nt-progress [aria-current]')?.dataset.chapter,
         back: document.getElementById('ntBack').disabled,
         next: !document.getElementById('ntNext').hidden,
         skip: !document.getElementById('ntSkip').hidden,
         replay: !document.getElementById('ntReplay').hidden,
         overflow: document.documentElement.scrollWidth - window.innerWidth,
-        running: document.getAnimations().filter((a) => a.playState === 'running').map((a) => a.animationName || 'timeline')
+        glyphs: document.querySelectorAll('.nt-glyph').length
     };
 });
 
-async function open(page, origin, hash = '') {
-    await page.goto(`${origin}/fragrance${hash}`, { waitUntil: 'load' });
-    await settled(page);
-}
+// Translation of a layer, from its computed transform matrix.
+const shift = (page, sel) => page.evaluate((q) => {
+    const m = new DOMMatrixReadOnly(getComputedStyle(document.querySelector(q)).transform);
+    return { x: Math.round(m.m41 * 10) / 10, y: Math.round(m.m42 * 10) / 10, scale: Math.round(Math.hypot(m.a, m.b) * 1000) / 1000 };
+}, sel);
 
-describe('NÉANT teaser', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PATH)' }, () => {
+describe('NÉANT scroll story', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PATH)' }, () => {
     let stack;
     let browser;
     before(async () => {
@@ -73,227 +92,299 @@ describe('NÉANT teaser', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PA
         await stack?.stop();
     });
 
-    it('opens on the announcement and steps through every passage under the visitor’s control', async () => {
+    it('opens in darkness, where a narrow moving light discovers the bottle before it is seen', async () => {
         const { context, page } = await visitor(browser);
         await open(page, stack.origin);
 
-        let s = await rest(page);
-        assert.deepEqual([s.step, s.shown, s.ghost, s.current, s.back, s.next, s.skip, s.replay],
-            [0, ['prologue'], true, '0', true, true, true, false]);
-        assert.equal(s.hash, '', 'the first visit keeps a clean address');
-        // At rest only the silhouette's slow reflection is moving.
-        assert.deepEqual(s.running, ['nt-sweep']);
+        let s = await story(page);
+        assert.equal(s.s, 0);
+        assert.equal(s.art, 0, 'the bottle itself is not lit');
+        assert.ok(s.halo <= 0.06, 'near-total darkness');
+        assert.equal(await page.locator('.nt-ghost-sweep, .nt-ghost').count(), 0, 'no static streak layer');
 
-        // Every image the page uses arrived, and the emblem is served.
-        const images = await page.$$eval('img', (els) => els.map((i) => [i.getAttribute('src'), i.complete && i.naturalWidth > 0]));
-        assert.ok(images.length >= 4);
-        for (const [src, ok] of images) assert.ok(ok, `${src} loaded`);
+        await page.waitForTimeout(3200);
+        s = await story(page);
+        assert.equal(s.art, 0, 'still only suggested');
+        assert.ok(s.spot > 0.3, 'the light is on the bottle');
+        const a = await page.evaluate(() => getComputedStyle(document.querySelector('.nt-b-spot')).transform);
+        await page.waitForTimeout(700);
+        const b = await page.evaluate(() => getComputedStyle(document.querySelector('.nt-b-spot')).transform);
+        assert.notEqual(a, b, 'the light moves');
+
+        // The poetry keeps its own measured time.
+        const shown = () => page.$$eval('.nt-line', (els) => els.map((el) => el.classList.contains('is-shown')));
+        assert.deepEqual(await shown(), [true, false, false]);
+        await page.waitForFunction(() => document.querySelectorAll('.nt-line.is-shown').length === 2, null, { timeout: 4000 });
+
+        const images = await page.$$eval('img', (els) => els.map((i) => [i.className, i.complete && i.naturalWidth > 0]));
+        assert.ok(images.length >= 8);
+        for (const [name, ok] of images) assert.ok(ok, `${name} loaded`);
         assert.equal((await page.request.get(`${stack.origin}/assets/ev-emblem.png`)).status(), 200);
-
-        for (let step = 1; step <= 5; step++) {
-            await page.click('#ntNext');
-            await settled(page);
-            s = await rest(page);
-            assert.deepEqual(s.shown, [IDS[step]]);
-            assert.equal(s.hash, `#${IDS[step]}`);
-            assert.equal(s.words, 0, 'letters are whole text again at rest');
-            assert.equal(s.styled, 0, 'no animation state left behind');
-            assert.equal(s.inert, 0);
-            assert.equal(s.ghost, step === 1, 'the silhouette belongs to chapter 01 only');
-            assert.deepEqual(s.running, step === 1 ? ['nt-sweep'] : [], 'nothing runs at rest after chapter 01');
-            assert.ok(s.overflow <= 0, `no sideways scroll on ${IDS[step]}`);
-        }
-
-        assert.deepEqual([s.current, s.back, s.next, s.skip, s.replay], ['5', false, false, false, true]);
-        assert.equal(await page.evaluate(() => document.activeElement.id), 'ntUnveilTitle',
-            'focus is not lost when Next goes away');
-        assert.match(await page.locator('#unveiling .nt-status').textContent(), /Coming Soon/);
-        assert.equal(await page.locator('#unveiling').getByText(/€|\$|price|available now/i).count(), 0);
-
-        await page.click('#ntBack');
-        await settled(page);
-        assert.deepEqual((await rest(page)).shown, ['base']);
+        assert.ok(s.overflow <= 0);
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
-    it('lets the monologue flow into the announcement once, and never moves on after the visitor takes control', async () => {
-        const first = await visitor(browser);
-        await open(first.page, stack.origin);
-        await first.page.waitForFunction(() => window.__neant.step === 1 && !window.__neant.busy, null, { timeout: 15000 });
-        await first.page.waitForTimeout(3500);
-        assert.equal(await first.page.evaluate(() => window.__neant.target), 1, 'nothing beyond the announcement moves by itself');
-        await first.context.close();
-
-        const second = await visitor(browser);
-        await second.page.goto(`${stack.origin}/fragrance`);
-        await second.page.waitForFunction(() => window.__neant);
-        await second.page.keyboard.press('ArrowRight');
-        await settled(second.page);
-        await second.page.keyboard.press('ArrowLeft');
-        await settled(second.page);
-        await second.page.waitForTimeout(10500);
-        assert.equal(await second.page.evaluate(() => window.__neant.target), 0);
-        await second.context.close();
-    });
-
-    it('settles cleanly after rapid and interrupted navigation', async () => {
+    it('brings the bottle and the name in together at the threshold, with one flash, and only when scrolled across it', async () => {
         const { context, page } = await visitor(browser);
         await open(page, stack.origin);
+        await toS(page, 2.2);
+        let s = await story(page);
+        assert.deepEqual([s.revealed, s.flashes], [false, 0]);
+        assert.equal(await page.locator('#ntAnnounceName').evaluate((el) => el.classList.contains('is-shown')), false);
 
-        // Hammer Next well past the end.
-        for (let i = 0; i < 9; i++) { await page.click('#ntNext', { force: true, noWaitAfter: true }).catch(() => {}); await page.waitForTimeout(25); }
-        await settled(page);
-        let s = await rest(page);
-        assert.deepEqual([s.step, s.shown, s.words, s.styled, s.ghost], [5, ['unveiling'], 0, 0, false]);
-        const lights = await page.$$eval('[data-light]', (els) => els.map((el) => [el.dataset.light, el.style.opacity]));
-        assert.deepEqual(lights, [['gold', '0.55'], ['citrus', '0'], ['rose', '0'], ['smoke', '0.25'], ['amber', '0.95']]);
+        // Scroll across it the way a visitor would.
+        for (let i = 0; i < 6 && !(await page.evaluate(() => window.__neant.revealed)); i++) {
+            await page.mouse.wheel(0, 80);
+            await page.waitForTimeout(160);
+        }
+        await page.waitForFunction(() => window.__neant.revealed);
+        s = await story(page);
+        assert.equal(s.flashes, 1);
+        assert.ok(s.glyphs > 0, 'the name is being written');
+        await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.nt-b-art')).opacity) > 0.99, null, { timeout: 2500 });
+        await page.waitForFunction(() => document.querySelectorAll('.nt-glyph').length === 0, null, { timeout: 4000 });
+        assert.match(await page.locator('#ntAnnounceTitle').textContent(), /Néant/);
 
-        // Turn round mid-transition, repeatedly: 5 → 4 → 5 → 4 → 3 → 4.
-        await page.click('#ntBack');
-        await page.waitForTimeout(250);
-        await page.click('#ntNext');
-        await page.waitForTimeout(150);
-        await page.click('#ntBack');
-        await page.click('#ntBack');
-        await page.waitForTimeout(90);
-        await page.click('#ntNext');
-        assert.equal(await page.evaluate(() => window.__neant.busy), true, 'still mid-transition');
-        await settled(page);
-        s = await rest(page);
-        assert.deepEqual([s.step, s.shown, s.words, s.styled, s.inert], [4, ['base'], 0, 0, 0]);
+        // Leaving and arriving again from below does not flash.
+        await toS(page, 4.0);
+        await toS(page, 2.8);
+        assert.equal((await story(page)).flashes, 1);
+        assert.equal((await story(page)).revealed, true);
 
-        // Interrupted while chapter 01 is still writing itself.
-        await page.click('.nt-progress [data-goto="0"]');
-        await page.waitForTimeout(1200);
-        assert.ok(await page.evaluate(() => document.querySelectorAll('.nt-glyph').length) > 0, 'caught mid-reveal');
-        await page.keyboard.press('ArrowRight');
-        await page.waitForTimeout(60);
-        await page.keyboard.press('ArrowRight');
+        // Skipping over the whole story flashes nothing.
+        await toS(page, 0);
+        await page.click('#ntSkip');
         await settled(page);
-        s = await rest(page);
-        assert.deepEqual([s.step, s.shown, s.words, s.styled, s.ghost], [2, ['opening'], 0, 0, false]);
-
-        // Chapter jumps from the progress bar.
-        await page.click('.nt-progress [data-goto="5"]');
-        await page.click('.nt-progress [data-goto="2"]', { force: true });
-        await settled(page);
-        assert.deepEqual((await rest(page)).shown, ['opening']);
+        assert.equal((await story(page)).flashes, 1);
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
-    it('skips, replays and answers the keyboard', async () => {
+    it('takes the bottle apart into crown, glass, insignia and amber core, and puts it back together', async () => {
+        const { context, page } = await visitor(browser);
+        await open(page, stack.origin);
+        await toS(page, 7.3);
+        await page.waitForTimeout(400);
+        const cap = await shift(page, '.nt-b-cap');
+        const ins = await shift(page, '.nt-b-ins');
+        const amber = await shift(page, '.nt-b-amber');
+        assert.ok(cap.y < -20, 'the crown lifts');
+        assert.ok(ins.x < -10 && ins.scale > 1.05, 'the insignia comes forward');
+        assert.ok(amber.y > 5 && amber.scale > 1.05, 'the amber core sinks and swells');
+        assert.ok((await story(page)).parts > 0.95);
+        assert.deepEqual(await page.$$eval('.nt-part', (els) => els.map((e) => e.textContent.trim())),
+            ['The Crown', 'The Glass', 'The Insignia', 'The Amber Core']);
+        assert.ok(Number(await page.locator('.nt-b-hollow--ins').evaluate((el) => getComputedStyle(el).opacity)) > 0.8);
+
+        await toS(page, 8.3);
+        assert.deepEqual(await shift(page, '.nt-b-cap'), { x: 0, y: 0, scale: 1 });
+        assert.equal((await shift(page, '.nt-b-ins')).x, 0);
+        assert.equal((await story(page)).parts, 0);
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
+    it('keeps Next, Back, Skip, Replay and the progress in step with the scroll', async () => {
+        const { context, page } = await visitor(browser);
+        await open(page, stack.origin);
+        const top = (stopId) => page.evaluate((id) => {
+            const st = window.__neant.stops.find((x) => x.id === id);
+            return Math.round(window.__neant.top + st.s * window.__neant.vh);
+        }, stopId);
+
+        await page.click('#ntNext');
+        await settled(page);
+        let s = await story(page);
+        assert.deepEqual([s.stop, s.hash, s.current], ['announcement', '#announcement', '1']);
+        assert.ok(Math.abs(await page.evaluate(() => window.scrollY) - await top('announcement')) <= 2);
+
+        await page.click('#ntNext');
+        await page.click('#ntNext');
+        await settled(page);
+        s = await story(page);
+        assert.deepEqual([s.stop, s.current], ['heart', '2']);
+
+        await page.click('#ntBack');
+        await settled(page);
+        assert.equal((await story(page)).stop, 'opening');
+
+        // Pressed quickly, each press moves on from where the last is going.
+        await page.click('#ntNext');
+        await page.click('#ntNext');
+        await page.click('#ntNext');
+        await settled(page);
+        s = await story(page);
+        assert.deepEqual([s.stop, s.current], ['construction', '3']);
+
+        // The arrow keys step too; a visitor's own scroll always wins.
+        await page.keyboard.press('ArrowLeft');
+        await settled(page);
+        assert.equal((await story(page)).stop, 'base');
+        await page.click('.nt-progress [data-chapter="1"]');
+        await page.waitForTimeout(250);
+        await page.mouse.wheel(0, 200);
+        await settled(page);
+        assert.ok((await story(page)).s > 1, 'the control gave way to the wheel');
+
+        await page.click('#ntSkip');
+        await settled(page);
+        s = await story(page);
+        assert.deepEqual([s.stop, s.next, s.skip, s.replay, s.back], ['unveiling', false, false, true, false]);
+        assert.equal(await page.evaluate(() => localStorage.getItem('void-neant-seen')), '1');
+        assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById('ntControls')).position), 'absolute');
+        await page.waitForFunction(() => document.getElementById('ntUnveilCopy').classList.contains('is-shown'));
+
+        // Typing never steps the story.
+        await page.fill('#ntEmail', 'a');
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(200);
+        assert.equal((await story(page)).stop, 'unveiling');
+
+        await page.locator('#ntReplay').scrollIntoViewIfNeeded();
+        await page.click('#ntReplay');
+        await settled(page);
+        s = await story(page);
+        assert.deepEqual([s.s, s.next, s.replay, s.back, s.hash], [0, true, false, true, '']);
+        assert.equal(await page.locator('.nt-line.is-shown').count(), 0, 'the poetry starts again');
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
+    it('opens returning visitors on the unveiling, links on their passage, and comes back to the same place from the shop', async () => {
+        const returning = await visitor(browser, { seen: true });
+        await open(returning.page, stack.origin);
+        await settled(returning.page);
+        let s = await story(returning.page);
+        assert.deepEqual([s.stop, s.replay], ['unveiling', true]);
+        await returning.page.waitForFunction(() => document.getElementById('ntUnveilCopy').classList.contains('is-shown'));
+        await returning.context.close();
+
+        const { context, page } = await visitor(browser);
+        await open(page, stack.origin, '#heart');
+        await settled(page);
+        s = await story(page);
+        assert.deepEqual([s.stop, s.flashes], ['heart', 0]);
+        await page.waitForFunction(() => document.querySelector('[data-beat="heart"]').classList.contains('is-shown'));
+
+        await page.click('.nt-nav a[href="/shop"]');
+        await page.waitForURL(/\/shop$/);
+        await page.goBack();
+        await page.waitForURL(/\/fragrance#heart$/);
+        await ready(page);
+        await page.waitForFunction(() => window.__neant.stop === 'heart' && window.__neant.settled);
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
+    it('lights the bottle under the pointer, names what it finds, and returns to rest without snapping', async () => {
         const { context, page } = await visitor(browser);
         await open(page, stack.origin);
         await page.click('#ntSkip');
         await settled(page);
-        assert.equal((await rest(page)).step, 5);
+        await page.waitForTimeout(600);
+        assert.equal(await page.locator('#ntCaptionHint').textContent(), 'Move closer to discover');
+        assert.equal(await page.isVisible('#ntUnveilTitle'), true, 'everything essential is there without hovering');
 
-        await page.click('#ntReplay');
-        await settled(page);
-        assert.equal((await rest(page)).step, 0);
-        assert.equal(await page.evaluate(() => document.activeElement.id), 'ntNext');
+        const box = await page.locator('#ntBottle').boundingBox();
+        await page.mouse.move(box.x + box.width * 0.95, box.y + box.height * 0.3);
+        await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.49, { steps: 10 });
+        await page.waitForFunction(() => window.__neant.lamp.key === 'insignia' && window.__neant.lamp.i > 0.95);
+        assert.equal(await page.locator('#ntCaptionTitle').textContent(), 'The Insignia');
+        assert.equal(await page.locator('#ntCaption').evaluate((el) => el.classList.contains('is-on')), true);
+        assert.ok(Number(await page.locator('.nt-b-spot').evaluate((el) => getComputedStyle(el).opacity)) > 0.8);
+        const tilted = await page.locator('#ntBottle').evaluate((el) => getComputedStyle(el).transform);
 
-        await page.keyboard.press('End');
-        await settled(page);
-        assert.equal((await rest(page)).step, 5);
-        // Chapter 03 scrolls like a page: the arrows are left alone.
-        await page.keyboard.press('ArrowLeft');
-        await page.waitForTimeout(100);
-        assert.equal(await page.evaluate(() => window.__neant.target), 5);
+        await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.1, { steps: 8 });
+        await page.waitForFunction(() => window.__neant.lamp.key === 'crown');
 
-        await page.click('#ntBack');
-        await settled(page);
-        await page.keyboard.press('Home');
-        await settled(page);
-        await page.keyboard.press('Escape');
-        await settled(page);
-        assert.equal((await rest(page)).step, 5);
-
-        // Typing in the field never navigates.
-        await page.click('#ntBack');
-        await settled(page);
-        await page.click('#ntNext');
-        await settled(page);
-        await page.fill('#ntEmail', 'a');
-        await page.keyboard.press('ArrowLeft');
-        await page.keyboard.press('Space');
-        assert.equal(await page.evaluate(() => window.__neant.target), 5);
+        await page.mouse.move(8, box.y + box.height * 0.5, { steps: 4 });
+        await page.waitForTimeout(140);
+        const fading = (await page.evaluate(() => window.__neant.lamp)).i;
+        assert.ok(fading > 0.1 && fading < 0.95, `eases out rather than snapping (${fading})`);
+        await page.waitForFunction(() => window.__neant.lamp.i < 0.01, null, { timeout: 4000 });
+        assert.equal(await page.locator('#ntCaption').evaluate((el) => el.classList.contains('is-on')), false);
+        assert.notEqual(tilted, await page.locator('#ntBottle').evaluate((el) => getComputedStyle(el).transform), 'the tilt settles back');
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
-    it('under reduced motion uses short crossfades, writes no letters and never moves by itself', async () => {
-        const { context, page } = await visitor(browser, { reducedMotion: 'reduce' });
-        const t0 = Date.now();
-        await open(page, stack.origin);
-        assert.ok(Date.now() - t0 < 4000);
-        let s = await rest(page);
-        assert.deepEqual([s.step, s.running], [0, []], 'the reflection holds still');
-
-        await page.click('#ntNext');
-        assert.equal(await page.evaluate(() => document.querySelectorAll('.nt-glyph').length), 0);
-        const t1 = Date.now();
-        await settled(page);
-        assert.ok(Date.now() - t1 < 1500, 'a crossfade, not a sequence');
-        await page.click('#ntBack');
-        await settled(page);
-        await page.waitForTimeout(3500);
-        s = await rest(page);
-        assert.equal(s.step, 0, 'no automatic advance');
-        assert.deepEqual(page.errors, []);
-        await context.close();
-    });
-
-    it('fits a phone, swipes between passages and keeps chapter 03 a page', async () => {
+    it('lets touch and keyboard step through the same discovery', async () => {
         const { context, page } = await visitor(browser, { viewport: PHONE, touch: true });
         await open(page, stack.origin);
-
-        const swipe = (dx, dy) => page.evaluate(([x, y]) => {
-            const at = (cx, cy) => new Touch({ identifier: 1, target: document.body, clientX: cx, clientY: cy });
-            document.body.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [at(200, 400)], changedTouches: [at(200, 400)] }));
-            document.body.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [at(200 + x, 400 + y)] }));
-        }, [dx, dy]);
-
-        await swipe(-120, 0);
+        await page.locator('#ntSkip').tap();
         await settled(page);
-        assert.equal((await rest(page)).step, 1);
-        await swipe(0, -140);
-        await settled(page);
-        assert.equal((await rest(page)).step, 2);
-        await swipe(20, 10);   // too small to count
-        await page.waitForTimeout(100);
-        assert.equal(await page.evaluate(() => window.__neant.target), 2);
-        await swipe(110, 0);
-        await settled(page);
-        assert.equal((await rest(page)).step, 1);
+        assert.equal(await page.locator('#ntCaptionHint').textContent(), 'Tap the bottle to discover');
+        const keys = [];
+        for (let i = 0; i < 5; i++) {
+            await page.locator('#ntDiscover').tap();
+            await page.waitForTimeout(700);
+            keys.push((await page.evaluate(() => window.__neant.lamp)).key);
+        }
+        assert.deepEqual(keys, ['crown', 'insignia', 'amber', 'glass', '']);
 
-        for (let step = 2; step <= 5; step++) {
-            await page.locator('#ntNext').tap();
-            await settled(page);
-            const s = await rest(page);
-            assert.ok(s.overflow <= 0, `no sideways scroll on ${IDS[step]}`);
-            if (step < 5) {
+        await page.focus('#ntDiscover');
+        await page.keyboard.press('Enter');
+        await page.waitForFunction(() => window.__neant.lamp.key === 'crown');
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
+    it('under reduced motion holds each composition still: no flash, no letters, nothing drifting', async () => {
+        const { context, page } = await visitor(browser, { reducedMotion: 'reduce' });
+        await open(page, stack.origin);
+        assert.equal(await page.evaluate(() => document.documentElement.classList.contains('nt-calm')), true);
+        assert.equal(await page.locator('.nt-line.is-shown').count(), 3, 'the poetry is simply there');
+
+        for (const s of [1.0, 2.0, 2.5, 2.8]) await toS(page, s);
+        let st = await story(page);
+        assert.deepEqual([st.revealed, st.flashes, st.glyphs], [true, 0, 0]);
+
+        // The construction as a still: after the short crossfade, nothing moves.
+        await toS(page, 7.3);
+        await page.waitForFunction(() => getComputedStyle(document.querySelector('.nt-parts')).opacity === '1', null, { timeout: 3000 });
+        await toS(page, 9);
+        // Everything comes to rest: no loop, drift or reflection keeps running.
+        await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'), null, { timeout: 3000 });
+        await page.waitForTimeout(1500);
+        assert.equal(await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length), 0);
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
+    it('fits a phone at every passage, and its controls never cover the form', async () => {
+        const { context, page } = await visitor(browser, { viewport: PHONE, touch: true });
+        await open(page, stack.origin);
+        const stops = await page.evaluate(() => window.__neant.stops.map((x) => x.s));
+        for (const s of stops) {
+            await toS(page, s);
+            await page.waitForTimeout(250);
+            const st = await story(page);
+            assert.ok(st.overflow <= 0, `no sideways scroll at ${s}`);
+            if (s < 9) {
                 const bar = await page.locator('#ntControls').boundingBox();
-                assert.ok(bar.y + bar.height <= PHONE.height + 1, 'controls stay on screen');
-                const content = await page.evaluate((id) => {
-                    const scene = document.getElementById(id);
-                    const bottoms = [...scene.querySelectorAll('[data-reveal]')].map((el) => el.getBoundingClientRect().bottom);
-                    return Math.max(...bottoms);
-                }, IDS[step]);
-                assert.ok(content <= bar.y + 2, `${IDS[step]} is not covered by the controls`);
+                assert.ok(bar.y + bar.height <= PHONE.height + 1, 'controls on screen');
             }
         }
 
-        // Chapter 03 scrolls; its controls close the page instead of covering it.
-        const pos = await page.evaluate(() => getComputedStyle(document.getElementById('ntControls')).position);
-        assert.equal(pos, 'absolute');
-        await page.locator('#ntEmail').scrollIntoViewIfNeeded();
+        // The story's text stays clear of the controls.
+        await toS(page, 4.85);
+        await page.waitForTimeout(1600);
+        const bar = await page.locator('#ntControls').boundingBox();
+        const textBottom = await page.evaluate(() => Math.max(...[...document.querySelectorAll('[data-beat="heart"] [data-reveal]')]
+            .map((el) => el.getBoundingClientRect().bottom)));
+        assert.ok(textBottom <= bar.y + 4, `heart text ends at ${textBottom}, controls start at ${bar.y}`);
+
+        await page.locator('#ntSkip').tap();
+        await settled(page);
+        await page.locator('#ntSubmit').scrollIntoViewIfNeeded();
+        const form = await page.locator('#ntForm').boundingBox();
+        const controls = await page.locator('#ntControls').boundingBox();
+        assert.ok(controls.y >= form.y + form.height, 'the controls close the page below the form');
         await page.locator('#ntEmail').tap();
         assert.equal(await page.evaluate(() => document.documentElement.classList.contains('nt-typing')), true);
         const submit = await page.locator('#ntSubmit').boundingBox();
-        assert.ok(submit.width >= 300 && submit.height >= 44, 'a full-width, touch-sized button');
+        assert.ok(submit.width >= 300 && submit.height >= 44);
         assert.deepEqual(page.errors, []);
         await context.close();
     });
@@ -301,20 +392,19 @@ describe('NÉANT teaser', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PA
     it('signs up for the unveiling with NÉANT recorded, and shows every error in place', async () => {
         const { context, page } = await visitor(browser);
         await open(page, stack.origin, '#unveiling');
-        assert.equal((await rest(page)).step, 5);
+        await settled(page);
 
         let posts = 0;
         page.on('request', (req) => { if (req.url().endsWith('/api/newsletter') && req.method() === 'POST') posts += 1; });
         const status = () => page.locator('#ntFormStatus').textContent();
-        const state = () => page.locator('#ntForm').getAttribute('data-state');
 
         await page.fill('#ntEmail', 'not-an-email');
         await page.click('#ntSubmit');
         assert.equal(await status(), 'Please enter a valid email address.');
         assert.equal(await page.getAttribute('#ntEmail', 'aria-invalid'), 'true');
-        assert.equal(posts, 0, 'nothing sent for an invalid address');
+        assert.equal(posts, 0);
         await page.fill('#ntEmail', 'neant@example');
-        assert.equal(await status(), '', 'the error clears as the visitor corrects it');
+        assert.equal(await status(), '');
 
         await page.route('**/api/newsletter', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{"message":"x"}' }));
         await page.fill('#ntEmail', 'collector@example.com');
@@ -327,72 +417,62 @@ describe('NÉANT teaser', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PA
         await page.route('**/api/newsletter', (route) => route.abort());
         await page.click('#ntSubmit');
         await page.waitForFunction(() => /could not sign you up/.test(document.getElementById('ntFormStatus').textContent));
-        assert.equal(await state(), 'error');
         await page.unroute('**/api/newsletter');
-
         const { rows: none } = await stack.db.query("select 1 from newsletter_subscribers where email = 'collector@example.com'");
-        assert.equal(none.length, 0, 'no false success, nothing saved');
+        assert.equal(none.length, 0);
 
         await page.click('#ntSubmit');
         await page.waitForFunction(() => document.getElementById('ntForm').dataset.state === 'success');
         assert.equal(await status(), 'You are on the list for the unveiling. Please check your email.');
-        assert.equal(await page.isVisible('#ntEmail'), false);
         const { rows } = await stack.db.query(
             "select status, sources, interests from newsletter_subscribers where email = 'collector@example.com'");
         assert.deepEqual(rows[0], { status: 'subscribed', sources: ['newsletter'], interests: ['neant'] });
-        assert.ok(stack.emails.some((m) => m.to === 'collector@example.com'), 'the existing welcome email is sent');
+        assert.ok(stack.emails.some((m) => m.to === 'collector@example.com'));
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
     it('speaks the language chosen in the shop', async () => {
         const { context, page } = await visitor(browser, { lang: 'fr' });
-        await open(page, stack.origin, '#unveiling');
+        await open(page, stack.origin, '#construction');
         assert.equal(await page.evaluate(() => document.documentElement.lang), 'fr');
+        assert.equal(await page.locator('.nt-part--crown').textContent(), 'La Couronne');
         assert.equal(await page.locator('#ntSubmit').textContent(), 'Recevoir le dévoilement');
-        assert.equal(await page.locator('#unveiling .nt-status').textContent(), 'Bientôt');
-        assert.match(await page.locator('#ntBottleImg').getAttribute('alt'), /flacon NÉANT/);
+        assert.equal(await page.locator('.nt-status').textContent(), 'Bientôt');
         await context.close();
     });
 
-    it('comes back to the unveiling from the collection, and stops every effect when left or hidden', async () => {
+    it('stops every effect while the page is hidden or left, and picks up again', async () => {
         const { context, page } = await visitor(browser);
         await open(page, stack.origin);
+        await page.waitForTimeout(1500);
+        assert.equal(await page.evaluate(() => window.__neant.running), true, 'the prologue light is alive');
+
+        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
+        await page.waitForTimeout(100);
+        assert.equal(await page.evaluate(() => window.__neant.running), false);
+        assert.equal(await page.evaluate(() => document.documentElement.classList.contains('nt-paused')), true);
+        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+        await page.waitForTimeout(100);
+        assert.equal(await page.evaluate(() => window.__neant.running), true);
+
+        // The settled scene's slow movement exists only there, and pauses too.
         await page.click('#ntSkip');
         await settled(page);
+        await page.waitForTimeout(400);
+        const names = await page.evaluate(() => document.getAnimations().map((a) => a.animationName).filter(Boolean).sort());
+        assert.ok(names.includes('nt-sheen') && names.includes('nt-drift-a'));
+        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
+        const running = await page.evaluate(() => document.getAnimations()
+            .filter((a) => a.playState === 'running' && getComputedStyle(a.effect.target).animationPlayState !== 'paused').length);
+        assert.equal(running, 0);
+        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
 
-        // The bottle answers the pointer only while chapter 03 is shown.
-        const box = await page.locator('#frStage').boundingBox();
-        await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3);
-        await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.6, { steps: 4 });
-        assert.equal(await page.evaluate(() => window.__neant.stageRunning), true);
-        await page.click('#ntBack');
-        assert.equal(await page.evaluate(() => window.__neant.stageRunning), false);
-        await page.click('#ntNext');
-        await settled(page);
-
-        await page.click('.nt-nav a[href="/shop"]');
-        await page.waitForURL(/\/shop$/);
-        await page.goBack();
-        await page.waitForURL(/\/fragrance#unveiling$/);
-        await settled(page);
-        assert.deepEqual((await rest(page)).shown, ['unveiling']);
-
-        // Hidden mid-transition: it lands at once, and everything holds still.
         await page.click('#ntReplay');
         await settled(page);
-        await page.click('#ntNext');
-        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
-        const paused = await page.evaluate(() => ({
-            busy: window.__neant.busy,
-            step: window.__neant.step,
-            paused: document.documentElement.classList.contains('nt-paused'),
-            running: document.getAnimations().filter((a) => a.playState === 'running'
-                && getComputedStyle(a.effect.target).animationPlayState !== 'paused').length
-        }));
-        assert.deepEqual(paused, { busy: false, step: 1, paused: true, running: 0 });
-        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
-        assert.equal(await page.evaluate(() => document.documentElement.classList.contains('nt-paused')), false);
+        await page.waitForTimeout(200);
+        const atTop = await page.evaluate(() => document.getAnimations().map((a) => a.animationName).filter(Boolean));
+        assert.ok(!atTop.includes('nt-sheen'), 'the final scene’s movement stops when it is left');
         assert.deepEqual(page.errors, []);
         await context.close();
     });

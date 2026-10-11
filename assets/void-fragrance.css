@@ -1,16 +1,25 @@
 /* ============================================================
    VOID© — /fragrance · NÉANT, Extrait de Parfum
-   Three chapters in one room:
-     01 The Announcement   — a monologue, then the name
-     02 The Olfactory World — opening, heart, base
-     03 The Unveiling       — the bottle, Coming Soon, the list
-   The chapters are run by /assets/void-fragrance.js on one Web
-   Animations timeline. Without the script (no html.nt-js) the page
-   is a single readable scroll with every chapter in it.
+   A scroll-driven story in one pinned room:
+     01 The Announcement    darkness → a light discovers the bottle →
+                            the rise → NÉANT
+     02 The Olfactory World opening · heart · base
+     03 The Unveiling       the bottle taken apart and reassembled,
+                            then the settled scene and the list
+   The scroll position is the timeline (/assets/void-fragrance.js);
+   only the poetry, the title's arrival and the light's single
+   flash run on their own clock. Without the script (no html.nt-js)
+   the page is one readable scroll.
 
-   Resting states live here. The timeline only ever animates from
-   darkness into these states, so cancelling it at any moment leaves
-   a correct, complete page.
+   The bottle is the original artwork in layers: the same image
+   under different soft masks, cut where the artwork's own forms
+   meet (measured from its pixels):
+     crown cap        0 – 17.3%   (cut just above its gold ring,
+                                   keeping the flares that curl
+                                   down beside the ring)
+     EV insignia      ellipse at 50% 48.8%
+     amber core       ellipse at 50% 80.5%
+     glass            everything below the crown
    ============================================================ */
 
 :root {
@@ -32,40 +41,14 @@
     --nt-gutter: clamp(1.25rem, 5vw, 4rem);
     --nt-bar-h: 4.75rem;
 
-    /* ── Bottle stage (chapter 03) ──────────────────────────────
-       Kept from the original stage: the floor line, shadow and
-       reflection are all derived from where the glass actually ends
-       in the artwork, so they cannot drift apart. */
-    --fr-bottle: url('/assets/fragrance/neant-bottle-transparent.webp');
-    --fr-max-tilt-x: 3;
-    --fr-max-tilt-y: 4;
-    --fr-translate-x: 7;
-    --fr-translate-y: 4;
-    --fr-damping: 0.055;
-    --fr-release-damping: 0.035;
-    --fr-glare-intensity: 0.3;
-    --fr-glare-size: 42%;
-    --fr-edge-intensity: 0.26;
-    --fr-shadow-opacity: 0.72;
-    --fr-shadow-blur: 22px;
-    --fr-shadow-move: 12;
-    --fr-reflection-opacity: 0.3;
-    --fr-reflection-blur: 4px;
-    --fr-reflection-squash: 0.5;
-    --fr-reflection-fade: 34%;
-    /* Opaque pixels end at 96.55% of the artwork's height. */
-    --fr-bottle-base: 0.9655;
-    --fr-bottle-height: 80%;
-    --fr-floor-line: calc(var(--fr-bottle-base) * var(--fr-bottle-height));
-    --fr-reflection-offset: calc(
-        (1 + var(--fr-reflection-squash) * (1 - var(--fr-bottle-base)) - var(--fr-bottle-base)) * -100%);
-    --fr-w-glare: 0.8;
-    --fr-w-shadow: 0.3;
-    --fr-w-reflection: 0.28;
-    --fr-w-backglow: 0.15;
-    --fr-px: 0;
-    --fr-py: 0;
-    --fr-active: 0;
+    /* The story is this many screens of scroll while the stage is
+       pinned. void-fragrance.js reads the same number. */
+    --nt-screens: 9;
+
+    --nt-art: url('/assets/fragrance/neant-bottle-transparent.webp');
+    /* Bottle box, written by the script from the viewport. */
+    --bw: 320px;
+    --bh: 480px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -77,6 +60,7 @@ html {
 }
 
 body {
+    position: relative;
     min-height: 100vh;
     min-height: 100svh;
     background: var(--nt-obsidian);
@@ -105,14 +89,15 @@ body {
 }
 
 /* ── The room's light ──────────────────────────────────────────
-   Gradient layers only (no blur filters, no tiled noise). Each
-   passage has its own mix; the timeline crossfades between them. */
+   Gradient layers only, each fading to nothing inside its own box,
+   so no edge or grey wash can ever show. The story fades them. */
 .nt-atmos {
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background: linear-gradient(180deg, #060504 0%, var(--nt-obsidian) 46%, var(--nt-obsidian-2) 100%);
+    overflow: hidden;
+    background: linear-gradient(180deg, #050403 0%, var(--nt-obsidian) 46%, #040303 100%);
 }
 
 .nt-light {
@@ -121,48 +106,74 @@ body {
     opacity: 0;
 }
 
-/* Restrained antique gold, from above, as in a closed salon. */
 .nt-light--gold {
     background:
-        radial-gradient(52% 44% at 50% 38%, rgba(var(--nt-gold-rgb), 0.11), transparent 70%),
-        radial-gradient(28% 22% at 50% 6%, rgba(var(--nt-gold-rgb), 0.07), transparent 72%);
+        radial-gradient(48% 42% at 50% 40%, rgba(var(--nt-gold-rgb), 0.1), transparent 70%),
+        radial-gradient(26% 20% at 50% 4%, rgba(var(--nt-gold-rgb), 0.06), transparent 72%);
 }
 
-/* Opening: cold, pale, high — first light through a shutter. */
 .nt-light--citrus {
     background:
-        radial-gradient(46% 42% at 24% 26%, rgba(236, 220, 168, 0.12), transparent 70%),
-        radial-gradient(40% 30% at 78% 70%, rgba(var(--nt-gold-rgb), 0.05), transparent 72%);
+        radial-gradient(46% 42% at 74% 22%, rgba(236, 220, 168, 0.11), transparent 70%),
+        radial-gradient(40% 30% at 20% 72%, rgba(var(--nt-gold-rgb), 0.04), transparent 72%);
 }
 
-/* Heart: a warm, rose-amber interior, low and close. */
 .nt-light--rose {
     background:
-        radial-gradient(48% 46% at 34% 56%, rgba(156, 66, 52, 0.17), transparent 70%),
-        radial-gradient(36% 34% at 74% 40%, rgba(var(--nt-amber-rgb), 0.07), transparent 72%);
+        radial-gradient(46% 46% at 70% 54%, rgba(150, 62, 48, 0.17), transparent 70%),
+        radial-gradient(36% 34% at 24% 40%, rgba(var(--nt-amber-rgb), 0.06), transparent 72%);
 }
 
-/* Base: smoke settling at floor level, the light nearly gone. */
 .nt-light--smoke {
     background:
         radial-gradient(70% 34% at 50% 100%, rgba(120, 82, 44, 0.2), transparent 72%),
-        radial-gradient(40% 30% at 22% 72%, rgba(70, 48, 30, 0.22), transparent 72%);
+        radial-gradient(40% 30% at 78% 74%, rgba(70, 48, 30, 0.22), transparent 72%);
 }
 
-/* Amber: the colour inside the glass, given back to the room. */
 .nt-light--amber {
     background:
-        radial-gradient(40% 46% at 34% 52%, rgba(var(--nt-amber-rgb), 0.1), transparent 70%),
+        radial-gradient(40% 46% at 50% 54%, rgba(var(--nt-amber-rgb), 0.1), transparent 70%),
         radial-gradient(80% 30% at 50% 100%, rgba(var(--nt-amber-rgb), 0.05), transparent 70%);
+}
+
+/* Final scene: two slow banks of warm haze behind the bottle. */
+.nt-haze { position: absolute; inset: 0; opacity: 0; }
+.nt-haze i {
+    position: absolute;
+    width: 70vmax;
+    height: 50vmax;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(var(--nt-amber-rgb), 0.07), rgba(var(--nt-gold-rgb), 0.025) 55%, transparent 100%);
+    will-change: transform;
+}
+.nt-haze i:first-child { left: -14vmax; top: 18vh; }
+.nt-haze i:last-child { right: -18vmax; top: 40vh; background: radial-gradient(closest-side, rgba(120, 82, 44, 0.08), transparent 100%); }
+
+/* The flash's light in the room: a source above and behind the bottle,
+   placed by the script. Never more than a warm glow; it falls to
+   nothing long before the edges, so the blacks stay black. */
+.nt-flash-room {
+    position: absolute;
+    left: var(--fx, 50%);
+    top: var(--fy, 30%);
+    width: 150vmin;
+    height: 150vmin;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side,
+        rgba(255, 238, 210, 0.24) 0%,
+        rgba(255, 214, 160, 0.1) 28%,
+        rgba(var(--nt-amber-rgb), 0.035) 55%,
+        transparent 100%);
+    opacity: 0;
 }
 
 .nt-vignette {
     position: absolute;
     inset: 0;
-    background: radial-gradient(120% 95% at 50% 46%, transparent 42%, rgba(0, 0, 0, 0.82) 100%);
+    background: radial-gradient(120% 95% at 50% 46%, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
 }
 
-/* Without the script every light is a quiet constant. */
 html:not(.nt-js) .nt-light--gold,
 html:not(.nt-js) .nt-light--amber { opacity: 0.6; }
 
@@ -190,6 +201,14 @@ html:not(.nt-js) .nt-light--amber { opacity: 0.6; }
     padding: 0.5rem 0;
 }
 
+/* The way out stays in reach for the whole story. */
+html.nt-js .nt-nav {
+    position: fixed;
+    z-index: 9;
+    padding-bottom: 1.6rem;
+    background: linear-gradient(180deg, rgba(3, 3, 2, 0.82) 0%, rgba(3, 3, 2, 0.4) 60%, transparent 100%);
+}
+
 .nt-nav a:last-child { justify-self: end; }
 .nt-nav a:hover, .nt-nav a:focus-visible { color: var(--nt-gold-bright); }
 
@@ -207,42 +226,53 @@ html:not(.nt-js) .nt-light--amber { opacity: 0.6; }
 }
 .nt-nav-mark:hover span, .nt-nav-mark:focus-visible span { opacity: 1; }
 
-/* ── Scenes ──────────────────────────────────────────────────────
-   With the script, chapters 01–02 are full-viewport passages laid
-   over one another and only the current one is shown; chapter 03 is
-   an ordinary page that scrolls. */
-.nt-scene {
+/* ── The story track and its pinned stage ──────────────────────── */
+html.nt-js .nt-story {
     position: relative;
-    z-index: 2;
-    min-height: 100vh;
-    min-height: 100svh;
+    z-index: 1;
+    height: calc((var(--nt-screens) + 1) * 100vh);
+    height: calc((var(--nt-screens) + 1) * 100svh);
 }
 
-html.nt-js .nt-scene[hidden] { display: none !important; }
-
-/* Until the script has chosen a passage, nothing is shown, so the passages
-   never flash over one another. (If it fails to load, nt-js is removed.) */
-html.nt-js:not(.nt-ready) .nt-scene,
-html.nt-js:not(.nt-ready) .nt-ghost,
-html.nt-js:not(.nt-ready) .nt-controls { visibility: hidden; }
-
-html.nt-js .nt-scene:not(.nt-unveil) {
-    position: fixed;
-    inset: 0;
+html.nt-js .nt-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
     overflow: hidden;
 }
 
-html.nt-js.nt-intro,
-html.nt-js.nt-intro body { overflow: hidden; }
+/* Until the script has placed everything, show nothing. */
+html.nt-js:not(.nt-ready) .nt-stage,
+html.nt-js:not(.nt-ready) .nt-final,
+html.nt-js:not(.nt-ready) .nt-controls { visibility: hidden; }
 
-/* ── Typography shared by every chapter ── */
+/* A beat is one composition on the stage; the story fades it. */
+html.nt-js .nt-beat {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity, transform;
+}
+
+/* Text inside a beat waits for its reveal (letter by letter, as the
+   house's language transition writes it). */
+html.nt-js .nt-scope:not(.is-shown) [data-reveal],
+html.nt-js .nt-line.nt-scope:not(.is-shown) { opacity: 0; }
+
+.nt-word { display: inline-block; white-space: pre; }
+.nt-glyph { display: inline; }
+
+/* ── Typography ── */
 .nt-kicker {
     font-family: var(--nt-sans);
     font-size: clamp(0.58rem, 1.1vw, 0.66rem);
     font-weight: 500;
     letter-spacing: 0.36em;
     text-transform: uppercase;
-    color: rgba(var(--nt-gold-rgb), 0.78);
+    color: rgba(var(--nt-gold-rgb), 0.82);
 }
 
 .nt-display {
@@ -252,7 +282,6 @@ html.nt-js.nt-intro body { overflow: hidden; }
     text-transform: uppercase;
     color: var(--nt-ivory);
     letter-spacing: 0.08em;
-    /* Optical centring: tracking is added after the last letter too. */
     text-indent: 0.08em;
     line-height: 0.9;
 }
@@ -279,82 +308,296 @@ html.nt-js.nt-intro body { overflow: hidden; }
     transform-origin: 0 50%;
 }
 
-/* The language transition's letter reveal: words carry blur and light,
-   letters carry opacity. */
-.nt-word { display: inline-block; white-space: pre; }
-.nt-glyph { display: inline; }
-
-/* ── The silhouette (chapter 01) ─────────────────────────────── */
-.nt-ghost {
-    position: fixed;
+/* ── The bottle ────────────────────────────────────────────────── */
+html.nt-js .nt-bottle {
+    position: absolute;
     left: 50%;
-    top: 52%;
+    top: 50%;
     z-index: 1;
-    height: min(70svh, 760px);
-    aspect-ratio: 1024 / 1536;
-    margin-left: calc(min(70svh, 760px) * -0.3333);
-    transform-origin: 50% 60%;
-    translate: 0 -50%;
+    width: var(--bw);
+    height: var(--bh);
+    margin-left: calc(var(--bw) / -2);
+    margin-top: calc(var(--bh) / -2);
+    transform-origin: 50% 50%;
+    will-change: transform;
     pointer-events: none;
 }
 
-html.nt-js .nt-ghost[hidden],
-html:not(.nt-js) .nt-ghost { display: none; }
+html:not(.nt-js) .nt-bottle,
+html:not(.nt-js) .nt-hint,
+html.nt-js .nt-static-bottle { display: none; }
 
-.nt-ghost img {
+.nt-bottle img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 /* Light behind the glass, so the bottle first exists as a shape. */
-.nt-ghost-halo {
+.nt-b-halo {
     position: absolute;
     left: 50%;
-    top: 56%;
-    width: 170%;
-    height: 92%;
+    top: 54%;
+    width: 210%;
+    height: 112%;
     translate: -50% -50%;
     border-radius: 50%;
     background: radial-gradient(closest-side,
-        rgba(var(--nt-amber-rgb), 0.2) 0%,
-        rgba(var(--nt-gold-rgb), 0.07) 46%,
+        rgba(var(--nt-amber-rgb), 0.22) 0%,
+        rgba(var(--nt-gold-rgb), 0.08) 42%,
+        rgba(var(--nt-gold-rgb), 0.025) 70%,
+        transparent 100%);
+    opacity: 0;
+    will-change: opacity;
+}
+
+/* The bottle's own silhouette, black: it occludes the halo. */
+.nt-b-shape { filter: brightness(0); }
+
+/* The four parts of the artwork share one group, so where their soft
+   cuts overlap the glass is never doubled or thinned: the group fades
+   as one. */
+.nt-b-art { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
+
+.nt-b-layer { position: absolute; inset: 0; will-change: transform; }
+
+/* The crown sits on a gold ring at 17.3% of the height, but its outer
+   flares curl down past that line beside the ring (outside 31–69% of the
+   width). So the cap is "above the ring, or beside it down to 20%", and
+   the glass is the exact complement — each built from three gradients:
+     cap   = top ∪ (sides ∩ upper)
+     glass = below-ring ∩ (centre ∪ lower)
+   The two overlap by a few pixels at every edge, inside one faded group,
+   so together they are the untouched artwork. */
+.nt-b-glass {
+    -webkit-mask-image:
+        linear-gradient(to bottom, transparent 16.9%, #000 17.4%),
+        linear-gradient(to right, transparent 30.5%, #000 32%, #000 68%, transparent 69.5%),
+        linear-gradient(to bottom, transparent 19.4%, #000 20.2%);
+    -webkit-mask-composite: source-in, source-over;
+    mask-image:
+        linear-gradient(to bottom, transparent 16.9%, #000 17.4%),
+        linear-gradient(to right, transparent 30.5%, #000 32%, #000 68%, transparent 69.5%),
+        linear-gradient(to bottom, transparent 19.4%, #000 20.2%);
+    mask-composite: intersect, add;
+}
+
+.nt-b-cap {
+    transform-origin: 50% 17%;
+    -webkit-mask-image:
+        linear-gradient(to bottom, #000 17.1%, transparent 17.7%),
+        linear-gradient(to right, #000 31%, transparent 32.5%, transparent 67.5%, #000 69%),
+        linear-gradient(to bottom, #000 19.6%, transparent 20.4%);
+    -webkit-mask-composite: source-over, source-in;
+    mask-image:
+        linear-gradient(to bottom, #000 17.1%, transparent 17.7%),
+        linear-gradient(to right, #000 31%, transparent 32.5%, transparent 67.5%, #000 69%),
+        linear-gradient(to bottom, #000 19.6%, transparent 20.4%);
+    mask-composite: add, intersect;
+}
+
+/* The insignia (the serpent and V, not the printed name beneath it). */
+.nt-b-ins {
+    transform-origin: 50% 48.8%;
+    -webkit-mask-image: radial-gradient(14.5% 11.6% at 50% 48.5%, #000 70%, transparent 100%);
+    mask-image: radial-gradient(14.5% 11.6% at 50% 48.5%, #000 70%, transparent 100%);
+}
+
+/* The amber held inside the walls, never the walls themselves. */
+.nt-b-amber {
+    transform-origin: 50% 80.5%;
+    -webkit-mask-image: radial-gradient(17% 7.6% at 50% 80.5%, #000 58%, transparent 100%);
+    mask-image: radial-gradient(17% 7.6% at 50% 80.5%, #000 58%, transparent 100%);
+}
+
+/* What the glass shows where a part has been lifted out of it. */
+.nt-b-hollow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    -webkit-mask: var(--nt-art) center / contain no-repeat;
+    mask: var(--nt-art) center / contain no-repeat;
+}
+.nt-b-hollow--ins { background: radial-gradient(15.5% 12.4% at 50% 48.5%, rgba(3, 2, 1, 0.97) 74%, transparent 100%); }
+.nt-b-hollow--amb { background: radial-gradient(18% 8.2% at 50% 80.5%, rgba(6, 3, 1, 0.8) 60%, transparent 100%); }
+
+/* Light held inside a part (screen-blended within its own masked layer). */
+.nt-b-glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    mix-blend-mode: screen;
+}
+.nt-b-ins .nt-b-glow { background: radial-gradient(12% 10% at 50% 48%, rgba(255, 220, 150, 0.55), rgba(var(--nt-gold-rgb), 0.12) 60%, transparent 100%); }
+.nt-b-amber .nt-b-glow { background: radial-gradient(16% 7% at 50% 80.5%, rgba(255, 168, 70, 0.75), rgba(var(--nt-amber-rgb), 0.18) 60%, transparent 100%); }
+
+/* Light passing through the glass: a warm band moving inside the
+   bottle's own silhouette. */
+.nt-b-pass,
+.nt-b-sheen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0;
+    mix-blend-mode: screen;
+    -webkit-mask: var(--nt-art) center / contain no-repeat;
+    mask: var(--nt-art) center / contain no-repeat;
+}
+
+.nt-b-pass i,
+.nt-b-sheen i {
+    position: absolute;
+    top: -5%;
+    bottom: -5%;
+    left: 0;
+    width: 48%;
+    will-change: transform;
+}
+
+.nt-b-pass i {
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 196, 120, 0.06) 30%,
+        rgba(255, 226, 180, 0.42) 50%,
+        rgba(255, 186, 100, 0.08) 70%,
         transparent 100%);
 }
 
-.nt-ghost-shape { filter: brightness(0); }
-
-.nt-ghost-lit {
-    opacity: 0;
-    filter: brightness(0.5) saturate(1.05);
+/* The settled scene's reflection: wide, faint, and very slow. */
+.nt-b-sheen i {
+    width: 70%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 236, 205, 0.05) 35%,
+        rgba(255, 236, 205, 0.13) 50%,
+        rgba(255, 236, 205, 0.05) 65%,
+        transparent 100%);
+    transform: translate3d(-80%, 0, 0) skewX(-10deg);
 }
 
-/* A reflection travelling across the glass, clipped to its silhouette. */
-.nt-ghost-sweep {
+/* The narrow light. A soft window moves; the artwork inside it is held
+   still by the inverse transform, so the light discovers the bottle. */
+.nt-b-spot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--bw);
+    height: var(--bw);
+    transform-origin: 0 0;
+    opacity: 0;
+    will-change: transform, opacity;
+    -webkit-mask-image: radial-gradient(closest-side, #000 0%, rgba(0, 0, 0, 0.62) 45%, rgba(0, 0, 0, 0.16) 75%, transparent 100%);
+    mask-image: radial-gradient(closest-side, #000 0%, rgba(0, 0, 0, 0.62) 45%, rgba(0, 0, 0, 0.16) 75%, transparent 100%);
+}
+
+.nt-b-spot-in {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--bw);
+    height: var(--bh);
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
+.nt-b-spot-in img { filter: brightness(1.32) contrast(1.06) saturate(1.05); }
+
+/* In the settled scene the bottle is already lit, so the visitor's lamp
+   lifts more: it reads as a closer light catching facets and gold. */
+.nt-b-spot.is-lamp .nt-b-spot-in img { filter: brightness(1.75) contrast(1.1) saturate(1.12); }
+
+/* The flash on the glass: the artwork itself, brightened and screened,
+   so only what the light would actually catch lights up. */
+.nt-b-flash {
+    opacity: 0;
+    mix-blend-mode: screen;
+    filter: brightness(1.55) saturate(1.2);
+}
+
+/* The floor: amber pool, contact shadow, reflection. */
+.nt-b-floor { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
+
+.nt-b-pool {
+    position: absolute;
+    left: 50%;
+    top: 96.55%;
+    width: 150%;
+    height: 26%;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side,
+        rgba(var(--nt-amber-rgb), 0.18) 0%,
+        rgba(var(--nt-amber-rgb), 0.06) 45%,
+        transparent 100%);
+}
+
+.nt-b-shadow {
+    position: absolute;
+    left: 50%;
+    top: 96.55%;
+    width: 72%;
+    height: 5%;
+    translate: -50% -42%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+}
+
+/* Mirrored about the base line itself, squashed, fading away. */
+.nt-b-reflection {
     position: absolute;
     inset: 0;
-    mix-blend-mode: screen;
-    opacity: 0.55;
-    background: linear-gradient(104deg,
-        transparent 43%,
-        rgba(var(--nt-amber-rgb), 0.07) 47%,
-        rgba(255, 232, 190, 0.3) 50%,
-        rgba(var(--nt-amber-rgb), 0.07) 53%,
-        transparent 57%) 0 0 / 300% 100% no-repeat;
-    -webkit-mask: var(--fr-bottle) center / contain no-repeat;
-    mask: var(--fr-bottle) center / contain no-repeat;
-    animation: nt-sweep 9s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+    transform-origin: 50% 96.55%;
+    transform: scaleY(-0.46);
+    opacity: 0.3;
+    -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 3.6%, rgba(0, 0, 0, 0.45) 14%, transparent 34%);
+    mask-image: linear-gradient(to top, transparent 0%, #000 3.6%, rgba(0, 0, 0, 0.45) 14%, transparent 34%);
+}
+.nt-b-reflection img { filter: blur(3px) brightness(0.48); }
+
+/* ── The construction's labels ── */
+.nt-parts { position: absolute; inset: 0; opacity: 0; }
+
+.nt-part {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-family: var(--nt-sans);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--nt-gold-bright);
+    text-shadow: 0 0 18px rgba(0, 0, 0, 0.9);
 }
 
-@keyframes nt-sweep {
-    0%   { background-position: 100% 0; }
-    62%  { background-position: 0% 0; }
-    100% { background-position: 0% 0; }
+.nt-part::before,
+.nt-part::after {
+    content: '';
+    height: 1px;
+    width: clamp(2.4rem, 6vw, 5rem);
+    background: linear-gradient(90deg, transparent, rgba(var(--nt-gold-rgb), 0.7));
 }
 
-/* ── 01a · Prologue ──────────────────────────────────────────── */
+.nt-part--crown, .nt-part--ins { right: 100%; flex-direction: row; }
+.nt-part--crown::before, .nt-part--ins::before { display: none; }
+.nt-part--crown::after, .nt-part--ins::after { background: linear-gradient(90deg, rgba(var(--nt-gold-rgb), 0.7), transparent); order: 2; }
+.nt-part--glass, .nt-part--amber { left: 100%; }
+.nt-part--glass::after, .nt-part--amber::after { display: none; }
+.nt-part--glass::before, .nt-part--amber::before { background: linear-gradient(90deg, transparent, rgba(var(--nt-gold-rgb), 0.7)); }
+
+/* Placed level with where each part rests when the bottle is opened. */
+.nt-part--crown { top: 0; margin-right: -14%; }
+.nt-part--ins { top: 47%; margin-right: -26%; }
+.nt-part--glass { top: 34%; margin-left: -12%; }
+.nt-part--amber { top: 85%; margin-left: -18%; }
+
+/* ── 01 · Prologue ── */
 .nt-prologue {
     display: grid;
     align-items: center;
@@ -366,7 +609,7 @@ html:not(.nt-js) .nt-ghost { display: none; }
     margin: 0 auto;
     display: grid;
     gap: clamp(1rem, 2.6vh, 1.8rem);
-    padding-right: 46%;
+    padding-right: 48%;
 }
 
 .nt-line {
@@ -378,6 +621,7 @@ html:not(.nt-js) .nt-ghost { display: none; }
     letter-spacing: 0.005em;
     color: var(--nt-ivory);
     text-wrap: balance;
+    text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
 }
 
 .nt-line + .nt-line { color: var(--nt-ivory-soft); }
@@ -387,77 +631,96 @@ html:not(.nt-js) .nt-ghost { display: none; }
     color: rgba(var(--nt-gold-rgb), 0.92) !important;
 }
 
-/* ── 01b · The announcement ──────────────────────────────────── */
+/* ── 01 · The name ── */
 .nt-announce {
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    justify-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
     text-align: center;
-    padding: calc(5.5rem + env(safe-area-inset-top, 0px)) var(--nt-gutter) calc(var(--nt-bar-h) + clamp(1.4rem, 4vh, 2.6rem));
+    padding: 6rem var(--nt-gutter) calc(var(--nt-bar-h) + 3.5vh);
 }
 
-.nt-announce .nt-kicker { margin-top: clamp(0.5rem, 3vh, 2rem); }
+/* "Eternal Void presents" waits where the name will be, and gives way
+   to it, so the two never share the frame. */
+.nt-announce-kicker {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: clamp(3.2rem, 7.6vw, 6.9rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.95), 0 0 40px rgba(0, 0, 0, 0.8);
+}
 
-/* The name is set over the lower third of the glass, as on a poster. */
 .nt-announce-name {
-    align-self: end;
-    display: grid;
-    justify-items: center;
-    gap: clamp(0.7rem, 1.6vh, 1.1rem);
-    margin-bottom: clamp(0.4rem, 2vh, 1.4rem);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.6rem, 1.4vh, 0.9rem);
+}
+
+/* Legibility over the glass comes from one still pool of shadow behind
+   the name, not from text-shadows: those would be re-drawn on every frame
+   of the letters' arrival. */
+.nt-announce-name::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 18%;
+    width: 150%;
+    height: 120%;
+    translate: -50% -30%;
+    z-index: -1;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(2, 2, 1, 0.62) 0%, rgba(2, 2, 1, 0.34) 55%, transparent 100%);
+    pointer-events: none;
 }
 
 .nt-announce .nt-display {
-    font-size: clamp(3.6rem, 12.5vw, 10.5rem);
-    text-shadow: 0 0 60px rgba(0, 0, 0, 0.85), 0 0 140px rgba(0, 0, 0, 0.6);
+    font-size: clamp(3.4rem, 8.4vw, 7.6rem);
 }
 
-.nt-announce .nt-rule { margin: clamp(0.6rem, 1.8vh, 1.2rem) 0 clamp(0.9rem, 2.4vh, 1.4rem); }
+.nt-announce .nt-kind { text-shadow: 0 0 24px rgba(0, 0, 0, 0.9); }
+.nt-announce .nt-rule { margin: clamp(0.3rem, 1vh, 0.6rem) 0; }
 
 .nt-tagline {
     font-family: var(--nt-serif);
     font-optical-sizing: auto;
     font-style: italic;
-    font-size: clamp(1.2rem, 2.2vw, 1.75rem);
+    font-size: clamp(1.15rem, 2vw, 1.6rem);
     letter-spacing: 0.02em;
     color: rgba(var(--nt-gold-rgb), 0.95);
+    text-shadow: 0 0 24px rgba(0, 0, 0, 0.9);
 }
 
-/* ── 02 · The olfactory world ────────────────────────────────── */
+/* ── 02 · The olfactory world ── */
 .nt-accord {
-    display: grid;
+    display: flex;
     align-items: center;
-    padding: calc(5.5rem + env(safe-area-inset-top, 0px)) var(--nt-gutter) calc(var(--nt-bar-h) + 1.6rem);
+    padding: calc(5.5rem + env(safe-area-inset-top, 0px)) var(--nt-gutter) calc(var(--nt-bar-h) + 1.2rem);
 }
 
-.nt-accord-grid {
-    position: relative;
-    width: min(100%, 1180px);
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
-    grid-template-areas:
-        "head  head"
-        "story notes";
-    column-gap: clamp(2rem, 7vw, 7rem);
-    row-gap: clamp(2rem, 6vh, 4.2rem);
-    align-items: end;
+.nt-accord-col {
+    width: min(46%, 38rem);
+    margin-left: max(0px, calc((100% - 1180px) / 2));
 }
 
 .nt-accord-head {
-    grid-area: head;
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem 2rem;
+    flex-direction: column;
+    gap: 0.75rem;
     padding-bottom: clamp(0.9rem, 2vh, 1.3rem);
+    margin-bottom: clamp(1.2rem, 3vh, 2rem);
     border-bottom: 1px solid var(--nt-hair);
 }
 
 .nt-movements {
     display: flex;
-    gap: clamp(1rem, 2.6vw, 2.2rem);
+    gap: clamp(1rem, 2.4vw, 2rem);
     list-style: none;
     font-family: var(--nt-sans);
     font-size: 0.6rem;
@@ -475,18 +738,14 @@ html:not(.nt-js) .nt-ghost { display: none; }
 
 .nt-movements li[aria-current] { color: var(--nt-gold-bright); }
 
-.nt-accord-story { grid-area: story; }
-
-/* The movement's numeral, set like a programme marking: an upright roman in
-   antique gold that surfaces from depth before the words arrive. (Bodoni's
-   italic turns "III" into three slashes.) */
+/* Upright: Bodoni's italic turns "III" into three slashes. */
 .nt-numeral {
     display: block;
-    margin-bottom: clamp(0.5rem, 1.4vh, 0.9rem);
+    margin-bottom: clamp(0.4rem, 1vh, 0.7rem);
     font-family: var(--nt-serif);
     font-optical-sizing: auto;
     font-weight: 400;
-    font-size: clamp(2rem, 2.9vw, 2.75rem);
+    font-size: clamp(1.8rem, 2.6vw, 2.5rem);
     letter-spacing: 0.08em;
     line-height: 1;
     color: rgba(var(--nt-gold-rgb), 0.62);
@@ -494,26 +753,22 @@ html:not(.nt-js) .nt-ghost { display: none; }
     user-select: none;
 }
 
-.nt-accord-head, .nt-notes { position: relative; z-index: 1; }
-
 .nt-movement-name {
-    position: relative;
     font-family: var(--nt-sans);
     font-size: 0.66rem;
     font-weight: 500;
     letter-spacing: 0.4em;
     text-transform: uppercase;
     color: rgba(var(--nt-gold-rgb), 0.88);
-    margin-bottom: clamp(0.9rem, 2vh, 1.3rem);
+    margin-bottom: clamp(0.7rem, 1.6vh, 1.1rem);
 }
 
 .nt-accord-title {
-    position: relative;
     font-family: var(--nt-serif);
     font-optical-sizing: auto;
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(2.6rem, 6.4vw, 5.6rem);
+    font-size: clamp(2.5rem, 5.6vw, 5rem);
     line-height: 0.98;
     letter-spacing: -0.005em;
     color: var(--nt-ivory);
@@ -521,17 +776,16 @@ html:not(.nt-js) .nt-ghost { display: none; }
 }
 
 .nt-accord-copy {
-    position: relative;
     max-width: 36ch;
-    margin-top: clamp(1.2rem, 3vh, 2rem);
+    margin-top: clamp(1rem, 2.6vh, 1.7rem);
     font-family: var(--nt-serif);
     font-optical-sizing: auto;
-    font-size: clamp(1.05rem, 1.45vw, 1.3rem);
+    font-size: clamp(1.02rem, 1.4vw, 1.25rem);
     line-height: 1.6;
     color: var(--nt-ivory-soft);
 }
 
-.nt-notes { grid-area: notes; }
+.nt-notes { margin-top: clamp(1.2rem, 3vh, 2rem); }
 
 .nt-notes-label {
     font-family: var(--nt-sans);
@@ -540,42 +794,123 @@ html:not(.nt-js) .nt-ghost { display: none; }
     letter-spacing: 0.32em;
     text-transform: uppercase;
     color: var(--nt-ivory-mute);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.55rem;
 }
 
-.nt-notes ul { list-style: none; }
+.nt-notes ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0;
+    list-style: none;
+}
 
 .nt-notes li {
     font-family: var(--nt-serif);
     font-optical-sizing: auto;
-    font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+    font-size: clamp(1.08rem, 1.5vw, 1.32rem);
     letter-spacing: 0.02em;
     color: var(--nt-ivory);
-    padding: clamp(0.5rem, 1.2vh, 0.75rem) 0;
-    border-bottom: 1px solid rgba(236, 227, 209, 0.08);
+}
+
+.nt-notes li + li::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    margin: 0 0.95rem 0.25em;
+    transform: rotate(45deg);
+    background: rgba(var(--nt-gold-rgb), 0.7);
 }
 
 .nt-direction {
-    margin-top: clamp(1rem, 2.4vh, 1.4rem);
+    margin-top: clamp(0.9rem, 2.2vh, 1.3rem);
     font-family: var(--nt-sans);
     font-size: 0.62rem;
-    font-weight: 400;
     letter-spacing: 0.08em;
     line-height: 1.7;
     color: var(--nt-ivory-mute);
-    max-width: 32ch;
+    max-width: 34ch;
 }
 
-/* ── 03 · The unveiling ──────────────────────────────────────── */
-.nt-unveil {
+/* ── 03 · The construction ── */
+.nt-construction {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    padding: calc(5.4rem + env(safe-area-inset-top, 0px)) var(--nt-gutter) 0;
+    text-align: center;
+}
+
+.nt-construction-title {
+    font-family: var(--nt-serif);
+    font-optical-sizing: auto;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.2rem, 2vw, 1.7rem);
+    color: var(--nt-ivory-soft);
+    text-shadow: 0 0 24px rgba(0, 0, 0, 0.9);
+}
+
+/* ── Scroll hint ── */
+.nt-hint {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--nt-bar-h) + 1.4rem);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    translate: -50% 0;
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+    text-transform: uppercase;
+    color: var(--nt-ivory-mute);
+    opacity: 0;
+    transition: opacity 1.2s var(--nt-ease);
+}
+
+.nt-hint i {
+    display: block;
+    width: 1px;
+    height: 2.4rem;
+    background: linear-gradient(180deg, transparent, rgba(var(--nt-gold-rgb), 0.8));
+    transform-origin: 50% 0;
+}
+
+.nt-hint.is-on { opacity: 1; }
+.nt-hint.is-on i { animation: nt-hint 2.4s cubic-bezier(0.45, 0, 0.25, 1) infinite; }
+
+@keyframes nt-hint {
+    0%   { transform: scaleY(0); opacity: 0; }
+    30%  { opacity: 1; }
+    60%  { transform: scaleY(1); opacity: 1; }
+    100% { transform: scaleY(1); opacity: 0; }
+}
+
+/* ── 03 · The final scene ──────────────────────────────────────────
+   Laid over the story's last screen, so its left column frames the
+   pinned bottle. It scrolls in like any page section. */
+.nt-final {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
     padding: calc(4.6rem + env(safe-area-inset-top, 0px)) var(--nt-gutter) 0;
 }
 
-html.nt-js .nt-unveil { padding-bottom: calc(var(--nt-bar-h) + env(safe-area-inset-bottom, 0px)); }
+html.nt-js .nt-final {
+    margin-top: -100vh;
+    margin-top: -100svh;
+    padding-bottom: calc(var(--nt-bar-h) + env(safe-area-inset-bottom, 0px));
+}
 
-.nt-unveil-grid {
+.nt-final-grid {
     flex: 1 0 auto;
     width: min(100%, 1240px);
     margin: 0 auto;
@@ -583,6 +918,84 @@ html.nt-js .nt-unveil { padding-bottom: calc(var(--nt-bar-h) + env(safe-area-ins
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     align-items: center;
     column-gap: clamp(2rem, 6vw, 6.5rem);
+}
+
+.nt-final-anchor {
+    position: relative;
+    justify-self: center;
+    width: min(540px, 100%);
+    height: clamp(440px, 76svh, 780px);
+}
+
+html:not(.nt-js) .nt-final-anchor { display: none; }
+
+/* The bottle's discovery surface. Invisible; the bottle beneath it is. */
+.nt-discover {
+    position: absolute;
+    inset: 4% 14% 10%;
+    border: 0;
+    background: none;
+    cursor: crosshair;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nt-discover:focus-visible { outline: 1px solid rgba(var(--nt-gold-rgb), 0.5); outline-offset: 0; }
+
+.nt-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    text-align: center;
+    pointer-events: none;
+}
+
+.nt-caption-title,
+.nt-caption-text {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+    transition: opacity 0.6s var(--nt-ease), transform 0.6s var(--nt-ease);
+}
+
+.nt-caption-title {
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--nt-gold-bright);
+}
+
+.nt-caption-text {
+    font-family: var(--nt-serif);
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--nt-ivory-soft);
+}
+
+.nt-caption-hint {
+    position: absolute;
+    bottom: 0;
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--nt-ivory-faint);
+    transition: opacity 0.6s var(--nt-ease);
+}
+
+.nt-caption.is-on .nt-caption-title,
+.nt-caption.is-on .nt-caption-text { opacity: 1; transform: translate3d(0, 0, 0); }
+.nt-caption.is-on .nt-caption-hint { opacity: 0; }
+
+.nt-static-bottle {
+    display: block;
+    width: min(320px, 70vw);
+    height: auto;
+    margin: 2rem auto 0;
 }
 
 .nt-unveil-copy {
@@ -612,7 +1025,6 @@ html.nt-js .nt-unveil { padding-bottom: calc(var(--nt-bar-h) + env(safe-area-ins
     max-width: 34ch;
 }
 
-/* Coming Soon as a hallmark: hairlines either side, nothing louder. */
 .nt-status {
     display: flex;
     align-items: center;
@@ -653,7 +1065,7 @@ html.nt-js .nt-unveil { padding-bottom: calc(var(--nt-bar-h) + env(safe-area-ins
 .nt-form-row {
     display: flex;
     border: 1px solid rgba(var(--nt-gold-rgb), 0.42);
-    background: rgba(4, 4, 3, 0.6);
+    background: rgba(4, 4, 3, 0.72);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -743,217 +1155,34 @@ html.nt-js .nt-unveil { padding-bottom: calc(var(--nt-bar-h) + env(safe-area-ins
     color: rgba(236, 227, 209, 0.24);
 }
 
-/* ── Product stage ─────────────────────────────────────────────
-   Fixed aspect box so nothing reflows while the bottle moves. */
-.fr-stage {
-    position: relative;
-    justify-self: center;
-    width: min(540px, 100%);
-    height: clamp(440px, 76svh, 780px);
-    perspective: 1400px;
-    perspective-origin: 50% 45%;
-    touch-action: pan-y;
+/* ── The settled scene, alive but still ─────────────────────────
+   Only while the final scene is shown, and never while the page is
+   hidden (html.nt-paused). Slow enough to read as air, not effect. */
+html.nt-final:not(.nt-calm) .nt-b-sheen i { animation: nt-sheen 17s cubic-bezier(0.45, 0, 0.25, 1) infinite; }
+html.nt-final:not(.nt-calm) .nt-b-pool { animation: nt-breathe 9s ease-in-out infinite alternate; }
+html.nt-final:not(.nt-calm) .nt-haze i:first-child { animation: nt-drift-a 34s ease-in-out infinite alternate; }
+html.nt-final:not(.nt-calm) .nt-haze i:last-child { animation: nt-drift-b 41s ease-in-out infinite alternate; }
+
+@keyframes nt-sheen {
+    0%   { transform: translate3d(-80%, 0, 0) skewX(-10deg); }
+    55%  { transform: translate3d(150%, 0, 0) skewX(-10deg); }
+    100% { transform: translate3d(150%, 0, 0) skewX(-10deg); }
 }
 
-.fr-backglow {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 96%;
-    height: 72%;
-    border-radius: 50%;
-    background: radial-gradient(closest-side,
-        rgba(var(--nt-amber-rgb), 0.16) 0%,
-        rgba(var(--nt-gold-rgb), 0.06) 46%,
-        transparent 100%);
-    transform: translate3d(
-        calc(-50% + var(--fr-px) * var(--fr-w-backglow) * var(--fr-translate-x) * 1px),
-        calc(-50% + var(--fr-py) * var(--fr-w-backglow) * var(--fr-translate-y) * 1px), 0);
-    pointer-events: none;
+@keyframes nt-breathe {
+    from { opacity: 0.78; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1.04); }
 }
 
-/* The surface: a pool of warm light where the glass stands, and a hairline
-   horizon so the floor reads as stone, not as a glow. */
-.fr-floor {
-    position: absolute;
-    left: 50%;
-    top: var(--fr-floor-line);
-    width: 112%;
-    height: 22%;
-    transform: translate3d(-50%, -46%, 0);
-    border-radius: 50%;
-    background: radial-gradient(closest-side,
-        rgba(var(--nt-amber-rgb), 0.13) 0%,
-        rgba(var(--nt-amber-rgb), 0.04) 48%,
-        transparent 100%);
-    pointer-events: none;
+@keyframes nt-drift-a {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(9vmax, -4vmax, 0); }
 }
 
-.fr-floor::after {
-    content: '';
-    position: absolute;
-    left: 6%;
-    right: 6%;
-    top: 46%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(var(--nt-gold-rgb), 0.24) 30%, rgba(var(--nt-gold-rgb), 0.24) 70%, transparent);
+@keyframes nt-drift-b {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-8vmax, 3vmax, 0); }
 }
-
-.fr-shadow {
-    position: absolute;
-    left: 50%;
-    top: var(--fr-floor-line);
-    width: 44%;
-    height: 4.2%;
-    border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.6) 52%, transparent 100%);
-    filter: blur(var(--fr-shadow-blur));
-    opacity: var(--fr-shadow-opacity);
-    transform: translate3d(
-        calc(-50% - var(--fr-px) * var(--fr-w-shadow) * var(--fr-shadow-move) * 1px), -38%, 0);
-    pointer-events: none;
-}
-
-.fr-bottle-wrap {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    height: var(--fr-bottle-height);
-    aspect-ratio: 1024 / 1536;
-    transform-style: preserve-3d;
-    transform: translate3d(-50%, 0, 0);
-    pointer-events: none;
-}
-
-.fr-bottle {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    transform:
-        translate3d(
-            calc(var(--fr-px) * var(--fr-translate-x) * 1px),
-            calc(var(--fr-py) * var(--fr-translate-y) * 1px), 0)
-        rotateX(calc(var(--fr-py) * var(--fr-max-tilt-x) * -1deg))
-        rotateY(calc(var(--fr-px) * var(--fr-max-tilt-y) * 1deg));
-}
-
-/* The artwork itself is never filtered or recoloured here. */
-.fr-bottle-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-/* Amber held low in the glass, as light through the extrait. */
-.fr-amber {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: 0.55;
-    background: radial-gradient(34% 22% at 50% 76%, rgba(255, 176, 84, 0.22), transparent 72%);
-    -webkit-mask: var(--fr-bottle) center / contain no-repeat;
-    mask: var(--fr-bottle) center / contain no-repeat;
-}
-
-.fr-glare {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: calc(var(--fr-glare-intensity) * var(--fr-active));
-    background: radial-gradient(
-        ellipse var(--fr-glare-size) var(--fr-glare-size) at
-            calc(50% + var(--fr-px) * 34%)
-            calc(42% + var(--fr-py) * 22%),
-        rgba(255, 246, 226, 0.3) 0%,
-        rgba(var(--nt-amber-rgb), 0.12) 34%,
-        transparent 68%);
-    -webkit-mask: var(--fr-bottle) center / contain no-repeat;
-    mask: var(--fr-bottle) center / contain no-repeat;
-}
-
-.fr-edge {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: calc(var(--fr-edge-intensity) * var(--fr-active));
-    background: linear-gradient(
-        calc(90deg + var(--fr-px) * -34deg),
-        rgba(255, 244, 214, 0.26) 0%,
-        rgba(255, 244, 214, 0.1) 12%,
-        transparent 30%,
-        transparent 70%,
-        rgba(var(--nt-amber-rgb), 0.12) 88%,
-        rgba(var(--nt-amber-rgb), 0.24) 100%);
-    -webkit-mask: var(--fr-bottle) center / contain no-repeat;
-    mask: var(--fr-bottle) center / contain no-repeat;
-}
-
-/* Reveal-only layers: at rest they are invisible. */
-.fr-veil {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background: #000;
-    -webkit-mask: var(--fr-bottle) center / contain no-repeat;
-    mask: var(--fr-bottle) center / contain no-repeat;
-    pointer-events: none;
-}
-
-.fr-pass {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    mix-blend-mode: screen;
-    background: linear-gradient(104deg,
-        transparent 40%, rgba(255, 240, 210, 0.3) 50%, transparent 60%) 0 0 / 300% 100% no-repeat;
-    background-position: 0% 0;
-    -webkit-mask: var(--fr-bottle) center / contain no-repeat;
-    mask: var(--fr-bottle) center / contain no-repeat;
-    pointer-events: none;
-}
-
-.fr-reflection {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    height: var(--fr-bottle-height);
-    aspect-ratio: 1024 / 1536;
-    transform-origin: 50% 100%;
-    transform:
-        translate3d(
-            calc(-50% + var(--fr-px) * var(--fr-w-reflection) * var(--fr-translate-x) * 1px),
-            var(--fr-reflection-offset), 0)
-        scaleY(calc(var(--fr-reflection-squash) * -1));
-    opacity: var(--fr-reflection-opacity);
-    pointer-events: none;
-}
-
-.fr-reflection img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    filter: blur(var(--fr-reflection-blur)) brightness(0.5) saturate(1.1);
-    -webkit-mask:
-        var(--fr-bottle) center / contain no-repeat,
-        linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.5) 14%, transparent var(--fr-reflection-fade));
-    mask:
-        var(--fr-bottle) center / contain no-repeat,
-        linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.5) 14%, transparent var(--fr-reflection-fade));
-    -webkit-mask-composite: source-in;
-    mask-composite: intersect;
-}
-
-/* If the artwork cannot load, the stage stays dark rather than showing a
-   broken image and empty light around it. */
-.fr-stage[data-missing] .fr-bottle-wrap,
-.fr-stage[data-missing] .fr-reflection,
-.fr-stage[data-missing] .fr-shadow { visibility: hidden; }
 
 /* ── Controls ─────────────────────────────────────────────────── */
 .nt-controls { display: none; }
@@ -972,6 +1201,10 @@ html.nt-js .nt-controls {
     padding: 0.9rem var(--nt-gutter) calc(0.9rem + env(safe-area-inset-bottom, 0px));
     background: linear-gradient(0deg, rgba(3, 3, 2, 0.94) 0%, rgba(3, 3, 2, 0.72) 60%, transparent 100%);
 }
+
+/* At the end of the story the controls close the page instead of
+   covering the form. */
+html.nt-js.nt-end .nt-controls { position: absolute; }
 
 .nt-ctl {
     justify-self: start;
@@ -1002,7 +1235,6 @@ html.nt-js .nt-controls {
     gap: clamp(1rem, 3vw, 2.4rem);
 }
 
-/* Next is the one control with weight: framed in gold. */
 .nt-ctl--next {
     padding: 0 1.3rem;
     border: 1px solid rgba(var(--nt-gold-rgb), 0.5);
@@ -1056,58 +1288,81 @@ html.nt-js .nt-controls {
     overflow: hidden;
 }
 
+/* Follows the scroll directly, frame by frame. */
 .nt-progress-bar i {
     position: absolute;
     inset: 0;
     background: rgba(var(--nt-gold-rgb), 0.85);
     transform-origin: 0 50%;
     transform: scaleX(var(--fill, 0));
-    transition: transform 0.9s var(--nt-ease);
 }
 
-/* Chapter 03 is a page: its controls close the page instead of covering it. */
-html.nt-js body { position: relative; }
-html.nt-js:not(.nt-intro) .nt-controls { position: absolute; }
-
-/* While a field is focused on a phone, the bar stands aside for the keyboard. */
 html.nt-typing .nt-controls { visibility: hidden; }
-
-/* ── No script: a single readable page ── */
-html:not(.nt-js) .nt-scene { padding-top: 5rem; padding-bottom: 3rem; min-height: auto; }
-html:not(.nt-js) .nt-prologue-lines { padding-right: 0; }
-html:not(.nt-js) .nt-announce { grid-template-rows: auto; gap: 1rem; }
 
 /* ── Ambient effects pause whenever the page is not being looked at ── */
 html.nt-paused *,
 html.nt-paused *::before,
 html.nt-paused *::after { animation-play-state: paused !important; }
 
+/* ── Reduced motion: the same story in still frames ───────────────
+   The script holds each beat's composition and crossfades between
+   them; nothing travels, flashes or drifts. */
+html.nt-calm .nt-beat,
+html.nt-calm .nt-b-art,
+html.nt-calm .nt-b-halo,
+html.nt-calm .nt-b-floor,
+html.nt-calm .nt-parts,
+html.nt-calm .nt-light,
+html.nt-calm .nt-haze,
+html.nt-calm .nt-b-glow,
+html.nt-calm .nt-b-hollow,
+html.nt-calm .nt-b-sheen { transition: opacity 0.45s ease; }
+html.nt-calm .nt-scope [data-reveal],
+html.nt-calm .nt-line.nt-scope { transition: opacity 0.45s ease; }
+html.nt-calm .nt-hint.is-on i { animation: none; transform: none; opacity: 1; }
+
+/* ── Without the script: a single readable page ── */
+html:not(.nt-js) .nt-beat { position: relative; padding: 3rem var(--nt-gutter); }
+html:not(.nt-js) .nt-prologue-lines { padding-right: 0; }
+html:not(.nt-js) .nt-accord-col { width: auto; margin: 0 auto; max-width: 38rem; }
+html:not(.nt-js) .nt-announce { padding-top: 3rem; }
+html:not(.nt-js) .nt-final-grid { grid-template-columns: 1fr; justify-items: center; }
+html:not(.nt-js) .nt-prologue { padding-top: 7rem; }
+html:not(.nt-js) .nt-announce-kicker { position: static; height: auto; margin-bottom: 1rem; }
+html:not(.nt-js) .nt-final { min-height: 0; }
+
 /* ── Tablets and below ───────────────────────────────────────── */
 @media (max-width: 960px) {
     .nt-prologue-lines { padding-right: 0; max-width: 34rem; text-align: center; }
     .nt-line { font-size: clamp(1.55rem, 5.2vw, 2.4rem); }
 
-    .nt-accord-grid {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-areas: "head" "story" "notes";
-        row-gap: clamp(1.4rem, 3.4vh, 2.4rem);
-    }
+    .nt-accord { align-items: flex-start; padding-top: calc(5.6rem + env(safe-area-inset-top, 0px)); }
+    .nt-accord-col { width: 100%; margin: 0; }
+    .nt-accord-title, .nt-accord-copy, .nt-notes li { text-shadow: 0 0 22px rgba(0, 0, 0, 0.95); }
 
-    .nt-notes ul { display: grid; grid-template-columns: 1fr 1fr; column-gap: 1.6rem; }
-    .nt-notes li { font-size: 1.12rem; padding: 0.55rem 0; }
+    /* Labels sit on the bottle's own edges rather than beside it. */
+    .nt-part { font-size: 0.54rem; letter-spacing: 0.24em; }
+    .nt-part::before, .nt-part::after { width: 1.4rem; }
+    .nt-part--crown { right: auto; left: 50%; top: -9%; translate: -50% 0; margin: 0; }
+    .nt-part--crown::after { display: none; }
+    .nt-part--ins { right: auto; left: -4%; top: 40%; margin: 0; }
+    .nt-part--ins::after { display: block; }
+    .nt-part--glass { left: auto; right: -4%; top: 30%; margin: 0; }
+    .nt-part--amber { left: 50%; top: 96%; translate: -50% 0; margin: 0; }
+    .nt-part--amber::before { display: none; }
 
-    .nt-unveil-grid {
+    .nt-final-grid {
         grid-template-columns: minmax(0, 1fr);
         justify-items: center;
         row-gap: 0;
     }
 
-    .fr-stage { width: min(420px, 100%); height: clamp(360px, 58svh, 560px); }
+    .nt-final-anchor { width: min(420px, 100%); height: clamp(340px, 56svh, 540px); }
 
     .nt-unveil-copy {
         align-items: center;
         text-align: center;
-        margin-top: clamp(-3rem, -5svh, -1.5rem);
+        margin-top: 1.4rem;
     }
 
     .nt-display--unveil { text-indent: 0.08em; }
@@ -1122,19 +1377,17 @@ html.nt-paused *::after { animation-play-state: paused !important; }
 
     .nt-nav a { font-size: 0.56rem; letter-spacing: 0.2em; }
 
-    .nt-ghost { height: min(58svh, 520px); margin-left: calc(min(58svh, 520px) * -0.3333); top: 46%; }
-
-    .nt-announce .nt-display { font-size: clamp(3.3rem, 17vw, 5rem); }
+    .nt-announce .nt-display { font-size: clamp(3.2rem, 16.5vw, 4.8rem); }
     .nt-movements { gap: 0.9rem; font-size: 0.54rem; letter-spacing: 0.2em; }
-    .nt-accord-head { flex-direction: column; align-items: flex-start; gap: 0.7rem; }
-    .nt-numeral { font-size: 1.9rem; }
-    .nt-accord-title { font-size: clamp(2.3rem, 10.5vw, 3.2rem); }
-    .nt-accord-copy { font-size: 1.02rem; line-height: 1.55; }
+    .nt-numeral { font-size: 1.7rem; }
+    .nt-accord-title { font-size: clamp(2.2rem, 10vw, 3rem); }
+    .nt-accord-copy { font-size: 1rem; line-height: 1.55; }
+    .nt-notes li { font-size: 1.04rem; }
+    .nt-notes li + li::before { margin: 0 0.6rem 0.22em; }
 
     .nt-form-row { flex-direction: column; }
     .nt-form-submit { min-height: 52px; }
 
-    /* Two rows: progress across the top, the three controls beneath. */
     html.nt-js .nt-controls {
         grid-template-columns: auto 1fr;
         grid-template-areas: "progress progress" "back end";
@@ -1153,19 +1406,5 @@ html.nt-paused *::after { animation-play-state: paused !important; }
 
 @media (max-height: 640px) and (min-width: 641px) {
     .nt-accord-copy { font-size: 1rem; line-height: 1.5; }
-    .nt-numeral { font-size: 1.8rem; }
+    .nt-accord-title { font-size: clamp(2.2rem, 4.6vw, 3.6rem); }
 }
-
-/* ── Reduced motion ─────────────────────────────────────────────
-   The composition stays whole; only movement goes. The script swaps
-   its timeline for short crossfades on the same signal. */
-@media (prefers-reduced-motion: reduce) {
-    .nt-ghost-sweep { animation: none; opacity: 0.35; background-position: 50% 0; }
-    .nt-progress-bar i { transition: none; }
-}
-
-html.reduce-motion .nt-ghost-sweep { animation: none; opacity: 0.35; background-position: 50% 0; }
-html.reduce-motion .fr-bottle,
-html.reduce-motion .fr-shadow,
-html.reduce-motion .fr-backglow,
-html.reduce-motion .fr-reflection { --fr-px: 0; --fr-py: 0; --fr-active: 0; }
