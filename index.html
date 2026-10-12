@@ -161,6 +161,22 @@
             --lang-dec-in: 1180;    /* shutters fully retracted */
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
             --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+            /* ── House palette: ink, ivory and brushed gilt ──
+               Gilt is an accent, never a fill — the one exception is the
+               brushed gradient reserved for a single primary action. The
+               -rgb triplets exist so hairlines can take their own alpha. */
+            --void-ink: #070605;
+            --void-ivory: #f2ebdd;
+            --void-ivory-rgb: 242, 235, 221;
+            --void-gilt: #c9a55c;
+            --void-gilt-rgb: 201, 165, 92;
+            --void-gilt-light: #e8cf94;
+            --void-gilt-deep: #a8843f;
+            --void-gilt-ink: #14110a;
+            --void-gilt-brushed: linear-gradient(135deg, var(--void-gilt-light) 0%, var(--void-gilt) 52%, var(--void-gilt-deep) 100%);
+            --void-fine-print: #8a8478;
+            --void-ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         html {
@@ -8870,8 +8886,20 @@
            the return is the same timeline played backwards — so CSS never has
            to describe an in-between, and an interrupted transition can simply
            turn round where it stands. Motion is transforms and opacity; the
-           only filters are the short blurs on content that is receding or
-           resolving, as in the language transition. */
+           only filters are the short blurs on content that is resolving.
+
+           The composition is deliberately quiet: ink, a single pool of warm
+           light, grain, a double hairline frame, and gilt used only where the
+           eye should land. Spacing runs on an 8px grid. */
+        .product-detail-panel {
+            /* The frame's two hairlines: an outer line, and an inner one
+               exactly 14px inside it. Declared on the panel so the close
+               button can align to the same frame. */
+            --nl-o: clamp(10px, 1.6vw, 16px);
+            --nl-i: calc(var(--nl-o) + 14px);
+            transition: transform 0.66s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.36s ease, --void-border-alpha 0.6s ease;
+        }
+
         .pd-nl {
             position: absolute;
             left: 0;
@@ -8886,134 +8914,173 @@
             /* Also the shield: it catches every click while it is up, so
                nothing behind it can be reached mid-transition. */
             pointer-events: auto;
-            color: var(--void-white);
+            color: var(--void-ivory);
             text-align: center;
         }
 
         .pd-nl[hidden] { display: none; }
 
-        /* The frame belongs to the dialog, not to either composition: its
-           corner brackets and orbiting light stay above the scene, so the
-           outer frame never changes while the inside transforms. It paints
-           only the edges and takes no pointer events. The close button (5,
-           later in the document) still sits above it. */
+        /* While the scene is up (or on its way), the dialog's own corner
+           brackets and orbiting light step aside for the scene's frame, and
+           its border softens to the scene's outermost hairline. */
         .product-detail-panel > .panel-frame { z-index: 5; }
+
+        .product-detail-overlay.open .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) {
+            --void-border-alpha: 0.12;
+        }
+
+        .product-detail-overlay.open .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .panel-frame {
+            opacity: 0;
+            transition-delay: 0s;
+        }
+
+        .product-detail-overlay.open .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .panel-frame::before {
+            animation-play-state: paused;
+        }
 
         .pd-nl-atmos,
         .pd-nl-atmos > span,
-        .pd-nl-filament,
-        .pd-nl-sweep {
+        .pd-nl-frame {
             position: absolute;
             pointer-events: none;
         }
 
+        /* ── Atmosphere: ink, one pool of light, dust, grain, vignette ── */
         .pd-nl-atmos {
             inset: 0;
             z-index: 0;
             background:
-                radial-gradient(120% 90% at 50% 46%, rgba(26, 21, 12, 0.94) 0%, rgba(7, 6, 5, 0.985) 58%, #030303 100%);
+                radial-gradient(120% 90% at 50% 38%, #15110b 0%, var(--void-ink) 56%, #030302 100%);
         }
 
-        /* The quiet centre: a pool of antique light behind the type. It
-           breathes very slowly, on its own layer, so the timeline can fade and
-           scale the pool without fighting the breath. */
+        /* The pool of warm light sits behind the headline. It breathes very
+           slowly on its own layer, so the timeline can fade and scale the
+           pool without fighting the breath. */
         .pd-nl-glow {
             left: 50%;
-            top: 44%;
-            width: min(760px, 120%);
-            aspect-ratio: 1.45;
+            top: 36%;
+            width: min(860px, 140%);
+            aspect-ratio: 1.6;
             transform: translate(-50%, -50%) scale(1);
-            background: radial-gradient(closest-side, rgba(226, 199, 138, 0.2), rgba(199, 169, 108, 0.07) 46%, transparent 72%);
+            background: radial-gradient(closest-side, rgba(232, 207, 148, 0.13), rgba(var(--void-gilt-rgb), 0.045) 52%, transparent 78%);
         }
 
         .pd-nl-glow::after {
             content: '';
             position: absolute;
-            inset: 18%;
+            inset: 22%;
             border-radius: 50%;
-            background: radial-gradient(closest-side, rgba(248, 236, 206, 0.12), transparent 70%);
-            animation: pdNlBreath 6.4s ease-in-out infinite;
+            background: radial-gradient(closest-side, rgba(248, 236, 206, 0.07), transparent 72%);
+            animation: pdNlBreath 11s ease-in-out infinite;
         }
 
         @keyframes pdNlBreath {
-            0%, 100% { opacity: 0.55; }
+            0%, 100% { opacity: 0.5; }
             50%      { opacity: 1; }
         }
 
         .pd-nl-motes { inset: 0; }
 
+        /* Gold dust: barely there, drifting on very long loops. Transform
+           and opacity only. */
         .pd-nl-mote {
             position: absolute;
-            width: var(--s, 2px);
-            height: var(--s, 2px);
+            width: var(--s, 1.5px);
+            height: var(--s, 1.5px);
             border-radius: 50%;
-            background: #f0dca8;
-            box-shadow: 0 0 6px 1px rgba(226, 199, 138, 0.55);
+            background: #ecd9a6;
             opacity: 0;
-            animation: pdNlMote var(--d, 8s) linear var(--w, 0s) infinite;
+            animation: pdNlDust var(--d, 60s) linear var(--w, 0s) infinite;
         }
 
-        @keyframes pdNlMote {
-            0%   { opacity: 0;    transform: translate3d(0, 0, 0); }
-            18%  { opacity: var(--o, 0.6); }
-            80%  { opacity: calc(var(--o, 0.6) * 0.7); }
-            100% { opacity: 0;    transform: translate3d(var(--dx, 0px), -70px, 0); }
+        @keyframes pdNlDust {
+            0%   { opacity: 0; transform: translate3d(0, 0, 0); }
+            14%  { opacity: var(--o, 0.25); }
+            50%  { transform: translate3d(var(--dx, 0px), calc(var(--dy, -180px) * 0.5), 0); }
+            86%  { opacity: var(--o, 0.25); }
+            100% { opacity: 0; transform: translate3d(calc(var(--dx, 0px) * -0.4), var(--dy, -180px), 0); }
+        }
+
+        /* Film grain: one static tile of fractal noise, a few percent. */
+        .pd-nl-grain {
+            inset: 0;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+            background-size: 180px 180px;
         }
 
         .pd-nl-vignette {
             inset: 0;
-            background: radial-gradient(130% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.62) 100%);
+            background: radial-gradient(125% 100% at 50% 45%, transparent 52%, rgba(0, 0, 0, 0.58) 100%);
         }
 
-        /* The filament: a resting hairline on the frame, and two sparks that
-           travel the full perimeter once during the transition — the panel's
-           own orbiting light, made deliberate. */
-        .pd-nl-filament {
+        /* ── Frame: a double hairline with mitred corners ──
+           Outer line at 12%, inner at 25%, 14px apart. At each inner corner a
+           hairline mitre runs to the outer corner, and a small diamond seals
+           the join. Lines draw in from their centres. */
+        .pd-nl-frame {
             inset: 0;
-            width: 100%;
-            height: 100%;
             z-index: 3;
-            overflow: visible;
         }
 
-        .pd-nl-filament rect {
-            fill: none;
-            vector-effect: non-scaling-stroke;
+        .pd-nl-rule {
+            position: absolute;
+            background: rgba(var(--void-gilt-rgb), 0.25);
         }
 
-        .pd-nl-rail {
-            stroke: rgba(199, 169, 108, 0.5);
-            stroke-width: 1;
-            opacity: 0.55;
+        .pd-nl-rule.is-outer { --r: var(--nl-o); background: rgba(var(--void-gilt-rgb), 0.12); }
+        .pd-nl-rule.is-inner { --r: var(--nl-i); }
+
+        .pd-nl-rule.is-top,
+        .pd-nl-rule.is-bottom { left: var(--r); right: var(--r); height: 1px; }
+        .pd-nl-rule.is-left,
+        .pd-nl-rule.is-right { top: var(--r); bottom: var(--r); width: 1px; }
+        .pd-nl-rule.is-top { top: var(--r); }
+        .pd-nl-rule.is-bottom { bottom: var(--r); }
+        .pd-nl-rule.is-left { left: var(--r); }
+        .pd-nl-rule.is-right { right: var(--r); }
+
+        /* A zero-size anchor on each inner corner point; scaling it in the
+           timeline grows the ornament out of the corner itself. */
+        .pd-nl-corner {
+            position: absolute;
+            width: 0;
+            height: 0;
         }
 
-        .pd-nl-spark {
-            stroke: #f6e7c1;
-            stroke-width: 1.6;
-            stroke-linecap: round;
-            stroke-dasharray: 9 91;
-            stroke-dashoffset: 0;
-            opacity: 0;
-            filter: drop-shadow(0 0 4px rgba(240, 215, 160, 0.95)) drop-shadow(0 0 10px rgba(199, 169, 108, 0.6));
+        .pd-nl-corner.is-tl { left: var(--nl-i);  top: var(--nl-i);    --a: 225deg; --dx: 0.5px;  --dy: 0.5px; }
+        .pd-nl-corner.is-tr { right: var(--nl-i); top: var(--nl-i);    --a: -45deg; --dx: -0.5px; --dy: 0.5px; }
+        .pd-nl-corner.is-br { right: var(--nl-i); bottom: var(--nl-i); --a: 45deg;  --dx: -0.5px; --dy: -0.5px; }
+        .pd-nl-corner.is-bl { left: var(--nl-i);  bottom: var(--nl-i); --a: 135deg; --dx: 0.5px;  --dy: -0.5px; }
+
+        .pd-nl-corner::before,
+        .pd-nl-corner::after {
+            content: '';
+            position: absolute;
+            box-sizing: border-box;
+            left: var(--dx);
+            top: var(--dy);
         }
 
-        /* A single restrained pass of light across the interior. */
-        .pd-nl-sweep {
-            top: -10%;
-            bottom: -10%;
-            left: 15%;
-            width: 70%;
-            z-index: 1;
-            opacity: 0;
-            background: linear-gradient(100deg,
-                transparent 30%,
-                rgba(245, 232, 202, 0.05) 42%,
-                rgba(232, 210, 160, 0.17) 50%,
-                rgba(245, 232, 202, 0.05) 58%,
-                transparent 70%);
-            transform: translate3d(60%, 0, 0) skewX(-14deg);
+        .pd-nl-corner::before {
+            width: calc(14px * 1.41421);
+            height: 1px;
+            margin-top: -0.5px;
+            background: rgba(var(--void-gilt-rgb), 0.22);
+            transform-origin: 0 50%;
+            transform: rotate(var(--a));
         }
 
+        .pd-nl-corner::after {
+            width: 5px;
+            height: 5px;
+            margin: -2.5px 0 0 -2.5px;
+            border: 1px solid rgba(var(--void-gilt-rgb), 0.6);
+            background: var(--void-ink);
+            transform: rotate(45deg);
+        }
+
+        /* ── Content ── */
         .pd-nl-content {
             position: relative;
             z-index: 2;
@@ -9026,183 +9093,429 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: clamp(3.4rem, 9vh, 5.5rem) clamp(1.25rem, 6vw, 4rem) clamp(2.2rem, 6vh, 3.6rem);
-        }
-
-        .pd-nl-content > * {
-            width: min(520px, 100%);
+            /* Optically centred: a little more room below than above. */
+            padding:
+                calc(var(--nl-i) + 40px)
+                calc(var(--nl-i) + clamp(16px, 5vw, 48px))
+                calc(var(--nl-i) + 64px);
         }
 
         .pd-nl-kicker {
-            margin: 0 0 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
+            margin: 0 0 20px;
             font-family: 'Jost', sans-serif;
-            font-size: 0.62rem;
+            font-size: 11px;
             font-weight: 500;
-            letter-spacing: 0.42em;
+            line-height: 16px;
+            letter-spacing: 0.4em;
             text-transform: uppercase;
-            color: var(--void-gold, #c7a96c);
+            color: var(--void-gilt);
         }
 
+        .pd-nl-kicker::before,
+        .pd-nl-kicker::after {
+            content: '';
+            flex: none;
+            width: 40px;
+            height: 1px;
+            background: rgba(var(--void-gilt-rgb), 0.55);
+        }
+
+        /* The tracking leaves a space after the last letter; the same space
+           before the first keeps both hairlines equidistant. */
+        .pd-nl-kicker::before { margin-right: 0.4em; }
+
         .pd-nl-title {
+            width: min(720px, 100%);
             margin: 0;
             font-family: 'Cormorant Garamond', serif;
-            font-weight: 500;
-            font-size: clamp(2.3rem, 5.4vw, 3.7rem);
+            font-weight: 400;
+            font-size: clamp(2.75rem, 5vw, 4.5rem);
             line-height: 1.04;
-            letter-spacing: 0.015em;
-            color: #f6f1e7;
-            text-shadow: 0 0 34px rgba(226, 199, 138, 0.18);
+            letter-spacing: -0.01em;
+            color: var(--void-ivory);
+            text-wrap: balance;
+        }
+
+        /* Ivory that warms to gilt towards the baseline. `color` stays the
+           solid ivory, so contrast is measured on it. */
+        @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+            .pd-nl-title {
+                background: linear-gradient(180deg, #f8f3e8 0%, var(--void-ivory) 46%, #dcc697 118%);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
         }
 
         .pd-nl-copy {
-            margin: 1.15rem auto 0;
             max-width: 34ch;
+            margin: 24px auto 0;
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.05rem, 1.9vw, 1.22rem);
+            font-size: 1.35rem;
             font-style: italic;
-            line-height: 1.5;
-            color: rgba(245, 242, 236, 0.7);
+            font-weight: 400;
+            line-height: 1.45;
+            color: rgba(var(--void-ivory-rgb), 0.65);
+            text-wrap: balance;
         }
 
-        /* The letter reveal is the language transition's own: words carry the
-           blur and the light, letters carry the opacity. */
-        .pd-nl-word { display: inline-block; white-space: pre; }
-        .pd-nl-glyph { display: inline; }
-
+        /* ── Form: one object, field and action ── */
         .pd-nl-form {
-            margin-top: clamp(1.8rem, 4.4vh, 2.6rem);
+            width: min(480px, 100%);
+            margin-top: 56px;
             text-align: left;
         }
 
         .pd-nl-label {
             display: block;
-            margin-bottom: 0.55rem;
-            font-size: 0.58rem;
-            letter-spacing: 0.26em;
+            margin-bottom: 12px;
+            font-family: 'Jost', sans-serif;
+            font-size: 10px;
+            font-weight: 500;
+            line-height: 16px;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
-            color: rgba(245, 242, 236, 0.5);
+            color: rgba(var(--void-ivory-rgb), 0.6);
+            transition: color 0.4s ease;
         }
+
+        .pd-nl-form:has(.pd-nl-input:focus) .pd-nl-label { color: var(--void-gilt); }
 
         .pd-nl-row {
             display: flex;
             align-items: stretch;
-            border: 1px solid rgba(199, 169, 108, 0.38);
-            background: rgba(4, 4, 4, 0.55);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            height: 56px;
+            border: 1px solid rgba(var(--void-gilt-rgb), 0.35);
+            border-radius: 0;
+            background: rgba(7, 6, 5, 0.6);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
         }
 
         .pd-nl-row:focus-within {
-            border-color: rgba(226, 199, 138, 0.8);
-            box-shadow: 0 0 0 1px rgba(226, 199, 138, 0.18), 0 0 24px rgba(199, 169, 108, 0.12);
+            border-color: var(--void-gilt);
+            box-shadow: 0 0 24px rgba(var(--void-gilt-rgb), 0.2);
         }
+
+        .pd-nl-row:has(.pd-nl-input[aria-invalid="true"]) { border-color: rgba(230, 168, 147, 0.6); }
 
         .pd-nl-input {
             flex: 1 1 auto;
             min-width: 0;
-            padding: 0.95rem 1rem;
+            height: 100%;
+            padding: 0 20px;
             border: 0;
+            border-radius: 0;
             background: transparent;
-            color: var(--void-white);
+            -webkit-appearance: none;
+            appearance: none;
+            color: var(--void-ivory);
+            caret-color: var(--void-gilt);
             font-family: 'Jost', sans-serif;
-            /* 16px: iOS zooms into anything smaller when it is focused. */
-            font-size: 16px;
+            font-size: 15px;
+            font-weight: 400;
             letter-spacing: 0.02em;
             outline: none;
+            transition: opacity 0.6s ease;
         }
 
-        .pd-nl-input::placeholder { color: rgba(245, 242, 236, 0.3); }
+        /* Named explicitly: some engines style the placeholder with the
+           system UI face otherwise. */
+        .pd-nl-input::placeholder {
+            font-family: 'Jost', sans-serif;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            color: rgba(var(--void-ivory-rgb), 0.35);
+            opacity: 1;
+        }
+
+        .pd-nl-input:-webkit-autofill {
+            -webkit-text-fill-color: var(--void-ivory);
+            caret-color: var(--void-gilt);
+            box-shadow: inset 0 0 0 60px #0b0907;
+            transition: background-color 9999s ease 0s;
+        }
+
         .pd-nl-input[aria-invalid="true"] { color: #f0c2b3; }
 
-        .pd-nl-submit {
+        /* Touch keyboards zoom into anything under 16px on focus. */
+        @media (pointer: coarse) {
+            .pd-nl-input { font-size: 16px; }
+        }
+
+        .pd-nl-cta {
+            position: relative;
             flex: 0 0 auto;
-            padding: 0 1.45rem;
+            display: flex;
+        }
+
+        /* Brushed gilt with a 1px highlight along the top edge. The gilt and
+           the light that crosses it are pseudo-layers beneath the label, so
+           success can fade the gilt away and leave a quiet ink cell. */
+        .pd-nl-submit {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            min-width: 176px;
+            height: 100%;
+            padding: 0 28px;
             border: 0;
-            background: var(--void-gold-gradient);
-            color: #120d05;
+            border-radius: 0;
+            background: transparent;
+            color: var(--void-gilt-ink);
             font-family: 'Jost', sans-serif;
-            font-size: 0.64rem;
-            font-weight: 700;
-            letter-spacing: 0.22em;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0.28em;
+            text-indent: 0.28em;
             text-transform: uppercase;
+            white-space: nowrap;
             cursor: pointer;
-            transition: filter 0.24s ease, box-shadow 0.24s ease;
+            transition: color 0.45s ease, transform 0.18s ease;
         }
 
-        .pd-nl-submit:hover,
+        .pd-nl-submit::before,
+        .pd-nl-submit::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .pd-nl-submit::before {
+            inset: 0;
+            background: var(--void-gilt-brushed);
+            box-shadow: inset 0 1px 0 rgba(255, 246, 222, 0.6), inset 0 -1px 0 rgba(84, 60, 22, 0.28);
+            transition: opacity 0.6s ease;
+        }
+
+        .pd-nl-submit::after {
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 60%;
+            background: linear-gradient(100deg, transparent 18%, rgba(255, 249, 232, 0.5) 50%, transparent 82%);
+            transform: translate3d(-115%, 0, 0) skewX(-18deg);
+        }
+
+        .pd-nl-submit:not(:disabled):hover::after,
+        .pd-nl-submit:not(:disabled):focus-visible::after {
+            transform: translate3d(190%, 0, 0) skewX(-18deg);
+            transition: transform 0.6s ease;
+        }
+
+        .pd-nl-submit:not(:disabled):active { transform: translateY(1px); }
+
         .pd-nl-submit:focus-visible {
-            filter: brightness(1.06);
-            box-shadow: 0 0 22px rgba(226, 199, 138, 0.3);
+            outline: 1px solid rgba(20, 17, 10, 0.75);
+            outline-offset: -6px;
         }
 
-        .pd-nl-submit:focus-visible,
-        .pd-nl-back:focus-visible {
-            outline: 1px solid var(--void-gold-bright, #f2e2bd);
-            outline-offset: 3px;
+        .pd-nl-submit:disabled { cursor: default; }
+
+        /* Joining: the label quietens and the light keeps passing. */
+        .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled { color: rgba(20, 17, 10, 0.55); }
+        .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::after {
+            animation: pdNlPending 1.6s ease-in-out infinite;
         }
 
-        .pd-nl-submit:disabled {
-            cursor: default;
-            filter: grayscale(0.3) brightness(0.8);
+        @keyframes pdNlPending {
+            from { transform: translate3d(-115%, 0, 0) skewX(-18deg); }
+            to   { transform: translate3d(190%, 0, 0) skewX(-18deg); }
         }
 
-        /* Room for one line is always held, so a message never moves the form. */
+        /* Joined: the gilt fades to ink and "Welcome" takes its place, with
+           a hairline check that draws itself. The button keeps its own label
+           underneath for assistive tech; the status line announces it. */
+        .pd-nl-welcome {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            pointer-events: none;
+            color: var(--void-gilt-light);
+            font-family: 'Jost', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.6s ease 0.15s;
+        }
+
+        .pd-nl-welcome > span { margin-right: -0.28em; }
+
+        .pd-nl-check {
+            flex: none;
+            width: 14px;
+            height: 14px;
+            overflow: visible;
+        }
+
+        .pd-nl-check path {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+            transition: stroke-dashoffset 0.7s cubic-bezier(0.65, 0, 0.35, 1) 0.4s;
+        }
+
+        .pd-nl-form.is-joined .pd-nl-input { opacity: 0.5; }
+        .pd-nl-form.is-joined .pd-nl-submit { color: transparent; }
+        .pd-nl-form.is-joined .pd-nl-submit::before { opacity: 0; }
+        .pd-nl-form.is-joined .pd-nl-cta { box-shadow: inset 1px 0 0 rgba(var(--void-gilt-rgb), 0.35); }
+        .pd-nl-form.is-joined .pd-nl-welcome { opacity: 1; }
+        .pd-nl-form.is-joined .pd-nl-check path { stroke-dashoffset: 0; }
+
+        /* Room for one line is always held, so a message never moves the
+           form: 8px + 20px puts the fine print 28px under the field. */
         .pd-nl-status {
-            min-height: 1.35rem;
-            margin: 0.75rem 0 0;
-            font-size: 0.74rem;
+            min-height: 20px;
+            margin: 8px 0 0;
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            line-height: 20px;
             letter-spacing: 0.04em;
-            line-height: 1.5;
-            color: rgba(245, 242, 236, 0.62);
+            text-align: center;
+            color: rgba(var(--void-ivory-rgb), 0.7);
         }
 
         .pd-nl-status[data-state="error"] { color: #e6a893; }
-
-        .pd-nl-status[data-state="success"] {
-            color: var(--void-stock-gold, #e6c682);
-            text-shadow: 0 0 14px rgba(230, 198, 130, 0.25);
-        }
-
-        .pd-nl-form.is-joined .pd-nl-row { opacity: 0.55; }
+        .pd-nl-status[data-state="success"] { color: var(--void-gilt-light); }
 
         .pd-nl-consent {
-            margin: 0.5rem 0 0;
-            font-size: 0.66rem;
-            line-height: 1.65;
-            color: rgba(245, 242, 236, 0.5);
+            margin: 0;
+            font-family: 'Jost', sans-serif;
+            font-size: 11px;
+            line-height: 1.7;
+            letter-spacing: 0.02em;
+            color: var(--void-fine-print);
+            text-align: center;
+            text-wrap: pretty;
         }
 
         .pd-nl-consent a {
-            color: var(--void-gold-soft, #d8c08a);
+            color: var(--void-gilt);
             text-decoration: underline;
-            text-underline-offset: 2px;
+            text-decoration-thickness: 1px;
+            text-decoration-color: rgba(var(--void-gilt-rgb), 0.45);
+            text-underline-offset: 3px;
+            transition: color 0.3s ease, text-decoration-color 0.3s ease, text-underline-offset 0.3s ease;
         }
 
+        .pd-nl-consent a:hover,
+        .pd-nl-consent a:focus-visible {
+            color: var(--void-gilt-light);
+            text-decoration-color: currentColor;
+            text-underline-offset: 5px;
+        }
+
+        .pd-nl-consent a:focus-visible {
+            outline: 1px solid var(--void-gilt);
+            outline-offset: 3px;
+        }
+
+        /* ── Back to the piece: a ghost link ── */
         .pd-nl-back {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.45rem;
-            width: auto !important;
-            margin-top: clamp(1.6rem, 4vh, 2.3rem);
-            padding: 0.55rem 0.3rem 0.35rem;
+            gap: 10px;
+            margin-top: 48px;
+            padding: 8px 4px;
             border: 0;
-            border-bottom: 1px solid rgba(199, 169, 108, 0.45);
             background: none;
-            color: var(--void-gold-soft, #d8c08a);
+            color: rgba(var(--void-ivory-rgb), 0.72);
             font-family: 'Jost', sans-serif;
-            font-size: 0.62rem;
-            letter-spacing: 0.24em;
+            font-size: 11px;
+            font-weight: 400;
+            line-height: 16px;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: color 0.24s ease, border-color 0.24s ease;
+            transition: color 0.35s ease;
         }
 
-        .pd-nl-back svg { width: 14px; height: 14px; }
+        .pd-nl-back svg {
+            width: 12px;
+            height: 12px;
+            transition: transform 0.45s var(--void-ease-reveal);
+        }
+
+        .pd-nl-back span {
+            position: relative;
+            padding-bottom: 4px;
+            margin-right: -0.3em;
+        }
+
+        .pd-nl-back span::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0.3em;
+            bottom: 0;
+            height: 1px;
+            background: currentColor;
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 0.45s var(--void-ease-reveal);
+        }
 
         .pd-nl-back:hover,
+        .pd-nl-back:focus-visible { color: var(--void-gilt-light); }
+        .pd-nl-back:hover svg,
+        .pd-nl-back:focus-visible svg { transform: translateX(-3px); }
+        .pd-nl-back:hover span::after,
+        .pd-nl-back:focus-visible span::after { transform: scaleX(1); }
+
         .pd-nl-back:focus-visible {
-            color: var(--void-gold-bright, #f2e2bd);
-            border-color: rgba(226, 199, 138, 0.95);
+            outline: 1px solid var(--void-gilt);
+            outline-offset: 4px;
+        }
+
+        /* ── The dialog's close, in the scene: a hairline circle that sits
+           inside the frame and turns a quarter on hover. ── */
+        .pd-close {
+            transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease,
+                transform 0.5s var(--void-ease-reveal),
+                top 0.7s var(--void-ease-reveal), right 0.7s var(--void-ease-reveal),
+                width 0.7s var(--void-ease-reveal), height 0.7s var(--void-ease-reveal);
+        }
+
+        .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close {
+            top: calc(var(--pd-nl-top, 0px) + var(--nl-i) + 12px);
+            right: calc(var(--nl-i) + 12px);
+            width: 40px;
+            height: 40px;
+            border-color: rgba(var(--void-gilt-rgb), 0.3);
+            background: rgba(7, 6, 5, 0.5);
+            color: rgba(var(--void-ivory-rgb), 0.72);
+            font-size: 0.7rem;
+            box-shadow: none;
+        }
+
+        .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:hover,
+        .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:focus-visible {
+            border-color: var(--void-gilt);
+            color: var(--void-gilt-light);
+            transform: rotate(90deg);
+            box-shadow: none;
+        }
+
+        .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:focus-visible {
+            outline: 1px solid var(--void-gilt);
+            outline-offset: 3px;
         }
 
         .product-detail-panel.is-newsletter .pd-layout {
@@ -9210,20 +9523,72 @@
             visibility: hidden;
         }
 
-        @media (max-width: 520px) {
-            .pd-nl-row { flex-direction: column; }
-            .pd-nl-submit { min-height: 50px; }
-            .pd-nl-kicker { letter-spacing: 0.34em; }
+        /* Short panels: the same rhythm, condensed. */
+        @media (max-height: 760px) {
+            .pd-nl-content {
+                padding-top: calc(var(--nl-i) + 24px);
+                padding-bottom: calc(var(--nl-i) + 40px);
+            }
+            .pd-nl-kicker { margin-bottom: 16px; }
+            .pd-nl-copy { margin-top: 16px; }
+            .pd-nl-form { margin-top: 40px; }
+            .pd-nl-back { margin-top: 32px; }
+        }
+
+        @media (max-width: 480px) {
+            .pd-nl-kicker { gap: 12px; letter-spacing: 0.34em; }
+            .pd-nl-kicker::before,
+            .pd-nl-kicker::after { width: 28px; }
+            .pd-nl-kicker::before { margin-right: 0.34em; }
+            .pd-nl-copy { font-size: 1.25rem; }
+            .pd-nl-form { margin-top: 40px; }
+            /* Field and action stack, still one bordered object. */
+            .pd-nl-row { flex-direction: column; height: auto; }
+            .pd-nl-input { height: 56px; }
+            .pd-nl-cta { height: 56px; }
+            .pd-nl-submit { width: 100%; }
+            .pd-nl-form.is-joined .pd-nl-cta { box-shadow: inset 0 1px 0 rgba(var(--void-gilt-rgb), 0.35); }
         }
 
         @media (prefers-reduced-motion: reduce) {
             .pd-nl-mote,
-            .pd-nl-glow::after { animation: none; }
-            .pd-nl-mote { opacity: 0.35; }
+            .pd-nl-glow::after,
+            .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::after { animation: none; }
+            .pd-nl-mote { opacity: calc(var(--o, 0.25) * 0.8); }
+            .pd-nl-submit::after { display: none; }
+            .pd-nl-submit,
+            .pd-nl-submit::before,
+            .pd-nl-welcome,
+            .pd-nl-check path,
+            .pd-nl-back svg,
+            .pd-nl-back span::after,
+            .pd-nl-consent a,
+            .pd-close { transition: none; }
+            .pd-nl-submit:not(:disabled):active,
+            .pd-nl-back:hover svg,
+            .pd-nl-back:focus-visible svg,
+            .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:hover,
+            .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:focus-visible { transform: none; }
         }
 
         html.reduce-motion .pd-nl-mote,
-        html.reduce-motion .pd-nl-glow::after { animation: none; }
+        html.reduce-motion .pd-nl-glow::after,
+        html.reduce-motion .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::after { animation: none; }
+        html.reduce-motion .pd-nl-mote { opacity: calc(var(--o, 0.25) * 0.8); }
+        html.reduce-motion .pd-nl-submit::after { display: none; }
+        html.reduce-motion .pd-nl-submit,
+        html.reduce-motion .pd-nl-submit::before,
+        html.reduce-motion .pd-nl-welcome,
+        html.reduce-motion .pd-nl-check path,
+        html.reduce-motion .pd-nl-back svg,
+        html.reduce-motion .pd-nl-back span::after,
+        html.reduce-motion .pd-nl-consent a,
+        html.reduce-motion .pd-close { transition: none; }
+        html.reduce-motion .pd-nl-submit:not(:disabled):active,
+        html.reduce-motion .pd-nl-back:hover svg,
+        html.reduce-motion .pd-nl-back:focus-visible svg,
+        html.reduce-motion .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:hover,
+        html.reduce-motion .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:focus-visible { transform: none; }
 
         /* In-panel "added to bag" confirmation (a cart cue that fits the detail page) */
         .pd-added {
@@ -13914,14 +14279,23 @@
                 <div class="pd-nl-atmos" aria-hidden="true">
                     <span class="pd-nl-glow"></span>
                     <span class="pd-nl-motes"></span>
+                    <span class="pd-nl-grain"></span>
                     <span class="pd-nl-vignette"></span>
                 </div>
-                <svg class="pd-nl-filament" aria-hidden="true" focusable="false" preserveAspectRatio="none">
-                    <rect class="pd-nl-rail" x="0.75" y="0.75" pathLength="100"/>
-                    <rect class="pd-nl-spark" x="0.75" y="0.75" pathLength="100"/>
-                    <rect class="pd-nl-spark is-twin" x="0.75" y="0.75" pathLength="100"/>
-                </svg>
-                <span class="pd-nl-sweep" aria-hidden="true"></span>
+                <div class="pd-nl-frame" aria-hidden="true">
+                    <span class="pd-nl-rule is-outer is-top"></span>
+                    <span class="pd-nl-rule is-outer is-right"></span>
+                    <span class="pd-nl-rule is-outer is-bottom"></span>
+                    <span class="pd-nl-rule is-outer is-left"></span>
+                    <span class="pd-nl-rule is-inner is-top"></span>
+                    <span class="pd-nl-rule is-inner is-right"></span>
+                    <span class="pd-nl-rule is-inner is-bottom"></span>
+                    <span class="pd-nl-rule is-inner is-left"></span>
+                    <span class="pd-nl-corner is-tl"></span>
+                    <span class="pd-nl-corner is-tr"></span>
+                    <span class="pd-nl-corner is-br"></span>
+                    <span class="pd-nl-corner is-bl"></span>
+                </div>
                 <div class="pd-nl-content">
                     <p class="pd-nl-kicker" data-i18n="privateAccess">Private Access</p>
                     <h2 class="pd-nl-title" id="pdNlTitle" data-i18n="pdNlTitle">Enter the inner circle</h2>
@@ -13930,13 +14304,19 @@
                         <label class="pd-nl-label" for="pdNlEmail" data-i18n="email">Email</label>
                         <div class="pd-nl-row">
                             <input class="pd-nl-input" id="pdNlEmail" name="email" type="email" inputmode="email" autocomplete="email" spellcheck="false" placeholder="you@example.com" required aria-describedby="pdNlStatus pdNlConsent">
-                            <button type="submit" class="pd-nl-submit" id="pdNlSubmit" data-i18n="pdNlJoin">Join the list</button>
+                            <span class="pd-nl-cta">
+                                <button type="submit" class="pd-nl-submit" id="pdNlSubmit" data-i18n="pdNlJoin">Join the list</button>
+                                <span class="pd-nl-welcome" aria-hidden="true">
+                                    <svg class="pd-nl-check" viewBox="0 0 14 14" focusable="false"><path d="M2.5 7.4L5.6 10.3L11.5 3.8" pathLength="1"/></svg>
+                                    <span data-i18n="pdNlWelcome">Welcome</span>
+                                </span>
+                            </span>
                         </div>
                         <p class="pd-nl-status" id="pdNlStatus" role="status" aria-live="polite"></p>
                         <p class="pd-nl-consent" id="pdNlConsent" data-i18n-html="pdNlConsent">By joining, you agree to receive emails about VOID<sup class="brand-copyright">©</sup> drops and new releases. You can unsubscribe at any time. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
                     </form>
                     <button type="button" class="pd-nl-back" id="pdNlBack">
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M14.5 6L9 12L14.5 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="M7.5 2.5L4 6L7.5 9.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         <span data-i18n="pdNlBack">Back to the piece</span>
                     </button>
                 </div>
@@ -14719,6 +15099,7 @@
             pdNlJoin: 'Join the list',
             pdNlConsent: 'By joining, you agree to receive emails about ' + brandMarkup + ' drops and new releases. You can unsubscribe at any time. Read our <a href="/privacy-policy.html">Privacy Policy</a>.',
             pdNlBack: 'Back to the piece',
+            pdNlWelcome: 'Welcome',
             pdNlJoining: 'Joining…',
             pdNlInvalid: 'Please enter a valid email address.',
             pdNlError: 'We could not add you just now. Please try again.',
@@ -14732,6 +15113,7 @@
             pdNlJoin: 'Rejoindre la liste',
             pdNlConsent: 'En vous inscrivant, vous acceptez de recevoir des e-mails sur les drops et les nouvelles sorties ' + brandMarkup + '. Vous pouvez vous désinscrire à tout moment. Consultez notre <a href="/privacy-policy.html">Politique de confidentialité</a>.',
             pdNlBack: 'Retour à la pièce',
+            pdNlWelcome: 'Bienvenue',
             pdNlJoining: 'Inscription…',
             pdNlInvalid: 'Veuillez saisir une adresse e-mail valide.',
             pdNlError: 'Impossible de vous inscrire pour le moment. Veuillez réessayer.',
@@ -14745,6 +15127,7 @@
             pdNlJoin: 'Unisciti alla lista',
             pdNlConsent: 'Iscrivendoti accetti di ricevere email sui drop e sulle nuove uscite ' + brandMarkup + '. Puoi annullare l’iscrizione in qualsiasi momento. Leggi la nostra <a href="/privacy-policy.html">Informativa sulla privacy</a>.',
             pdNlBack: 'Torna al capo',
+            pdNlWelcome: 'Benvenuto',
             pdNlJoining: 'Iscrizione…',
             pdNlInvalid: 'Inserisci un indirizzo email valido.',
             pdNlError: 'Non è stato possibile iscriverti ora. Riprova.',
@@ -14758,6 +15141,7 @@
             pdNlJoin: 'Der Liste beitreten',
             pdNlConsent: 'Mit deiner Anmeldung stimmst du zu, E-Mails zu Drops und neuen Releases von ' + brandMarkup + ' zu erhalten. Du kannst dich jederzeit abmelden. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.',
             pdNlBack: 'Zurück zum Stück',
+            pdNlWelcome: 'Willkommen',
             pdNlJoining: 'Wird eingetragen…',
             pdNlInvalid: 'Bitte gib eine gültige E-Mail-Adresse ein.',
             pdNlError: 'Die Anmeldung ist gerade nicht möglich. Bitte versuche es erneut.',
@@ -20173,17 +20557,16 @@
             returnFocus: null,
             interest: '',
             status: null,      // { state, key } so a language change re-translates it
-            submitting: 0,
-            split: []
+            submitting: 0
         };
         var pdNlPanel = productDetailOverlay ? productDetailOverlay.querySelector('.product-detail-panel') : null;
         var pdNlScene = document.getElementById('pdNewsletter');
         var PD_NL_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         // The language transition's own curves (see --lang-ease-* in :root).
         var PD_NL_ARRIVE = 'cubic-bezier(0.4, 0, 0.2, 1)';
-        var PD_NL_MECH = 'cubic-bezier(0.45, 0, 0.25, 1)';
         var PD_NL_RECEDE = 'cubic-bezier(0.5, 0, 0.3, 1)';
         var PD_NL_SETTLE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+        var PD_NL_EXIT_MS = 300;
 
         function pdNlEl(selector) { return pdNlScene ? pdNlScene.querySelector(selector) : null; }
 
@@ -20199,21 +20582,25 @@
             return String(name || '').trim().toLowerCase().replace(/\s+/g, '-');
         }
 
-        // ---- the motes: a few, placed once, deterministic ----
+        // ---- the dust: a few dozen motes, placed once, deterministic ----
+        // Long, slow loops (40–80s) at 0.1–0.4 opacity, offset so the field
+        // is already populated on arrival rather than rising from empty.
         (function buildPdNlMotes() {
             const host = pdNlEl('.pd-nl-motes');
             if (!host) return;
-            for (let i = 0; i < 16; i += 1) {
+            for (let i = 0; i < 26; i += 1) {
                 const mote = document.createElement('span');
                 mote.className = 'pd-nl-mote';
                 const r = (n) => ((Math.sin((i + 1) * n) + 1) / 2);   // stable 0..1
-                mote.style.left = (6 + r(12.9898) * 88).toFixed(1) + '%';
-                mote.style.top = (30 + r(78.233) * 62).toFixed(1) + '%';
-                mote.style.setProperty('--s', (1.4 + r(3.1) * 1.6).toFixed(2) + 'px');
-                mote.style.setProperty('--d', (6.5 + r(5.7) * 5).toFixed(2) + 's');
-                mote.style.setProperty('--w', (-r(9.3) * 10).toFixed(2) + 's');
-                mote.style.setProperty('--dx', ((r(2.2) - 0.5) * 36).toFixed(1) + 'px');
-                mote.style.setProperty('--o', (0.35 + r(4.4) * 0.4).toFixed(2));
+                const duration = 40 + r(5.7) * 40;
+                mote.style.left = (4 + r(12.9898) * 92).toFixed(1) + '%';
+                mote.style.top = (18 + r(78.233) * 80).toFixed(1) + '%';
+                mote.style.setProperty('--s', (1 + r(3.1) * 1.2).toFixed(2) + 'px');
+                mote.style.setProperty('--d', duration.toFixed(1) + 's');
+                mote.style.setProperty('--w', (-r(9.3) * duration).toFixed(1) + 's');
+                mote.style.setProperty('--dx', ((r(2.2) - 0.5) * 80).toFixed(1) + 'px');
+                mote.style.setProperty('--dy', (-(120 + r(6.6) * 160)).toFixed(0) + 'px');
+                mote.style.setProperty('--o', (0.1 + r(4.4) * 0.3).toFixed(2));
                 host.appendChild(mote);
             }
         })();
@@ -20241,46 +20628,9 @@
                 top = Math.max(0, viewTop - panelTop);
                 height = Math.min(vv ? vv.height : productDetailOverlay.clientHeight, productDetailOverlay.clientHeight);
             }
-            pdNlScene.style.setProperty('--pd-nl-top', Math.round(top) + 'px');
-            pdNlScene.style.setProperty('--pd-nl-h', Math.round(height) + 'px');
-            const w = pdNlScene.clientWidth;
-            pdNlScene.querySelectorAll('.pd-nl-filament rect').forEach((rect) => {
-                rect.setAttribute('width', Math.max(0, w - 1.5));
-                rect.setAttribute('height', Math.max(0, Math.round(height) - 1.5));
-            });
-        }
-
-        // ---- the letter reveal (the language transition's structure) ----
-        function pdNlSplit(el) {
-            const text = el.textContent;
-            const words = [];
-            const glyphs = [];
-            const frag = document.createDocumentFragment();
-            const seg = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
-            text.split(/(\s+)/).forEach((chunk) => {
-                if (!chunk) return;
-                if (/^\s+$/.test(chunk)) { frag.appendChild(document.createTextNode(chunk)); return; }
-                const w = document.createElement('span');
-                w.className = 'pd-nl-word';
-                (seg ? Array.from(seg.segment(chunk), (x) => x.segment) : Array.from(chunk)).forEach((ch) => {
-                    const g = document.createElement('span');
-                    g.className = 'pd-nl-glyph';
-                    g.textContent = ch;
-                    w.appendChild(g);
-                    glyphs.push(g);
-                });
-                words.push(w);
-                frag.appendChild(w);
-            });
-            el.textContent = '';
-            el.appendChild(frag);
-            pdNl.split.push({ el, text });
-            return { words, glyphs };
-        }
-
-        function pdNlUnsplit() {
-            pdNl.split.forEach(({ el, text }) => { el.textContent = text; });
-            pdNl.split = [];
+            // On the panel, so the close button can align to the scene too.
+            pdNlPanel.style.setProperty('--pd-nl-top', Math.round(top) + 'px');
+            pdNlPanel.style.setProperty('--pd-nl-h', Math.round(height) + 'px');
         }
 
         // ---- the timeline ----
@@ -20298,7 +20648,7 @@
                 // Short and simple: a crossfade, nothing travels.
                 add(pdLayout, [{ opacity: 1 }, { opacity: 0 }], 0, 180, 'ease');
                 add(pdNlEl('.pd-nl-atmos'), [{ opacity: 0 }, { opacity: 1 }], 60, 200, 'ease');
-                add(pdNlEl('.pd-nl-filament'), [{ opacity: 0 }, { opacity: 1 }], 60, 200, 'ease');
+                add(pdNlEl('.pd-nl-frame'), [{ opacity: 0 }, { opacity: 1 }], 60, 200, 'ease');
                 add(content, [{ opacity: 0 }, { opacity: 1 }], 100, 200, 'ease');
             } else {
                 // 1 · The piece recedes, with depth: the image further and
@@ -20306,76 +20656,56 @@
                 const switcher = pdLayout.querySelector('.pd-switcher');
                 add(pdMediaEl, [
                     { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)', filter: 'blur(0px)' },
-                    { opacity: 0, transform: 'translate3d(0, 10px, 0) scale(0.94)', filter: 'blur(9px)' }
-                ], 0, 760, PD_NL_RECEDE);
+                    { opacity: 0, transform: 'translate3d(0, 10px, 0) scale(0.96)', filter: 'blur(8px)' }
+                ], 0, 700, PD_NL_RECEDE);
                 add(pdInfoEl, [
                     { opacity: 1, transform: 'translate3d(0, 0, 0)', filter: 'blur(0px)' },
-                    { opacity: 0, transform: 'translate3d(0, 22px, 0)', filter: 'blur(6px)' }
-                ], 70, 700, PD_NL_RECEDE);
-                if (switcher && !switcher.hidden) add(switcher, [{ opacity: 1 }, { opacity: 0 }], 0, 520, PD_NL_RECEDE);
+                    { opacity: 0, transform: 'translate3d(0, 16px, 0)', filter: 'blur(6px)' }
+                ], 60, 640, PD_NL_RECEDE);
+                if (switcher && !switcher.hidden) add(switcher, [{ opacity: 1 }, { opacity: 0 }], 0, 480, PD_NL_RECEDE);
 
-                // 2 · The dark comes up, the light gathers at the centre.
-                add(pdNlEl('.pd-nl-atmos'), [{ opacity: 0 }, { opacity: 1 }], 140, 780, PD_NL_ARRIVE);
+                // 2 · The ink comes up, and the light gathers behind the
+                //     headline.
+                add(pdNlEl('.pd-nl-atmos'), [{ opacity: 0 }, { opacity: 1 }], 120, 760, PD_NL_ARRIVE);
                 add(pdNlEl('.pd-nl-glow'), [
-                    { opacity: 0, transform: 'translate(-50%, -50%) scale(0.8)' },
+                    { opacity: 0, transform: 'translate(-50%, -50%) scale(0.86)' },
                     { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }
-                ], 420, 1150, PD_NL_ARRIVE);
-                add(pdNlEl('.pd-nl-motes'), [{ opacity: 0 }, { opacity: 1 }], 720, 900, PD_NL_ARRIVE);
+                ], 360, 1200, PD_NL_SETTLE);
+                add(pdNlEl('.pd-nl-motes'), [{ opacity: 0 }, { opacity: 1 }], 700, 1100, PD_NL_ARRIVE);
 
-                // 3 · A gold filament runs the whole frame, two sparks from
-                //     opposite corners, and a single pass of light crosses it.
-                add(pdNlEl('.pd-nl-rail'), [{ opacity: 0 }, { opacity: 0.55 }], 300, 1000, PD_NL_ARRIVE);
-                pdNlScene.querySelectorAll('.pd-nl-spark').forEach((spark, i) => {
-                    const from = i === 0 ? 0 : -50;
-                    add(spark, [
-                        { strokeDashoffset: from, opacity: 0 },
-                        { opacity: 1, offset: 0.1 },
-                        { opacity: 1, offset: 0.78 },
-                        { strokeDashoffset: from - 100, opacity: 0 }
-                    ], 240, 1320, PD_NL_MECH);
+                // 3 · The frame draws itself first: each hairline grows from
+                //     its centre, the outer a beat before the inner, then the
+                //     corner ornaments settle onto the joins.
+                pdNlScene.querySelectorAll('.pd-nl-rule').forEach((rule) => {
+                    const axis = rule.classList.contains('is-top') || rule.classList.contains('is-bottom') ? 'scaleX' : 'scaleY';
+                    const start = rule.classList.contains('is-outer') ? 220 : 320;
+                    add(rule, [
+                        { opacity: 0, transform: axis + '(0)' },
+                        { opacity: 1, offset: 0.25 },
+                        { opacity: 1, transform: axis + '(1)' }
+                    ], start, 900, PD_NL_SETTLE);
                 });
-                add(pdNlEl('.pd-nl-sweep'), [
-                    { opacity: 0, transform: 'translate3d(-60%, 0, 0) skewX(-14deg)' },
-                    { opacity: 1, offset: 0.4 },
-                    { opacity: 0.8, offset: 0.65 },
-                    { opacity: 0, transform: 'translate3d(60%, 0, 0) skewX(-14deg)' }
-                ], 380, 1080, PD_NL_MECH);
+                pdNlScene.querySelectorAll('.pd-nl-corner').forEach((corner) => {
+                    add(corner, [
+                        { opacity: 0, transform: 'scale(0.4)' },
+                        { opacity: 1, transform: 'scale(1)' }
+                    ], 860, 700, PD_NL_SETTLE);
+                });
 
-                // 4 · The words emerge, letter by letter, exactly as a
-                //     language change writes them: letters fade on the arrive
-                //     curve, words resolve their blur and let the light go.
-                const reveal = (el, start, perGlyph, glyphMs) => {
-                    if (!el) return;
-                    const { words, glyphs } = pdNlSplit(el);
-                    const step = Math.min(perGlyph, 380 / Math.max(glyphs.length, 1));
-                    glyphs.forEach((g, i) => add(g, [{ opacity: 0 }, { opacity: 1 }], start + i * step, glyphMs, PD_NL_ARRIVE));
-                    let seen = 0;
-                    words.forEach((w) => {
-                        add(w, [
-                            { filter: 'blur(2.6px) drop-shadow(0 0 0px rgba(226, 199, 138, 0))' },
-                            { filter: 'blur(1.69px) drop-shadow(0 0 9px rgba(226, 199, 138, 0.28))', offset: 0.4 },
-                            { filter: 'blur(0.55px) drop-shadow(0 0 7px rgba(226, 199, 138, 0.18))', offset: 0.7 },
-                            { filter: 'blur(0px) drop-shadow(0 0 0px rgba(226, 199, 138, 0))' }
-                        ], start + seen * step, 900, 'linear');
-                        seen += w.childNodes.length;
-                    });
-                };
-                reveal(pdNlEl('.pd-nl-kicker'), 760, 22, 700);
-                reveal(pdNlEl('.pd-nl-title'), 880, 14, 760);
-                add(pdNlEl('.pd-nl-copy'), [
-                    { opacity: 0, filter: 'blur(2.6px)' },
-                    { opacity: 1, filter: 'blur(0px)' }
-                ], 1080, 760, PD_NL_ARRIVE);
-
-                // 5 · The field and the button settle into place.
-                add(pdNlEl('.pd-nl-form'), [
-                    { opacity: 0, transform: 'translate3d(0, 18px, 0)', filter: 'blur(3px)' },
+                // 4 · The words, then the form, settle into place one after
+                //     another: 80ms apart, each rising 12px out of a soft blur.
+                const reveal = [
+                    [pdNlEl('.pd-nl-kicker')],
+                    [pdNlEl('.pd-nl-title')],
+                    [pdNlEl('.pd-nl-copy')],
+                    [pdNlEl('.pd-nl-label'), pdNlEl('.pd-nl-row'), pdNlEl('.pd-nl-status')],
+                    [pdNlEl('.pd-nl-consent')],
+                    [pdNlEl('.pd-nl-back')]
+                ];
+                reveal.forEach((group, i) => group.forEach((el) => add(el, [
+                    { opacity: 0, transform: 'translate3d(0, 12px, 0)', filter: 'blur(6px)' },
                     { opacity: 1, transform: 'translate3d(0, 0, 0)', filter: 'blur(0px)' }
-                ], 1200, 700, PD_NL_SETTLE);
-                add(pdNlEl('.pd-nl-back'), [
-                    { opacity: 0, transform: 'translate3d(0, 8px, 0)' },
-                    { opacity: 1, transform: 'translate3d(0, 0, 0)' }
-                ], 1380, 560, PD_NL_SETTLE);
+                ], 660 + i * 80, 900, PD_NL_SETTLE)));
             }
 
             const total = specs.reduce((max, sp) => Math.max(max, sp.delay + sp.duration), 0);
@@ -20422,12 +20752,15 @@
         // put back on return.
 
         // ---- running the timeline ----
-        function playPdNl(direction) {
+        // From rest the way out is a short fade: the same timeline, played
+        // backwards fast enough to take PD_NL_EXIT_MS. An entrance that is
+        // turned round mid-way returns at its own pace instead.
+        function playPdNl(direction, rate) {
             const id = ++pdNl.run;
             pdNl.view = direction > 0 ? 'entering' : 'leaving';
             setPdNlReach('transition');
             pdNl.anims.forEach((anim) => {
-                anim.playbackRate = direction > 0 ? 1 : -1.15;
+                anim.playbackRate = direction > 0 ? 1 : -(rate || 1.15);
                 anim.play();
             });
             watchPdNl(id);
@@ -20443,7 +20776,11 @@
         function turnPdNl() {
             const id = ++pdNl.run;
             pdNl.view = pdNl.view === 'entering' ? 'leaving' : 'entering';
-            pdNl.anims.forEach((anim) => anim.reverse());
+            // A fast exit turned back into an entrance resumes at normal speed.
+            pdNl.anims.forEach((anim) => {
+                anim.reverse();
+                if (pdNl.view === 'entering') anim.updatePlaybackRate(1);
+            });
             watchPdNl(id);
         }
 
@@ -20458,14 +20795,12 @@
                 // same frame: there is no instant where neither holds.
                 pdNlPanel.classList.add('is-newsletter');
                 clearPdNlAnims();
-                pdNlUnsplit();
                 pdNl.view = 'newsletter';
                 setPdNlReach('newsletter');
                 focusElementSafely(document.getElementById('pdNlEmail'));
                 return;
             }
             clearPdNlAnims();
-            pdNlUnsplit();
             pdNlPanel.classList.remove('is-newsletter');
             pdNlScene.hidden = true;
             if (pdNl.saved) pdNl.saved.scroller.scrollTop = pdNl.saved.scrollTop;
@@ -20514,7 +20849,7 @@
             pdNl.total = timeline.total;
             pdNl.anims.forEach((anim) => { anim.currentTime = timeline.total; });
             pdNlPanel.classList.remove('is-newsletter');
-            playPdNl(-1);
+            playPdNl(-1, Math.max(1, timeline.total / PD_NL_EXIT_MS));
         }
 
         // Instant and silent: the dialog is closing or showing another piece.
@@ -20522,7 +20857,6 @@
             if (!pdNlPanel || !pdNlScene) return;
             pdNl.run += 1;
             clearPdNlAnims();
-            pdNlUnsplit();
             pdNlPanel.classList.remove('is-newsletter');
             pdNlScene.hidden = true;
             pdNl.view = 'product';
