@@ -358,9 +358,25 @@
             pointer-events: none;
             opacity: 0;
             background: radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.3) 30%, rgba(0, 0, 0, 0.78) 100%);
-            backdrop-filter: blur(0px) brightness(1);
-            -webkit-backdrop-filter: blur(0px) brightness(1);
-            transition: opacity 0.7s ease, backdrop-filter 0.7s ease, -webkit-backdrop-filter 0.7s ease;
+            /* No backdrop-filter at rest. It used to sit here as
+               blur(0px) brightness(1) so the blur could interpolate in — but a
+               filter that blurs by zero and brightens by one has no appearance
+               at all, while still making this full-viewport fixed layer a
+               backdrop root the compositor has to service for the whole
+               session. The veil is also at opacity 0 here, so it was paying
+               that for something invisible on top of something invisible.
+
+               Measured: this and the nav bar are the only two backdrop roots
+               that span a large area during scroll — the other thirteen are
+               small or hidden. Disabling either alone changed nothing, because
+               the other still covered the viewport; disabling both bought a
+               full frame, and disabling all fifteen bought no more than that.
+               This is the half that costs nothing to give up.
+
+               The blur now arrives with the veil instead of interpolating, and
+               the veil is transparent at that moment, so what fades in is the
+               same thing it always was. */
+            transition: opacity 0.7s ease;
         }
 
         .scroll-transit-veil.active {
