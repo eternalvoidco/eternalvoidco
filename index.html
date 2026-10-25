@@ -6843,18 +6843,18 @@
 
         /* Reduced motion: the story is simply there when opened and gone when
            closed; the controls keep their states but nothing travels. */
-        @media (prefers-reduced-motion: reduce) {
-            .collection-chapter-title *,
-            .collection-chapter-title *::before,
-            .collection-chapter-title *::after,
-            .chapter-filament,
-            .chapter-story,
-            .chapter-story *,
-            .chapter-story *::before,
-            .chapter-story *::after { transition: none !important; animation: none !important; }
-            .chapter-seal:active { transform: none; }
-        }
+        /* The OS-query twin of the block below used to live here, and it was the
+           half of the instant opening that no JavaScript could have fixed:
+           transition: none !important on .chapter-story and every descendant,
+           applied on `prefers-reduced-motion` alone. The height transition, the
+           filament, the light and the writer were all switched off before the
+           sequence was asked to run, so the passage could only appear finished.
 
+           It is gone rather than duplicated, because the rule immediately below
+           is the same rule keyed to `html.reduce-motion` — the switch the house
+           actually owns. Nothing is lost: the reduced alternative is complete
+           and reachable from the site's own setting. This is the consolidation,
+           not another override on top. */
         html.reduce-motion .collection-chapter-title *,
         html.reduce-motion .collection-chapter-title *::before,
         html.reduce-motion .collection-chapter-title *::after,
@@ -22109,8 +22109,22 @@
 
         (function chapterStories() {
             const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
-            const calm = () => document.documentElement.classList.contains('reduce-motion')
-                || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            /* The house switch only — deliberately not the OS media query.
+               Reading `prefers-reduced-motion` here is what made the passage
+               appear finished the instant the seal was touched: the query is
+               true on a great many Windows machines by default, so `calm()`
+               returned true, and all three branches below took their shortcut.
+               The space jumped to its full height, the writer never ran, and
+               the exit skipped its fade. The sequence was never skipped by
+               accident — it was never started.
+
+               This is the same decision already recorded for the language
+               transition, for the same reason: a visitor must not have to find
+               a setting in Windows before the house will speak. The reduced
+               alternative is still complete and still reachable — it is on
+               `html.reduce-motion`, which the site's own switch sets — it is
+               simply no longer entered without being asked for. */
+            const calm = () => document.documentElement.classList.contains('reduce-motion');
 
             // The sequence, in ms. Opening: the seal brightens and the filament
             // is drawn (anticipation), the space unfolds, the light arrives just
