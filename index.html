@@ -6374,23 +6374,9 @@
            enough that the cards stop reading as a group at all. The class
            selectors outrank the bare .products-grid rule above, so this holds
            inside that media query without repeating it. */
-        .products-grid.is-pair,
+        .products-grid.is-solo,
         .products-grid.is-trio {
             justify-content: center;
-        }
-
-        /* The pair is the anchor of the section and carries more air than the
-           trio below it. Above 768px the columns are capped (minmax … 296px,
-           and 200px further down), so widening the gap moves the two cards
-           apart without resizing either of them.
-
-           Below 768px the grid is two 1fr columns, where the gap is taken out
-           of the cards themselves — so the pair keeps the trio's gap there and
-           the composition holds by centring instead. */
-        @media (min-width: 769px) {
-            .products-grid.is-pair {
-                --pg-gap-x: clamp(2.4rem, 5.2vw, 5rem);
-            }
         }
 
         .collection-chapter {
@@ -6411,9 +6397,16 @@
             background: linear-gradient(90deg, transparent, rgba(199, 169, 108, 0.42) 50%, transparent);
         }
 
+        /* The head carries no bottom margin of its own: the story region
+           sits directly beneath it, and the space before the pieces belongs to
+           the grid. Closed, the region has no height, so the rhythm is the
+           same as before; open, it pushes only the grid. */
         .collection-chapter-head {
             text-align: center;
-            margin-bottom: clamp(2.8rem, 5vw, 4.4rem);
+        }
+
+        .collection-chapter > .products-grid {
+            margin-top: clamp(2.8rem, 5vw, 4.4rem);
         }
 
         /* A numeral now, not a repeat of "Collection" — that word is said once,
@@ -6431,6 +6424,7 @@
             /* Letter-spacing is added after the last glyph too, so the digits
                sit left of centre without this. */
             text-indent: 0.3em;
+            text-transform: uppercase;
             color: var(--void-accent);
         }
 
@@ -6463,14 +6457,354 @@
             color: rgba(245, 242, 236, 0.9);
         }
 
-        .collection-chapter-teaser {
-            margin-top: 1rem;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(0.98rem, 1.6vw, 1.18rem);
-            font-style: italic;
-            letter-spacing: 0.04em;
-            color: rgba(245, 242, 236, 0.58);
+        /* ── The chapter title and its seal ───────────────────────────────
+           The name stays optically centred: an empty track the width of the
+           seal sits on its left, so the seal can stand beside it without
+           pushing it off the axis. Nothing in this row changes size when a
+           story opens, so the control never moves under the pointer. */
+        .collection-chapter-title {
+            --cs-size: 44px;
+            --cs-gap: clamp(0.7rem, 1.6vw, 1.1rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--cs-gap);
+            margin-top: 0.85rem;
         }
+
+        .collection-chapter-title::before {
+            content: '';
+            flex: 0 0 var(--cs-size);
+        }
+
+        .collection-chapter-title .collection-chapter-name { margin-top: 0; }
+        /* Without the script there is no seal, so no balancing track either. */
+        .collection-chapter-title:not(:has(.chapter-seal:not([hidden])))::before { display: none; }
+
+        /* The seal: a struck circle, not a button shape. Fine concentric rings,
+           a ring of hairline ticks, the house emblem at the centre and one
+           point of light in slow orbit. */
+        .chapter-seal {
+            position: relative;
+            flex: 0 0 var(--cs-size);
+            width: var(--cs-size);
+            height: var(--cs-size);
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 38%, rgba(32, 27, 18, 0.95), rgba(8, 8, 7, 0.95) 70%);
+            color: var(--void-gold-soft);
+            cursor: pointer;
+            isolation: isolate;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            transition: box-shadow 0.5s var(--ease-lux), color 0.4s var(--ease-lux), transform 0.4s var(--ease-lux);
+        }
+
+        .chapter-seal[hidden] { display: none; }
+
+        .chapter-seal-rings {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .cs-ring {
+            fill: none;
+            stroke: currentColor;
+            vector-effect: non-scaling-stroke;
+            transition: stroke-opacity 0.45s var(--ease-lux);
+        }
+
+        .cs-ring--outer { stroke-width: 1; stroke-opacity: 0.55; }
+        .cs-ring--mid { stroke-width: 0.75; stroke-opacity: 0.28; }
+        .cs-ring--ticks { stroke-width: 2.2; stroke-opacity: 0.32; stroke-dasharray: 0.35 1.65; }
+
+        .cs-orbit {
+            transform-origin: 22px 22px;
+            animation: csOrbit 14s linear infinite;
+        }
+
+        .cs-orbit-dot {
+            fill: var(--void-gold-bright);
+            opacity: 0.8;
+        }
+
+        @keyframes csOrbit { to { transform: rotate(360deg); } }
+
+        /* The canonical EV emblem (assets/ev-emblem.png), drawn from its own
+           alpha in house gold, as the rest of the site renders it. */
+        .chapter-seal-mark {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 17px;
+            height: 14px;
+            transform: translate(-50%, -50%);
+            background: currentColor;
+            opacity: 0.82;
+            -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+            mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+            transition: opacity 0.4s var(--ease-lux), background-color 0.4s var(--ease-lux);
+        }
+
+        /* Light crossing the face. At rest it drifts by every few seconds,
+           barely there; on hover it passes once, brighter. */
+        .chapter-seal-sheen {
+            position: absolute;
+            inset: -20%;
+            z-index: 1;
+            border-radius: 50%;
+            background: linear-gradient(115deg, transparent 38%, rgba(255, 244, 214, 0.08) 46%, rgba(255, 244, 214, 0.42) 50%, rgba(255, 244, 214, 0.08) 54%, transparent 62%);
+            transform: translateX(-70%);
+            animation: csDrift 7s var(--ease-lux) infinite;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        @keyframes csDrift {
+            0%, 72%  { transform: translateX(-70%); opacity: 0.35; }
+            100%     { transform: translateX(70%);  opacity: 0.35; }
+        }
+
+        .chapter-seal:hover .chapter-seal-sheen,
+        .chapter-seal:focus-visible .chapter-seal-sheen {
+            animation: csSweep 0.9s var(--ease-lux) 1 both;
+        }
+
+        @keyframes csSweep {
+            from { transform: translateX(-70%); opacity: 1; }
+            to   { transform: translateX(70%);  opacity: 1; }
+        }
+
+        .chapter-seal:hover,
+        .chapter-seal:focus-visible {
+            color: var(--void-gold-bright);
+            box-shadow: 0 0 0 1px rgba(216, 192, 138, 0.18), 0 0 22px rgba(199, 169, 108, 0.22);
+        }
+
+        .chapter-seal:hover .cs-ring--outer,
+        .chapter-seal:focus-visible .cs-ring--outer { stroke-opacity: 0.85; }
+        .chapter-seal:hover .cs-ring--ticks,
+        .chapter-seal:focus-visible .cs-ring--ticks { stroke-opacity: 0.55; }
+
+        .chapter-seal:focus-visible {
+            outline: 1px solid rgba(242, 226, 189, 0.85);
+            outline-offset: 4px;
+        }
+
+        .chapter-seal:active { transform: scale(0.96); }
+
+        /* Open: the seal is lit — full ring, ivory emblem, steady halo, and
+           the orbiting light comes to rest at the top. */
+        .chapter-seal[aria-expanded="true"] {
+            color: var(--void-gold-bright);
+            box-shadow: 0 0 0 1px rgba(242, 226, 189, 0.32), 0 0 26px rgba(216, 192, 138, 0.3);
+        }
+
+        .chapter-seal[aria-expanded="true"] .cs-ring--outer { stroke-opacity: 1; }
+        .chapter-seal[aria-expanded="true"] .cs-ring--mid { stroke-opacity: 0.6; }
+        .chapter-seal[aria-expanded="true"] .cs-ring--ticks { stroke-opacity: 0.7; }
+        .chapter-seal[aria-expanded="true"] .chapter-seal-mark { background-color: #f6efe0; opacity: 1; }
+        .chapter-seal[aria-expanded="true"] .cs-orbit { animation-play-state: paused; }
+
+        /* Held open (clicked or tapped): a second, outer hairline. */
+        .chapter-seal.is-pinned::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            z-index: 2;
+            border-radius: 50%;
+            border: 1px solid rgba(242, 226, 189, 0.55);
+            pointer-events: none;
+        }
+
+        /* ── The chapter's story ─────────────────────────────────────────
+           A 0fr → 1fr grid row: the region opens to exactly its content's
+           height and closes to nothing, with no measuring in script. Closed
+           it is also inert and hidden, so it can take neither focus nor
+           pointer input. Every effect is clipped inside it. */
+        .chapter-story {
+            display: grid;
+            grid-template-rows: 0fr;
+            visibility: hidden;
+            transition: grid-template-rows 0.42s var(--ease-lux), visibility 0s linear 0.42s;
+        }
+
+        .chapter-story.is-open {
+            grid-template-rows: 1fr;
+            visibility: visible;
+            transition: grid-template-rows 0.55s var(--ease-lux), visibility 0s;
+        }
+
+        .chapter-story-clip {
+            position: relative;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .chapter-story-body {
+            position: relative;
+            width: min(100%, 40rem);
+            margin: 0 auto;
+            padding: clamp(1.3rem, 2.6vw, 1.9rem) 0.5rem 0.25rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .chapter-story.is-open .chapter-story-body {
+            opacity: 1;
+            transition: opacity 0.3s ease 0.06s;
+        }
+
+        .chapter-story-theme {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: clamp(1.15rem, 2.1vw, 1.45rem);
+            letter-spacing: 0.06em;
+            line-height: 1.4;
+            color: var(--void-gold-bright);
+        }
+
+        .chapter-story-text {
+            margin-top: 0.85rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.08rem, 1.7vw, 1.3rem);
+            line-height: 1.7;
+            letter-spacing: 0.01em;
+            color: rgba(245, 242, 236, 0.9);
+            text-wrap: pretty;
+        }
+
+        .chapter-story-close {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 44px;
+            margin-top: 0.6rem;
+            padding: 0 0.6rem;
+            border: 0;
+            background: none;
+            color: rgba(245, 242, 236, 0.62);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 500;
+            letter-spacing: 0.28em;
+            text-indent: 0.28em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.3s var(--ease-lux);
+        }
+
+        .chapter-story-close span[aria-hidden] { font-size: 0.85rem; letter-spacing: 0; text-indent: 0; }
+        .chapter-story-close:hover,
+        .chapter-story-close:focus-visible { color: var(--void-gold-bright); }
+        .chapter-story-close:focus-visible { outline: 1px solid rgba(242, 226, 189, 0.85); outline-offset: 2px; }
+
+        /* ── Projection ── played once on opening, then removed: a scan line
+           with a short trail travels down the region, the lines arrive with a
+           faint iridescence and glow, and settle into plain, crisp type. */
+        .chapter-story-body::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-100%);
+            background: linear-gradient(180deg,
+                transparent 0%,
+                transparent 70%,
+                rgba(170, 214, 235, 0.03) 86%,
+                rgba(242, 226, 189, 0.1) 97%,
+                rgba(255, 246, 224, 0.75) 99.4%,
+                transparent 100%);
+            /* A beam, not a box: the band fades out towards both sides. */
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+        }
+
+        .chapter-story.is-projecting .chapter-story-body::before {
+            animation: csScan 0.95s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        @keyframes csScan {
+            0%   { opacity: 0; transform: translateY(-100%); }
+            12%  { opacity: 1; }
+            85%  { opacity: 1; }
+            100% { opacity: 0; transform: translateY(0); }
+        }
+
+        .chapter-story.is-projecting .chapter-story-theme,
+        .chapter-story.is-projecting .chapter-story-text {
+            background-image: linear-gradient(100deg,
+                currentColor 0%, currentColor 34%,
+                #bfe6ee 42%, #f1dcff 48%, #f6e3b4 54%,
+                currentColor 62%, currentColor 100%);
+            background-size: 300% 100%;
+            background-position: 100% 0;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: csProject 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .chapter-story.is-projecting .chapter-story-text { animation-delay: 0.12s; }
+
+        @keyframes csProject {
+            0%   { opacity: 0; background-position: 100% 0; transform: translateY(5px); text-shadow: 0 0 14px rgba(190, 228, 240, 0.45); }
+            35%  { opacity: 1; }
+            100% { opacity: 1; background-position: 0% 0; transform: none; text-shadow: 0 0 0 rgba(190, 228, 240, 0); }
+        }
+
+        @media (max-width: 520px) {
+            /* Narrow screens: the title and seal centre as a pair. */
+            .collection-chapter-title::before { display: none; }
+            .collection-chapter-title { --cs-gap: 0.75rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cs-orbit,
+            .chapter-seal-sheen,
+            .chapter-seal:hover .chapter-seal-sheen,
+            .chapter-seal:focus-visible .chapter-seal-sheen { animation: none; }
+            .chapter-seal-sheen { opacity: 0; }
+            .chapter-story,
+            .chapter-story.is-open,
+            .chapter-story-body,
+            .chapter-story.is-open .chapter-story-body,
+            .chapter-seal,
+            .cs-ring,
+            .chapter-seal-mark { transition: none; }
+            .chapter-seal:active { transform: none; }
+            .collection-chapter-title *,
+            .collection-chapter-title *::before,
+            .collection-chapter-title *::after,
+            .chapter-story * { transition: none !important; animation: none !important; }
+        }
+
+        html.reduce-motion .cs-orbit,
+        html.reduce-motion .chapter-seal-sheen,
+        html.reduce-motion .chapter-seal:hover .chapter-seal-sheen,
+        html.reduce-motion .chapter-seal:focus-visible .chapter-seal-sheen { animation: none; }
+        html.reduce-motion .chapter-seal-sheen { opacity: 0; }
+        html.reduce-motion .chapter-story,
+        html.reduce-motion .chapter-story.is-open,
+        html.reduce-motion .chapter-story-body,
+        html.reduce-motion .chapter-story.is-open .chapter-story-body,
+        html.reduce-motion .chapter-seal,
+        html.reduce-motion .cs-ring,
+        html.reduce-motion .chapter-seal-mark { transition: none; }
+        html.reduce-motion .chapter-seal:active { transform: none; }
+        html.reduce-motion .collection-chapter-title *,
+        html.reduce-motion .collection-chapter-title *::before,
+        html.reduce-motion .collection-chapter-title *::after,
+        html.reduce-motion .chapter-story * { transition: none !important; animation: none !important; }
 
         .collection-chapter-status {
             margin-top: 1.35rem;
@@ -13626,35 +13960,34 @@
                 <button type="button" class="collection-nav-tab" data-collection-filter="trackpants" data-i18n="catTrackPants">Track Pants</button>
                 <button type="button" class="collection-nav-tab" data-collection-filter="ensembles" data-i18n="catEnsembles">Ensembles</button>
             </nav>
-            <!-- ── 01 · The Fallen ──
-                 Two pieces, and they are the anchor of the whole section: they
-                 carry the wider gap and the brighter head. The trio below is
-                 deliberately narrower in voice, not in width.
-
-                 "Collection" is said once, in the section h2 above. The two
-                 groups are told apart by a numeral and a name, not by saying
-                 the word again — that was reading as three headings stacked
-                 on the same noun. -->
-            <section class="collection-chapter" aria-labelledby="chapterFallenName">
+            <!-- ── The drop, in three chapters ──
+                 Each chapter is a head (numeral, name, and the seal that opens
+                 its story), the story region, then its pieces. "Collection" is
+                 said once, in the section h2 above; the chapters are told apart
+                 by numeral and name. -->
+            <section class="collection-chapter" data-chapter="fallen" aria-labelledby="chapterFallenIndex chapterFallenName">
                 <header class="collection-chapter-head fade-in-up" style="--delay: 60ms;">
-                    <p class="collection-chapter-index" data-i18n="chapterOneIndex" data-lang-static>01</p>
-                    <h3 class="collection-chapter-name" id="chapterFallenName" data-i18n="chapterOneName" data-lang-static>The Fallen</h3>
-                </header>
-                <div class="products-grid is-pair">
-                    <div class="product-card fade-in-up" style="--delay: 120ms;" data-product-name="Levitate Tee" data-product-price="200" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID© styling.">
-                        <div class="product-image">
-                            <img class="product-photo" src="/assets/levitate-white.png" alt="Levitate Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
-                            <span class="product-view-affordance" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                                <span data-i18n="viewDetails">View Details</span>
-                            </span>
-                        </div>
-                        <div class="product-info">
-                            <h4 class="product-name">Levitate Tee</h4>
-                            <span class="product-price">€200</span>
-                        </div>
+                    <p class="collection-chapter-index" id="chapterFallenIndex" data-i18n="chapterOneIndex" data-lang-static>Chapter I</p>
+                    <div class="collection-chapter-title">
+                        <h3 class="collection-chapter-name" id="chapterFallenName" data-i18n="chapterOneName" data-lang-static>The Fallen</h3>
+                        <button type="button" class="chapter-seal" data-chapter-seal aria-expanded="false" aria-controls="chapterStoryFallen" hidden>
+                            <svg class="chapter-seal-rings" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
+                                <circle class="cs-ring cs-ring--outer" cx="22" cy="22" r="21.25"/>
+                                <circle class="cs-ring cs-ring--mid" cx="22" cy="22" r="17.25"/>
+                                <circle class="cs-ring cs-ring--ticks" cx="22" cy="22" r="13.75" pathLength="96"/>
+                                <g class="cs-orbit"><circle class="cs-orbit-dot" cx="22" cy="0.75" r="1.15"/></g>
+                            </svg>
+                            <span class="chapter-seal-mark" aria-hidden="true"></span>
+                            <span class="chapter-seal-sheen" aria-hidden="true"></span>
+                        </button>
                     </div>
-                    <div class="product-card fade-in-up" style="--delay: 180ms;" data-product-name="Endzustand Tee" data-product-price="200" data-fit-title="Boxy Oversized Fit" data-fit-note="Structured chest, blunt hem line, and oversized volume with couture-inspired proportions.">
+                </header>
+                <!-- The chapter's story, rendered from CHAPTER_STORIES. Closed it
+                     has no height and is inert; open it sits between the head
+                     and the pieces and pushes them down. -->
+                <div class="chapter-story" id="chapterStoryFallen" data-chapter-story="fallen" inert></div>
+                <div class="products-grid is-solo">
+                    <div class="product-card fade-in-up" style="--delay: 120ms;" data-product-name="Endzustand Tee" data-product-price="200" data-fit-title="Boxy Oversized Fit" data-fit-note="Structured chest, blunt hem line, and oversized volume with couture-inspired proportions.">
                         <div class="product-image">
                             <img class="product-photo" src="/assets/endzustand-black.png" alt="Endzustand Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
                             <span class="product-view-affordance" aria-hidden="true">
@@ -13670,20 +14003,72 @@
                 </div>
             </section>
 
-            <!-- ── 02 · L'Insigne ──
-                 A preview, not a shelf with nothing on it. The separation is
-                 made with space, a single drawn line and one gold marker; the
-                 pieces keep their names, their order, their images and their
-                 prices. data-unreleased is what closes every purchase path —
-                 see the guards in the cart script. -->
-            <section class="collection-chapter is-preview" aria-labelledby="chapterInsigneName">
+            <section class="collection-chapter" data-chapter="sigil" aria-labelledby="chapterSigilIndex chapterSigilName">
                 <span class="collection-chapter-divider" aria-hidden="true"></span>
                 <header class="collection-chapter-head fade-in-up" style="--delay: 60ms;">
-                    <p class="collection-chapter-index" data-i18n="chapterTwoIndex" data-lang-static>02</p>
-                    <h3 class="collection-chapter-name" id="chapterInsigneName" data-i18n="chapterTwoName" data-lang-static>L’Insigne</h3>
-                    <p class="collection-chapter-teaser" data-i18n="chapterTwoTeaser">An insignia of what is to come.</p>
+                    <p class="collection-chapter-index" id="chapterSigilIndex" data-i18n="chapterTwoIndex" data-lang-static>Chapter II</p>
+                    <div class="collection-chapter-title">
+                        <h3 class="collection-chapter-name" id="chapterSigilName" data-i18n="chapterTwoName" data-lang-static>The Sigil</h3>
+                        <button type="button" class="chapter-seal" data-chapter-seal aria-expanded="false" aria-controls="chapterStorySigil" hidden>
+                            <svg class="chapter-seal-rings" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
+                                <circle class="cs-ring cs-ring--outer" cx="22" cy="22" r="21.25"/>
+                                <circle class="cs-ring cs-ring--mid" cx="22" cy="22" r="17.25"/>
+                                <circle class="cs-ring cs-ring--ticks" cx="22" cy="22" r="13.75" pathLength="96"/>
+                                <g class="cs-orbit"><circle class="cs-orbit-dot" cx="22" cy="0.75" r="1.15"/></g>
+                            </svg>
+                            <span class="chapter-seal-mark" aria-hidden="true"></span>
+                            <span class="chapter-seal-sheen" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </header>
+                <!-- The chapter's story, rendered from CHAPTER_STORIES. Closed it
+                     has no height and is inert; open it sits between the head
+                     and the pieces and pushes them down. -->
+                <div class="chapter-story" id="chapterStorySigil" data-chapter-story="sigil" inert></div>
+                <div class="products-grid is-solo">
+                    <div class="product-card fade-in-up" style="--delay: 120ms;" data-product-name="Levitate Tee" data-product-price="200" data-fit-title="Oversized Ritual Fit" data-fit-note="Heavy drape, dropped shoulder, and a wide silhouette tuned for layered VOID© styling.">
+                        <div class="product-image">
+                            <img class="product-photo" src="/assets/levitate-white.png" alt="Levitate Tee — front and back" width="1672" height="941" loading="lazy" decoding="async">
+                            <span class="product-view-affordance" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                                <span data-i18n="viewDetails">View Details</span>
+                            </span>
+                        </div>
+                        <div class="product-info">
+                            <h4 class="product-name">Levitate Tee</h4>
+                            <span class="product-price">€200</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The Insigne trilogy is a preview, not a shelf with nothing on
+                 it: the pieces keep their names, order, images and prices, and
+                 data-unreleased closes every purchase path (see the guards in
+                 the cart script). -->
+            <section class="collection-chapter is-preview" data-chapter="eternal" aria-labelledby="chapterEternalIndex chapterEternalName">
+                <span class="collection-chapter-divider" aria-hidden="true"></span>
+                <header class="collection-chapter-head fade-in-up" style="--delay: 60ms;">
+                    <p class="collection-chapter-index" id="chapterEternalIndex" data-i18n="chapterThreeIndex" data-lang-static>Chapter III</p>
+                    <div class="collection-chapter-title">
+                        <h3 class="collection-chapter-name" id="chapterEternalName" data-i18n="chapterThreeName" data-lang-static>The Eternal</h3>
+                        <button type="button" class="chapter-seal" data-chapter-seal aria-expanded="false" aria-controls="chapterStoryEternal" hidden>
+                            <svg class="chapter-seal-rings" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
+                                <circle class="cs-ring cs-ring--outer" cx="22" cy="22" r="21.25"/>
+                                <circle class="cs-ring cs-ring--mid" cx="22" cy="22" r="17.25"/>
+                                <circle class="cs-ring cs-ring--ticks" cx="22" cy="22" r="13.75" pathLength="96"/>
+                                <g class="cs-orbit"><circle class="cs-orbit-dot" cx="22" cy="0.75" r="1.15"/></g>
+                            </svg>
+                            <span class="chapter-seal-mark" aria-hidden="true"></span>
+                            <span class="chapter-seal-sheen" aria-hidden="true"></span>
+                        </button>
+                    </div>
                     <p class="collection-chapter-status"><span class="ccs-mark" aria-hidden="true"></span><span data-i18n="comingSoon">Coming Soon</span></p>
                 </header>
+                <!-- The chapter's story, rendered from CHAPTER_STORIES. Closed it
+                     has no height and is inert; open it sits between the head
+                     and the pieces and pushes them down. -->
+                <div class="chapter-story" id="chapterStoryEternal" data-chapter-story="eternal" inert></div>
                 <div class="products-grid is-trio">
                     <div class="product-card fade-in-up" style="--delay: 120ms;" data-product-name="Insigne Ivoire" data-product-price="250" data-unreleased="true" data-fit-title="Relaxed Oversized Fit" data-fit-note="Relaxed shoulder drop and fluid body width for a cleaner oversized everyday drape.">
                         <div class="product-image">
@@ -15002,19 +15387,19 @@
         let refreshCartTranslations = () => {};
         const translations = {
             en: {
-                chapterOneIndex: '01', chapterOneName: 'The Fallen', chapterTwoIndex: '02', chapterTwoName: 'L’Insigne', chapterTwoTeaser: 'An insignia of what is to come.',
+                chapterOneIndex: 'Chapter I', chapterOneName: 'The Fallen', chapterTwoIndex: 'Chapter II', chapterTwoName: 'The Sigil', chapterThreeIndex: 'Chapter III', chapterThreeName: 'The Eternal', chapterRead: 'Read chapter', chapterStoryClose: 'Close',
                 navShop: 'Shop', navCollection: 'Collection', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Contact', navPreorder: 'Pre-order', navMenu: 'Menu', navClose: 'Close', navAccount: 'Account', navClientServices: 'Client Services', settingsLabel: 'Settings', regionExperience: 'Region / Experience', changeCountry: 'Change Country', navDelivery: 'Delivery & Returns', navSizeFit: 'Size & Fit', navTheHouse: 'The House', navTheCodes: 'The Codes', vcTitleShort: 'Private Concierge', sgaDocLabel: 'Document', tableHemWidth: 'Hem Width', tableCuffWidth: 'Cuff Width', tableWaistWidth: 'Waist Width', tableHipWidth: 'Hip Width', tableFrontRise: 'Front Rise', tableThighWidth: 'Thigh Width', tableInseam: 'Inseam', tableOutseam: 'Outseam', tableLegOpening: 'Leg Opening', sgaIntroSweatshirt: 'The sweatshirt is drafted around structured volume: a dropped shoulder, a deep body and ribbed hem and cuffs that hold the silhouette. Select your usual size for the intended weight, or size down for a closer line.', sgaIntroTrackpants: 'The track pants are drafted around a relaxed leg and a high, unrestrictive waist. Proportion is held through the rise and thigh rather than the hem, so the line stays clean over the full length.', sgaIntroEnsemble: 'The ensemble is drafted as one proportion: the sweatshirt volume and the leg line are graded together. One size governs both halves, so the set reads as a single silhouette.', sgaNoteSweatshirt: 'Volume is held by the hem and cuff ribs, not by the body width alone. For the house fit, select your usual size. For a cleaner line through the body, select one size down.', sgaNoteTrackpants: 'Measure against a pair you already trust, comparing the rise and the inseam before the waist. The waistband is cut to sit without tension at the stated width.', sgaNoteEnsemble: 'Both pieces are cut to the same grade, so a single selection keeps the upper and lower proportions in balance. Size down only if you want the whole set closer to the body.', sgaPending: 'Pattern measurements for this garment are being finalised in the atelier. The architecture is confirmed; the figures follow.', sgaDraftAltSweatshirt: 'Technical drawing of the hooded sweatshirt showing where chest width, body length, shoulder width, sleeve length, hem width and cuff width are measured.', sgaDraftAltTrackpants: 'Technical drawing of the track pants showing where waist width, hip width, front rise, thigh width, inseam, outseam and leg opening are measured.', sgaDraftAltEnsemble: 'Technical drawing of the ensemble showing the hooded sweatshirt and the track pants together, with the measurement points of both garments.', navAtelier: 'The Atelier', navNeant: 'Néant', heroEnterBoutique: 'Enter The Boutique', heroReadStory: 'Read The Story', heroSubtitle: 'Atelier', footerTagline: 'Feel The', collectionEyebrow: 'Season One', galleryPreviewKicker: 'Atelier Gallery', galleryPreviewCopy: 'Further imagery for this piece follows with the season.', closeGalleryPreview: 'Close gallery preview', storyReturn: `Return to ${brandMarkup}`, storyArchive: `${brandMarkup} Archive`, storyTitle: 'The Standard', storyCopyOne: `${brandMarkup} is a limited-run streetwear label. Small batches, heavyweight construction, released when the work is right — not to a seasonal calendar.`, storyCopyTwo: 'It starts with the cloth. Dense cotton that holds its shape, reinforced seams, and oversized patterns that are properly graded rather than scaled up. The details are the point — they are what you notice a year in, not on day one.', storyCopyThree: 'Drops are small and they do not return. We would rather sell out of something considered than restock something average.', storyCopyFour: `No logo does the talking. ${brandMarkup} is for people who dress for themselves — and would rather own less, and wear it far longer.`, collectionTitle: 'Collection', preorderAccess: 'Pre-order Access', sizeGuide: 'Size Guide', comingSoon: 'Coming Soon', chooseSize: 'Choose Size', addToCart: 'Add to Cart', gallery: 'Discover', viewDetails: 'View Details', pdResetZoom: 'Reset zoom', pdThumbsLabel: 'Product views', pdViewBoth: 'Front and back', pdViewFront: 'Front', pdViewBack: 'Back', selectSize: 'Select Size', chooseYourFit: 'Choose your fit', closeSizePicker: 'Close size picker', sizePreviewDefault: 'Select a size to preview the intended silhouette and fit behavior.', cancel: 'Cancel', apply: 'Apply', sizeGuideTitle: `${brandMarkup} Size Guide`, sizeGuideSubtitle: 'Measured in centimeters · Oversized baseline fit', closeSizeGuide: 'Close size guide', sizeGuideCopy: 'Use your most trusted tee as a reference. If you prefer a cleaner silhouette, choose one size down.', tableSize: 'Size', tableChestWidth: 'Chest Width', tableBodyLength: 'Body Length', tableShoulderWidth: 'Shoulder Width', tableSleeveLength: 'Sleeve Length', tableFitDirection: 'Fit Direction', fitTrimOversized: 'Trim Oversized', fitBalancedOversized: 'Balanced Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Deep Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'All garments are cut with an intentional oversized architecture. Tolerance: +/- 1 cm.', sizeGuideReturn: `Return to ${brandMarkup}`, closePreorderSignup: 'Close pre-order signup', privateAccess: 'Private Access', preorderTitle: `Reserve the next ${brandMarkup} drop.`, preorderCopy: 'Enter your email and country to receive pre-order access, shipping updates, and early release details before the collection opens.', email: 'Email', country: 'Country', selectYourCountry: 'Select your country', selectYourCountryNote: 'Choose the region that represents where you are shopping from.', typeHere: 'Type here', availableRegions: 'Available Regions', noRegionFound: 'No region found', selectedLabel: 'Selected', clearLabel: 'Clear', closeLabel: 'Close', yourCountry: 'Your Country', typeYourCountry: 'Type your country', joinPreorderList: 'Join pre-order list', preorderPrivacyNote: `By joining, you agree to receive pre-order emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Open cart', yourCart: 'Your Cart', closeCart: 'Close cart', cartEmpty: 'Your cart is empty.', total: 'Total', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Join our community for exclusive drops and updates.', enterYourEmail: 'Enter your email', subscribe: 'Subscribe', newsletterPrivacyNote: `By subscribing, you agree to receive emails from ${brandMarkup}. Read our <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Unsubscribe', connect: 'Connect', footerRights: `© 2026 ${brandMarkup}. All rights reserved. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Unsubscribe</a>`, pleaseTypeCountry: 'Please type your country.', pleaseSelectCountry: 'Please select your country.', reservingPreorder: 'Reserving your private pre-order access...', preorderError: 'Unable to reserve pre-order access right now.', preorderSuccess: `Welcome to the ${brandMarkup} private access club. Please check your email.`, signingUp: 'Signing you up...', subscribeError: 'Unable to subscribe right now.', subscribeSuccess: `Thank you for signing up to the ${brandMarkup} newsletter.`, added: 'Added', selectSizeButton: 'Select Size', sizeLabel: 'Size: {size}', changeSizeCurrent: 'Change size, current {size}', applySize: 'Apply Size', productChooseFit: '{product} · choose your fit', selectedSizeNote: `Selected {size} keeps the intended ${brandMarkup} oversized silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Built with ${brandMarkup} oversized proportion and movement-focused drape.`, checkoutEmptyAlert: 'Your cart is empty. Add at least one item before checkout.', checkoutMissingAlert: 'Some items are not mapped to Shopify variants yet. Please refresh and try again, or contact support.', checkoutBuildAlert: 'Unable to build Shopify checkout link. Please try again.', removeOneLabel: 'Remove one {name} size {size}', addOneLabel: 'Add one {name} size {size}', removeItemLabel: 'Remove {name} size {size}', sgaEyebrow: 'Atelier / Fit Archive', sgaTitle: 'The Void Silhouette', sgaSubtitle: 'Oversized architecture, measured in centimetres', sgaIntro: 'VOID garments are constructed around controlled volume, dropped structure and deliberate proportion. Select your usual size for the intended silhouette, or size down for a more restrained fit.', sgaCloseLabel: 'Close', sgaDoc: 'Document / Fit-001', sgaUnit: 'Unit / CM', sgaArchitecture: 'Garment Architecture', sgaDraftAlt: 'Technical drawing of the oversized tee showing where chest width, body length, shoulder width and sleeve length are measured.', sgaSelect: 'Select Size', sgaCm: 'cm', sgaFitCharacter: 'Fit Character', sgaRestrained: 'Restrained', sgaVolume: 'Volume', sgaNoteLabel: 'Atelier Note', sgaNote: 'The intended VOID silhouette is defined by a dropped shoulder, structured drape and controlled volume. For the house fit, select your usual size. For a cleaner silhouette, select one size down.', sgaViewFull: 'View Full Specification', sgaHideFull: 'Hide Full Specification'
             },
             fr: {
-                chapterOneIndex: '01', chapterOneName: 'The Fallen', chapterTwoIndex: '02', chapterTwoName: 'L’Insigne', chapterTwoTeaser: 'L’insigne de ce qui vient.',
+                chapterOneIndex: 'Chapter I', chapterOneName: 'The Fallen', chapterTwoIndex: 'Chapter II', chapterTwoName: 'The Sigil', chapterThreeIndex: 'Chapter III', chapterThreeName: 'The Eternal', chapterRead: 'Lire le chapitre', chapterStoryClose: 'Fermer',
                 navShop: 'Boutique', navCollection: 'Collection', navStyleGuide: 'Guide de Style', navStyleGuidePlural: 'Guides de Style', navContact: 'Contact', navPreorder: 'Précommande', navMenu: 'Menu', navClose: 'Fermer', navAccount: 'Compte', navClientServices: 'Service Client', settingsLabel: 'Préférences', regionExperience: 'Région / Expérience', changeCountry: 'Changer de pays', navDelivery: 'Livraison & Retours', navSizeFit: 'Tailles & Coupe', navTheHouse: 'La Maison', navTheCodes: 'Les Codes', vcTitleShort: 'Conciergerie Privée', sgaDocLabel: 'Document', tableHemWidth: 'Largeur Ourlet', tableCuffWidth: 'Largeur Poignet', tableWaistWidth: 'Tour de Taille', tableHipWidth: 'Largeur Hanches', tableFrontRise: 'Montant Avant', tableThighWidth: 'Largeur Cuisse', tableInseam: 'Entrejambe', tableOutseam: 'Couture Extérieure', tableLegOpening: 'Bas de Jambe', sgaIntroSweatshirt: 'Le sweat-shirt est construit autour d’un volume structuré : épaule tombante, corps profond, ourlet et poignets côtelés qui tiennent la silhouette. Choisissez votre taille habituelle pour le tombé prévu, ou une taille en dessous pour une ligne plus près du corps.', sgaIntroTrackpants: 'Le pantalon est construit autour d’une jambe ample et d’une taille haute sans contrainte. La proportion se tient par le montant et la cuisse plutôt que par le bas, pour une ligne nette sur toute la longueur.', sgaIntroEnsemble: 'L’ensemble est construit comme une seule proportion : le volume du sweat-shirt et la ligne de jambe sont gradés ensemble. Une seule taille régit les deux pièces, pour une silhouette unique.', sgaNoteSweatshirt: 'Le volume est tenu par les côtes d’ourlet et de poignet, non par la seule largeur du corps. Pour la coupe maison, choisissez votre taille habituelle. Pour une ligne plus nette, choisissez une taille en dessous.', sgaNoteTrackpants: 'Comparez avec un pantalon qui vous convient déjà, en regardant le montant et l’entrejambe avant la taille. La ceinture est coupée pour se poser sans tension à la largeur indiquée.', sgaNoteEnsemble: 'Les deux pièces suivent la même gradation : une seule sélection garde les proportions haut et bas en équilibre. Ne descendez d’une taille que pour rapprocher l’ensemble du corps.', sgaPending: 'Les mesures de patronage de cette pièce sont en cours de finalisation à l’atelier. L’architecture est confirmée ; les chiffres suivront.', sgaDraftAltSweatshirt: 'Dessin technique du sweat-shirt à capuche indiquant où sont mesurées la largeur de poitrine, la longueur du corps, la largeur d’épaules, la longueur de manche, la largeur d’ourlet et la largeur de poignet.', sgaDraftAltTrackpants: 'Dessin technique du pantalon indiquant où sont mesurés le tour de taille, la largeur de hanches, le montant avant, la largeur de cuisse, l’entrejambe, la couture extérieure et le bas de jambe.', sgaDraftAltEnsemble: 'Dessin technique de l’ensemble présentant le sweat-shirt à capuche et le pantalon réunis, avec les points de mesure des deux pièces.', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Voir Tout', catTshirts: 'T-Shirts', catSweatshirts: 'Sweat-shirts', catTrackPants: 'Pantalons de Survêtement', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Aucune pièce dans cette catégorie pour l’instant.', heroEnterBoutique: 'Entrer dans la Boutique', heroReadStory: 'Lire l’Histoire', heroSubtitle: 'Atelier', footerTagline: 'Ressens Le', collectionEyebrow: 'Saison Un', galleryPreviewKicker: 'Galerie d’Atelier', galleryPreviewCopy: 'Les visuels complets de cette pièce sont actuellement en production. Revenez bientôt pour découvrir la galerie complète.', closeGalleryPreview: 'Fermer l’aperçu de la galerie', storyReturn: `Retour à ${brandMarkup}`, storyArchive: `Archives ${brandMarkup}`, storyTitle: 'Notre Standard', storyCopyOne: `${brandMarkup} est un label de streetwear en série limitée. Petites séries, construction lourde, mis en vente quand le travail est juste — pas selon un calendrier saisonnier.`, storyCopyTwo: 'Tout commence par la matière. Un coton dense qui garde sa forme, des coutures renforcées et des patrons oversize gradés avec précision, pas simplement agrandis. Le détail est l’essentiel — c’est ce que l’on remarque après un an, pas le premier jour.', storyCopyThree: 'Les drops sont restreints et ne reviennent pas. Nous préférons épuiser une pièce pensée plutôt que réapprovisionner une pièce moyenne.', storyCopyFour: `Aucun logo ne parle à notre place. ${brandMarkup} s’adresse à ceux qui s’habillent pour eux-mêmes — et qui préfèrent posséder moins, et porter bien plus longtemps.`, collectionTitle: 'Collection', preorderAccess: 'Accès Précommande', sizeGuide: 'Guide des Tailles', comingSoon: 'Bientôt', chooseSize: 'Choisir la Taille', addToCart: 'Ajouter au Panier', gallery: 'Découvrir', viewDetails: 'Voir les détails', pdResetZoom: 'Réinitialiser le zoom', pdThumbsLabel: 'Vues du produit', pdViewBoth: 'Face et dos', pdViewFront: 'Face', pdViewBack: 'Dos', selectSize: 'Sélectionner la Taille', chooseYourFit: 'Choisissez votre coupe', closeSizePicker: 'Fermer le sélecteur de taille', sizePreviewDefault: 'Sélectionnez une taille pour prévisualiser la silhouette et le comportement de coupe.', cancel: 'Annuler', apply: 'Appliquer', sizeGuideTitle: `Guide des Tailles ${brandMarkup}`, sizeGuideSubtitle: 'Mesuré en centimètres · Coupe oversize de référence', closeSizeGuide: 'Fermer le guide des tailles', sizeGuideCopy: 'Utilisez votre t-shirt le plus fiable comme référence. Si vous préférez une silhouette plus nette, choisissez une taille en dessous.', tableSize: 'Taille', tableChestWidth: 'Largeur Poitrine', tableBodyLength: 'Longueur Corps', tableShoulderWidth: 'Largeur Épaules', tableSleeveLength: 'Longueur Manche', tableFitDirection: 'Direction de Coupe', fitTrimOversized: 'Oversize Ajusté', fitBalancedOversized: 'Oversize Équilibré', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profond', fitMaxOversized: 'Oversize Maximum', sizeGuideNote: 'Toutes les pièces sont coupées avec une architecture oversize intentionnelle. Tolérance : +/- 1 cm.', sizeGuideReturn: `Retour à ${brandMarkup}`, closePreorderSignup: 'Fermer l’inscription précommande', privateAccess: 'Accès Privé', preorderTitle: `Réservez le prochain drop ${brandMarkup}.`, preorderCopy: 'Entrez votre email et votre pays pour recevoir l’accès en précommande, les mises à jour d’expédition et les informations de lancement avant l’ouverture de la collection.', email: 'Email', country: 'Pays', selectYourCountry: 'Sélectionnez votre pays', selectYourCountryNote: 'Choisissez la région qui représente le lieu de vos achats.', typeHere: 'Écrivez ici', availableRegions: 'Régions disponibles', noRegionFound: 'Aucune région trouvée', selectedLabel: 'Sélectionné', clearLabel: 'Effacer', closeLabel: 'Fermer', yourCountry: 'Votre Pays', typeYourCountry: 'Saisissez votre pays', joinPreorderList: 'Rejoindre la liste de précommande', preorderPrivacyNote: `En vous inscrivant, vous acceptez de recevoir des emails de précommande de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, openCart: 'Ouvrir le panier', yourCart: 'Votre Panier', closeCart: 'Fermer le panier', cartEmpty: 'Votre panier est vide.', total: 'Total', checkout: 'Paiement', newsletter: 'Newsletter', newsletterCopy: 'Rejoignez notre communauté pour des drops exclusifs et des mises à jour.', enterYourEmail: 'Entrez votre email', subscribe: 'S’abonner', newsletterPrivacyNote: `En vous abonnant, vous acceptez de recevoir des emails de ${brandMarkup}. Consultez notre <a href="/privacy-policy.html">Politique de Confidentialité</a>.`, footerShop: 'Boutique', privacyPolicy: 'Politique de Confidentialité', unsubscribe: 'Se désabonner', connect: 'Connexion', footerRights: `© 2026 ${brandMarkup}. Tous droits réservés. <a href="/privacy-policy.html">Politique de Confidentialité</a> · <a href="/unsubscribe.html">Se désabonner</a>`, pleaseTypeCountry: 'Veuillez saisir votre pays.', pleaseSelectCountry: 'Veuillez sélectionner votre pays.', reservingPreorder: 'Réservation de votre accès privé en précommande...', preorderError: 'Impossible de réserver l’accès en précommande pour le moment.', preorderSuccess: `Bienvenue dans le club d’accès privé ${brandMarkup}. Veuillez vérifier votre email.`, signingUp: 'Inscription en cours...', subscribeError: 'Impossible de vous abonner pour le moment.', subscribeSuccess: `Merci de vous être inscrit à la newsletter ${brandMarkup}.`, added: 'Ajouté', selectSizeButton: 'Sélectionner la Taille', sizeLabel: 'Taille : {size}', changeSizeCurrent: 'Changer la taille, actuelle {size}', applySize: 'Appliquer la Taille', productChooseFit: '{product} · choisissez votre coupe', selectedSizeNote: `La taille {size} conserve la silhouette oversize ${brandMarkup} prévue.`, defaultFitTitle: 'Coupe Atelier Oversize', defaultFitNote: `Conçu avec les proportions oversize ${brandMarkup} et un drapé pensé pour le mouvement.`, checkoutEmptyAlert: 'Votre panier est vide. Ajoutez au moins un article avant le paiement.', checkoutMissingAlert: 'Certains articles ne sont pas encore associés aux variantes Shopify. Veuillez actualiser et réessayer, ou contacter le support.', checkoutBuildAlert: 'Impossible de créer le lien de paiement Shopify. Veuillez réessayer.', removeOneLabel: 'Retirer un {name} taille {size}', addOneLabel: 'Ajouter un {name} taille {size}', removeItemLabel: 'Retirer {name} taille {size}'
             },
             it: {
-                chapterOneIndex: '01', chapterOneName: 'The Fallen', chapterTwoIndex: '02', chapterTwoName: 'L’Insigne', chapterTwoTeaser: 'Un’insegna di ciò che verrà.',
+                chapterOneIndex: 'Chapter I', chapterOneName: 'The Fallen', chapterTwoIndex: 'Chapter II', chapterTwoName: 'The Sigil', chapterThreeIndex: 'Chapter III', chapterThreeName: 'The Eternal', chapterRead: 'Leggi il capitolo', chapterStoryClose: 'Chiudi',
                 navShop: 'Shop', navCollection: 'Collezione', navStyleGuide: 'Guida di Stile', navStyleGuidePlural: 'Guide di Stile', navContact: 'Contatto', navPreorder: 'Preordine', navMenu: 'Menu', navClose: 'Chiudi', navAccount: 'Account', navClientServices: 'Servizio Clienti', settingsLabel: 'Impostazioni', regionExperience: 'Regione / Esperienza', changeCountry: 'Cambia paese', navDelivery: 'Spedizioni & Resi', navSizeFit: 'Taglie & Vestibilità', navTheHouse: 'La Maison', navTheCodes: 'I Codici', vcTitleShort: 'Concierge Privato', sgaDocLabel: 'Documento', tableHemWidth: 'Larghezza Orlo', tableCuffWidth: 'Larghezza Polsino', tableWaistWidth: 'Girovita', tableHipWidth: 'Larghezza Fianchi', tableFrontRise: 'Cavallo Anteriore', tableThighWidth: 'Larghezza Coscia', tableInseam: 'Interno Gamba', tableOutseam: 'Esterno Gamba', tableLegOpening: 'Fondo Gamba', sgaIntroSweatshirt: 'La felpa è costruita attorno a un volume strutturato: spalla scesa, corpo profondo, orlo e polsini a costine che sostengono la silhouette. Scegli la tua taglia abituale per la vestibilità prevista, o una taglia in meno per una linea più aderente.', sgaIntroTrackpants: 'I pantaloni sono costruiti attorno a una gamba morbida e a una vita alta e non costrittiva. La proporzione si regge sul cavallo e sulla coscia più che sul fondo, per una linea pulita per tutta la lunghezza.', sgaIntroEnsemble: 'Il completo è costruito come un’unica proporzione: il volume della felpa e la linea della gamba sono sviluppati insieme. Una sola taglia governa entrambi i capi, per una silhouette unica.', sgaNoteSweatshirt: 'Il volume è tenuto dalle costine di orlo e polsino, non dalla sola larghezza del corpo. Per la vestibilità della maison scegli la tua taglia abituale. Per una linea più pulita, scegli una taglia in meno.', sgaNoteTrackpants: 'Confronta con un pantalone che già ti convince, guardando il cavallo e l’interno gamba prima della vita. La cintura è tagliata per appoggiarsi senza tensione alla misura indicata.', sgaNoteEnsemble: 'I due capi seguono la stessa gradazione: una sola scelta mantiene in equilibrio le proporzioni sopra e sotto. Scendi di una taglia solo se vuoi il completo più aderente.', sgaPending: 'Le misure di modellistica di questo capo sono in fase di definizione in atelier. L’architettura è confermata; i valori seguiranno.', sgaDraftAltSweatshirt: 'Disegno tecnico della felpa con cappuccio che mostra dove si misurano larghezza petto, lunghezza corpo, larghezza spalle, lunghezza manica, larghezza orlo e larghezza polsino.', sgaDraftAltTrackpants: 'Disegno tecnico dei pantaloni che mostra dove si misurano girovita, larghezza fianchi, cavallo anteriore, larghezza coscia, interno gamba, esterno gamba e fondo gamba.', sgaDraftAltEnsemble: 'Disegno tecnico del completo che mostra insieme la felpa con cappuccio e i pantaloni, con i punti di misura di entrambi i capi.', navAtelier: 'L’Atelier', navNeant: 'Néant', catViewAll: 'Vedi Tutto', catTshirts: 'T-Shirt', catSweatshirts: 'Felpe', catTrackPants: 'Pantaloni Sportivi', catEnsembles: 'Completi', fragrance: 'Profumo', collectionEmpty: 'Nessun pezzo in questa categoria per ora.', heroEnterBoutique: 'Entra nella Boutique', heroReadStory: 'Leggi la Storia', heroSubtitle: 'Atelier', footerTagline: 'Senti Il', collectionEyebrow: 'Stagione Uno', galleryPreviewKicker: 'Galleria Atelier', galleryPreviewCopy: 'Le immagini complete di questo capo sono attualmente in produzione. Torna presto per la galleria completa.', closeGalleryPreview: 'Chiudi anteprima galleria', storyReturn: `Ritorna a ${brandMarkup}`, storyArchive: `Archivio ${brandMarkup}`, storyTitle: 'Il Nostro Standard', storyCopyOne: `${brandMarkup} è un marchio streetwear a tiratura limitata. Piccole serie, costruzione pesante, in vendita quando il lavoro è giusto — non secondo un calendario stagionale.`, storyCopyTwo: 'Si parte dal tessuto. Cotone denso che mantiene la forma, cuciture rinforzate e cartamodelli oversize sviluppati con precisione, non semplicemente ingranditi. Il dettaglio è il punto — è ciò che noti dopo un anno, non il primo giorno.', storyCopyThree: 'I drop sono limitati e non tornano. Preferiamo esaurire un capo pensato piuttosto che riassortire un capo mediocre.', storyCopyFour: `Nessun logo parla al posto nostro. ${brandMarkup} è per chi si veste per sé — e preferisce possedere meno, e indossarlo molto più a lungo.`, collectionTitle: 'Collezione', preorderAccess: 'Accesso Preordine', sizeGuide: 'Guida Taglie', comingSoon: 'In Arrivo', chooseSize: 'Scegli Taglia', addToCart: 'Aggiungi al Carrello', gallery: 'Scopri', viewDetails: 'Vedi Dettagli', pdResetZoom: 'Reimposta zoom', pdThumbsLabel: 'Viste del prodotto', pdViewBoth: 'Fronte e retro', pdViewFront: 'Fronte', pdViewBack: 'Retro', selectSize: 'Seleziona Taglia', chooseYourFit: 'Scegli la vestibilità', closeSizePicker: 'Chiudi selettore taglia', sizePreviewDefault: 'Seleziona una taglia per visualizzare la silhouette e il comportamento della vestibilità.', cancel: 'Annulla', apply: 'Applica', sizeGuideTitle: `Guida Taglie ${brandMarkup}`, sizeGuideSubtitle: 'Misurato in centimetri · Vestibilità oversize base', closeSizeGuide: 'Chiudi guida taglie', sizeGuideCopy: 'Usa la tua t-shirt più affidabile come riferimento. Se preferisci una silhouette più pulita, scegli una taglia in meno.', tableSize: 'Taglia', tableChestWidth: 'Larghezza Petto', tableBodyLength: 'Lunghezza Corpo', tableShoulderWidth: 'Larghezza Spalle', tableSleeveLength: 'Lunghezza Manica', tableFitDirection: 'Direzione Fit', fitTrimOversized: 'Oversize Pulito', fitBalancedOversized: 'Oversize Bilanciato', fitSignatureOversized: 'Oversize Signature', fitDeepOversized: 'Oversize Profondo', fitMaxOversized: 'Oversize Massimo', sizeGuideNote: 'Tutti i capi sono tagliati con un’architettura oversize intenzionale. Tolleranza: +/- 1 cm.', sizeGuideReturn: `Ritorna a ${brandMarkup}`, closePreorderSignup: 'Chiudi iscrizione preordine', privateAccess: 'Accesso Privato', preorderTitle: `Riserva il prossimo drop ${brandMarkup}.`, preorderCopy: 'Inserisci email e paese per ricevere accesso al preordine, aggiornamenti sulla spedizione e dettagli di release prima dell’apertura della collezione.', email: 'Email', country: 'Paese', selectYourCountry: 'Seleziona il tuo paese', selectYourCountryNote: 'Scegli la regione che rappresenta il luogo dei tuoi acquisti.', typeHere: 'Scrivi qui', availableRegions: 'Regioni disponibili', noRegionFound: 'Nessuna regione trovata', selectedLabel: 'Selezionato', clearLabel: 'Cancella', closeLabel: 'Chiudi', yourCountry: 'Il tuo Paese', typeYourCountry: 'Scrivi il tuo paese', joinPreorderList: 'Unisciti alla lista preordine', preorderPrivacyNote: `Iscrivendoti, accetti di ricevere email di preordine da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, openCart: 'Apri carrello', yourCart: 'Il tuo Carrello', closeCart: 'Chiudi carrello', cartEmpty: 'Il carrello è vuoto.', total: 'Totale', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Unisciti alla community per drop esclusivi e aggiornamenti.', enterYourEmail: 'Inserisci la tua email', subscribe: 'Iscriviti', newsletterPrivacyNote: `Iscrivendoti, accetti di ricevere email da ${brandMarkup}. Leggi la nostra <a href="/privacy-policy.html">Privacy Policy</a>.`, footerShop: 'Shop', privacyPolicy: 'Privacy Policy', unsubscribe: 'Annulla iscrizione', connect: 'Connessione', footerRights: `© 2026 ${brandMarkup}. Tutti i diritti riservati. <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/unsubscribe.html">Annulla iscrizione</a>`, pleaseTypeCountry: 'Inserisci il tuo paese.', pleaseSelectCountry: 'Seleziona il tuo paese.', reservingPreorder: 'Riserviamo il tuo accesso privato al preordine...', preorderError: 'Impossibile riservare l’accesso al preordine ora.', preorderSuccess: `Benvenuto nel club di accesso privato ${brandMarkup}. Controlla la tua email.`, signingUp: 'Iscrizione in corso...', subscribeError: 'Impossibile iscriversi ora.', subscribeSuccess: `Grazie per esserti iscritto alla newsletter ${brandMarkup}.`, added: 'Aggiunto', selectSizeButton: 'Seleziona Taglia', sizeLabel: 'Taglia: {size}', changeSizeCurrent: 'Cambia taglia, attuale {size}', applySize: 'Applica Taglia', productChooseFit: '{product} · scegli la vestibilità', selectedSizeNote: `La taglia {size} mantiene la silhouette oversize ${brandMarkup} prevista.`, defaultFitTitle: 'Vestibilità Atelier Oversize', defaultFitNote: `Costruito con proporzioni oversize ${brandMarkup} e drappeggio pensato per il movimento.`, checkoutEmptyAlert: 'Il carrello è vuoto. Aggiungi almeno un articolo prima del checkout.', checkoutMissingAlert: 'Alcuni articoli non sono ancora collegati alle varianti Shopify. Aggiorna e riprova, oppure contatta il supporto.', checkoutBuildAlert: 'Impossibile creare il link di checkout Shopify. Riprova.', removeOneLabel: 'Rimuovi un {name} taglia {size}', addOneLabel: 'Aggiungi un {name} taglia {size}', removeItemLabel: 'Rimuovi {name} taglia {size}'
             },
             de: {
-                chapterOneIndex: '01', chapterOneName: 'The Fallen', chapterTwoIndex: '02', chapterTwoName: 'L’Insigne', chapterTwoTeaser: 'Ein Zeichen dessen, was kommt.',
+                chapterOneIndex: 'Chapter I', chapterOneName: 'The Fallen', chapterTwoIndex: 'Chapter II', chapterTwoName: 'The Sigil', chapterThreeIndex: 'Chapter III', chapterThreeName: 'The Eternal', chapterRead: 'Kapitel lesen', chapterStoryClose: 'Schließen',
                 navShop: 'Shop', navCollection: 'Kollektion', navStyleGuide: 'Style Guide', navStyleGuidePlural: 'Style Guides', navContact: 'Kontakt', navPreorder: 'Vorbestellung', navMenu: 'Menü', navClose: 'Schließen', navAccount: 'Konto', navClientServices: 'Kundenservice', settingsLabel: 'Einstellungen', regionExperience: 'Region / Erlebnis', changeCountry: 'Land ändern', navDelivery: 'Versand & Rückgabe', navSizeFit: 'Größe & Passform', navTheHouse: 'Das Haus', navTheCodes: 'Die Codes', vcTitleShort: 'Privater Concierge', sgaDocLabel: 'Dokument', tableHemWidth: 'Saumweite', tableCuffWidth: 'Bündchenweite', tableWaistWidth: 'Bundweite', tableHipWidth: 'Hüftweite', tableFrontRise: 'Vordere Leibhöhe', tableThighWidth: 'Oberschenkelweite', tableInseam: 'Innenbeinlänge', tableOutseam: 'Außenbeinlänge', tableLegOpening: 'Beinöffnung', sgaIntroSweatshirt: 'Das Sweatshirt ist um ein strukturiertes Volumen konstruiert: tiefe Schulter, langer Körper, Rippsaum und Rippbündchen, die die Silhouette halten. Wähle deine gewohnte Größe für den vorgesehenen Fall, oder eine Größe kleiner für eine klarere Linie.', sgaIntroTrackpants: 'Die Hose ist um ein lockeres Bein und einen hohen, uneingeschränkten Bund konstruiert. Die Proportion trägt über Leibhöhe und Oberschenkel statt über den Saum, damit die Linie über die gesamte Länge klar bleibt.', sgaIntroEnsemble: 'Das Ensemble ist als eine Proportion konstruiert: Sweatshirt-Volumen und Beinlinie sind gemeinsam gradiert. Eine Größe bestimmt beide Teile, damit das Set als eine Silhouette liest.', sgaNoteSweatshirt: 'Das Volumen wird von Saum- und Bündchenrippen gehalten, nicht allein von der Körperweite. Für den Hausschnitt wähle deine gewohnte Größe. Für eine klarere Linie am Körper eine Größe kleiner.', sgaNoteTrackpants: 'Vergleiche mit einer Hose, der du bereits vertraust, und sieh dabei zuerst auf Leibhöhe und Innenbeinlänge, dann auf den Bund. Der Bund ist so geschnitten, dass er bei der angegebenen Weite spannungsfrei sitzt.', sgaNoteEnsemble: 'Beide Teile folgen derselben Gradierung, eine Auswahl hält Ober- und Unterteil im Gleichgewicht. Geh nur eine Größe kleiner, wenn das ganze Set enger sitzen soll.', sgaPending: 'Die Schnittmaße dieses Stücks werden im Atelier finalisiert. Die Architektur steht; die Werte folgen.', sgaDraftAltSweatshirt: 'Technische Zeichnung des Kapuzensweatshirts mit den Messpunkten für Brustweite, Körperlänge, Schulterbreite, Ärmellänge, Saumweite und Bündchenweite.', sgaDraftAltTrackpants: 'Technische Zeichnung der Trainingshose mit den Messpunkten für Bundweite, Hüftweite, vordere Leibhöhe, Oberschenkelweite, Innenbeinlänge, Außenbeinlänge und Beinöffnung.', sgaDraftAltEnsemble: 'Technische Zeichnung des Ensembles mit Kapuzensweatshirt und Trainingshose zusammen, mit den Messpunkten beider Teile.', navAtelier: 'Das Atelier', navNeant: 'Néant', catViewAll: 'Alle Ansehen', catTshirts: 'T-Shirts', catSweatshirts: 'Sweatshirts', catTrackPants: 'Trainingshosen', catEnsembles: 'Ensembles', fragrance: 'Parfum', collectionEmpty: 'Noch keine Stücke in dieser Kategorie.', heroEnterBoutique: 'Boutique betreten', heroReadStory: 'Story lesen', heroSubtitle: 'Atelier', footerTagline: 'Spüre Das', collectionEyebrow: 'Saison Eins', galleryPreviewKicker: 'Atelier Galerie', galleryPreviewCopy: 'Die vollständigen Kampagnenbilder für dieses Stück befinden sich derzeit in Produktion. Schau bald wieder vorbei für die komplette Atelier-Galerie.', closeGalleryPreview: 'Galerievorschau schließen', storyReturn: `Zurück zu ${brandMarkup}`, storyArchive: `${brandMarkup} Archiv`, storyTitle: 'Unser Standard', storyCopyOne: `${brandMarkup} ist ein Streetwear-Label in limitierter Auflage. Kleine Serien, schwere Verarbeitung, veröffentlicht wenn die Arbeit stimmt — nicht nach Saisonkalender.`, storyCopyTwo: 'Es beginnt beim Stoff. Dichte Baumwolle, die ihre Form hält, verstärkte Nähte und Oversized-Schnitte, die sauber gradiert und nicht einfach hochskaliert sind. Das Detail ist entscheidend — es fällt nach einem Jahr auf, nicht am ersten Tag.', storyCopyThree: 'Drops sind klein und kommen nicht zurück. Lieber verkaufen wir ein durchdachtes Stück aus, als ein durchschnittliches nachzulegen.', storyCopyFour: `Kein Logo spricht für uns. ${brandMarkup} ist für Menschen, die sich für sich selbst kleiden — und lieber weniger besitzen, und es deutlich länger tragen.`, collectionTitle: 'Kollektion', preorderAccess: 'Vorbestell-Zugang', sizeGuide: 'Größenguide', comingSoon: 'Bald verfügbar', chooseSize: 'Größe wählen', addToCart: 'In den Warenkorb', gallery: 'Entdecken', viewDetails: 'Details ansehen', pdResetZoom: 'Zoom zurücksetzen', pdThumbsLabel: 'Produktansichten', pdViewBoth: 'Vorder- und Rückseite', pdViewFront: 'Vorderseite', pdViewBack: 'Rückseite', selectSize: 'Größe auswählen', chooseYourFit: 'Wähle deinen Fit', closeSizePicker: 'Größenauswahl schließen', sizePreviewDefault: 'Wähle eine Größe, um Silhouette und Fit-Verhalten zu sehen.', cancel: 'Abbrechen', apply: 'Übernehmen', sizeGuideTitle: `${brandMarkup} Größenguide`, sizeGuideSubtitle: 'Gemessen in Zentimetern · Oversized-Basisfit', closeSizeGuide: 'Größenguide schließen', sizeGuideCopy: 'Nutze dein vertrautestes T-Shirt als Referenz. Wenn du eine klarere Silhouette bevorzugst, wähle eine Größe kleiner.', tableSize: 'Größe', tableChestWidth: 'Brustweite', tableBodyLength: 'Körperlänge', tableShoulderWidth: 'Schulterbreite', tableSleeveLength: 'Ärmellänge', tableFitDirection: 'Fit-Richtung', fitTrimOversized: 'Klar Oversized', fitBalancedOversized: 'Ausgewogen Oversized', fitSignatureOversized: 'Signature Oversized', fitDeepOversized: 'Tief Oversized', fitMaxOversized: 'Max Oversized', sizeGuideNote: 'Alle Teile sind mit bewusster Oversized-Architektur geschnitten. Toleranz: +/- 1 cm.', sizeGuideReturn: `Zurück zu ${brandMarkup}`, closePreorderSignup: 'Vorbestell-Anmeldung schließen', privateAccess: 'Privater Zugang', preorderTitle: `Reserviere den nächsten ${brandMarkup} Drop.`, preorderCopy: 'Gib deine E-Mail und dein Land ein, um Vorbestell-Zugang, Versandupdates und frühe Release-Details vor Öffnung der Kollektion zu erhalten.', email: 'E-Mail', country: 'Land', selectYourCountry: 'Wähle dein Land', selectYourCountryNote: 'Wähle die Region, die deinen Einkaufsort widerspiegelt.', typeHere: 'Hier tippen', availableRegions: 'Verfügbare Regionen', noRegionFound: 'Keine Region gefunden', selectedLabel: 'Ausgewählt', clearLabel: 'Löschen', closeLabel: 'Schließen', yourCountry: 'Dein Land', typeYourCountry: 'Gib dein Land ein', joinPreorderList: 'Vorbestellliste beitreten', preorderPrivacyNote: `Mit deiner Anmeldung stimmst du zu, Vorbestell-E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, openCart: 'Warenkorb öffnen', yourCart: 'Dein Warenkorb', closeCart: 'Warenkorb schließen', cartEmpty: 'Dein Warenkorb ist leer.', total: 'Summe', checkout: 'Checkout', newsletter: 'Newsletter', newsletterCopy: 'Tritt unserer Community für exklusive Drops und Updates bei.', enterYourEmail: 'Gib deine E-Mail ein', subscribe: 'Abonnieren', newsletterPrivacyNote: `Mit deinem Abo stimmst du zu, E-Mails von ${brandMarkup} zu erhalten. Lies unsere <a href="/privacy-policy.html">Datenschutzerklärung</a>.`, footerShop: 'Shop', privacyPolicy: 'Datenschutzerklärung', unsubscribe: 'Abmelden', connect: 'Verbinden', footerRights: `© 2026 ${brandMarkup}. Alle Rechte vorbehalten. <a href="/privacy-policy.html">Datenschutzerklärung</a> · <a href="/unsubscribe.html">Abmelden</a>`, pleaseTypeCountry: 'Bitte gib dein Land ein.', pleaseSelectCountry: 'Bitte wähle dein Land aus.', reservingPreorder: 'Dein privater Vorbestell-Zugang wird reserviert...', preorderError: 'Vorbestell-Zugang kann momentan nicht reserviert werden.', preorderSuccess: `Willkommen im privaten ${brandMarkup} Access Club. Bitte prüfe deine E-Mail.`, signingUp: 'Anmeldung läuft...', subscribeError: 'Abonnement momentan nicht möglich.', subscribeSuccess: `Danke für deine Anmeldung zum ${brandMarkup} Newsletter.`, added: 'Hinzugefügt', selectSizeButton: 'Größe auswählen', sizeLabel: 'Größe: {size}', changeSizeCurrent: 'Größe ändern, aktuell {size}', applySize: 'Größe übernehmen', productChooseFit: '{product} · wähle deinen Fit', selectedSizeNote: `Größe {size} erhält die beabsichtigte ${brandMarkup} Oversized-Silhouette.`, defaultFitTitle: 'Oversized Atelier Fit', defaultFitNote: `Gebaut mit ${brandMarkup} Oversized-Proportion und bewegungsorientiertem Fall.`, checkoutEmptyAlert: 'Dein Warenkorb ist leer. Füge vor dem Checkout mindestens einen Artikel hinzu.', checkoutMissingAlert: 'Einige Artikel sind noch nicht Shopify-Varianten zugeordnet. Bitte aktualisiere und versuche es erneut oder kontaktiere den Support.', checkoutBuildAlert: 'Shopify-Checkout-Link kann nicht erstellt werden. Bitte versuche es erneut.', removeOneLabel: 'Ein {name} Größe {size} entfernen', addOneLabel: 'Ein {name} Größe {size} hinzufügen', removeItemLabel: '{name} Größe {size} entfernen'
             }
         };
@@ -16526,6 +16911,7 @@
                 // rewritten rather than left to data-i18n.
                 renderStock();
                 refreshPdNewsletterCopy();
+                if (typeof window.voidChapterStoriesRefresh === 'function') window.voidChapterStoriesRefresh();
                 // The fit archive renders its table and fit names from JS, so
                 // it has to be re-rendered rather than re-labelled in place.
                 if (typeof window.voidFitArchiveRefresh === 'function') window.voidFitArchiveRefresh();
@@ -19526,7 +19912,7 @@
         // size the garment's own specification does not document.
         const DEFAULT_SIZES = guideSizes('tshirt');
         const PRODUCT_SIZES = {
-            // The Fallen is cut in S–XL only; XS is never offered for either.
+            // Endzustand and Levitate are cut in S–XL only; XS is never offered for either.
             'Levitate Tee': ['S', 'M', 'L', 'XL'],
             'Endzustand Tee': ['S', 'M', 'L', 'XL'],
             'Sweatshirt': guideSizes('sweatshirt'),
@@ -21168,7 +21554,7 @@
             }
             // Layout hooks for thinly-populated categories. Cards keep their
             // normal size in every case — only the row's alignment changes.
-            // is-pair and is-trio are the composition and are never touched
+            // is-solo and is-trio are the composition and are never touched
             // here; these two only describe what a filter left behind.
             collectionGrids.forEach((grid) => {
                 const shown = grid.querySelectorAll('.product-card:not(.is-filtered-out)').length;
@@ -21194,6 +21580,213 @@
         applyCollectionFilter(
             (document.querySelector('.collection-nav-tab.active') || {}).dataset?.collectionFilter || 'all'
         );
+
+        // ---- Chapter stories ----
+        // One component for all three chapters. The copy lives here, as data;
+        // each chapter's markup holds only the seal and an empty region.
+        //
+        // Pointer (mouse/pen, on a device that can hover): resting on the seal
+        // shows the story. Once shown, the chapter head and the story are one
+        // zone, so the pointer can travel from the seal into the text at any
+        // pace; it closes a moment after the pointer leaves that zone. Keyboard: focusing the seal shows it, and
+        // Tab carries on into its close button. Click or tap holds it open
+        // (the seal gains a second ring); clicking again, the close button or
+        // Escape closes it. Only the region and the grid below it move — the
+        // head and the seal never shift under the pointer.
+        const CHAPTER_STORIES = {
+            fallen: {
+                theme: 'Ruin. Reckoning. Transformation.',
+                text: 'The old self falls apart. The Endzustand Tee marks the point of no return—an ending confronted, a new identity rising from the wreckage.'
+            },
+            sigil: {
+                theme: 'Mystery. Elevation. Awakening.',
+                text: 'The weight falls away. The Levitate Tee captures the moment between release and becoming. Through the uncertainty, a symbol reveals a direction.'
+            },
+            eternal: {
+                theme: 'Identity. Permanence. Legacy.',
+                text: 'An identity becomes a signature. Across the Insigne trilogy, the EV emblem gives it form—a mark to claim, carry, and leave beyond your lifetime.'
+            }
+        };
+
+        (function chapterStories() {
+            const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+            const calm = () => document.documentElement.classList.contains('reduce-motion')
+                || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const LEAVE_GRACE = 280;     // ms to cross from the seal into the story
+            const PROJECTION = 1150;     // ms the entrance effect is held
+
+            const chapters = [];
+
+            document.querySelectorAll('[data-chapter-story]').forEach((region) => {
+                const story = CHAPTER_STORIES[region.dataset.chapterStory];
+                const section = region.closest('.collection-chapter');
+                const seal = section && section.querySelector('[data-chapter-seal]');
+                const nameEl = section && section.querySelector('.collection-chapter-name');
+                const head = section && section.querySelector('.collection-chapter-head');
+                if (!story || !seal || !nameEl || !head) return;
+
+                region.innerHTML = '';
+                const clip = document.createElement('div');
+                clip.className = 'chapter-story-clip';
+                const body = document.createElement('div');
+                body.className = 'chapter-story-body';
+                const theme = document.createElement('p');
+                theme.className = 'chapter-story-theme';
+                theme.textContent = story.theme;
+                const text = document.createElement('p');
+                text.className = 'chapter-story-text';
+                text.textContent = story.text;
+                const close = document.createElement('button');
+                close.type = 'button';
+                close.className = 'chapter-story-close';
+                const closeLabel = document.createElement('span');
+                const closeMark = document.createElement('span');
+                closeMark.setAttribute('aria-hidden', 'true');
+                closeMark.textContent = '×';
+                close.append(closeLabel, closeMark);
+                body.append(theme, text, close);
+                clip.appendChild(body);
+                region.appendChild(clip);
+                region.setAttribute('role', 'region');
+                region.setAttribute('aria-labelledby', nameEl.id);
+                region.inert = true;
+
+                const state = { open: false, pinned: false, hoverSeal: false, hoverHead: false, hoverStory: false, muteHover: false, muteFocus: false, leaveTimer: 0, projectTimer: 0 };
+
+                const label = () => {
+                    seal.setAttribute('aria-label', t('chapterRead') + ': ' + nameEl.textContent.trim());
+                    closeLabel.textContent = t('chapterStoryClose');
+                };
+                label();
+
+                function open() {
+                    clearTimeout(state.leaveTimer);
+                    if (state.open) return;
+                    state.open = true;
+                    region.inert = false;
+                    region.classList.add('is-open');
+                    seal.setAttribute('aria-expanded', 'true');
+                    clearTimeout(state.projectTimer);
+                    region.classList.remove('is-projecting');
+                    if (!calm()) {
+                        void region.offsetWidth;   // restart the projection
+                        region.classList.add('is-projecting');
+                        state.projectTimer = setTimeout(() => region.classList.remove('is-projecting'), PROJECTION);
+                    }
+                }
+
+                function shut(returnFocus) {
+                    clearTimeout(state.leaveTimer);
+                    clearTimeout(state.projectTimer);
+                    const hadFocus = region.contains(document.activeElement);
+                    state.open = false;
+                    state.pinned = false;
+                    seal.classList.remove('is-pinned');
+                    seal.setAttribute('aria-expanded', 'false');
+                    region.classList.remove('is-open', 'is-projecting');
+                    region.inert = true;
+                    if (returnFocus || hadFocus) {
+                        state.muteFocus = true;
+                        seal.focus({ preventScroll: true });
+                        state.muteFocus = false;
+                    }
+                }
+
+                function pin() {
+                    open();
+                    state.pinned = true;
+                    seal.classList.add('is-pinned');
+                }
+
+                // Close a transient (unpinned) story once nothing is holding
+                // it: not the pointer, not keyboard focus.
+                function release() {
+                    clearTimeout(state.leaveTimer);
+                    if (!state.open || state.pinned) return;
+                    state.leaveTimer = setTimeout(() => {
+                        const focusHolds = (seal.matches(':focus-visible')) || region.contains(document.activeElement);
+                        if (state.pinned || state.hoverSeal || state.hoverHead || state.hoverStory || focusHolds) return;
+                        shut(false);
+                    }, LEAVE_GRACE);
+                }
+
+                const isHoverPointer = (e) => canHover.matches && (e.pointerType === 'mouse' || e.pointerType === 'pen');
+
+                seal.addEventListener('pointerenter', (e) => {
+                    if (!isHoverPointer(e)) return;
+                    state.hoverSeal = true;
+                    if (state.muteHover) return;
+                    open();
+                });
+                seal.addEventListener('pointerleave', (e) => {
+                    if (!isHoverPointer(e)) return;
+                    state.hoverSeal = false;
+                    state.muteHover = false;
+                    release();
+                });
+                // The rest of the zone only keeps an open story open; it never
+                // opens one by itself.
+                [[head, 'hoverHead'], [region, 'hoverStory']].forEach(([el, key]) => {
+                    el.addEventListener('pointerenter', (e) => {
+                        if (!isHoverPointer(e)) return;
+                        state[key] = true;
+                        if (state.open) clearTimeout(state.leaveTimer);
+                    });
+                    el.addEventListener('pointerleave', (e) => {
+                        if (!isHoverPointer(e)) return;
+                        state[key] = false;
+                        release();
+                    });
+                });
+
+                seal.addEventListener('focus', () => {
+                    if (state.muteFocus || !seal.matches(':focus-visible')) return;
+                    open();
+                });
+                [seal, region].forEach((el) => el.addEventListener('focusout', (e) => {
+                    const next = e.relatedTarget;
+                    if (next && (seal === next || region.contains(next))) return;
+                    release();
+                }));
+
+                seal.addEventListener('click', () => {
+                    if (state.pinned) {
+                        shut(false);
+                        // The pointer is still on the seal: do not reopen it
+                        // until it has left and come back.
+                        state.muteHover = state.hoverSeal;
+                        return;
+                    }
+                    pin();
+                });
+
+                close.addEventListener('click', () => {
+                    state.muteHover = state.hoverSeal;
+                    shut(true);
+                });
+
+                chapters.push({ seal, region, state, shut, label });
+            });
+
+            if (!chapters.length) return;
+            chapters.forEach((c) => { c.seal.hidden = false; });
+
+            // Escape closes whichever story is open, unless a dialog above the
+            // page is the one being dismissed.
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                const active = document.activeElement;
+                if (active && active.closest && active.closest('[role="dialog"], [aria-modal="true"]')) return;
+                chapters.forEach((c) => {
+                    if (!c.state.open) return;
+                    const focusInside = c.seal === active || c.region.contains(active);
+                    c.state.muteHover = c.state.hoverSeal;
+                    c.shut(focusInside);
+                });
+            });
+
+            window.voidChapterStoriesRefresh = () => chapters.forEach((c) => c.label());
+        })();
 
         // ---- Style guide overlay ----
         const styleGuideOverlay = document.getElementById('styleGuideOverlay');

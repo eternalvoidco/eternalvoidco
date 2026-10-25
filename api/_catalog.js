@@ -25,7 +25,7 @@ export const CURRENCY = 'eur';
 // avoids float arithmetic on money.
 const TEE_SIZES = ['XS', 'S', 'M', 'L', 'XL'];
 const SET_SIZES = ['S', 'M', 'L', 'XL'];
-// The Fallen (Levitate, Endzustand) is cut in S–XL only. An XS line for either
+// Endzustand (The Fallen) and Levitate (The Sigil) are cut in S–XL only. An XS line for either
 // is refused as unknown_size, so an old bag holding one is corrected at checkout.
 const FALLEN_SIZES = ['S', 'M', 'L', 'XL'];
 
