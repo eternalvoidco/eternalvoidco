@@ -21593,20 +21593,73 @@
         // (the seal gains a second ring); clicking again, the close button or
         // Escape closes it. Only the region and the grid below it move — the
         // head and the seal never shift under the pointer.
+        // One entry per site language, chosen from currentLanguage (the
+        // visitor's saved choice, else the browser's language, else English)
+        // and re-rendered when the language is changed. French addresses the
+        // reader as "vous", Italian and German as "tu"/"du", as the site does.
         const CHAPTER_STORIES = {
-            fallen: {
-                theme: 'Ruin. Reckoning. Transformation.',
-                text: 'The old self falls apart. The Endzustand Tee marks the point of no return—an ending confronted, a new identity rising from the wreckage.'
+            en: {
+                fallen: {
+                    theme: 'Ruin. Reckoning. Transformation.',
+                    text: 'The old self falls apart. The Endzustand Tee marks the point of no return—an ending confronted, a new identity rising from the wreckage.'
+                },
+                sigil: {
+                    theme: 'Mystery. Elevation. Awakening.',
+                    text: 'The weight falls away. The Levitate Tee captures the moment between release and becoming. Through the uncertainty, a symbol reveals a direction.'
+                },
+                eternal: {
+                    theme: 'Identity. Permanence. Legacy.',
+                    text: 'An identity becomes a signature. Across the Insigne trilogy, the EV emblem gives it form—a mark to claim, carry, and leave beyond your lifetime.'
+                }
             },
-            sigil: {
-                theme: 'Mystery. Elevation. Awakening.',
-                text: 'The weight falls away. The Levitate Tee captures the moment between release and becoming. Through the uncertainty, a symbol reveals a direction.'
+            fr: {
+                fallen: {
+                    theme: 'Ruine. Jugement. Transformation.',
+                    text: 'L’ancien soi se désagrège. Le Endzustand Tee marque le point de non-retour — une fin affrontée, une nouvelle identité qui s’élève des décombres.'
+                },
+                sigil: {
+                    theme: 'Mystère. Élévation. Éveil.',
+                    text: 'Le poids se dissipe. Le Levitate Tee saisit l’instant entre l’abandon et le devenir. À travers l’incertitude, un symbole révèle une direction.'
+                },
+                eternal: {
+                    theme: 'Identité. Permanence. Héritage.',
+                    text: 'Une identité devient une signature. À travers la trilogie Insigne, l’emblème EV lui donne forme — une marque à revendiquer, à porter et à laisser au-delà de votre vie.'
+                }
             },
-            eternal: {
-                theme: 'Identity. Permanence. Legacy.',
-                text: 'An identity becomes a signature. Across the Insigne trilogy, the EV emblem gives it form—a mark to claim, carry, and leave beyond your lifetime.'
+            it: {
+                fallen: {
+                    theme: 'Rovina. Resa dei conti. Trasformazione.',
+                    text: 'Il vecchio io va in pezzi. La Endzustand Tee segna il punto di non ritorno — una fine affrontata, una nuova identità che risorge dalle macerie.'
+                },
+                sigil: {
+                    theme: 'Mistero. Elevazione. Risveglio.',
+                    text: 'Il peso svanisce. La Levitate Tee cattura l’istante tra il rilascio e il divenire. Attraverso l’incertezza, un simbolo rivela una direzione.'
+                },
+                eternal: {
+                    theme: 'Identità. Permanenza. Eredità.',
+                    text: 'Un’identità diventa una firma. Attraverso la trilogia Insigne, l’emblema EV le dà forma — un segno da rivendicare, portare e lasciare oltre la tua vita.'
+                }
+            },
+            de: {
+                fallen: {
+                    theme: 'Untergang. Abrechnung. Verwandlung.',
+                    text: 'Das alte Ich zerfällt. Das Endzustand Tee markiert den Punkt ohne Wiederkehr – ein Ende, dem man sich stellt, eine neue Identität, die aus den Trümmern aufsteigt.'
+                },
+                sigil: {
+                    theme: 'Mysterium. Erhebung. Erwachen.',
+                    text: 'Die Last fällt ab. Das Levitate Tee fängt den Moment zwischen Loslassen und Werden ein. Durch die Ungewissheit weist ein Symbol eine Richtung.'
+                },
+                eternal: {
+                    theme: 'Identität. Beständigkeit. Vermächtnis.',
+                    text: 'Eine Identität wird zur Signatur. In der Insigne-Trilogie gibt ihr das EV-Emblem Gestalt – ein Zeichen, das du beanspruchst, trägst und über dein Leben hinaus hinterlässt.'
+                }
             }
         };
+
+        function chapterStoryFor(key) {
+            const own = CHAPTER_STORIES[currentLanguage] || CHAPTER_STORIES.en;
+            return own[key] || CHAPTER_STORIES.en[key];
+        }
 
         (function chapterStories() {
             const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -21618,7 +21671,8 @@
             const chapters = [];
 
             document.querySelectorAll('[data-chapter-story]').forEach((region) => {
-                const story = CHAPTER_STORIES[region.dataset.chapterStory];
+                const key = region.dataset.chapterStory;
+                const story = CHAPTER_STORIES.en[key];
                 const section = region.closest('.collection-chapter');
                 const seal = section && section.querySelector('[data-chapter-seal]');
                 const nameEl = section && section.querySelector('.collection-chapter-name');
@@ -21632,10 +21686,8 @@
                 body.className = 'chapter-story-body';
                 const theme = document.createElement('p');
                 theme.className = 'chapter-story-theme';
-                theme.textContent = story.theme;
                 const text = document.createElement('p');
                 text.className = 'chapter-story-text';
-                text.textContent = story.text;
                 const close = document.createElement('button');
                 close.type = 'button';
                 close.className = 'chapter-story-close';
@@ -21653,7 +21705,12 @@
 
                 const state = { open: false, pinned: false, hoverSeal: false, hoverHead: false, hoverStory: false, muteHover: false, muteFocus: false, leaveTimer: 0, projectTimer: 0 };
 
+                // Words and labels in the current language; called again on
+                // every language change, open or closed.
                 const label = () => {
+                    const words = chapterStoryFor(key);
+                    theme.textContent = words.theme;
+                    text.textContent = words.text;
                     seal.setAttribute('aria-label', t('chapterRead') + ': ' + nameEl.textContent.trim());
                     closeLabel.textContent = t('chapterStoryClose');
                 };

@@ -23,12 +23,14 @@ const STORIES = {
         'An identity becomes a signature. Across the Insigne trilogy, the EV emblem gives it form—a mark to claim, carry, and leave beyond your lifetime.']
 };
 
-async function shop(browser, stack, { viewport = DESKTOP, mobile = false, reducedMotion = 'no-preference', language = 'en' } = {}) {
-    const context = await browser.newContext({ viewport, reducedMotion, isMobile: mobile, hasTouch: mobile });
+// language: the saved site choice, or null to leave it unset (the browser's
+// own language, from `locale`, then decides).
+async function shop(browser, stack, { viewport = DESKTOP, mobile = false, reducedMotion = 'no-preference', language = 'en', locale = 'en-US' } = {}) {
+    const context = await browser.newContext({ viewport, reducedMotion, isMobile: mobile, hasTouch: mobile, locale });
     await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort());
     await context.addInitScript((lang) => {
         localStorage.setItem('void-gate-disabled', '1');
-        localStorage.setItem('voidLanguage', lang);
+        if (lang) localStorage.setItem('voidLanguage', lang);
     }, language);
     const page = await context.newPage();
     page.setDefaultTimeout(15000);
@@ -394,10 +396,63 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         await context.close();
     });
 
-    it('relabels its controls with the language', async () => {
-        const { context, page } = await shop(browser, stack, { language: 'fr' });
+    it('tells each story in the visitor’s language: saved choice, browser language, and a live switch', async () => {
+        const words = (page) => page.$$eval('[data-chapter-story]', (els) => els.map((el) => [
+            el.querySelector('.chapter-story-theme').textContent, el.querySelector('.chapter-story-text').textContent]));
+        const TOLD = {
+            fr: [['Ruine. Jugement. Transformation.', /^L’ancien soi se désagrège\. Le Endzustand Tee/],
+                ['Mystère. Élévation. Éveil.', /^Le poids se dissipe\. Le Levitate Tee/],
+                ['Identité. Permanence. Héritage.', /trilogie Insigne, l’emblème EV/]],
+            it: [['Rovina. Resa dei conti. Trasformazione.', /^Il vecchio io va in pezzi\. La Endzustand Tee/],
+                ['Mistero. Elevazione. Risveglio.', /^Il peso svanisce\. La Levitate Tee/],
+                ['Identità. Permanenza. Eredità.', /trilogia Insigne, l’emblema EV/]],
+            de: [['Untergang. Abrechnung. Verwandlung.', /^Das alte Ich zerfällt\. Das Endzustand Tee/],
+                ['Mysterium. Erhebung. Erwachen.', /^Die Last fällt ab\. Das Levitate Tee/],
+                ['Identität. Beständigkeit. Vermächtnis.', /Insigne-Trilogie gibt ihr das EV-Emblem/]]
+        };
+        const expectTold = async (page, lang) => {
+            const got = await words(page);
+            TOLD[lang].forEach(([theme, text], i) => {
+                assert.equal(got[i][0], theme, `${lang} theme ${i}`);
+                assert.match(got[i][1], text, `${lang} text ${i}`);
+            });
+        };
+
+        // The language saved on the site.
+        let { context, page } = await shop(browser, stack, { language: 'fr' });
+        await expectTold(page, 'fr');
         assert.equal(await page.getAttribute(seal('sigil'), 'aria-label'), 'Lire le chapitre: The Sigil');
         assert.equal((await page.locator(`${region('sigil')} .chapter-story-close`).textContent()).replace('×', '').trim(), 'Fermer');
+        await context.close();
+
+        // Nothing saved: the browser's language.
+        for (const [locale, lang] of [['de-DE', 'de'], ['it-IT', 'it']]) {
+            ({ context, page } = await shop(browser, stack, { language: null, locale }));
+            assert.equal(await page.evaluate(() => document.documentElement.lang), lang);
+            await expectTold(page, lang);
+            await context.close();
+        }
+        // An unsupported browser language falls back to English, word for word.
+        ({ context, page } = await shop(browser, stack, { language: null, locale: 'ja-JP' }));
+        assert.deepEqual(await words(page), Object.values(STORIES));
+        await context.close();
+
+        // Switched from the language menu while a story is open: it changes in place.
+        ({ context, page } = await shop(browser, stack));
+        await toChapter(page, 'fallen');
+        await page.click(seal('fallen'));
+        await until(page, 'fallen', 'true');
+        await page.click('#languageSelectorButton');
+        await page.click('#languageSelectorList [data-language="de"]');
+        await page.waitForFunction(() => /^Untergang/.test(document.querySelector('[data-chapter="fallen"] .chapter-story-theme').textContent));
+        await expectTold(page, 'de');
+        assert.equal((await snap(page, 'fallen')).expanded, 'true', 'still open');
+        assert.equal(await page.getAttribute(seal('fallen'), 'aria-label'), 'Kapitel lesen: The Fallen');
+        await page.click('#languageSelectorButton');
+        await page.click('#languageSelectorList [data-language="en"]');
+        await page.waitForFunction(() => /^Ruin\./.test(document.querySelector('[data-chapter="fallen"] .chapter-story-theme').textContent));
+        assert.deepEqual(await words(page), Object.values(STORIES));
+        assert.deepEqual(page.errors, []);
         await context.close();
     });
 });
