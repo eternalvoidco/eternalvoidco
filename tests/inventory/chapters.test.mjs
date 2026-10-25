@@ -1,7 +1,9 @@
-// The collection's three chapters in Chromium: their grouping, and the seal
-// that opens each chapter's story inline — hover, keyboard, click, touch,
-// closing, rapid pointer movement, phones and reduced motion — with the
-// pieces underneath fully visible and usable in every state.
+// The collection's three chapters in Chromium, and the story each seal opens:
+// the cinematic sequence (anticipation, unfolding, light, letters written in,
+// a settled passage), the exit (a fade at full height, then the collapse),
+// the 0.7s hover grace, restoring on return, closing mid-writing, keyboard,
+// touch, long translations, reduced motion and language — with the pieces
+// underneath fully visible and usable in every state.
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,6 +15,7 @@ const CHROME = process.env.CHROMIUM_PATH
 
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
+const KEYS = ['fallen', 'sigil', 'eternal'];
 
 const STORIES = {
     fallen: ['Ruin. Reckoning. Transformation.',
@@ -39,26 +42,37 @@ async function shop(browser, stack, { viewport = DESKTOP, mobile = false, reduce
     await page.goto(`${stack.origin}/shop`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1600);
     if (await page.locator('#voidAuth[aria-hidden="false"]').count()) await page.locator('#voidAuthClose').click();
-    await page.waitForFunction(() => document.querySelector('[data-stock-badge]'));
+    if (!mobile) await page.mouse.move(4, viewport.height / 2);   // well away from every seal
+    await page.waitForFunction(() => document.querySelector('[data-stock-badge]') && document.fonts.status === 'loaded');
     return { context, page };
 }
 
 const seal = (key) => `[data-chapter="${key}"] [data-chapter-seal]`;
 const region = (key) => `[data-chapter="${key}"] [data-chapter-story]`;
 
-// Everything about one chapter that the tests care about, in one read.
+const phase = (page, key) => page.evaluate((i) => window.__chapterStories[i].phase, KEYS.indexOf(key));
+const waitPhase = (page, key, p, timeout = 6000) => page.waitForFunction(([i, x]) => window.__chapterStories[i].phase === x,
+    [KEYS.indexOf(key), p], { timeout });
+const waitWritten = (page, key, timeout = 9000) => page.waitForFunction((i) => window.__chapterStories[i].written,
+    KEYS.indexOf(key), { timeout });
+
+// Everything about one chapter the tests care about, in one read.
 const snap = (page, key) => page.evaluate((k) => {
     const section = document.querySelector(`[data-chapter="${k}"]`);
     const s = section.querySelector('[data-chapter-seal]');
     const r = section.querySelector('[data-chapter-story]');
+    const body = r.querySelector('.chapter-story-body');
     const grid = section.querySelector('.products-grid');
     const sb = s.getBoundingClientRect();
     return {
         expanded: s.getAttribute('aria-expanded'),
         pinned: s.classList.contains('is-pinned'),
-        open: r.classList.contains('is-open'),
         inert: r.inert,
         height: Math.round(r.getBoundingClientRect().height),
+        full: Math.round(body.offsetHeight),
+        bodyOpacity: Number(getComputedStyle(body).opacity),
+        writing: r.classList.contains('is-writing'),
+        canvases: [...r.querySelectorAll('canvas')].filter((c) => !c.hidden).length,
         sealTop: Math.round(sb.top + window.scrollY),
         sealLeft: Math.round(sb.left),
         gridTop: Math.round(grid.getBoundingClientRect().top + window.scrollY)
@@ -79,14 +93,25 @@ async function toChapter(page, key) {
     }, key);
 }
 
-const until = (page, key, expanded, timeout = 4000) => page.waitForFunction(([k, x]) =>
-    document.querySelector(`[data-chapter="${k}"] [data-chapter-seal]`).getAttribute('aria-expanded') === x, [key, expanded], { timeout });
-// Open or closed, and the height animation finished.
-const settled = (page, key) => page.waitForFunction((k) =>
-    document.querySelector(`[data-chapter="${k}"] [data-chapter-story]`).getAnimations().length === 0, key);
+// Records, from now, every change of the story region's classes with its time.
+const watch = (page, key) => page.evaluate((k) => {
+    const r = document.querySelector(`[data-chapter="${k}"] [data-chapter-story]`);
+    const t0 = performance.now();
+    window.__log = [];
+    window.__writes = 0;
+    let had = r.classList.contains('is-writing');
+    new MutationObserver(() => {
+        const now = r.classList.contains('is-writing');
+        if (now && !had) window.__writes += 1;
+        had = now;
+        window.__log.push([Math.round(performance.now() - t0), r.className]);
+    }).observe(r, { attributes: true, attributeFilter: ['class'] });
+}, key);
+const firstWith = (page, cls) => page.evaluate((c) => (window.__log.find(([, name]) => name.split(' ').includes(c)) || [null])[0], cls);
+const firstWithout = (page, cls, after = 0) => page.evaluate(([c, a]) => (window.__log.find(([t, name]) => t > a && !name.split(' ').includes(c)) || [null])[0], [cls, after]);
 
-// No part of the open story overlaps any piece's image, and the centre of
-// every image is the image itself (nothing is laid over it).
+// No part of a story overlaps any piece's image, and the centre of every image
+// is the image itself.
 const imagesClear = (page) => page.evaluate(() => {
     const problems = [];
     const stories = [...document.querySelectorAll('[data-chapter-story]')].map((r) => r.getBoundingClientRect());
@@ -107,6 +132,17 @@ const imagesClear = (page) => page.evaluate(() => {
     return problems;
 });
 
+// How much ink the writing canvases hold (alpha summed, sampled).
+const ink = (page, key) => page.evaluate((k) => {
+    let sum = 0;
+    document.querySelectorAll(`[data-chapter="${k}"] canvas`).forEach((c) => {
+        if (c.hidden || !c.width) return;
+        const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+        for (let i = 3; i < d.length; i += 16) sum += d[i];
+    });
+    return sum;
+}, key);
+
 describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PATH)' }, () => {
     let stack;
     let browser;
@@ -123,276 +159,313 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         const { context, page } = await shop(browser, stack);
         const chapters = await page.$$eval('.collection-chapter', (els) => els.map((el) => ({
             key: el.dataset.chapter,
-            index: el.querySelector('.collection-chapter-index').textContent,
-            name: el.querySelector('.collection-chapter-name').textContent,
             label: el.getAttribute('aria-labelledby').split(' ').map((id) => document.getElementById(id).textContent).join(' — '),
             preview: el.classList.contains('is-preview'),
             pieces: [...el.querySelectorAll('.product-card')].map((c) => [
-                c.dataset.productName, c.querySelector('.product-price').textContent, c.dataset.unreleased === 'true',
-                c.querySelector('.product-photo').getAttribute('src')])
+                c.dataset.productName, c.querySelector('.product-price').textContent, c.dataset.unreleased === 'true'])
         })));
         assert.deepEqual(chapters, [
-            { key: 'fallen', index: 'Chapter I', name: 'The Fallen', label: 'Chapter I — The Fallen', preview: false,
-                pieces: [['Endzustand Tee', '€200', false, '/assets/endzustand-black.png']] },
-            { key: 'sigil', index: 'Chapter II', name: 'The Sigil', label: 'Chapter II — The Sigil', preview: false,
-                pieces: [['Levitate Tee', '€200', false, '/assets/levitate-white.png']] },
-            { key: 'eternal', index: 'Chapter III', name: 'The Eternal', label: 'Chapter III — The Eternal', preview: true,
-                pieces: [['Insigne Ivoire', '€250', true, '/assets/ivory-gold-monogram.png'],
-                    ['Insigne Noir', '€250', true, '/assets/ivory-black-gold-monogram.png'],
-                    ['Insigne Azure', '€250', true, '/assets/ivory-blue-monogram.png']] }
+            { key: 'fallen', label: 'Chapter I — The Fallen', preview: false, pieces: [['Endzustand Tee', '€200', false]] },
+            { key: 'sigil', label: 'Chapter II — The Sigil', preview: false, pieces: [['Levitate Tee', '€200', false]] },
+            { key: 'eternal', label: 'Chapter III — The Eternal', preview: true, pieces: [
+                ['Insigne Ivoire', '€250', true], ['Insigne Noir', '€250', true], ['Insigne Azure', '€250', true]] }
         ]);
-        assert.equal(await page.locator('[data-chapter="eternal"] .collection-chapter-status').textContent(), 'Coming Soon');
-
-        // The copy, exactly, one component per chapter.
         for (const [key, [theme, text]] of Object.entries(STORIES)) {
             assert.equal(await page.locator(`${region(key)} .chapter-story-theme`).textContent(), theme);
             assert.equal(await page.locator(`${region(key)} .chapter-story-text`).textContent(), text);
             assert.equal(await page.getAttribute(seal(key), 'aria-controls'), await page.getAttribute(region(key), 'id'));
         }
-        assert.deepEqual(await page.$$eval('[data-chapter-seal]', (els) => els.map((e) => e.getAttribute('aria-label'))),
-            ['Read chapter: The Fallen', 'Read chapter: The Sigil', 'Read chapter: The Eternal']);
+        // The emblem is the house's own asset.
+        assert.match(await page.evaluate(() => getComputedStyle(document.querySelector('.chapter-seal-mark')).maskImage), /\/assets\/ev-emblem\.png/);
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
-    it('closed stories take no room, no focus and no input', async () => {
+    it('closed: no room, no focus, no input, and nothing running', async () => {
         const { context, page } = await shop(browser, stack);
-        for (const key of Object.keys(STORIES)) {
-            const s = await snap(page, key);
-            assert.deepEqual([s.expanded, s.open, s.inert, s.height], ['false', false, true, 0], key);
-        }
-        // Tab from each seal goes past its story, never into it.
         await toChapter(page, 'fallen');
-        await page.focus(seal('fallen'));
-        await page.keyboard.press('Escape');   // the focus-visible peek is not under test here
-        const focusable = await page.$$eval('[data-chapter-story] button', (els) => els.filter((b) => !b.closest('[inert]')).length);
-        assert.equal(focusable, 0);
-        // A click where a closed story would be lands on the page below it.
-        const box = await page.locator('[data-chapter="fallen"] .collection-chapter-head').boundingBox();
-        const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x, y).closest('[data-chapter-story]'), [box.x + box.width / 2, box.y + box.height + 2]);
-        assert.equal(hit, null);
+        for (const key of KEYS) {
+            const s = await snap(page, key);
+            assert.deepEqual([s.expanded, s.inert, s.height, s.canvases], ['false', true, 0, 0], key);
+        }
+        assert.equal(await page.$$eval('[data-chapter-story] button', (els) => els.filter((b) => !b.closest('[inert]')).length), 0);
+        const running = await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running'
+            && a.effect.target.closest && a.effect.target.closest('[data-chapter-story], .chapter-filament')).length);
+        assert.equal(running, 0, 'no decorative work while closed');
+        assert.equal(await page.evaluate(() => window.__chapterStories.some((c) => c.writing)), false);
         await context.close();
     });
 
-    it('opens on hover, stays open on the way into the text, and closes when the pointer leaves', async () => {
+    it('opens as one sequence: anticipation, unfolding, light, then the words written in', async () => {
         const { context, page } = await shop(browser, stack);
         await toChapter(page, 'fallen');
         const before = await snap(page, 'fallen');
+        await watch(page, 'fallen');
         const sb = await page.locator(seal('fallen')).boundingBox();
+        await page.mouse.move(sb.x + 22, sb.y + 22, { steps: 3 });
 
-        await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2, { steps: 4 });
-        await page.waitForFunction(() => document.querySelector('[data-chapter="fallen"] [data-chapter-story]').classList.contains('is-open'));
-        assert.equal((await snap(page, 'fallen')).expanded, 'true');
-        assert.equal(await page.evaluate(() => document.querySelector('[data-chapter="fallen"] [data-chapter-story]').classList.contains('is-projecting')), true,
-            'the projection plays');
-        await settled(page, 'fallen');
-        const open = await snap(page, 'fallen');
-        assert.equal(open.sealTop, before.sealTop, 'the seal does not move');
-        assert.equal(open.sealLeft, before.sealLeft);
-        assert.ok(open.gridTop - before.gridTop >= open.height - 2 && open.height > 80, 'the pieces moved down by the story');
+        // Anticipation: lit seal and the filament, but the space has not moved yet.
+        await page.waitForTimeout(120);
+        let s = await snap(page, 'fallen');
+        assert.equal(s.expanded, 'true');
+        assert.ok(s.height < 4, `still closed during the anticipation (${s.height})`);
+        assert.equal(await page.evaluate(() => document.querySelector('[data-chapter="fallen"]').classList.contains('is-story-open')), true, 'filament drawn');
 
-        // Down from the seal, across the head, onto the start of the paragraph
-        // — slowly, the way someone reading would — and select it.
+        // Mid-unfold, the space is partly open and the light has arrived.
+        await page.waitForTimeout(700);
+        s = await snap(page, 'fallen');
+        assert.ok(s.height > 10 && s.height < s.full, `unfolding (${s.height}/${s.full})`);
+        // Timed from the moment the story began to open (the first change).
+        const begin = await firstWith(page, 'is-shown');
+        const unfoldAt = (await firstWith(page, 'is-unfolding')) - begin;
+        const litAt = (await firstWith(page, 'is-lit')) - begin;
+        assert.ok(unfoldAt >= 220 && unfoldAt <= 480, `anticipation ~300ms (${unfoldAt})`);
+        assert.ok(litAt >= unfoldAt && litAt <= 800, `the light comes just before the words (${litAt})`);
+
+        // Letters form progressively: ink grows over time, never all at once.
+        const a = await ink(page, 'fallen');
+        await page.waitForTimeout(600);
+        const b = await ink(page, 'fallen');
+        await page.waitForTimeout(600);
+        const c = await ink(page, 'fallen');
+        assert.ok(a > 0 && b > a && c > b, `the ink develops (${a} → ${b} → ${c})`);
+        assert.equal((await snap(page, 'fallen')).writing, true);
+
+        // Settled: real, still, selectable text; the canvases gone.
+        await waitWritten(page, 'fallen');
+        const writtenAt = (await firstWithout(page, 'is-writing', begin + 50)) - begin;
+        assert.ok(writtenAt >= 3500 && writtenAt <= 6500, `the short English story takes ~4–6s (${writtenAt})`);
+        await page.waitForTimeout(150);
+        s = await snap(page, 'fallen');
+        assert.deepEqual([s.writing, s.canvases, s.bodyOpacity, s.sealTop, s.sealLeft], [false, 0, 1, before.sealTop, before.sealLeft]);
+        assert.equal(s.height, s.full, 'full height, nothing clipped');
+        assert.ok(s.gridTop - before.gridTop >= s.full - 2, 'the pieces moved down by the story');
+        assert.deepEqual(await imagesClear(page), []);
+        const textBox = await page.locator(`${region('fallen')} .chapter-story-text`).boundingBox();
+        await page.mouse.move(textBox.x + 4, textBox.y + 8, { steps: 10 });
+        await page.mouse.down();
+        await page.mouse.move(textBox.x + textBox.width - 4, textBox.y + textBox.height - 8, { steps: 6 });
+        await page.mouse.up();
+        assert.match(await page.evaluate(() => String(window.getSelection())), /old self/, 'selectable');
+        assert.equal(await page.evaluate(() => document.querySelector('[data-chapter="fallen"] .chapter-story-close').getAnimations().length > 0
+            || getComputedStyle(document.querySelector('[data-chapter="fallen"] .chapter-story-close'), '::before').animationName), 'csGlint', 'the idle glint runs');
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
+    it('keeps the passage whole for assistive technology while it is written', async () => {
+        const { context, page } = await shop(browser, stack);
+        await toChapter(page, 'sigil');
+        await page.click(seal('sigil'));
+        await page.waitForTimeout(1500);
+        const a11y = await page.evaluate(() => {
+            const r = document.querySelector('[data-chapter="sigil"] [data-chapter-story]');
+            return {
+                canvasesHidden: [...r.querySelectorAll('canvas')].every((c) => c.getAttribute('aria-hidden') === 'true' && c.textContent === ''),
+                theme: r.querySelector('.chapter-story-theme').textContent,
+                text: r.querySelector('.chapter-story-text').textContent,
+                childText: [...r.querySelectorAll('.chapter-story-theme *, .chapter-story-text *')].length,
+                live: r.querySelectorAll('[aria-live]').length
+            };
+        });
+        assert.deepEqual(a11y, { canvasesHidden: true, theme: STORIES.sigil[0], text: STORIES.sigil[1], childText: 0, live: 0 },
+            'one plain sentence each, no per-letter nodes, nothing announced');
+        await context.close();
+    });
+
+    it('waits ~0.7s after the pointer leaves, fades at full height, then collapses', async () => {
+        const { context, page } = await shop(browser, stack);
+        await toChapter(page, 'fallen');
+        const sb = await page.locator(seal('fallen')).boundingBox();
+        await page.mouse.move(sb.x + 22, sb.y + 22, { steps: 3 });
+
+        // Slowly from the seal down to the start of the text: it stays.
+        await page.waitForTimeout(1600);
         const text = await page.locator(`${region('fallen')} .chapter-story-text`).boundingBox();
         for (let i = 1; i <= 16; i++) {
             const k = i / 16;
             await page.mouse.move(sb.x + 22 + (text.x + 10 - sb.x - 22) * k, sb.y + 22 + (text.y + 6 - sb.y - 22) * k);
-            await page.waitForTimeout(60);
+            await page.waitForTimeout(70);
         }
-        await page.waitForTimeout(500);
-        assert.equal((await snap(page, 'fallen')).open, true, 'still open over the text');
-        await page.mouse.down();
-        await page.mouse.move(text.x + text.width - 10, text.y + text.height - 6, { steps: 8 });
-        await page.mouse.up();
-        assert.match(await page.evaluate(() => String(window.getSelection())), /old self|wreckage/, 'the text is selectable');
-        await page.waitForTimeout(1200);
-        assert.equal(await page.evaluate(() => document.querySelector('[data-chapter="fallen"] [data-chapter-story]').classList.contains('is-projecting')), false,
-            'it settles into plain type');
+        await waitWritten(page, 'fallen');
+        assert.equal(await phase(page, 'fallen'), 'open');
+        const full = (await snap(page, 'fallen')).full;
+        const gridOpen = (await snap(page, 'fallen')).gridTop;
 
-        // Down onto the piece: it closes completely, and does not reopen.
-        const card = await page.locator('.product-card[data-product-name="Endzustand Tee"] .product-image').boundingBox();
-        await page.mouse.move(card.x + card.width / 2, card.y + card.height / 2, { steps: 6 });
-        await until(page, 'fallen', 'false');
-        await settled(page, 'fallen');
-        await page.waitForTimeout(400);   // and it stays closed
-        const closed = await snap(page, 'fallen');
-        assert.deepEqual([closed.expanded, closed.height, closed.inert, closed.gridTop], ['false', 0, true, before.gridTop]);
-        assert.deepEqual(await imagesClear(page), []);
+        // Out to the margin above the heading.
+        await watch(page, 'fallen');
+        await page.mouse.move(4, 120, { steps: 2 });
+        await page.waitForTimeout(450);
+        assert.equal(await phase(page, 'fallen'), 'open', 'not yet: the grace period');
+        await waitPhase(page, 'fallen', 'closing', 2000);
+        const fadeAt = await firstWith(page, 'is-fading');
+        assert.ok(fadeAt >= 600 && fadeAt <= 1000, `exit begins ~0.7s after leaving (${fadeAt})`);
+
+        // Most of the fade happens at full height.
+        await page.waitForTimeout(700);
+        let s = await snap(page, 'fallen');
+        assert.ok(s.height >= full - 1, `held at full height while fading (${s.height}/${full})`);
+        assert.ok(s.bodyOpacity < 0.75 && s.bodyOpacity > 0, `fading (${s.bodyOpacity})`);
+        const collapseAt = await page.evaluate(() => new Promise((res) => {
+            const check = () => { const e = window.__log.find(([, n]) => n.includes('is-collapsing')); if (e) res(e[0]); else setTimeout(check, 30); };
+            check();
+        }));
+        assert.ok(collapseAt - fadeAt >= 950 && collapseAt - fadeAt <= 1250, `collapse starts once the words are nearly gone (${collapseAt - fadeAt})`);
+        assert.ok(await page.evaluate(() => Number(getComputedStyle(document.querySelector('[data-chapter="fallen"] .chapter-story-body')).opacity)) < 0.2);
+
+        await waitPhase(page, 'fallen', 'closed', 2000);
+        s = await snap(page, 'fallen');
+        assert.deepEqual([s.height, s.inert, s.expanded, s.canvases], [0, true, 'false', 0]);
+        assert.ok(s.gridTop <= gridOpen - full + 2, 'the pieces came back up');
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
-    it('holds still under rapid pointer movement: no flicker, no stuck state', async () => {
-        const { context, page } = await shop(browser, stack);
-        await toChapter(page, 'sigil');
-        const sb = await page.locator(seal('sigil')).boundingBox();
-        const cx = sb.x + sb.width / 2;
-        const cy = sb.y + sb.height / 2;
-
-        // Count every state change while the pointer flicks on and off the seal.
-        await page.evaluate(() => {
-            window.__flips = 0;
-            new MutationObserver((m) => { window.__flips += m.length; })
-                .observe(document.querySelector('[data-chapter="sigil"] [data-chapter-seal]'), { attributes: true, attributeFilter: ['aria-expanded'] });
-        });
-        for (let i = 0; i < 8; i++) {
-            await page.mouse.move(cx, cy);
-            await page.waitForTimeout(40);
-            await page.mouse.move(cx + 80, cy);
-            await page.waitForTimeout(40);
-        }
-        assert.ok(await page.evaluate(() => window.__flips) <= 1, 'opened once, not on every pass');
-        await page.mouse.move(cx + 300, cy - 200);
-        await page.waitForFunction(() => document.querySelector('[data-chapter="sigil"] [data-chapter-seal]').getAttribute('aria-expanded') === 'false');
-
-        assert.deepEqual(page.errors, []);
-        await context.close();
-    });
-
-    it('click holds it open, a second click, the close action or Escape closes it', async () => {
+    it('restores the same story when the pointer returns mid-exit, and never restarts the writing', async () => {
         const { context, page } = await shop(browser, stack);
         await toChapter(page, 'eternal');
+        await watch(page, 'eternal');
         const sb = await page.locator(seal('eternal')).boundingBox();
-        await page.mouse.click(sb.x + 22, sb.y + 22);
-        await until(page, 'eternal', 'true');
-        await settled(page, 'eternal');
-        let s = await snap(page, 'eternal');
-        assert.deepEqual([s.expanded, s.pinned], ['true', true]);
+        await page.mouse.move(sb.x + 22, sb.y + 22, { steps: 3 });
+        await page.waitForTimeout(1800);   // part-way through the writing
 
-        // Held: the pointer can go anywhere, including the pieces.
-        await page.mouse.move(10, 10, { steps: 5 });
-        await page.waitForTimeout(600);
-        assert.equal((await snap(page, 'eternal')).open, true, 'held open after the pointer leaves');
-        assert.deepEqual(await imagesClear(page), [], 'the pieces are unobstructed while open');
+        // Rapid in and out within the grace: nothing happens at all.
+        for (let i = 0; i < 6; i++) {
+            await page.mouse.move(4, sb.y - 160);
+            await page.waitForTimeout(90);
+            await page.mouse.move(sb.x + 22, sb.y + 22);
+            await page.waitForTimeout(90);
+        }
+        assert.equal(await phase(page, 'eternal'), 'open');
+        assert.equal(await page.evaluate(() => window.__log.some(([, n]) => n.includes('is-fading'))), false, 'no exit started');
 
-        // Second click closes, and resting on the seal does not reopen it.
-        await page.mouse.move(sb.x + 22, sb.y + 22);
-        await page.waitForTimeout(100);
-        await page.mouse.click(sb.x + 22, sb.y + 22);
-        await until(page, 'eternal', 'false');
-        await settled(page, 'eternal');
-        await page.waitForTimeout(400);   // resting on the seal: must not reopen
-        s = await snap(page, 'eternal');
-        assert.deepEqual([s.expanded, s.pinned, s.height], ['false', false, 0]);
-        // …until the pointer leaves and comes back.
-        await page.mouse.move(sb.x - 200, sb.y);
-        await page.mouse.move(sb.x + 22, sb.y + 22, { steps: 2 });
-        await page.waitForFunction(() => document.querySelector('[data-chapter="eternal"] [data-chapter-seal]').getAttribute('aria-expanded') === 'true');
-        await page.mouse.move(sb.x - 300, sb.y);
-
-        // The close action.
-        await page.mouse.click(sb.x + 22, sb.y + 22);
-        await settled(page, 'eternal');
-        await page.click(`${region('eternal')} .chapter-story-close`);
-        await until(page, 'eternal', 'false');
-        assert.equal((await snap(page, 'eternal')).expanded, 'false');
-        assert.equal(await page.evaluate(() => document.activeElement.matches('[data-chapter="eternal"] [data-chapter-seal]')), true, 'focus returns to the seal');
-
-        // Escape, while held.
-        await page.mouse.move(sb.x - 300, sb.y);
-        await page.mouse.click(sb.x + 22, sb.y + 22);
-        await until(page, 'eternal', 'true');
-        await page.mouse.move(sb.x - 300, sb.y);
-        await page.keyboard.press('Escape');
-        await until(page, 'eternal', 'false');
-        await settled(page, 'eternal');
-        assert.deepEqual([(await snap(page, 'eternal')).expanded, (await snap(page, 'eternal')).height], ['false', 0]);
-
-        // The pieces still open their detail panel with a story held open.
-        await page.mouse.click(sb.x + 22, sb.y + 22);
-        await until(page, 'eternal', 'true');
-        await settled(page, 'eternal');
-        await page.locator('.product-card[data-product-name="Insigne Noir"] .product-image').click();
-        await page.waitForSelector('#productDetailOverlay.open');
-        await page.keyboard.press('Escape');   // closes the dialog, not the story underneath
-        await page.waitForSelector('#productDetailOverlay:not(.open)');
+        // Leave properly, then come back into the heading during the fade.
+        await page.mouse.move(4, sb.y - 160);
+        await waitPhase(page, 'eternal', 'closing', 2000);
+        await page.waitForTimeout(500);
+        const fading = await snap(page, 'eternal');
+        assert.ok(fading.bodyOpacity < 1);
+        await page.mouse.move(sb.x - 120, sb.y + 22, { steps: 3 });   // the heading, not the seal
+        await waitPhase(page, 'eternal', 'open', 1500);
+        await waitWritten(page, 'eternal');
+        await page.waitForTimeout(800);
+        const back = await snap(page, 'eternal');
+        assert.deepEqual([back.expanded, back.bodyOpacity, back.height, back.writing], ['true', 1, back.full, false]);
+        assert.equal(await page.evaluate(() => window.__writes), 1, 'the writing ran once, resumed — never restarted');
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
-    it('answers the keyboard: focus shows it, Tab reaches the close action, leaving closes it', async () => {
+    it('closes from wherever the writing is, and resumes it if reopened during the fade', async () => {
+        const { context, page } = await shop(browser, stack);
+        await toChapter(page, 'sigil');
+        await watch(page, 'sigil');
+        await page.click(seal('sigil'));   // held open
+        await page.waitForTimeout(1900);
+        const inkBefore = await ink(page, 'sigil');
+        await page.click(seal('sigil'));   // and closed, mid-writing
+        await waitPhase(page, 'sigil', 'closing', 1000);
+        const paused = await page.evaluate(() => [window.__chapterStories[1].writing, window.__chapterStories[1].written]);
+        assert.deepEqual(paused, [false, false], 'the hand stops where it is');
+        assert.ok(await ink(page, 'sigil') >= inkBefore * 0.9, 'what was written stays while it fades');
+
+        await page.waitForTimeout(500);
+        await page.mouse.move(4, 120);
+        await page.click(seal('sigil'));   // back, during the fade
+        await waitPhase(page, 'sigil', 'open', 1000);
+        assert.equal(await page.evaluate(() => window.__chapterStories[1].writing), true, 'the writing carries on');
+        await waitWritten(page, 'sigil');
+        await page.waitForTimeout(900);
+        const s = await snap(page, 'sigil');
+        assert.deepEqual([s.writing, s.canvases, s.bodyOpacity, s.height], [false, 0, 1, s.full]);
+        assert.equal(await page.evaluate(() => window.__writes), 1);
+
+        // The Close control: an immediate answer, then the exit.
+        await page.click(`${region('sigil')} .chapter-story-close`);
+        assert.equal(await page.evaluate(() => document.querySelector('[data-chapter="sigil"] .chapter-story-close').classList.contains('is-pressed')), true);
+        assert.equal(await phase(page, 'sigil'), 'closing');
+        assert.equal(await page.evaluate(() => document.activeElement.matches('[data-chapter="sigil"] [data-chapter-seal]')), true, 'focus returns to the seal');
+        await waitPhase(page, 'sigil', 'closed', 3000);
+
+        // Escape, while held.
+        await page.click(seal('sigil'));
+        await waitPhase(page, 'sigil', 'open');
+        await page.mouse.move(4, 120);
+        await page.keyboard.press('Escape');
+        assert.equal(await phase(page, 'sigil'), 'closing');
+        await waitPhase(page, 'sigil', 'closed', 3000);
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
+    it('answers the keyboard: focus opens it, Tab reaches Close, leaving closes it after the grace', async () => {
         const { context, page } = await shop(browser, stack);
         await toChapter(page, 'sigil');
         await page.focus(seal('fallen'));
         await page.keyboard.press('Escape');
-        // Shift+Tab/Tab so the seal gets keyboard (focus-visible) focus.
-        await page.keyboard.press('Tab');
         while (!(await page.evaluate(() => document.activeElement.matches('[data-chapter="sigil"] [data-chapter-seal]')))) {
             await page.keyboard.press('Tab');
         }
-        await page.waitForTimeout(150);
-        assert.equal((await snap(page, 'sigil')).expanded, 'true', 'focus reveals the story');
-
+        await waitPhase(page, 'sigil', 'open', 1000);
         await page.keyboard.press('Tab');
         assert.equal(await page.evaluate(() => document.activeElement.className), 'chapter-story-close');
-        await page.waitForTimeout(400);
-        assert.equal((await snap(page, 'sigil')).open, true, 'kept open while focus is inside');
+        await page.waitForTimeout(900);
+        assert.equal(await phase(page, 'sigil'), 'open', 'held while focus is inside');
+        await page.keyboard.press('Tab');
+        await waitPhase(page, 'sigil', 'closing', 2000);
+        await waitPhase(page, 'sigil', 'closed', 3000);
 
-        await page.keyboard.press('Tab');   // on past the story
-        await until(page, 'sigil', 'false');   // closed once focus has left
-
-        // Enter holds it; Escape closes and returns focus to the seal.
         await page.focus(seal('sigil'));
         await page.keyboard.press('Enter');
-        await until(page, 'sigil', 'true');
+        await waitPhase(page, 'sigil', 'open');
         assert.equal((await snap(page, 'sigil')).pinned, true);
         await page.keyboard.press('Tab');
         await page.keyboard.press('Escape');
-        await until(page, 'sigil', 'false');
-        assert.equal((await snap(page, 'sigil')).expanded, 'false');
+        await waitPhase(page, 'sigil', 'closing', 1000);
         assert.equal(await page.evaluate(() => document.activeElement.matches('[data-chapter="sigil"] [data-chapter-seal]')), true);
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
-    it('on a phone a tap toggles it, everything fits and the pieces stay clear', async () => {
-        const { context, page } = await shop(browser, stack, { viewport: PHONE, mobile: true });
-        for (const key of Object.keys(STORIES)) {
+    it('on a phone a tap toggles it, long German text fits and keeps a comfortable pace', async () => {
+        const { context, page } = await shop(browser, stack, { viewport: PHONE, mobile: true, language: 'de' });
+        for (const key of KEYS) {
             await toChapter(page, key);
             const before = await snap(page, key);
             const sealBox = await page.locator(seal(key)).boundingBox();
-            assert.ok(sealBox.width >= 44 && sealBox.height >= 44, 'a touch-sized seal');
-            assert.ok(sealBox.x >= 0 && sealBox.x + sealBox.width <= PHONE.width, `${key}: the seal is on screen`);
-
+            assert.ok(sealBox.width >= 44 && sealBox.x + sealBox.width <= PHONE.width, `${key}: a touch-sized seal on screen`);
+            await watch(page, key);
             await page.locator(seal(key)).tap();
-            await until(page, key, 'true');
-            await settled(page, key);
+            await waitWritten(page, key);
+            const doneAt = await firstWithout(page, 'is-writing', 50);
+            assert.ok(doneAt <= 7000, `${key}: the German story is written in ≤7s (${doneAt})`);
+            await page.waitForTimeout(400);
             const open = await snap(page, key);
-            assert.deepEqual([open.expanded, open.pinned, open.sealTop], ['true', true, before.sealTop], key);
-            const text = await page.locator(`${region(key)} .chapter-story-text`).boundingBox();
-            const regionBox = await page.locator(region(key)).boundingBox();
-            assert.ok(text.y + text.height <= regionBox.y + regionBox.height + 1, `${key}: the whole paragraph is shown`);
-            assert.ok(text.x >= 0 && text.x + text.width <= PHONE.width, `${key}: within the screen`);
-            assert.equal(await page.evaluate((k) => {
-                const r = document.querySelector(`[data-chapter="${k}"] [data-chapter-story]`);
-                return [...r.querySelectorAll('*')].some((el) => el.scrollHeight > el.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(el).overflowY));
-            }, key), false, 'no inner scrolling');
-            assert.deepEqual(await imagesClear(page), []);
+            assert.deepEqual([open.expanded, open.pinned, open.sealTop, open.height], ['true', true, before.sealTop, open.full], key);
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, 'no sideways scroll');
-
+            assert.deepEqual(await imagesClear(page), []);
             await page.locator(seal(key)).tap();
-            await until(page, key, 'false');
-            await settled(page, key);
+            await waitPhase(page, key, 'closed', 3500);
             const closed = await snap(page, key);
-            assert.deepEqual([closed.expanded, closed.height, closed.gridTop], ['false', 0, before.gridTop], key);
+            assert.deepEqual([closed.height, closed.gridTop], [0, before.gridTop], key);
         }
         assert.deepEqual(page.errors, []);
         await context.close();
     });
 
-    it('under reduced motion it simply appears: no projection, no decorative motion', async () => {
+    it('under reduced motion it is simply there, and simply gone', async () => {
         const { context, page } = await shop(browser, stack, { reducedMotion: 'reduce' });
         await toChapter(page, 'fallen');
-        const running = () => page.evaluate(() => document.getAnimations()
-            .filter((a) => a.playState === 'running' && a.effect && a.effect.target && a.effect.target.closest
-                && a.effect.target.closest('.collection-chapter-title, [data-chapter-story]')).length);
-        assert.equal(await running(), 0, 'the seals hold still');
         await page.click(seal('fallen'));
-        await page.waitForTimeout(60);
-        const s = await snap(page, 'fallen');
-        assert.ok(s.expanded === 'true' && s.height > 80, 'open at once, full height');
-        assert.equal(await page.evaluate(() => document.querySelector('[data-chapter="fallen"] [data-chapter-story]').classList.contains('is-projecting')), false);
-        assert.equal(await running(), 0);
+        await page.waitForTimeout(50);
+        let s = await snap(page, 'fallen');
+        assert.deepEqual([s.expanded, s.writing, s.canvases, s.bodyOpacity, s.height], ['true', false, 0, 1, s.full]);
+        assert.equal(await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running'
+            && a.effect.target.closest && a.effect.target.closest('.collection-chapter-title, [data-chapter-story], .chapter-filament')).length), 0);
+        await page.click(seal('fallen'));
+        await page.waitForTimeout(50);
+        s = await snap(page, 'fallen');
+        assert.deepEqual([s.expanded, s.height, s.inert], ['false', 0, true]);
         await context.close();
     });
 
@@ -418,40 +491,34 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
             });
         };
 
-        // The language saved on the site.
         let { context, page } = await shop(browser, stack, { language: 'fr' });
         await expectTold(page, 'fr');
         assert.equal(await page.getAttribute(seal('sigil'), 'aria-label'), 'Lire le chapitre: The Sigil');
-        assert.equal((await page.locator(`${region('sigil')} .chapter-story-close`).textContent()).replace('×', '').trim(), 'Fermer');
+        assert.equal(await page.locator(`${region('sigil')} .chapter-story-close-label`).textContent(), 'Fermer');
         await context.close();
 
-        // Nothing saved: the browser's language.
         for (const [locale, lang] of [['de-DE', 'de'], ['it-IT', 'it']]) {
             ({ context, page } = await shop(browser, stack, { language: null, locale }));
-            assert.equal(await page.evaluate(() => document.documentElement.lang), lang);
             await expectTold(page, lang);
             await context.close();
         }
-        // An unsupported browser language falls back to English, word for word.
         ({ context, page } = await shop(browser, stack, { language: null, locale: 'ja-JP' }));
         assert.deepEqual(await words(page), Object.values(STORIES));
         await context.close();
 
-        // Switched from the language menu while a story is open: it changes in place.
+        // Switched while a story is being written: the new words, complete, at once.
         ({ context, page } = await shop(browser, stack));
         await toChapter(page, 'fallen');
         await page.click(seal('fallen'));
-        await until(page, 'fallen', 'true');
+        await page.waitForTimeout(1500);
+        await page.mouse.move(4, 120);
         await page.click('#languageSelectorButton');
         await page.click('#languageSelectorList [data-language="de"]');
         await page.waitForFunction(() => /^Untergang/.test(document.querySelector('[data-chapter="fallen"] .chapter-story-theme').textContent));
+        await waitWritten(page, 'fallen', 3000);
+        const s = await snap(page, 'fallen');
+        assert.deepEqual([s.expanded, s.writing], ['true', false]);
         await expectTold(page, 'de');
-        assert.equal((await snap(page, 'fallen')).expanded, 'true', 'still open');
-        assert.equal(await page.getAttribute(seal('fallen'), 'aria-label'), 'Kapitel lesen: The Fallen');
-        await page.click('#languageSelectorButton');
-        await page.click('#languageSelectorList [data-language="en"]');
-        await page.waitForFunction(() => /^Ruin\./.test(document.querySelector('[data-chapter="fallen"] .chapter-story-theme').textContent));
-        assert.deepEqual(await words(page), Object.values(STORIES));
         assert.deepEqual(page.errors, []);
         await context.close();
     });

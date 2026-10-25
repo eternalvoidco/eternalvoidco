@@ -6054,8 +6054,18 @@
             z-index: 0;
             pointer-events: none;
             overflow: hidden;
-            -webkit-mask: linear-gradient(to bottom, transparent 0%, #000 9%, #000 80%, transparent 100%);
-            mask: linear-gradient(to bottom, transparent 0%, #000 9%, #000 80%, transparent 100%);
+        }
+
+        /* The fade into the black above and below. This used to be a CSS
+           mask, which made the compositor redraw every layer of the ambience
+           into an offscreen surface whenever anything on screen moved. The
+           section behind is solid #000, so the same ramps drawn in black over
+           the layers give an identical picture with no offscreen pass. */
+        .products-atmos::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, #000 0%, transparent 9%, transparent 80%, #000 100%);
         }
 
         .products-atmos > span { position: absolute; display: block; inset: 0; }
@@ -6074,9 +6084,14 @@
            draped fabric rather than a single round blob. Wide blur removes all
            edges; only shifts position/scale/rotation, never anything that could
            band or step. */
+        /* No blur filter on the folds. At these opacities over near-black a
+           100px blur was visually indistinguishable from the bare gradients
+           (measured: no pixel changes beyond the seal's orbiting dot), yet it
+           made the browser re-filter a surface larger than the whole section
+           on every frame — on desktop widths that held the page to a few
+           frames a second. The gradients are soft on their own. */
         .pa-fold-a {
             inset: -30%;
-            filter: blur(100px);
             opacity: 0.42;
             background:
                 radial-gradient(65% 30% at 22% 30%, rgba(20, 18, 15, 0.55), transparent 68%),
@@ -6096,7 +6111,6 @@
            reinforcing depth via parallax rather than a single breathing mass. */
         .pa-fold-b {
             inset: -32% -20%;
-            filter: blur(110px);
             opacity: 0.34;
             background:
                 radial-gradient(60% 24% at 78% 68%, rgba(18, 17, 22, 0.5), transparent 66%),
@@ -6169,7 +6183,7 @@
 
         /* Lighter + calmer on phones (performance) */
         @media (max-width: 600px) {
-            .pa-fold-a { animation: none; filter: blur(70px); }
+            .pa-fold-a { animation: none; }
             /* `.products-atmos > span` (below) matches these same elements with
                higher specificity (class + type selector), so a bare `.pa-fold-b`
                class selector here would lose to it regardless of source order —
@@ -6550,23 +6564,17 @@
             transition: opacity 0.4s var(--ease-lux), background-color 0.4s var(--ease-lux);
         }
 
-        /* Light crossing the face. At rest it drifts by every few seconds,
-           barely there; on hover it passes once, brighter. */
+        /* Light crossing the face, on hover or focus only: nothing about the
+           seal moves at rest except its one orbiting point. */
         .chapter-seal-sheen {
             position: absolute;
             inset: -20%;
             z-index: 1;
             border-radius: 50%;
-            background: linear-gradient(115deg, transparent 38%, rgba(255, 244, 214, 0.08) 46%, rgba(255, 244, 214, 0.42) 50%, rgba(255, 244, 214, 0.08) 54%, transparent 62%);
+            background: linear-gradient(115deg, transparent 38%, rgba(255, 244, 214, 0.06) 46%, rgba(255, 244, 214, 0.34) 50%, rgba(255, 244, 214, 0.06) 54%, transparent 62%);
             transform: translateX(-70%);
-            animation: csDrift 7s var(--ease-lux) infinite;
+            opacity: 0;
             pointer-events: none;
-            mix-blend-mode: screen;
-        }
-
-        @keyframes csDrift {
-            0%, 72%  { transform: translateX(-70%); opacity: 0.35; }
-            100%     { transform: translateX(70%);  opacity: 0.35; }
         }
 
         .chapter-seal:hover .chapter-seal-sheen,
@@ -6598,7 +6606,8 @@
         .chapter-seal:active { transform: scale(0.96); }
 
         /* Open: the seal is lit — full ring, ivory emblem, steady halo, and
-           the orbiting light comes to rest at the top. */
+           the orbiting light comes to rest. The 0.4s brightening is the first
+           beat of the opening. */
         .chapter-seal[aria-expanded="true"] {
             color: var(--void-gold-bright);
             box-shadow: 0 0 0 1px rgba(242, 226, 189, 0.32), 0 0 26px rgba(216, 192, 138, 0.3);
@@ -6609,6 +6618,9 @@
         .chapter-seal[aria-expanded="true"] .cs-ring--ticks { stroke-opacity: 0.7; }
         .chapter-seal[aria-expanded="true"] .chapter-seal-mark { background-color: #f6efe0; opacity: 1; }
         .chapter-seal[aria-expanded="true"] .cs-orbit { animation-play-state: paused; }
+
+        /* Seals off screen do no work at all. */
+        .chapter-seal.is-offscreen .cs-orbit { animation-play-state: paused; }
 
         /* Held open (clicked or tapped): a second, outer hairline. */
         .chapter-seal.is-pinned::after {
@@ -6621,28 +6633,61 @@
             pointer-events: none;
         }
 
+        /* ── The filament ── a fine gold line drawn outward from the centre,
+           beneath the heading, as the chapter begins to open. Absolutely
+           placed, so it never takes part in layout. */
+        .collection-chapter-head { position: relative; }
+
+        .chapter-filament {
+            position: absolute;
+            left: 50%;
+            bottom: -1px;
+            width: min(460px, 72%);
+            height: 1px;
+            margin-left: calc(min(460px, 72%) / -2);
+            background: linear-gradient(90deg, transparent, rgba(216, 192, 138, 0.75) 22%, rgba(242, 226, 189, 0.95) 50%, rgba(216, 192, 138, 0.75) 78%, transparent);
+            transform: scaleX(0);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 1.1s cubic-bezier(0.5, 0, 0.75, 0) 0s, opacity 1.1s ease 0s;
+        }
+
+        .collection-chapter.is-story-open .chapter-filament {
+            transform: scaleX(1);
+            opacity: 1;
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.05s, opacity 0.35s ease 0.05s;
+        }
+
         /* ── The chapter's story ─────────────────────────────────────────
-           A 0fr → 1fr grid row: the region opens to exactly its content's
-           height and closes to nothing, with no measuring in script. Closed
-           it is also inert and hidden, so it can take neither focus nor
-           pointer input. Every effect is clipped inside it. */
+           Its height is set by the script, in pixels, only while it unfolds
+           or collapses; at rest open it is auto, and closed it is 0, hidden
+           and inert, so it takes no room, no focus and no input. Everything
+           it draws is clipped inside it. */
         .chapter-story {
-            display: grid;
-            grid-template-rows: 0fr;
-            visibility: hidden;
-            transition: grid-template-rows 0.42s var(--ease-lux), visibility 0s linear 0.42s;
-        }
-
-        .chapter-story.is-open {
-            grid-template-rows: 1fr;
-            visibility: visible;
-            transition: grid-template-rows 0.55s var(--ease-lux), visibility 0s;
-        }
-
-        .chapter-story-clip {
             position: relative;
-            min-height: 0;
+            height: 0;
             overflow: hidden;
+            visibility: hidden;
+        }
+
+        .chapter-story.is-shown { visibility: visible; }
+        .chapter-story.is-unfolding { transition: height 1.1s cubic-bezier(0.45, 0, 0.15, 1); }
+        .chapter-story.is-collapsing { transition: height 0.8s cubic-bezier(0.55, 0, 0.3, 1); }
+
+        /* A low pool of warm light behind the words. Static gradient; only
+           its opacity ever changes. */
+        .chapter-story-light {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(60% 72% at 50% 46%, rgba(214, 170, 96, 0.13), rgba(199, 169, 108, 0.05) 48%, transparent 76%);
+            opacity: 0;
+            transition: opacity 1.1s ease;
+        }
+
+        .chapter-story.is-lit .chapter-story-light {
+            opacity: 1;
+            transition: opacity 1s ease 0.12s;
         }
 
         .chapter-story-body {
@@ -6651,14 +6696,21 @@
             margin: 0 auto;
             padding: clamp(1.3rem, 2.6vw, 1.9rem) 0.5rem 0.25rem;
             text-align: center;
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            opacity: 1;
+            transition: opacity 0.7s ease;
         }
 
-        .chapter-story.is-open .chapter-story-body {
-            opacity: 1;
-            transition: opacity 0.3s ease 0.06s;
+        /* The exit: the whole passage dissolves together, never letter by
+           letter backwards. */
+        .chapter-story.is-fading .chapter-story-body {
+            opacity: 0;
+            transition: opacity 1.25s cubic-bezier(0.4, 0, 0.6, 1);
         }
+
+        /* No ligatures: each letter is written on its own, and the finished
+           text must match the written one glyph for glyph. */
+        .chapter-story-theme,
+        .chapter-story-text { font-variant-ligatures: none; }
 
         .chapter-story-theme {
             font-family: 'Cormorant Garamond', serif;
@@ -6679,7 +6731,26 @@
             text-wrap: pretty;
         }
 
+        /* While the words are being written, the real text keeps its place
+           (and stays the one thing assistive technology reads) but is not
+           painted; the two canvases above it carry the ink. */
+        .chapter-story.is-writing .chapter-story-theme,
+        .chapter-story.is-writing .chapter-story-text { opacity: 0; }
+
+        .chapter-story-ink {
+            position: absolute;
+            left: 0;
+            top: 0;
+            pointer-events: none;
+        }
+
+        .chapter-story-ink[hidden] { display: none; }
+
+        /* ── Close ── part of the ceremony: it arrives once the line is
+           written, carries a slow glint while idle, answers hover with an
+           underline drawn outward, and fades with the passage. */
         .chapter-story-close {
+            position: relative;
             display: inline-flex;
             align-items: center;
             gap: 0.55rem;
@@ -6696,71 +6767,73 @@
             text-indent: 0.28em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: color 0.3s var(--ease-lux);
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.8s ease, color 0.35s var(--ease-lux);
         }
 
-        .chapter-story-close span[aria-hidden] { font-size: 0.85rem; letter-spacing: 0; text-indent: 0; }
-        .chapter-story-close:hover,
-        .chapter-story-close:focus-visible { color: var(--void-gold-bright); }
-        .chapter-story-close:focus-visible { outline: 1px solid rgba(242, 226, 189, 0.85); outline-offset: 2px; }
+        .chapter-story.is-ready .chapter-story-close { opacity: 1; }
 
-        /* ── Projection ── played once on opening, then removed: a scan line
-           with a short trail travels down the region, the lines arrive with a
-           faint iridescence and glow, and settle into plain, crisp type. */
-        .chapter-story-body::before {
+        .chapter-story-close-label { position: relative; padding: 0.2rem 0; }
+
+        /* The underline: a hairline drawn outward from the centre. */
+        .chapter-story-close-label::after {
             content: '';
             position: absolute;
-            left: 0;
+            left: 0.28em;
             right: 0;
+            bottom: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(242, 226, 189, 0.85), transparent);
+            transform: scaleX(0);
+            transition: transform 0.5s var(--ease-lux);
+        }
+
+        .chapter-story-close-x {
+            display: inline-block;
+            font-size: 0.85rem;
+            letter-spacing: 0;
+            text-indent: 0;
+            transition: transform 0.5s var(--ease-lux);
+        }
+
+        /* The idle glint: one soft warm pass (~0.55s) every ~4.4s. */
+        .chapter-story-close::before {
+            content: '';
+            position: absolute;
             top: 0;
-            height: 100%;
-            pointer-events: none;
+            bottom: 0;
+            left: 0;
+            width: 40%;
+            background: linear-gradient(100deg, transparent, rgba(240, 214, 156, 0.32), transparent);
+            transform: translateX(-120%);
             opacity: 0;
-            transform: translateY(-100%);
-            background: linear-gradient(180deg,
-                transparent 0%,
-                transparent 70%,
-                rgba(170, 214, 235, 0.03) 86%,
-                rgba(242, 226, 189, 0.1) 97%,
-                rgba(255, 246, 224, 0.75) 99.4%,
-                transparent 100%);
-            /* A beam, not a box: the band fades out towards both sides. */
-            -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-            mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+            pointer-events: none;
         }
 
-        .chapter-story.is-projecting .chapter-story-body::before {
-            animation: csScan 0.95s cubic-bezier(0.4, 0, 0.2, 1) both;
+        .chapter-story.is-idle .chapter-story-close:not(:hover):not(:focus-visible)::before {
+            animation: csGlint 4.4s ease-in-out 0.6s infinite;
         }
 
-        @keyframes csScan {
-            0%   { opacity: 0; transform: translateY(-100%); }
-            12%  { opacity: 1; }
-            85%  { opacity: 1; }
-            100% { opacity: 0; transform: translateY(0); }
+        @keyframes csGlint {
+            0%         { transform: translateX(-120%); opacity: 0; }
+            2%         { opacity: 1; }
+            12.5%      { transform: translateX(300%); opacity: 0.9; }
+            13%, 100%  { transform: translateX(300%); opacity: 0; }
         }
 
-        .chapter-story.is-projecting .chapter-story-theme,
-        .chapter-story.is-projecting .chapter-story-text {
-            background-image: linear-gradient(100deg,
-                currentColor 0%, currentColor 34%,
-                #bfe6ee 42%, #f1dcff 48%, #f6e3b4 54%,
-                currentColor 62%, currentColor 100%);
-            background-size: 300% 100%;
-            background-position: 100% 0;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: csProject 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-        }
+        .chapter-story-close:hover,
+        .chapter-story-close:focus-visible { color: var(--void-gold-bright); }
+        .chapter-story-close:hover .chapter-story-close-label::after,
+        .chapter-story-close:focus-visible .chapter-story-close-label::after { transform: scaleX(1); }
+        .chapter-story-close:hover .chapter-story-close-x,
+        .chapter-story-close:focus-visible .chapter-story-close-x { transform: rotate(90deg); }
+        .chapter-story-close:focus-visible { outline: 1px solid rgba(242, 226, 189, 0.85); outline-offset: 2px; }
 
-        .chapter-story.is-projecting .chapter-story-text { animation-delay: 0.12s; }
-
-        @keyframes csProject {
-            0%   { opacity: 0; background-position: 100% 0; transform: translateY(5px); text-shadow: 0 0 14px rgba(190, 228, 240, 0.45); }
-            35%  { opacity: 1; }
-            100% { opacity: 1; background-position: 0% 0; transform: none; text-shadow: 0 0 0 rgba(190, 228, 240, 0); }
-        }
+        /* Pressed: an immediate answer, then the passage takes it away. */
+        .chapter-story-close.is-pressed { color: #f6efe0; transition: color 0.08s linear, opacity 0.8s ease; }
+        .chapter-story-close.is-pressed .chapter-story-close-label::after { transform: scaleX(1); background: linear-gradient(90deg, transparent, #f6efe0, transparent); }
+        .chapter-story-close.is-pressed .chapter-story-close-x { transform: rotate(90deg) scale(0.8); }
 
         @media (max-width: 520px) {
             /* Narrow screens: the title and seal centre as a pair. */
@@ -6768,43 +6841,29 @@
             .collection-chapter-title { --cs-gap: 0.75rem; }
         }
 
+        /* Reduced motion: the story is simply there when opened and gone when
+           closed; the controls keep their states but nothing travels. */
         @media (prefers-reduced-motion: reduce) {
-            .cs-orbit,
-            .chapter-seal-sheen,
-            .chapter-seal:hover .chapter-seal-sheen,
-            .chapter-seal:focus-visible .chapter-seal-sheen { animation: none; }
-            .chapter-seal-sheen { opacity: 0; }
-            .chapter-story,
-            .chapter-story.is-open,
-            .chapter-story-body,
-            .chapter-story.is-open .chapter-story-body,
-            .chapter-seal,
-            .cs-ring,
-            .chapter-seal-mark { transition: none; }
-            .chapter-seal:active { transform: none; }
             .collection-chapter-title *,
             .collection-chapter-title *::before,
             .collection-chapter-title *::after,
-            .chapter-story * { transition: none !important; animation: none !important; }
+            .chapter-filament,
+            .chapter-story,
+            .chapter-story *,
+            .chapter-story *::before,
+            .chapter-story *::after { transition: none !important; animation: none !important; }
+            .chapter-seal:active { transform: none; }
         }
 
-        html.reduce-motion .cs-orbit,
-        html.reduce-motion .chapter-seal-sheen,
-        html.reduce-motion .chapter-seal:hover .chapter-seal-sheen,
-        html.reduce-motion .chapter-seal:focus-visible .chapter-seal-sheen { animation: none; }
-        html.reduce-motion .chapter-seal-sheen { opacity: 0; }
-        html.reduce-motion .chapter-story,
-        html.reduce-motion .chapter-story.is-open,
-        html.reduce-motion .chapter-story-body,
-        html.reduce-motion .chapter-story.is-open .chapter-story-body,
-        html.reduce-motion .chapter-seal,
-        html.reduce-motion .cs-ring,
-        html.reduce-motion .chapter-seal-mark { transition: none; }
-        html.reduce-motion .chapter-seal:active { transform: none; }
         html.reduce-motion .collection-chapter-title *,
         html.reduce-motion .collection-chapter-title *::before,
         html.reduce-motion .collection-chapter-title *::after,
-        html.reduce-motion .chapter-story * { transition: none !important; animation: none !important; }
+        html.reduce-motion .chapter-filament,
+        html.reduce-motion .chapter-story,
+        html.reduce-motion .chapter-story *,
+        html.reduce-motion .chapter-story *::before,
+        html.reduce-motion .chapter-story *::after { transition: none !important; animation: none !important; }
+        html.reduce-motion .chapter-seal:active { transform: none; }
 
         .collection-chapter-status {
             margin-top: 1.35rem;
@@ -21586,10 +21645,11 @@
         // each chapter's markup holds only the seal and an empty region.
         //
         // Pointer (mouse/pen, on a device that can hover): resting on the seal
-        // shows the story. Once shown, the chapter head and the story are one
-        // zone, so the pointer can travel from the seal into the text at any
-        // pace; it closes a moment after the pointer leaves that zone. Keyboard: focusing the seal shows it, and
-        // Tab carries on into its close button. Click or tap holds it open
+        // opens the story. The seal, the chapter heading and the story are one
+        // zone: the pointer can travel into the text at any pace, and the
+        // story begins its exit ~0.7s after the pointer leaves that zone.
+        // Keyboard: focusing the seal shows it, and Tab carries on into its
+        // close button. Click or tap holds it open
         // (the seal gains a second ring); clicking again, the close button or
         // Escape closes it. Only the region and the grid below it move — the
         // head and the seal never shift under the pointer.
@@ -21661,54 +21721,489 @@
             return own[key] || CHAPTER_STORIES.en[key];
         }
 
+        // ---- The hand that writes the stories ----
+        // Every glyph is written along its own skeleton: strokes in writing
+        // order, in a box where x runs 0..1 across the glyph's advance and y
+        // is in ems above the baseline. A broad pen travelling that skeleton
+        // masks the real glyph, so its ink forms the way the letter is
+        // written — a bowl round, a stem down, a bar across — rather than
+        // switching on or being traced around its outline. As the pen lifts,
+        // the last of the ink (serif tips, hairlines the pen passed near)
+        // settles in. Accented letters are their base letter plus the mark's
+        // own stroke, so French, Italian and German write naturally.
+        const CHAPTER_GLYPHS = (function () {
+            const X = 0.40, C = 0.64, A = 0.70, D = -0.24;
+            const L = (x1, y1, x2, y2) => [[x1, y1], [x2, y2]];
+            const P = (...pts) => pts;
+            const E = (cx, cy, rx, ry, a0, a1) => {
+                const n = Math.max(6, Math.round(Math.abs(a1 - a0) / 18));
+                const out = [];
+                for (let i = 0; i <= n; i++) {
+                    const a = (a0 + (a1 - a0) * i / n) * Math.PI / 180;
+                    out.push([cx + rx * Math.cos(a), cy + ry * Math.sin(a)]);
+                }
+                return out;
+            };
+            const J = (...parts) => [].concat(...parts);
+            const dot = (x, y) => E(x, y, 0.04, 0.03, 0, 360);
+
+            const lower = {
+                a: [J(E(0.44, 0.29, 0.25, 0.11, 160, 10), L(0.69, 0.29, 0.70, 0)), E(0.45, 0.11, 0.25, 0.11, 20, 380)],
+                b: [L(0.24, A, 0.24, 0), E(0.52, 0.2, 0.28, 0.2, 170, -190)],
+                c: [E(0.54, 0.2, 0.3, 0.2, 40, 320)],
+                d: [E(0.46, 0.2, 0.28, 0.2, 10, 370), L(0.76, A, 0.76, 0)],
+                e: [J(L(0.22, 0.21, 0.79, 0.21), E(0.5, 0.2, 0.29, 0.2, 10, 330))],
+                f: [J(E(0.64, 0.56, 0.17, 0.12, 30, 180), L(0.47, 0.56, 0.47, 0)), L(0.2, X, 0.74, X)],
+                g: [E(0.47, 0.27, 0.24, 0.13, 10, 370), J(L(0.71, 0.36, 0.71, -0.04), E(0.47, -0.04, 0.24, 0.17, 0, -180))],
+                h: [L(0.22, A, 0.22, 0), J(E(0.48, 0.25, 0.26, 0.15, 170, 10), L(0.74, 0.25, 0.74, 0))],
+                i: [L(0.5, X, 0.5, 0), dot(0.5, 0.6)],
+                j: [J(L(0.56, X, 0.56, -0.08), E(0.36, -0.08, 0.2, 0.14, 0, -160)), dot(0.56, 0.6)],
+                k: [L(0.22, A, 0.22, 0), L(0.74, X, 0.24, 0.16), L(0.4, 0.24, 0.8, 0)],
+                l: [L(0.5, A, 0.5, 0)],
+                m: [L(0.14, X, 0.14, 0), J(E(0.31, 0.27, 0.17, 0.13, 170, 10), L(0.48, 0.27, 0.48, 0)), J(E(0.66, 0.27, 0.18, 0.13, 170, 10), L(0.84, 0.27, 0.84, 0))],
+                n: [L(0.2, X, 0.2, 0), J(E(0.47, 0.25, 0.27, 0.15, 170, 10), L(0.74, 0.25, 0.74, 0))],
+                o: [E(0.5, 0.2, 0.31, 0.2, 90, 450)],
+                p: [L(0.22, X, 0.22, D), E(0.52, 0.2, 0.28, 0.2, 170, -190)],
+                q: [E(0.47, 0.2, 0.28, 0.2, 10, 370), L(0.76, X, 0.76, D)],
+                r: [L(0.26, X, 0.26, 0), E(0.52, 0.28, 0.26, 0.12, 170, 30)],
+                s: [J(E(0.5, 0.3, 0.23, 0.1, 20, 230), E(0.5, 0.1, 0.24, 0.1, 60, -170))],
+                t: [J(L(0.42, 0.58, 0.42, 0.07), E(0.58, 0.08, 0.16, 0.08, 180, 330)), L(0.18, X, 0.72, X)],
+                u: [J(L(0.22, X, 0.22, 0.15), E(0.48, 0.15, 0.26, 0.15, 180, 360)), L(0.76, X, 0.76, 0)],
+                v: [P([0.12, X], [0.5, 0], [0.88, X])],
+                w: [P([0.06, X], [0.29, 0], [0.5, 0.32], [0.71, 0], [0.94, X])],
+                x: [L(0.16, X, 0.84, 0), L(0.84, X, 0.16, 0)],
+                y: [L(0.12, X, 0.5, 0), L(0.88, X, 0.34, D)],
+                z: [P([0.2, X], [0.8, X], [0.2, 0], [0.82, 0])],
+                'ß': [J(L(0.2, 0, 0.2, 0.5), E(0.44, 0.5, 0.24, 0.18, 180, -30), E(0.46, 0.17, 0.28, 0.17, 80, -150))],
+                'œ': [E(0.28, 0.2, 0.2, 0.2, 90, 450), J(L(0.54, 0.21, 0.94, 0.21), E(0.74, 0.2, 0.2, 0.2, 10, 330))],
+                'æ': [J(E(0.25, 0.29, 0.18, 0.11, 160, 10), L(0.43, 0.29, 0.43, 0)), E(0.26, 0.11, 0.17, 0.11, 20, 380), J(L(0.5, 0.21, 0.94, 0.21), E(0.72, 0.2, 0.21, 0.2, 10, 330))]
+            };
+            const upper = {
+                A: [P([0.1, 0], [0.5, C], [0.9, 0]), L(0.27, 0.22, 0.73, 0.22)],
+                B: [L(0.2, C, 0.2, 0), J(L(0.2, C, 0.55, C), E(0.55, 0.48, 0.22, 0.16, 90, -90), L(0.55, 0.32, 0.2, 0.32)), J(L(0.2, 0.32, 0.6, 0.32), E(0.6, 0.16, 0.25, 0.16, 90, -90), L(0.6, 0, 0.2, 0))],
+                C: [E(0.55, 0.32, 0.4, 0.32, 45, 315)],
+                D: [L(0.2, C, 0.2, 0), J(L(0.2, C, 0.45, C), E(0.45, 0.32, 0.38, 0.32, 90, -90), L(0.45, 0, 0.2, 0))],
+                E: [L(0.2, C, 0.2, 0), L(0.2, C, 0.8, C), L(0.2, 0.33, 0.68, 0.33), L(0.2, 0, 0.82, 0)],
+                F: [L(0.2, C, 0.2, 0), L(0.2, C, 0.8, C), L(0.2, 0.33, 0.68, 0.33)],
+                G: [J(E(0.52, 0.32, 0.38, 0.32, 40, 320), L(0.85, 0.1, 0.85, 0.28)), L(0.6, 0.28, 0.92, 0.28)],
+                H: [L(0.18, C, 0.18, 0), L(0.82, C, 0.82, 0), L(0.18, 0.33, 0.82, 0.33)],
+                I: [L(0.5, C, 0.5, 0)],
+                J: [J(L(0.58, C, 0.58, -0.04), E(0.4, -0.04, 0.18, 0.15, 0, -170))],
+                K: [L(0.2, C, 0.2, 0), L(0.82, C, 0.22, 0.25), L(0.4, 0.38, 0.85, 0)],
+                L: [J(L(0.2, C, 0.2, 0), L(0.2, 0, 0.82, 0))],
+                M: [P([0.1, 0], [0.14, C], [0.5, 0.05], [0.86, C], [0.9, 0])],
+                N: [P([0.16, 0], [0.16, C], [0.84, 0], [0.84, C])],
+                O: [E(0.5, 0.32, 0.4, 0.32, 90, 450)],
+                P: [L(0.2, C, 0.2, 0), J(L(0.2, C, 0.55, C), E(0.55, 0.47, 0.25, 0.17, 90, -90), L(0.55, 0.3, 0.2, 0.3))],
+                Q: [E(0.5, 0.32, 0.4, 0.32, 90, 450), L(0.5, 0.08, 0.9, -0.12)],
+                R: [L(0.2, C, 0.2, 0), J(L(0.2, C, 0.55, C), E(0.55, 0.48, 0.24, 0.16, 90, -90), L(0.55, 0.32, 0.2, 0.32)), L(0.48, 0.32, 0.85, 0)],
+                S: [J(E(0.5, 0.48, 0.3, 0.16, 20, 250), E(0.5, 0.16, 0.32, 0.16, 70, -170))],
+                T: [L(0.1, C, 0.9, C), L(0.5, C, 0.5, 0)],
+                U: [J(L(0.16, C, 0.16, 0.22), E(0.5, 0.22, 0.34, 0.22, 180, 360), L(0.84, 0.22, 0.84, C))],
+                V: [P([0.1, C], [0.5, 0], [0.9, C])],
+                W: [P([0.05, C], [0.27, 0], [0.5, C * 0.95], [0.73, 0], [0.95, C])],
+                X: [L(0.12, C, 0.88, 0), L(0.88, C, 0.12, 0)],
+                Y: [P([0.12, C], [0.5, 0.3], [0.88, C]), L(0.5, 0.3, 0.5, 0)],
+                Z: [P([0.15, C], [0.85, C], [0.15, 0], [0.87, 0])]
+            };
+            const punct = {
+                '.': [dot(0.5, 0.035)],
+                ',': [P([0.55, 0.05], [0.5, -0.02], [0.42, -0.13])],
+                ':': [dot(0.5, 0.36), dot(0.5, 0.035)],
+                ';': [dot(0.5, 0.36), P([0.55, 0.05], [0.5, -0.02], [0.42, -0.13])],
+                '!': [L(0.5, C, 0.5, 0.16), dot(0.5, 0.035)],
+                '?': [J(E(0.5, 0.5, 0.25, 0.14, 160, -60), L(0.56, 0.37, 0.5, 0.18)), dot(0.5, 0.035)],
+                '—': [L(0.02, 0.23, 0.98, 0.23)],
+                '–': [L(0.05, 0.23, 0.95, 0.23)],
+                '-': [L(0.15, 0.2, 0.85, 0.2)],
+                '’': [P([0.6, C], [0.5, 0.52])],
+                "'": [P([0.55, C], [0.5, 0.52])],
+                '‘': [P([0.5, 0.52], [0.6, C])],
+                '“': [P([0.38, 0.52], [0.46, C]), P([0.62, 0.52], [0.7, C])],
+                '”': [P([0.38, C], [0.3, 0.52]), P([0.7, C], [0.62, 0.52])],
+                '"': [L(0.36, C, 0.36, 0.5), L(0.64, C, 0.64, 0.5)],
+                '«': [P([0.55, 0.36], [0.3, 0.2], [0.55, 0.04]), P([0.85, 0.36], [0.6, 0.2], [0.85, 0.04])],
+                '»': [P([0.15, 0.36], [0.4, 0.2], [0.15, 0.04]), P([0.45, 0.36], [0.7, 0.2], [0.45, 0.04])],
+                '(': [E(0.8, 0.22, 0.5, 0.5, 125, 235)],
+                ')': [E(0.2, 0.22, 0.5, 0.5, 55, -55)],
+                '0': [E(0.5, 0.32, 0.32, 0.32, 90, 450)],
+                '1': [J(L(0.3, 0.52, 0.52, C), L(0.52, C, 0.52, 0))]
+            };
+            const MARKS = {
+                '́': (h) => [L(0.42, h + 0.1, 0.62, h + 0.25)],
+                '̀': (h) => [L(0.38, h + 0.25, 0.58, h + 0.1)],
+                '̂': (h) => [P([0.3, h + 0.1], [0.5, h + 0.25], [0.7, h + 0.1])],
+                '̈': (h) => [dot(0.36, h + 0.15), dot(0.64, h + 0.15)],
+                '̃': (h) => [P([0.3, h + 0.12], [0.42, h + 0.19], [0.58, h + 0.12], [0.7, h + 0.19])],
+                '̊': (h) => [E(0.5, h + 0.16, 0.08, 0.06, 90, 450)],
+                '̧': () => [E(0.5, -0.07, 0.08, 0.06, 90, -200)]
+            };
+            const scribble = (h) => [P([0.12, h * 0.85], [0.32, 0], [0.5, h], [0.68, 0], [0.88, h * 0.85])];
+
+            return function skeleton(ch) {
+                if (punct[ch]) return punct[ch];
+                if (lower[ch]) return lower[ch];
+                if (upper[ch]) return upper[ch];
+                const parts = ch.normalize('NFD');
+                const base = parts[0];
+                const marks = parts.slice(1);
+                const isUpper = base !== base.toLowerCase();
+                const h = isUpper ? C : X;
+                let strokes = lower[base] || upper[base] || punct[base] || scribble(base === base.toLowerCase() ? X : C);
+                // A dotted i or j under an accent loses its dot to the accent.
+                if (marks && (base === 'i' || base === 'j')) strokes = strokes.slice(0, 1);
+                for (const m of marks) if (MARKS[m]) strokes = strokes.concat(MARKS[m](h));
+                return strokes;
+            };
+        })();
+
+        // One writer per chapter. It measures the real text once, when a
+        // chapter opens, then draws on two canvases laid over that text: the
+        // glyphs being written (redrawn each frame, only those few) and the
+        // glyphs already finished (each drawn once). It never touches layout
+        // while it runs, and stops completely when it is done or paused.
+        function createChapterWriter(body, lines, onDone) {
+            const ink = document.createElement('canvas');
+            const pen = document.createElement('canvas');
+            [ink, pen].forEach((c) => {
+                c.className = 'chapter-story-ink';
+                c.setAttribute('aria-hidden', 'true');
+                c.hidden = true;
+                body.appendChild(c);
+            });
+            const scratch = document.createElement('canvas');
+            const inkCtx = ink.getContext('2d');
+            const penCtx = pen.getContext('2d');
+            const sCtx = scratch.getContext('2d');
+            const segmenter = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+
+            let glyphs = null;
+            let total = 0;
+            let raf = 0;
+            let t0 = 0;
+            let elapsed = 0;
+            let drawnUpTo = 0;
+            let dpr = 1;
+            let complete = false;
+
+            function prepare() {
+                const box = body.getBoundingClientRect();
+                dpr = Math.min(2, window.devicePixelRatio || 1);
+                const w = Math.ceil(box.width);
+                const h = Math.ceil(box.height);
+                [ink, pen].forEach((c) => {
+                    c.width = Math.round(w * dpr);
+                    c.height = Math.round(h * dpr);
+                    c.style.width = w + 'px';
+                    c.style.height = h + 'px';
+                });
+                glyphs = [];
+                const range = document.createRange();
+                let letters = 0;
+                lines.forEach((el, lineIndex) => {
+                    const cs = getComputedStyle(el);
+                    const size = parseFloat(cs.fontSize);
+                    const font = `${cs.fontStyle} ${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+                    const spacing = parseFloat(cs.letterSpacing) || 0;
+                    const italic = cs.fontStyle !== 'normal';
+                    sCtx.font = font;
+                    const m = sCtx.measureText('Hg');
+                    const ascent = m.fontBoundingBoxAscent || size * 0.9;
+                    const node = el.firstChild;
+                    if (!node || node.nodeType !== 3) return;
+                    const text = node.data;
+                    const pieces = segmenter ? Array.from(segmenter.segment(text), (s) => [s.segment, s.index]) : Array.from(text, (c, i) => [c, i]);
+                    pieces.forEach(([ch, index]) => {
+                        if (/^\s+$/.test(ch)) { glyphs.push({ space: true, line: lineIndex }); return; }
+                        range.setStart(node, index);
+                        range.setEnd(node, index + ch.length);
+                        const r = range.getClientRects()[0];
+                        if (!r) return;
+                        const x = r.left - box.left;
+                        const adv = Math.max(size * 0.2, r.width - spacing);
+                        const base = r.top - box.top + ascent;
+                        const strokes = CHAPTER_GLYPHS(ch).map((stroke) => stroke.map(([u, v]) => [
+                            x + u * adv + (italic ? v * size * 0.2 : 0),
+                            base - v * size
+                        ]));
+                        let len = 0;
+                        strokes.forEach((s) => { for (let i = 1; i < s.length; i++) len += Math.hypot(s[i][0] - s[i - 1][0], s[i][1] - s[i - 1][1]); });
+                        glyphs.push({ ch, x, base, size, font, color: cs.color, strokes, len, line: lineIndex });
+                        letters += lineIndex === 0 ? 1.5 : 1;
+                    });
+                });
+
+                // Timing. The whole passage takes a measured length of time
+                // that grows with the text but is held between ~2.8 and ~4.3s,
+                // so a long German paragraph is not much slower to watch than
+                // a short English one. Within it, each glyph's share follows
+                // the length of its strokes (an m takes longer than an i), the
+                // thematic line is written more slowly, and neighbouring
+                // letters overlap so the hand never stops between them.
+                const budget = Math.min(4300, Math.max(2800, 150 + letters * 21));
+                const weight = (g) => g.space ? 0.45 : (0.35 + g.len / g.size) * (g.line === 0 ? 1.6 : 1);
+                const sum = glyphs.reduce((acc, g) => acc + weight(g), 0) || 1;
+                let at = 0;
+                let lastLine = 0;
+                glyphs.forEach((g) => {
+                    if (g.line !== lastLine) { at += 260; lastLine = g.line; }
+                    const slot = budget * weight(g) / sum;
+                    g.start = at;
+                    g.dur = Math.min(480, Math.max(200, slot * 3));
+                    at += slot;
+                });
+                total = glyphs.reduce((acc, g) => Math.max(acc, (g.start || 0) + (g.dur || 0)), 0);
+                elapsed = 0;
+                drawnUpTo = 0;
+                complete = false;
+                inkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                penCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                inkCtx.clearRect(0, 0, w, h);
+                penCtx.clearRect(0, 0, w, h);
+                ink.hidden = false;
+                pen.hidden = false;
+            }
+
+            // The pen's path so far: whole strokes, then the current one up to
+            // the point reached. Returns where the pen is.
+            function tracePath(ctx, g, reach) {
+                let left = reach;
+                let tip = null;
+                ctx.beginPath();
+                for (const s of g.strokes) {
+                    if (left <= 0) break;
+                    ctx.moveTo(s[0][0], s[0][1]);
+                    tip = s[0];
+                    for (let i = 1; i < s.length; i++) {
+                        const seg = Math.hypot(s[i][0] - s[i - 1][0], s[i][1] - s[i - 1][1]);
+                        if (seg >= left) {
+                            const k = seg ? left / seg : 1;
+                            tip = [s[i - 1][0] + (s[i][0] - s[i - 1][0]) * k, s[i - 1][1] + (s[i][1] - s[i - 1][1]) * k];
+                            ctx.lineTo(tip[0], tip[1]);
+                            left = 0;
+                            break;
+                        }
+                        ctx.lineTo(s[i][0], s[i][1]);
+                        tip = s[i];
+                        left -= seg;
+                    }
+                }
+                return tip;
+            }
+
+            function drawGlyph(g, p) {
+                const pad = g.size * 0.7;
+                const gw = Math.ceil((g.size * 1.6 + pad * 2) * dpr);
+                const gh = Math.ceil((g.size * 1.6) * dpr);
+                if (scratch.width < gw) scratch.width = gw;
+                if (scratch.height < gh) scratch.height = gh;
+                const ox = g.x - pad;
+                const oy = g.base - g.size * 1.1;
+                sCtx.setTransform(dpr, 0, 0, dpr, -ox * dpr, -oy * dpr);
+                sCtx.clearRect(ox, oy, gw / dpr, gh / dpr);
+                const write = Math.min(1, p / 0.8);
+                sCtx.globalCompositeOperation = 'source-over';
+                sCtx.globalAlpha = 1;
+                sCtx.lineCap = 'round';
+                sCtx.lineJoin = 'round';
+                sCtx.lineWidth = g.size * 0.21;
+                sCtx.strokeStyle = '#fff';
+                const tip = tracePath(sCtx, g, g.len * write);
+                sCtx.stroke();
+                sCtx.globalCompositeOperation = 'source-in';
+                sCtx.font = g.font;
+                sCtx.fillStyle = g.color;
+                sCtx.fillText(g.ch, g.x, g.base);
+                if (p > 0.8) {
+                    // The pen has lifted: the rest of the ink settles in.
+                    sCtx.globalCompositeOperation = 'source-over';
+                    sCtx.globalAlpha = Math.min(1, (p - 0.8) / 0.2);
+                    sCtx.fillText(g.ch, g.x, g.base);
+                    sCtx.globalAlpha = 1;
+                }
+                penCtx.drawImage(scratch, 0, 0, gw, gh, ox, oy, gw / dpr, gh / dpr);
+                if (tip && write < 1) {
+                    // A tiny light riding the stroke.
+                    const r = g.size * 0.2;
+                    const glow = penCtx.createRadialGradient(tip[0], tip[1], 0, tip[0], tip[1], r);
+                    glow.addColorStop(0, 'rgba(255, 232, 178, 0.42)');
+                    glow.addColorStop(1, 'rgba(255, 232, 178, 0)');
+                    penCtx.globalCompositeOperation = 'lighter';
+                    penCtx.fillStyle = glow;
+                    penCtx.fillRect(tip[0] - r, tip[1] - r, r * 2, r * 2);
+                    penCtx.globalCompositeOperation = 'source-over';
+                }
+            }
+
+            function frame(now) {
+                raf = 0;
+                const t = now - t0;
+                elapsed = t;
+                penCtx.clearRect(0, 0, pen.width / dpr, pen.height / dpr);
+                // Finished glyphs move to the ink canvas once, in order.
+                while (drawnUpTo < glyphs.length) {
+                    const g = glyphs[drawnUpTo];
+                    if (!g.space && g.start + g.dur > t) break;
+                    if (!g.space) {
+                        inkCtx.font = g.font;
+                        inkCtx.fillStyle = g.color;
+                        inkCtx.fillText(g.ch, g.x, g.base);
+                    }
+                    drawnUpTo += 1;
+                }
+                for (let i = drawnUpTo; i < glyphs.length; i++) {
+                    const g = glyphs[i];
+                    if (g.space) continue;
+                    if (g.start > t) break;
+                    drawGlyph(g, Math.min(1, (t - g.start) / g.dur));
+                }
+                if (drawnUpTo >= glyphs.length) { finish(); return; }
+                raf = requestAnimationFrame(frame);
+            }
+
+            function finish() {
+                cancelAnimationFrame(raf);
+                raf = 0;
+                complete = true;
+                onDone();
+                // The real text is showing now; let the canvases go a frame later
+                // so there is never a frame with neither.
+                requestAnimationFrame(() => { if (complete) { ink.hidden = true; pen.hidden = true; } });
+            }
+
+            return {
+                get complete() { return complete; },
+                get running() { return raf !== 0; },
+                get prepared() { return glyphs !== null; },
+                prepare,
+                start(delay) {
+                    if (!glyphs) return;
+                    t0 = performance.now() + delay;
+                    raf = requestAnimationFrame(frame);
+                },
+                pause() {
+                    if (raf) cancelAnimationFrame(raf);
+                    raf = 0;
+                },
+                resume() {
+                    if (!glyphs || complete || raf) return;
+                    t0 = performance.now() - Math.max(0, elapsed);
+                    raf = requestAnimationFrame(frame);
+                },
+                // Straight to the finished text (a language change, a resize).
+                finishNow() {
+                    if (!glyphs || complete) return;
+                    finish();
+                },
+                reset() {
+                    if (raf) cancelAnimationFrame(raf);
+                    raf = 0;
+                    glyphs = null;
+                    complete = false;
+                    ink.hidden = true;
+                    pen.hidden = true;
+                },
+                get duration() { return total; }
+            };
+        }
+
         (function chapterStories() {
             const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
             const calm = () => document.documentElement.classList.contains('reduce-motion')
                 || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            const LEAVE_GRACE = 280;     // ms to cross from the seal into the story
-            const PROJECTION = 1150;     // ms the entrance effect is held
+
+            // The sequence, in ms. Opening: the seal brightens and the filament
+            // is drawn (anticipation), the space unfolds, the light arrives just
+            // before the words, and the writing begins while the space is still
+            // opening. Closing: the passage and its light fade at full height,
+            // and only when the words are nearly gone does the space collapse.
+            const T = {
+                anticipate: 300,
+                unfold: 1100,
+                light: 420,
+                write: 680,
+                closeReady: 1500,
+                leaveGrace: 700,
+                fade: 1250,
+                collapseAt: 1050,
+                collapse: 800
+            };
 
             const chapters = [];
+            const visible = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+                entries.forEach((e) => e.target.classList.toggle('is-offscreen', !e.isIntersecting));
+            }) : null;
 
             document.querySelectorAll('[data-chapter-story]').forEach((region) => {
                 const key = region.dataset.chapterStory;
-                const story = CHAPTER_STORIES.en[key];
                 const section = region.closest('.collection-chapter');
                 const seal = section && section.querySelector('[data-chapter-seal]');
                 const nameEl = section && section.querySelector('.collection-chapter-name');
                 const head = section && section.querySelector('.collection-chapter-head');
-                if (!story || !seal || !nameEl || !head) return;
+                if (!CHAPTER_STORIES.en[key] || !seal || !nameEl || !head) return;
 
                 region.innerHTML = '';
-                const clip = document.createElement('div');
-                clip.className = 'chapter-story-clip';
+                const light = document.createElement('span');
+                light.className = 'chapter-story-light';
+                light.setAttribute('aria-hidden', 'true');
                 const body = document.createElement('div');
                 body.className = 'chapter-story-body';
                 const theme = document.createElement('p');
                 theme.className = 'chapter-story-theme';
                 const text = document.createElement('p');
                 text.className = 'chapter-story-text';
-                const close = document.createElement('button');
-                close.type = 'button';
-                close.className = 'chapter-story-close';
+                const closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.className = 'chapter-story-close';
                 const closeLabel = document.createElement('span');
+                closeLabel.className = 'chapter-story-close-label';
                 const closeMark = document.createElement('span');
+                closeMark.className = 'chapter-story-close-x';
                 closeMark.setAttribute('aria-hidden', 'true');
                 closeMark.textContent = '×';
-                close.append(closeLabel, closeMark);
-                body.append(theme, text, close);
-                clip.appendChild(body);
-                region.appendChild(clip);
+                closeBtn.append(closeLabel, closeMark);
+                body.append(theme, text, closeBtn);
+                region.append(light, body);
                 region.setAttribute('role', 'region');
                 region.setAttribute('aria-labelledby', nameEl.id);
                 region.inert = true;
 
-                const state = { open: false, pinned: false, hoverSeal: false, hoverHead: false, hoverStory: false, muteHover: false, muteFocus: false, leaveTimer: 0, projectTimer: 0 };
+                const filament = document.createElement('span');
+                filament.className = 'chapter-filament';
+                filament.setAttribute('aria-hidden', 'true');
+                head.appendChild(filament);
+                if (visible) visible.observe(seal);
 
-                // Words and labels in the current language; called again on
-                // every language change, open or closed.
+                // closed → open (unfolding, writing, settled) → closing → closed
+                const state = {
+                    phase: 'closed',
+                    pinned: false,
+                    hoverZone: 0,
+                    muteHover: false,
+                    muteFocus: false,
+                    leftOnly: false,     // the exit was the pointer leaving, nothing more
+                    timers: new Set(),
+                    leaveTimer: 0
+                };
+
+                const later = (fn, ms) => {
+                    const id = setTimeout(() => { state.timers.delete(id); fn(); }, ms);
+                    state.timers.add(id);
+                    return id;
+                };
+                const clearSequence = () => { state.timers.forEach(clearTimeout); state.timers.clear(); };
+
+                const writer = createChapterWriter(body, [theme, text], () => {
+                    region.classList.remove('is-writing');
+                    region.classList.add('is-ready');
+                    if (state.phase === 'open') region.classList.add('is-idle');
+                });
+
                 const label = () => {
                     const words = chapterStoryFor(key);
+                    // New words mid-writing: show them complete rather than
+                    // writing over the old measurements.
+                    if (writer.prepared && !writer.complete) writer.finishNow();
                     theme.textContent = words.theme;
                     text.textContent = words.text;
                     seal.setAttribute('aria-label', t('chapterRead') + ': ' + nameEl.textContent.trim());
@@ -21716,84 +22211,150 @@
                 };
                 label();
 
-                function open() {
-                    clearTimeout(state.leaveTimer);
-                    if (state.open) return;
-                    state.open = true;
-                    region.inert = false;
-                    region.classList.add('is-open');
-                    seal.setAttribute('aria-expanded', 'true');
-                    clearTimeout(state.projectTimer);
-                    region.classList.remove('is-projecting');
-                    if (!calm()) {
-                        void region.offsetWidth;   // restart the projection
-                        region.classList.add('is-projecting');
-                        state.projectTimer = setTimeout(() => region.classList.remove('is-projecting'), PROJECTION);
-                    }
+                // Grow (or shrink) the space to the passage's height from
+                // wherever it is now, then hand it back to auto.
+                function unfoldTo(ms) {
+                    const target = body.offsetHeight;
+                    region.classList.remove('is-collapsing');
+                    region.classList.add('is-unfolding');
+                    region.style.transitionDuration = ms + 'ms';
+                    region.style.height = target + 'px';
+                    later(() => {
+                        if (state.phase !== 'open') return;
+                        region.classList.remove('is-unfolding');
+                        region.style.transitionDuration = '';
+                        region.style.height = 'auto';
+                    }, ms + 40);
                 }
 
-                function shut(returnFocus) {
+                function open() {
                     clearTimeout(state.leaveTimer);
-                    clearTimeout(state.projectTimer);
+                    if (state.phase === 'open') return;
+                    seal.setAttribute('aria-expanded', 'true');
+                    region.inert = false;
+
+                    if (state.phase === 'closing') {
+                        // Back before the exit finished: restore this story from
+                        // where it stands — nothing restarts.
+                        clearSequence();
+                        state.phase = 'open';
+                        section.classList.add('is-story-open');
+                        region.classList.remove('is-fading');
+                        region.classList.add('is-lit');
+                        if (calm()) { region.style.height = 'auto'; return; }
+                        unfoldTo(700);
+                        if (writer.complete) region.classList.add('is-idle');
+                        else writer.resume();
+                        return;
+                    }
+
+                    state.phase = 'open';
+                    region.classList.add('is-shown');
+                    section.classList.add('is-story-open');
+
+                    if (calm() || !(document.fonts && document.fonts.status === 'loaded')) {
+                        region.style.height = 'auto';
+                        region.classList.add('is-lit', 'is-ready', 'is-idle');
+                        return;
+                    }
+
+                    // Measure once, before anything moves.
+                    region.classList.add('is-writing');
+                    writer.prepare();
+                    writer.start(T.write);
+                    later(() => region.classList.add('is-lit'), T.light);
+                    later(() => region.classList.add('is-ready'), T.closeReady);
+                    later(() => { if (state.phase === 'open') unfoldTo(T.unfold); }, T.anticipate);
+                }
+
+                function close(returnFocus) {
+                    clearTimeout(state.leaveTimer);
+                    if (state.phase !== 'open') return;
                     const hadFocus = region.contains(document.activeElement);
-                    state.open = false;
+                    clearSequence();
+                    state.phase = 'closing';
+                    state.leftOnly = false;
                     state.pinned = false;
                     seal.classList.remove('is-pinned');
                     seal.setAttribute('aria-expanded', 'false');
-                    region.classList.remove('is-open', 'is-projecting');
-                    region.inert = true;
+                    section.classList.remove('is-story-open');
+                    writer.pause();
                     if (returnFocus || hadFocus) {
                         state.muteFocus = true;
                         seal.focus({ preventScroll: true });
                         state.muteFocus = false;
                     }
+
+                    if (calm()) { finishClose(); return; }
+
+                    // Hold the space exactly where it is while the words fade.
+                    const now = region.getBoundingClientRect().height;
+                    region.classList.remove('is-unfolding');
+                    region.style.transitionDuration = '';
+                    region.style.height = now + 'px';
+                    region.classList.remove('is-idle', 'is-lit');
+                    region.classList.add('is-fading');
+                    later(() => {
+                        region.classList.add('is-collapsing');
+                        region.style.height = '0px';
+                        later(finishClose, T.collapse + 40);
+                    }, T.collapseAt);
+                }
+
+                function finishClose() {
+                    clearSequence();
+                    state.phase = 'closed';
+                    writer.reset();
+                    region.classList.remove('is-shown', 'is-fading', 'is-collapsing', 'is-unfolding', 'is-lit', 'is-ready', 'is-idle', 'is-writing');
+                    region.style.height = '';
+                    region.style.transitionDuration = '';
+                    region.inert = true;
+                    closeBtn.classList.remove('is-pressed');
                 }
 
                 function pin() {
-                    open();
                     state.pinned = true;
                     seal.classList.add('is-pinned');
+                    open();
                 }
 
-                // Close a transient (unpinned) story once nothing is holding
-                // it: not the pointer, not keyboard focus.
+                // Close a story nobody is holding, ~0.7s after the pointer and
+                // focus have both left the seal, the heading and the story.
                 function release() {
                     clearTimeout(state.leaveTimer);
-                    if (!state.open || state.pinned) return;
+                    if (state.phase !== 'open' || state.pinned) return;
                     state.leaveTimer = setTimeout(() => {
-                        const focusHolds = (seal.matches(':focus-visible')) || region.contains(document.activeElement);
-                        if (state.pinned || state.hoverSeal || state.hoverHead || state.hoverStory || focusHolds) return;
-                        shut(false);
-                    }, LEAVE_GRACE);
+                        const focusHolds = seal.matches(':focus-visible') || region.contains(document.activeElement);
+                        if (state.pinned || state.hoverZone > 0 || focusHolds) return;
+                        close(false);
+                        state.leftOnly = true;
+                    }, T.leaveGrace);
                 }
 
                 const isHoverPointer = (e) => canHover.matches && (e.pointerType === 'mouse' || e.pointerType === 'pen');
 
-                seal.addEventListener('pointerenter', (e) => {
-                    if (!isHoverPointer(e)) return;
-                    state.hoverSeal = true;
-                    if (state.muteHover) return;
-                    open();
-                });
-                seal.addEventListener('pointerleave', (e) => {
-                    if (!isHoverPointer(e)) return;
-                    state.hoverSeal = false;
-                    state.muteHover = false;
-                    release();
-                });
-                // The rest of the zone only keeps an open story open; it never
-                // opens one by itself.
-                [[head, 'hoverHead'], [region, 'hoverStory']].forEach(([el, key]) => {
+                // One zone: the heading (with the seal in it) and the story.
+                // Only the seal opens a story; the zone keeps it open, and
+                // returning to it during the exit brings the story back.
+                [head, region].forEach((el) => {
                     el.addEventListener('pointerenter', (e) => {
                         if (!isHoverPointer(e)) return;
-                        state[key] = true;
-                        if (state.open) clearTimeout(state.leaveTimer);
+                        state.hoverZone += 1;
+                        clearTimeout(state.leaveTimer);
+                        // Back during an exit the pointer caused: restore it.
+                        if (state.phase === 'closing' && state.leftOnly) open();
                     });
                     el.addEventListener('pointerleave', (e) => {
                         if (!isHoverPointer(e)) return;
-                        state[key] = false;
+                        state.hoverZone = Math.max(0, state.hoverZone - 1);
+                        if (el === head) state.muteHover = false;
                         release();
                     });
+                });
+
+                seal.addEventListener('pointerenter', (e) => {
+                    if (!isHoverPointer(e) || state.muteHover) return;
+                    open();
                 });
 
                 seal.addEventListener('focus', () => {
@@ -21808,21 +22369,22 @@
 
                 seal.addEventListener('click', () => {
                     if (state.pinned) {
-                        shut(false);
-                        // The pointer is still on the seal: do not reopen it
-                        // until it has left and come back.
-                        state.muteHover = state.hoverSeal;
+                        close(false);
+                        // Still resting on the seal: no reopening until the
+                        // pointer has left the heading and come back.
+                        state.muteHover = state.hoverZone > 0;
                         return;
                     }
                     pin();
                 });
 
-                close.addEventListener('click', () => {
-                    state.muteHover = state.hoverSeal;
-                    shut(true);
+                closeBtn.addEventListener('click', () => {
+                    closeBtn.classList.add('is-pressed');
+                    state.muteHover = state.hoverZone > 0;
+                    close(true);
                 });
 
-                chapters.push({ seal, region, state, shut, label });
+                chapters.push({ seal, region, state, writer, close: (f) => close(f), label, get phase() { return state.phase; } });
             });
 
             if (!chapters.length) return;
@@ -21835,14 +22397,53 @@
                 const active = document.activeElement;
                 if (active && active.closest && active.closest('[role="dialog"], [aria-modal="true"]')) return;
                 chapters.forEach((c) => {
-                    if (!c.state.open) return;
+                    if (c.phase !== 'open') return;
                     const focusInside = c.seal === active || c.region.contains(active);
-                    c.state.muteHover = c.state.hoverSeal;
-                    c.shut(focusInside);
+                    c.state.muteHover = c.state.hoverZone > 0;
+                    c.close(focusInside);
                 });
             });
 
+            // A new width moves every letter: finish any writing at once.
+            window.addEventListener('resize', () => chapters.forEach((c) => {
+                if (c.writer.prepared && !c.writer.complete) c.writer.finishNow();
+            }), { passive: true });
+
             window.voidChapterStoriesRefresh = () => chapters.forEach((c) => c.label());
+            // Read-only, for tests.
+            window.__chapterStories = chapters.map((c) => ({
+                get phase() { return c.state.phase; },
+                get writing() { return c.writer.running; },
+                get written() { return c.writer.complete; },
+                get duration() { return c.writer.duration; }
+            }));
+        })();
+
+        // The ambience is sized to the section, and its layers are far larger
+        // than the screen. Left at inset: 0, every frame of a chapter story
+        // opening or closing (which changes the section's height) re-rendered
+        // all of them. It is pinned to the section's height instead, set at
+        // load and on a real resize only. Its lower edge already fades to
+        // nothing, so a story's few hundred extra pixels are never visible.
+        (function pinSectionAmbience() {
+            const atmos = document.querySelector('.products-atmos');
+            const section = atmos && atmos.parentElement;
+            if (!section) return;
+            let width = 0;
+            const pin = () => {
+                width = window.innerWidth;
+                atmos.style.bottom = 'auto';
+                atmos.style.height = section.offsetHeight + 'px';
+            };
+            pin();
+            window.addEventListener('load', pin);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(pin);
+            let timer = 0;
+            window.addEventListener('resize', () => {
+                if (window.innerWidth === width) return;   // a phone's toolbar, not a new layout
+                clearTimeout(timer);
+                timer = setTimeout(pin, 250);
+            }, { passive: true });
         })();
 
         // ---- Style guide overlay ----
@@ -23252,6 +23853,7 @@
                 if (document.hidden) atmos.classList.remove('pa-in-view');
             });
         })();
+
     </script>
 
     <script>
