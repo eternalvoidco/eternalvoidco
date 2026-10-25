@@ -11,9 +11,8 @@
         gtag('config', 'G-0J10500JCQ');
     </script>
     <script>
-        // Before first paint: the chapters are a sequence only when the script
-        // can run them. Without it the page is one readable scroll.
-        document.documentElement.classList.add('nt-js');
+        // Before first paint, so the entrance never plays for someone who has
+        // asked the house for a calmer site.
         try {
             if (localStorage.getItem('void-reduce-motion') === '1'
                 && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -23,14 +22,14 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>NÉANT — Extrait de Parfum | VOID©</title>
-    <meta name="description" content="NÉANT, Extrait de Parfum by Eternal Void. Coming soon. Receive the unveiling.">
+    <meta name="description" content="NÉANT, Extrait de Parfum by Eternal Void. Bergamot, rose and oud. Coming soon — receive the unveiling.">
     <link rel="canonical" href="https://eternalvoid.co/fragrance">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#030302">
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg?v=20260713-ev">
     <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260713-ev">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png?v=20260713-ev">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="product">
     <meta property="og:title" content="NÉANT — Extrait de Parfum | VOID©">
     <meta property="og:description" content="The void has a scent. NÉANT, Extrait de Parfum by Eternal Void. Coming soon.">
     <meta property="og:url" content="https://eternalvoid.co/fragrance">
@@ -41,194 +40,86 @@
     <meta name="twitter:image" content="https://eternalvoid.co/assets/fragrance/neant-bottle-transparent.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="image" href="/assets/fragrance/neant-bottle-transparent.webp">
+    <link rel="preload" as="image" href="/assets/fragrance/neant-bottle-640.webp"
+          imagesrcset="/assets/fragrance/neant-bottle-640.webp 640w, /assets/fragrance/neant-bottle-transparent.webp 1024w"
+          imagesizes="(max-width: 960px) 46vw, 380px">
     <!-- Two voices, no more: Bodoni Moda for display, Jost for microcopy. -->
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- /assets is served immutable for a year: bump ?v= with every change. -->
-    <link rel="stylesheet" href="/assets/void-fragrance.css?v=20261006-neant">
+    <link rel="stylesheet" href="/assets/void-fragrance.css?v=20261025-store">
 </head>
-<body data-step="0">
-    <!-- One room, lit differently for each passage. The timeline fades these
-         layers; nothing else changes the light. -->
-    <div class="nt-atmos" aria-hidden="true">
-        <span class="nt-light nt-light--gold" data-light="gold"></span>
-        <span class="nt-light nt-light--citrus" data-light="citrus"></span>
-        <span class="nt-light nt-light--rose" data-light="rose"></span>
-        <span class="nt-light nt-light--smoke" data-light="smoke"></span>
-        <span class="nt-light nt-light--amber" data-light="amber"></span>
-        <span class="nt-vignette"></span>
-    </div>
+<body>
+    <a class="nt-skip" href="#neant" data-i18n="skipLink">Skip to content</a>
 
-    <!-- The bottle as it is first suggested: a shape against light, with a
-         slow reflection crossing the glass. Shared by both announcement
-         passages so it never cuts between them. -->
-    <div class="nt-ghost" id="ntGhost" aria-hidden="true">
-        <span class="nt-ghost-halo"></span>
-        <img class="nt-ghost-shape" src="/assets/fragrance/neant-bottle-transparent.webp" alt="" width="1024" height="1536" decoding="async">
-        <img class="nt-ghost-lit" src="/assets/fragrance/neant-bottle-transparent.webp" alt="" width="1024" height="1536" decoding="async">
-        <span class="nt-ghost-sweep"></span>
-    </div>
+    <!-- A sentinel at the very top: the header gains its backing once this
+         has scrolled away (IntersectionObserver, no scroll listener). -->
+    <span class="nt-top-sentinel" id="ntTopSentinel" aria-hidden="true"></span>
 
-    <header class="nt-nav">
-        <a href="/shop" data-i18n="navCollection">← Collection</a>
+    <header class="nt-nav" id="ntNav">
+        <nav class="nt-nav-start" aria-label="Site" data-i18n-aria-label="navLabel">
+            <a class="nt-nav-link nt-nav-link--back" href="/shop"><span aria-hidden="true">←</span> <span data-i18n="navShop">Shop</span></a>
+            <a class="nt-nav-link nt-nav-link--section" href="#scent" data-i18n="navScent">The Scent</a>
+            <a class="nt-nav-link nt-nav-link--section" href="#details" data-i18n="navDetails">Details</a>
+        </nav>
         <a class="nt-nav-mark" href="/" aria-label="Eternal Void"><span aria-hidden="true"></span></a>
-        <a href="/" data-i18n="navHouse">Eternal Void</a>
+        <a class="nt-bag" id="ntBag" href="/checkout" aria-label="Bag">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M5.5 8.5h13l-1 11.5h-11z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+            <span class="nt-bag-label" data-i18n="bag">Bag</span>
+            <span class="nt-bag-count" id="ntBagCount" hidden>0</span>
+        </a>
     </header>
 
-    <h1 class="nt-sr">NÉANT — Extrait de Parfum</h1>
-
     <main id="ntMain">
-        <!-- ── 01 · The Announcement ───────────────────────────────── -->
-        <section class="nt-scene nt-prologue" id="prologue" data-step="0" data-chapter="1" aria-labelledby="ntPrologueTitle">
-            <h2 class="nt-sr" id="ntPrologueTitle" data-i18n="ch1">The Announcement</h2>
-            <div class="nt-prologue-lines">
-                <p class="nt-line" data-reveal="glyphs" data-at="500" data-per="34" data-i18n="mono1">Some presences are felt before they are seen.</p>
-                <p class="nt-line" data-reveal="glyphs" data-at="2500" data-per="34" data-i18n="mono2">They move through silence.</p>
-                <p class="nt-line nt-line--answer" data-reveal="glyphs" data-at="4300" data-per="34" data-i18n="mono3">And remain after they have gone.</p>
-            </div>
-        </section>
-
-        <section class="nt-scene nt-announce" id="announcement" data-step="1" data-chapter="1" aria-labelledby="ntAnnounceTitle">
-            <p class="nt-kicker" data-reveal="glyphs" data-at="300" data-per="40" data-i18n="presents">Eternal Void presents</p>
-            <div class="nt-announce-name">
-                <h2 class="nt-display" id="ntAnnounceTitle" data-reveal="glyphs" data-at="900" data-per="110" data-glyph-ms="1200">Néant</h2>
-                <p class="nt-kind" data-reveal="rise" data-at="1750">Extrait de Parfum</p>
-            </div>
-            <span class="nt-rule" data-reveal="rule" data-at="2050" aria-hidden="true"></span>
-            <p class="nt-tagline" data-reveal="glyphs" data-at="2350" data-per="45" data-i18n="tagline">The void has a scent.</p>
-        </section>
-
-        <!-- ── 02 · The Olfactory World ────────────────────────────── -->
-        <section class="nt-scene nt-accord nt-accord--opening" id="opening" data-step="2" data-chapter="2" aria-labelledby="ntOpeningTitle">
-            <div class="nt-accord-grid">
-                <header class="nt-accord-head" data-reveal="fade" data-at="150">
-                    <p class="nt-kicker"><span data-i18n="chapterWord">Chapter</span> 02 — <span data-i18n="ch2">The Olfactory World</span></p>
-                    <ol class="nt-movements" aria-hidden="true">
-                        <li aria-current="step"><span>I</span> <span data-i18n="opening">Opening</span></li>
-                        <li><span>II</span> <span data-i18n="heart">Heart</span></li>
-                        <li><span>III</span> <span data-i18n="base">Base</span></li>
-                    </ol>
-                </header>
-                <div class="nt-accord-story">
-                    <span class="nt-numeral" data-reveal="depth" data-at="200" aria-hidden="true">I</span>
-                    <p class="nt-movement-name" data-reveal="glyphs" data-at="420" data-per="40" data-i18n="opening">Opening</p>
-                    <h2 class="nt-accord-title" id="ntOpeningTitle" data-reveal="glyphs" data-at="640" data-per="45" data-i18n="openingTitle">First Light</h2>
-                    <p class="nt-accord-copy" data-reveal="rise" data-at="1100" data-i18n="openingCopy">A cold spark breaks the dark. Bergamot and blackcurrant sharpen the air; pink pepper flickers, and saffron draws a thread of gilded heat.</p>
-                </div>
-                <aside class="nt-notes" aria-labelledby="ntOpeningNotes">
-                    <p class="nt-notes-label" id="ntOpeningNotes" data-reveal="fade" data-at="1150" data-i18n="notesLabel">Notes</p>
-                    <ul>
-                        <li data-reveal="rise" data-at="1250" data-i18n="bergamot">Bergamot</li>
-                        <li data-reveal="rise" data-at="1370" data-i18n="blackcurrant">Blackcurrant</li>
-                        <li data-reveal="rise" data-at="1490" data-i18n="saffron">Saffron</li>
-                        <li data-reveal="rise" data-at="1610" data-i18n="pinkPepper">Pink pepper</li>
-                    </ul>
-                    <p class="nt-direction" data-reveal="fade" data-at="1800" data-i18n="direction">Creative direction — the composition is still being refined.</p>
-                </aside>
-            </div>
-        </section>
-
-        <section class="nt-scene nt-accord nt-accord--heart" id="heart" data-step="3" data-chapter="2" aria-labelledby="ntHeartTitle">
-            <div class="nt-accord-grid">
-                <header class="nt-accord-head" data-reveal="fade" data-at="150">
-                    <p class="nt-kicker"><span data-i18n="chapterWord">Chapter</span> 02 — <span data-i18n="ch2">The Olfactory World</span></p>
-                    <ol class="nt-movements" aria-hidden="true">
-                        <li><span>I</span> <span data-i18n="opening">Opening</span></li>
-                        <li aria-current="step"><span>II</span> <span data-i18n="heart">Heart</span></li>
-                        <li><span>III</span> <span data-i18n="base">Base</span></li>
-                    </ol>
-                </header>
-                <div class="nt-accord-story">
-                    <span class="nt-numeral" data-reveal="depth" data-at="200" aria-hidden="true">II</span>
-                    <p class="nt-movement-name" data-reveal="glyphs" data-at="420" data-per="40" data-i18n="heart">Heart</p>
-                    <h2 class="nt-accord-title" id="ntHeartTitle" data-reveal="glyphs" data-at="640" data-per="45" data-i18n="heartTitle">The Inner Chamber</h2>
-                    <p class="nt-accord-copy" data-reveal="rise" data-at="1100" data-i18n="heartCopy">Behind closed doors, rose and jasmine open in the half-light. Incense rises from smoked woods: slow, devotional, close.</p>
-                </div>
-                <aside class="nt-notes" aria-labelledby="ntHeartNotes">
-                    <p class="nt-notes-label" id="ntHeartNotes" data-reveal="fade" data-at="1150" data-i18n="notesLabel">Notes</p>
-                    <ul>
-                        <li data-reveal="rise" data-at="1250" data-i18n="rose">Rose</li>
-                        <li data-reveal="rise" data-at="1370" data-i18n="jasmine">Jasmine</li>
-                        <li data-reveal="rise" data-at="1490" data-i18n="incense">Incense</li>
-                        <li data-reveal="rise" data-at="1610" data-i18n="smokyWoods">Smoky woods</li>
-                    </ul>
-                    <p class="nt-direction" data-reveal="fade" data-at="1800" data-i18n="direction">Creative direction — the composition is still being refined.</p>
-                </aside>
-            </div>
-        </section>
-
-        <section class="nt-scene nt-accord nt-accord--base" id="base" data-step="4" data-chapter="2" aria-labelledby="ntBaseTitle">
-            <div class="nt-accord-grid">
-                <header class="nt-accord-head" data-reveal="fade" data-at="150">
-                    <p class="nt-kicker"><span data-i18n="chapterWord">Chapter</span> 02 — <span data-i18n="ch2">The Olfactory World</span></p>
-                    <ol class="nt-movements" aria-hidden="true">
-                        <li><span>I</span> <span data-i18n="opening">Opening</span></li>
-                        <li><span>II</span> <span data-i18n="heart">Heart</span></li>
-                        <li aria-current="step"><span>III</span> <span data-i18n="base">Base</span></li>
-                    </ol>
-                </header>
-                <div class="nt-accord-story">
-                    <span class="nt-numeral" data-reveal="depth" data-at="200" aria-hidden="true">III</span>
-                    <p class="nt-movement-name" data-reveal="glyphs" data-at="420" data-per="40" data-i18n="base">Base</p>
-                    <h2 class="nt-accord-title" id="ntBaseTitle" data-reveal="glyphs" data-at="640" data-per="45" data-i18n="baseTitle">What Remains</h2>
-                    <p class="nt-accord-copy" data-reveal="rise" data-at="1100" data-i18n="baseCopy">Oud and leather settle into the dark, softened by amber and vanilla. Patchouli and musk hold what is left: a presence, not a trace.</p>
-                </div>
-                <aside class="nt-notes" aria-labelledby="ntBaseNotes">
-                    <p class="nt-notes-label" id="ntBaseNotes" data-reveal="fade" data-at="1150" data-i18n="notesLabel">Notes</p>
-                    <ul>
-                        <li data-reveal="rise" data-at="1250" data-i18n="oud">Oud</li>
-                        <li data-reveal="rise" data-at="1340" data-i18n="amber">Amber</li>
-                        <li data-reveal="rise" data-at="1430" data-i18n="vanilla">Vanilla</li>
-                        <li data-reveal="rise" data-at="1520" data-i18n="leather">Leather</li>
-                        <li data-reveal="rise" data-at="1610" data-i18n="patchouli">Patchouli</li>
-                        <li data-reveal="rise" data-at="1700" data-i18n="musk">Musk</li>
-                    </ul>
-                    <p class="nt-direction" data-reveal="fade" data-at="1850" data-i18n="direction">Creative direction — the composition is still being refined.</p>
-                </aside>
-            </div>
-        </section>
-
-        <!-- ── 03 · NÉANT / The Unveiling ──────────────────────────── -->
-        <section class="nt-scene nt-unveil" id="unveiling" data-step="5" data-chapter="3" aria-labelledby="ntUnveilTitle">
-            <div class="nt-unveil-grid">
-                <!-- Product stage. Every layer is separate so each can answer
-                     the pointer with its own weight; the shadow, floor and
-                     reflection all key off one floor line. -->
-                <div class="fr-stage" id="frStage">
-                    <span class="fr-backglow" data-reveal="fade" data-at="0" data-ms="1200" aria-hidden="true"></span>
-                    <span class="fr-floor" data-reveal="fade" data-at="300" data-ms="1200" aria-hidden="true"></span>
-                    <span class="fr-shadow" data-reveal="fade" data-at="250" data-ms="1000" aria-hidden="true"></span>
-
+        <!-- ── The product: what it is, why it matters, how to have it ── -->
+        <section class="nt-hero" id="neant" aria-labelledby="ntTitle" tabindex="-1">
+            <div class="nt-hero-grid">
+                <figure class="fr-stage" id="frStage">
+                    <span class="fr-backglow" aria-hidden="true"></span>
+                    <span class="fr-floor" aria-hidden="true"></span>
+                    <span class="fr-shadow" aria-hidden="true"></span>
                     <div class="fr-bottle-wrap">
-                        <div class="fr-bottle" id="frBottle" data-reveal="fade" data-at="60" data-ms="900">
-                            <img class="fr-bottle-img" id="ntBottleImg" src="/assets/fragrance/neant-bottle-transparent.webp"
-                                 alt="The NÉANT bottle: black faceted glass with a gold serpent coiled at the neck, amber extrait within."
-                                 data-i18n-alt="bottleAlt"
-                                 width="1024" height="1536" fetchpriority="high" decoding="async">
-                            <span class="fr-amber" aria-hidden="true"></span>
-                            <span class="fr-glare" aria-hidden="true"></span>
-                            <span class="fr-edge" aria-hidden="true"></span>
-                            <!-- The glass is lit from darkness: a bottle-shaped
-                                 veil lifts, then one pass of light crosses it. -->
-                            <span class="fr-veil" data-reveal="unveil" data-at="120" data-ms="1500" aria-hidden="true"></span>
-                            <span class="fr-pass" data-reveal="pass" data-at="1150" data-ms="1500" aria-hidden="true"></span>
+                        <img class="fr-bottle-img" id="ntBottleImg"
+                             src="/assets/fragrance/neant-bottle-640.webp"
+                             srcset="/assets/fragrance/neant-bottle-640.webp 640w, /assets/fragrance/neant-bottle-transparent.webp 1024w"
+                             sizes="(max-width: 960px) 46vw, 380px"
+                             alt="The NÉANT bottle: black faceted glass with a gold serpent coiled at the neck, amber extrait within."
+                             data-i18n-alt="bottleAlt"
+                             width="1024" height="1536" fetchpriority="high" decoding="async">
+                    </div>
+                    <div class="fr-reflection" aria-hidden="true">
+                        <img src="/assets/fragrance/neant-bottle-640.webp" alt="" width="1024" height="1536" decoding="async">
+                    </div>
+                </figure>
+
+                <div class="nt-buy">
+                    <p class="nt-kicker nt-enter" style="--i: 0">Eternal Void</p>
+                    <h1 class="nt-title nt-enter" id="ntTitle" style="--i: 1">
+                        <span class="nt-display">Néant</span>
+                        <span class="nt-kind">Extrait de Parfum</span>
+                    </h1>
+                    <p class="nt-tagline nt-enter" style="--i: 2" data-i18n="tagline">The void has a scent.</p>
+                    <p class="nt-lede nt-enter" style="--i: 2" data-i18n="unveilCopy">Composed in shadow and amber — the first fragrance of Eternal Void. Leave your address, and the unveiling will find you.</p>
+
+                    <dl class="nt-facts nt-enter" style="--i: 3">
+                        <div>
+                            <dt data-i18n="factConcentration">Concentration</dt>
+                            <dd>Extrait de Parfum</dd>
                         </div>
-                    </div>
+                        <div>
+                            <dt data-i18n="factNotes">Key notes</dt>
+                            <dd><span data-i18n="bergamot">Bergamot</span> · <span data-i18n="rose">Rose</span> · <span data-i18n="oud">Oud</span></dd>
+                        </div>
+                        <div>
+                            <dt data-i18n="factSizePrice">Size &amp; price</dt>
+                            <dd data-i18n="tba">To be announced</dd>
+                        </div>
+                        <div>
+                            <dt data-i18n="factAvailability">Availability</dt>
+                            <dd class="nt-status"><span data-i18n="comingSoon">Coming Soon</span></dd>
+                        </div>
+                    </dl>
 
-                    <div class="fr-reflection" data-reveal="fade" data-at="600" data-ms="1300" aria-hidden="true">
-                        <img src="/assets/fragrance/neant-bottle-transparent.webp" alt="" width="1024" height="1536" decoding="async">
-                    </div>
-                </div>
-
-                <div class="nt-unveil-copy">
-                    <p class="nt-kicker" data-reveal="glyphs" data-at="350" data-per="30"><span data-i18n="chapterWord">Chapter</span> 03 — <span data-i18n="ch3">The Unveiling</span></p>
-                    <h2 class="nt-display nt-display--unveil" id="ntUnveilTitle" data-reveal="glyphs" data-at="700" data-per="90" data-glyph-ms="1000">Néant</h2>
-                    <p class="nt-kind" data-reveal="rise" data-at="1250">Extrait de Parfum</p>
-                    <span class="nt-rule nt-rule--start" data-reveal="rule" data-at="1450" aria-hidden="true"></span>
-                    <p class="nt-unveil-text" data-reveal="rise" data-at="1600" data-i18n="unveilCopy">Composed in shadow and amber — the first fragrance of Eternal Void. Leave your address, and the unveiling will find you.</p>
-                    <p class="nt-status" data-reveal="rise" data-at="1750"><span data-i18n="comingSoon">Coming Soon</span></p>
-
-                    <form class="nt-form" id="ntForm" data-reveal="rise" data-at="1900" novalidate>
+                    <form class="nt-form nt-enter" id="ntForm" style="--i: 4" novalidate>
                         <label class="nt-form-label" for="ntEmail" data-i18n="emailLabel">Email address</label>
                         <div class="nt-form-row">
                             <input class="nt-form-input" id="ntEmail" name="email" type="email" autocomplete="email" inputmode="email"
@@ -238,41 +129,156 @@
                         <p class="nt-form-status" id="ntFormStatus" role="status" aria-live="polite"></p>
                         <p class="nt-form-note" id="ntFormNote"><span data-i18n="formNote">Occasional letters from Eternal Void. Unsubscribe at any time.</span> <a href="/privacy-policy.html" data-i18n="privacy">Privacy Policy</a></p>
                     </form>
+
+                    <div class="nt-hero-links nt-enter" style="--i: 5">
+                        <a class="nt-link" href="#scent"><span data-i18n="discover">Discover the Fragrance</span> <span aria-hidden="true">↓</span></a>
+                        <a class="nt-link" href="/shop"><span data-i18n="shopCollection">Shop the Collection</span> <span aria-hidden="true">→</span></a>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <footer class="nt-footer" data-reveal="fade" data-at="2100">
-                <p>&copy; 2026 Eternal Void</p>
-            </footer>
+        <!-- ── The scent: three movements, every note named ── -->
+        <section class="nt-section nt-scent" id="scent" aria-labelledby="ntScentTitle">
+            <header class="nt-section-head">
+                <p class="nt-kicker" data-i18n="ch2">The Olfactory World</p>
+                <h2 class="nt-h2" id="ntScentTitle" data-i18n="scentTitle">The Scent</h2>
+                <p class="nt-epigraph">
+                    <span data-i18n="mono1">Some presences are felt before they are seen.</span>
+                    <span data-i18n="mono2">They move through silence.</span>
+                    <em data-i18n="mono3">And remain after they have gone.</em>
+                </p>
+            </header>
+
+            <ol class="nt-movements">
+                <li class="nt-movement" id="opening">
+                    <p class="nt-movement-mark"><span class="nt-numeral" aria-hidden="true">I</span> <span data-i18n="opening">Opening</span></p>
+                    <h3 class="nt-movement-title" data-i18n="openingTitle">First Light</h3>
+                    <p class="nt-movement-copy" data-i18n="openingCopy">A cold spark breaks the dark. Bergamot and blackcurrant sharpen the air; pink pepper flickers, and saffron draws a thread of gilded heat.</p>
+                    <p class="nt-notes-label" data-i18n="notesLabel">Notes</p>
+                    <ul class="nt-notes">
+                        <li data-i18n="bergamot">Bergamot</li>
+                        <li data-i18n="blackcurrant">Blackcurrant</li>
+                        <li data-i18n="saffron">Saffron</li>
+                        <li data-i18n="pinkPepper">Pink pepper</li>
+                    </ul>
+                </li>
+                <li class="nt-movement" id="heart">
+                    <p class="nt-movement-mark"><span class="nt-numeral" aria-hidden="true">II</span> <span data-i18n="heart">Heart</span></p>
+                    <h3 class="nt-movement-title" data-i18n="heartTitle">The Inner Chamber</h3>
+                    <p class="nt-movement-copy" data-i18n="heartCopy">Behind closed doors, rose and jasmine open in the half-light. Incense rises from smoked woods: slow, devotional, close.</p>
+                    <p class="nt-notes-label" data-i18n="notesLabel">Notes</p>
+                    <ul class="nt-notes">
+                        <li data-i18n="rose">Rose</li>
+                        <li data-i18n="jasmine">Jasmine</li>
+                        <li data-i18n="incense">Incense</li>
+                        <li data-i18n="smokyWoods">Smoky woods</li>
+                    </ul>
+                </li>
+                <li class="nt-movement" id="base">
+                    <p class="nt-movement-mark"><span class="nt-numeral" aria-hidden="true">III</span> <span data-i18n="base">Base</span></p>
+                    <h3 class="nt-movement-title" data-i18n="baseTitle">What Remains</h3>
+                    <p class="nt-movement-copy" data-i18n="baseCopy">Oud and leather settle into the dark, softened by amber and vanilla. Patchouli and musk hold what is left: a presence, not a trace.</p>
+                    <p class="nt-notes-label" data-i18n="notesLabel">Notes</p>
+                    <ul class="nt-notes">
+                        <li data-i18n="oud">Oud</li>
+                        <li data-i18n="amber">Amber</li>
+                        <li data-i18n="vanilla">Vanilla</li>
+                        <li data-i18n="leather">Leather</li>
+                        <li data-i18n="patchouli">Patchouli</li>
+                        <li data-i18n="musk">Musk</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <p class="nt-direction" data-i18n="direction">Creative direction — the composition is still being refined.</p>
+        </section>
+
+        <!-- ── Details: the facts, and plainly what is not yet known ── -->
+        <section class="nt-section nt-details" id="details" aria-labelledby="ntDetailsTitle">
+            <header class="nt-section-head nt-section-head--start">
+                <p class="nt-kicker">Néant</p>
+                <h2 class="nt-h2" id="ntDetailsTitle" data-i18n="detailsTitle">Details</h2>
+            </header>
+            <div class="nt-details-grid">
+                <dl class="nt-spec">
+                    <div><dt data-i18n="dHouse">House</dt><dd>Eternal Void</dd></div>
+                    <div><dt data-i18n="dConcentration">Concentration</dt><dd>Extrait de Parfum</dd></div>
+                    <div><dt data-i18n="dTop">Top notes</dt><dd><span data-i18n="bergamot">Bergamot</span>, <span data-i18n="blackcurrant">Blackcurrant</span>, <span data-i18n="saffron">Saffron</span>, <span data-i18n="pinkPepper">Pink pepper</span></dd></div>
+                    <div><dt data-i18n="dHeart">Heart notes</dt><dd><span data-i18n="rose">Rose</span>, <span data-i18n="jasmine">Jasmine</span>, <span data-i18n="incense">Incense</span>, <span data-i18n="smokyWoods">Smoky woods</span></dd></div>
+                    <div><dt data-i18n="dBase">Base notes</dt><dd><span data-i18n="oud">Oud</span>, <span data-i18n="amber">Amber</span>, <span data-i18n="vanilla">Vanilla</span>, <span data-i18n="leather">Leather</span>, <span data-i18n="patchouli">Patchouli</span>, <span data-i18n="musk">Musk</span></dd></div>
+                    <div><dt data-i18n="dSize">Size</dt><dd data-i18n="tba">To be announced</dd></div>
+                    <div><dt data-i18n="dPrice">Price</dt><dd data-i18n="tba">To be announced</dd></div>
+                    <div><dt data-i18n="dAvailability">Availability</dt><dd class="nt-status"><span data-i18n="comingSoon">Coming Soon</span></dd></div>
+                </dl>
+                <aside class="nt-reserve" aria-labelledby="ntReserveTitle">
+                    <h3 class="nt-reserve-title" id="ntReserveTitle" data-i18n="reserveTitle">Be first to receive it</h3>
+                    <p class="nt-reserve-copy" data-i18n="reserveCopy">Size, price and release date have not yet been announced. Join the list and the unveiling will reach you first.</p>
+                    <a class="nt-button" href="#ntForm" data-jump-form><span data-i18n="submit">Receive the unveiling</span></a>
+                </aside>
+            </div>
+        </section>
+
+        <!-- ── What can be bought today ── -->
+        <section class="nt-section nt-collection" id="collection" aria-labelledby="ntCollectionTitle">
+            <header class="nt-section-head nt-section-head--split">
+                <div>
+                    <p class="nt-kicker" data-i18n="collectionKicker">Season One</p>
+                    <h2 class="nt-h2" id="ntCollectionTitle" data-i18n="collectionTitle">From the Collection</h2>
+                </div>
+                <a class="nt-button nt-button--ghost" href="/shop"><span data-i18n="shopCollection">Shop the Collection</span> <span aria-hidden="true">→</span></a>
+            </header>
+            <ul class="nt-pieces">
+                <li class="nt-piece">
+                    <a class="nt-piece-link" href="/shop">
+                        <span class="nt-piece-media">
+                            <img src="/assets/fragrance/levitate-white-960.webp" alt="Levitate Tee — front and back" data-alt-name="Levitate Tee"
+                                 width="960" height="540" loading="lazy" decoding="async">
+                        </span>
+                        <span class="nt-piece-info">
+                            <span class="nt-piece-name">Levitate Tee</span>
+                            <span class="nt-piece-price">€200</span>
+                        </span>
+                        <span class="nt-piece-cta"><span data-i18n="viewInShop">View in the shop</span> <span aria-hidden="true">→</span></span>
+                    </a>
+                </li>
+                <li class="nt-piece">
+                    <a class="nt-piece-link" href="/shop">
+                        <span class="nt-piece-media">
+                            <img src="/assets/fragrance/endzustand-black-960.webp" alt="Endzustand Tee — front and back" data-alt-name="Endzustand Tee"
+                                 width="960" height="540" loading="lazy" decoding="async">
+                        </span>
+                        <span class="nt-piece-info">
+                            <span class="nt-piece-name">Endzustand Tee</span>
+                            <span class="nt-piece-price">€200</span>
+                        </span>
+                        <span class="nt-piece-cta"><span data-i18n="viewInShop">View in the shop</span> <span aria-hidden="true">→</span></span>
+                    </a>
+                </li>
+            </ul>
+            <ul class="nt-services">
+                <li><strong data-i18n="svcDelivery">Tracked delivery</strong> <span data-i18n="svcDeliveryCopy">Safe, tracked home delivery worldwide.</span></li>
+                <li><strong data-i18n="svcReturns">Returns &amp; exchanges</strong> <span data-i18n="svcReturnsCopy">Free within 14 days, excluding personalised items.</span></li>
+                <li><strong data-i18n="svcSecure">Secure checkout</strong> <span data-i18n="svcSecureCopy">All transactions are encrypted end to end.</span></li>
+            </ul>
         </section>
     </main>
 
-    <!-- Progression is always the visitor's: nothing here is hidden while a
-         transition runs, and every control interrupts it cleanly. -->
-    <nav class="nt-controls" id="ntControls" aria-label="Chapters" data-i18n-aria-label="progressLabel">
-        <button type="button" class="nt-ctl nt-ctl--back" id="ntBack" data-i18n="back">Back</button>
-        <ol class="nt-progress">
-            <li><button type="button" data-goto="0"><span class="nt-progress-num">01</span><span class="nt-progress-name" data-i18n="ch1">The Announcement</span><span class="nt-progress-bar" aria-hidden="true"><i></i></span></button></li>
-            <li><button type="button" data-goto="2"><span class="nt-progress-num">02</span><span class="nt-progress-name" data-i18n="ch2">The Olfactory World</span><span class="nt-progress-bar" aria-hidden="true"><i></i></span></button></li>
-            <li><button type="button" data-goto="5"><span class="nt-progress-num">03</span><span class="nt-progress-name" data-i18n="ch3">The Unveiling</span><span class="nt-progress-bar" aria-hidden="true"><i></i></span></button></li>
-        </ol>
-        <div class="nt-ctl-end">
-            <button type="button" class="nt-ctl nt-ctl--skip" id="ntSkip" data-i18n="skip">Skip introduction</button>
-            <button type="button" class="nt-ctl nt-ctl--next" id="ntNext" data-i18n="next">Next</button>
-            <button type="button" class="nt-ctl nt-ctl--replay" id="ntReplay" data-i18n="replay" hidden>Replay</button>
-        </div>
-    </nav>
+    <footer class="nt-footer" id="ntFooter">
+        <nav class="nt-footer-links" aria-label="Footer" data-i18n-aria-label="footerLabel">
+            <a href="/shop" data-i18n="navShop">Shop</a>
+            <a href="/privacy-policy.html" data-i18n="privacy">Privacy Policy</a>
+        </nav>
+        <p>&copy; 2026 Eternal Void</p>
+    </footer>
 
-    <p class="nt-sr" id="ntLive" aria-live="polite"></p>
+    <!-- Phones: the one action stays within reach once the hero has gone,
+         and steps aside whenever the form or the footer is on screen. -->
+    <div class="nt-dock" id="ntDock">
+        <p class="nt-dock-name"><span class="nt-dock-title">Néant</span> <span class="nt-dock-status" data-i18n="comingSoon">Coming Soon</span></p>
+        <a class="nt-button nt-button--dock" href="#ntForm" data-jump-form><span data-i18n="submit">Receive the unveiling</span></a>
+    </div>
 
-    <script src="/assets/void-fragrance.js?v=20261006-neant" defer
-            onerror="document.documentElement.classList.remove('nt-js')"></script>
-    <script>
-        // Should the script never run at all, fall back to the readable page.
-        setTimeout(function () {
-            var html = document.documentElement;
-            if (!html.classList.contains('nt-ready')) html.classList.remove('nt-js');
-        }, 8000);
-    </script>
+    <script src="/assets/void-fragrance.js?v=20261025-store" defer></script>
 </body>
 </html>
