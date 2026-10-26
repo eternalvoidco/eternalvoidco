@@ -6461,7 +6461,13 @@
             font-weight: 500;
             letter-spacing: 0.12em;
             text-indent: 0.12em;
-            line-height: 1.05;
+            /* 1.05 fitted the line box to the cap height, so every descender
+               hung outside it — the g of The Sigil reached down into whatever
+               followed, which is how it came to cross the frame. The serif
+               needs room for its tails inside its own line, and giving it that
+               here fixes the collision at the source rather than pushing the
+               frame further away from a title that still overflows. */
+            line-height: 1.22;
             color: var(--void-white);
         }
 
@@ -6691,7 +6697,9 @@
         .chapter-story-body::after {
             content: '';
             position: absolute;
-            inset: 0;
+            /* Inset past the heading gap, so the frame encloses the passage
+               rather than the space above it. */
+            inset: var(--cs-head-gap) 0 0 0;
             pointer-events: none;
             background-repeat: no-repeat;
         }
@@ -6802,11 +6810,21 @@
            measure stays comfortable inside a frame rather than running to it.
            The mobile step keeps the inset honest without crowding the longer
            translations. */
+        /* The gap between the heading group and the frame lives here, as part
+           of the body's own top padding, with the frame inset below it. That
+           is deliberate: the region is height:0 and clipped when closed, so a
+           margin or padding on the region itself would hold the space open
+           permanently, and a margin on the body would fall outside
+           offsetHeight and be cut off by the measured height. Inside the
+           padding it is measured with everything else and exists only while
+           the passage does. */
         .chapter-story-body {
+            --cs-head-gap: clamp(1.25rem, 2.4vw, 1.75rem);   /* 20-28px */
+            --cs-pad: clamp(1.25rem, 3.2vw, 2.25rem);        /* 20-36px */
             position: relative;
             width: min(100%, 36rem);
             margin: 0 auto;
-            padding: clamp(1.5rem, 2.8vw, 2.1rem) clamp(1.3rem, 3vw, 2.2rem) clamp(1.1rem, 2.2vw, 1.6rem);
+            padding: calc(var(--cs-head-gap) + var(--cs-pad)) var(--cs-pad) var(--cs-pad);
             text-align: center;
             opacity: 1;
             transition: opacity 0.7s ease;
@@ -6834,7 +6852,8 @@
         }
 
         .chapter-story-text {
-            margin-top: 0.85rem;
+            /* 18-24px. The thematic line wants air beneath it, not a nudge. */
+            margin-top: clamp(1.15rem, 2vw, 1.5rem);
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(1.08rem, 1.7vw, 1.3rem);
             line-height: 1.7;
@@ -6867,7 +6886,8 @@
             align-items: center;
             gap: 0.55rem;
             min-height: 44px;
-            margin-top: 0.6rem;
+            /* 24-32px clear of the paragraph. */
+            margin-top: clamp(1.5rem, 2.6vw, 2rem);
             padding: 0 0.6rem;
             border: 0;
             background: none;
