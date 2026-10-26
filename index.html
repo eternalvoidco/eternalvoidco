@@ -6698,13 +6698,30 @@
 
         /* The four corner accents: brighter, ivory-warm, and the first thing
            to arrive. Each corner is two slivers meeting square. */
+        /* The same ink as the rules beside CHAPTER I, taken from their own
+           declaration rather than matched by eye: .collection-chapter-index's
+           ::before and ::after are 1px of
+           linear-gradient(90deg, transparent, rgba(199,169,108,0.62)), bright
+           where they meet the label and fading to nothing at the far end.
+
+           So the corners are no longer a brighter ivory-gold bracket. They are
+           that gradient, turned to run outward from each corner: full strength
+           where the two slivers meet, fading along their length. Which is
+           exactly where the four rules below are faintest, so the two layers
+           hand over to each other and the frame reads as one continuous
+           hairline with a little tone in it rather than as brackets with
+           lines between them. */
         .chapter-story-body::before {
-            --c: rgba(243, 226, 182, 0.92);
+            --c: rgba(199, 169, 108, 0.62);
             background-image:
-                linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
-                linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
-                linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
-                linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c));
+                linear-gradient(90deg,  var(--c), transparent),
+                linear-gradient(180deg, var(--c), transparent),
+                linear-gradient(270deg, var(--c), transparent),
+                linear-gradient(180deg, var(--c), transparent),
+                linear-gradient(90deg,  var(--c), transparent),
+                linear-gradient(0deg,   var(--c), transparent),
+                linear-gradient(270deg, var(--c), transparent),
+                linear-gradient(0deg,   var(--c), transparent);
             /* Sized to nothing until is-lit draws them, and opacity left
                alone deliberately. Opacity was the animated property, and a
                transition cannot start from a removed animation's value — so on
@@ -6718,13 +6735,20 @@
                 left bottom, left bottom, right bottom, right bottom;
         }
 
-        /* The connecting hairlines: quieter than the corners, and drawn after
-           them so the frame reads as being ruled rather than switched on. */
+        /* The connecting hairlines, in the same ink at the same strength —
+           0.62, not the 0.42 they were, so nothing on the frame is dimmer or
+           brighter than the lines beside the chapter label. Each rule carries
+           the heading's tonal fall twice over, strongest across its middle and
+           softening toward both ends, which is what keeps the corners from
+           reading as brackets: by the time a rule reaches one, it has already
+           given way to the corner sliver coming the other way. */
         .chapter-story-body::after {
-            --l: rgba(199, 169, 108, 0.42);
+            --l: rgba(199, 169, 108, 0.62);
             background-image:
-                linear-gradient(var(--l), var(--l)), linear-gradient(var(--l), var(--l)),
-                linear-gradient(var(--l), var(--l)), linear-gradient(var(--l), var(--l));
+                linear-gradient(90deg,  transparent, var(--l) 24%, var(--l) 76%, transparent),
+                linear-gradient(90deg,  transparent, var(--l) 24%, var(--l) 76%, transparent),
+                linear-gradient(180deg, transparent, var(--l) 24%, var(--l) 76%, transparent),
+                linear-gradient(180deg, transparent, var(--l) 24%, var(--l) 76%, transparent);
             background-position: left top, right bottom, left top, right bottom;
             background-size: 0 1px, 0 1px, 1px 0, 1px 0;
         }
