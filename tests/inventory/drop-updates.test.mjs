@@ -86,7 +86,7 @@ describe('drop updates scene', { skip: !CHROME && 'no Chromium found (set CHROMI
 
         await page.click('#pdAdvisor');
         assert.equal(await view(page), 'entering');
-        assert.equal(await page.evaluate(() => pdNl.total >= 1600 && pdNl.total <= 2000), true, 'a 1.6–2s sequence');
+        assert.equal(await page.evaluate(() => pdNl.total >= 900 && pdNl.total <= 1300), true, 'a 0.9–1.3s sequence');
         await waitView(page, 'newsletter');
 
         // One dialog, now about the newsletter, with focus in the field.
@@ -352,7 +352,8 @@ describe('drop updates scene', { skip: !CHROME && 'no Chromium found (set CHROMI
         assert.ok(shape.total <= 320, `short (${shape.total}ms)`);
         assert.deepEqual([shape.split, shape.transforms], [0, false], 'no letter reveal, nothing travels');
         await waitView(page, 'newsletter', 1500);
-        assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.pd-nl-mote')).animationName), 'none');
+        // A matte ground: no glow and no dust left to animate.
+        assert.equal(await page.evaluate(() => document.querySelectorAll('.pd-nl-mote, .pd-nl-glow, .pd-nl-atmos').length), 0);
         await page.keyboard.press('Escape');
         await waitView(page, 'product', 1500);
         await context.close();
