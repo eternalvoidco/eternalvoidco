@@ -9458,22 +9458,24 @@
            is a Web Animations timeline that fills from the first frame, and
            the return is the same timeline played backwards — so CSS never has
            to describe an in-between, and an interrupted transition can simply
-           turn round where it stands. Motion is transforms and opacity; the
-           only filters are the short blurs on content that is resolving.
+           turn round where it stands. Motion is transforms and opacity only.
 
-           The composition is deliberately quiet: ink, a single pool of warm
-           light, grain, a double hairline frame, and gilt used only where the
-           eye should land. Spacing runs on an 8px grid. */
+           The composition is a private invitation: a card of fine antique-gold
+           hairlines on a matte black ground, sealed with the EV emblem, sized
+           to its content. No glow, no dust, no sheen; gold only where the eye
+           should land. Spacing runs on an 8px grid. Everything that touches
+           the panel itself is scoped to the newsletter view, so the piece
+           returns exactly as it was. */
         .product-detail-panel {
-            /* The frame's two hairlines: an outer line, and an inner one
-               exactly 14px inside it. Declared on the panel so the close
-               button can align to the same frame. */
-            --nl-o: clamp(10px, 1.6vw, 16px);
-            --nl-i: calc(var(--nl-o) + 14px);
             transition: transform 0.66s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.36s ease, --void-border-alpha 0.6s ease;
         }
 
         .pd-nl {
+            /* Antique gold for the engraving: a step darker and drier than the
+               gilt used for actions. */
+            --nl-antique-rgb: 176, 147, 96;
+            --nl-ink: #050505;
+            --nl-gap: 6px;           /* between the frame's two hairlines */
             position: absolute;
             left: 0;
             right: 0;
@@ -9494,8 +9496,8 @@
         .pd-nl[hidden] { display: none; }
 
         /* While the scene is up (or on its way), the dialog's own corner
-           brackets and orbiting light step aside for the scene's frame, and
-           its border softens to the scene's outermost hairline. */
+           brackets and orbiting light step aside, and its border recedes to
+           a whisper: the invitation carries the only frame. */
         .product-detail-panel > .panel-frame { z-index: 5; }
 
         .product-detail-overlay.open .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) {
@@ -9511,149 +9513,16 @@
             animation-play-state: paused;
         }
 
-        .pd-nl-atmos,
-        .pd-nl-atmos > span,
-        .pd-nl-frame {
+        /* ── Ground: deep matte black, one flat surface ── */
+        .pd-nl-surface {
             position: absolute;
-            pointer-events: none;
-        }
-
-        /* ── Atmosphere: ink, one pool of light, dust, grain, vignette ── */
-        .pd-nl-atmos {
             inset: 0;
             z-index: 0;
-            background:
-                radial-gradient(120% 90% at 50% 38%, #15110b 0%, var(--void-ink) 56%, #030302 100%);
+            pointer-events: none;
+            background: linear-gradient(180deg, #080807 0%, var(--nl-ink) 55%, #030303 100%);
         }
 
-        /* The pool of warm light sits behind the headline. It breathes very
-           slowly on its own layer, so the timeline can fade and scale the
-           pool without fighting the breath. */
-        .pd-nl-glow {
-            left: 50%;
-            top: 36%;
-            width: min(860px, 140%);
-            aspect-ratio: 1.6;
-            transform: translate(-50%, -50%) scale(1);
-            background: radial-gradient(closest-side, rgba(232, 207, 148, 0.13), rgba(var(--void-gilt-rgb), 0.045) 52%, transparent 78%);
-        }
-
-        .pd-nl-glow::after {
-            content: '';
-            position: absolute;
-            inset: 22%;
-            border-radius: 50%;
-            background: radial-gradient(closest-side, rgba(248, 236, 206, 0.07), transparent 72%);
-            animation: pdNlBreath 11s ease-in-out infinite;
-        }
-
-        @keyframes pdNlBreath {
-            0%, 100% { opacity: 0.5; }
-            50%      { opacity: 1; }
-        }
-
-        .pd-nl-motes { inset: 0; }
-
-        /* Gold dust: barely there, drifting on very long loops. Transform
-           and opacity only. */
-        .pd-nl-mote {
-            position: absolute;
-            width: var(--s, 1.5px);
-            height: var(--s, 1.5px);
-            border-radius: 50%;
-            background: #ecd9a6;
-            opacity: 0;
-            animation: pdNlDust var(--d, 60s) linear var(--w, 0s) infinite;
-        }
-
-        @keyframes pdNlDust {
-            0%   { opacity: 0; transform: translate3d(0, 0, 0); }
-            14%  { opacity: var(--o, 0.25); }
-            50%  { transform: translate3d(var(--dx, 0px), calc(var(--dy, -180px) * 0.5), 0); }
-            86%  { opacity: var(--o, 0.25); }
-            100% { opacity: 0; transform: translate3d(calc(var(--dx, 0px) * -0.4), var(--dy, -180px), 0); }
-        }
-
-        /* Film grain: one static tile of fractal noise, a few percent. */
-        .pd-nl-grain {
-            inset: 0;
-            opacity: 0.035;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-            background-size: 180px 180px;
-        }
-
-        .pd-nl-vignette {
-            inset: 0;
-            background: radial-gradient(125% 100% at 50% 45%, transparent 52%, rgba(0, 0, 0, 0.58) 100%);
-        }
-
-        /* ── Frame: a double hairline with mitred corners ──
-           Outer line at 12%, inner at 25%, 14px apart. At each inner corner a
-           hairline mitre runs to the outer corner, and a small diamond seals
-           the join. Lines draw in from their centres. */
-        .pd-nl-frame {
-            inset: 0;
-            z-index: 3;
-        }
-
-        .pd-nl-rule {
-            position: absolute;
-            background: rgba(var(--void-gilt-rgb), 0.25);
-        }
-
-        .pd-nl-rule.is-outer { --r: var(--nl-o); background: rgba(var(--void-gilt-rgb), 0.12); }
-        .pd-nl-rule.is-inner { --r: var(--nl-i); }
-
-        .pd-nl-rule.is-top,
-        .pd-nl-rule.is-bottom { left: var(--r); right: var(--r); height: 1px; }
-        .pd-nl-rule.is-left,
-        .pd-nl-rule.is-right { top: var(--r); bottom: var(--r); width: 1px; }
-        .pd-nl-rule.is-top { top: var(--r); }
-        .pd-nl-rule.is-bottom { bottom: var(--r); }
-        .pd-nl-rule.is-left { left: var(--r); }
-        .pd-nl-rule.is-right { right: var(--r); }
-
-        /* A zero-size anchor on each inner corner point; scaling it in the
-           timeline grows the ornament out of the corner itself. */
-        .pd-nl-corner {
-            position: absolute;
-            width: 0;
-            height: 0;
-        }
-
-        .pd-nl-corner.is-tl { left: var(--nl-i);  top: var(--nl-i);    --a: 225deg; --dx: 0.5px;  --dy: 0.5px; }
-        .pd-nl-corner.is-tr { right: var(--nl-i); top: var(--nl-i);    --a: -45deg; --dx: -0.5px; --dy: 0.5px; }
-        .pd-nl-corner.is-br { right: var(--nl-i); bottom: var(--nl-i); --a: 45deg;  --dx: -0.5px; --dy: -0.5px; }
-        .pd-nl-corner.is-bl { left: var(--nl-i);  bottom: var(--nl-i); --a: 135deg; --dx: 0.5px;  --dy: -0.5px; }
-
-        .pd-nl-corner::before,
-        .pd-nl-corner::after {
-            content: '';
-            position: absolute;
-            box-sizing: border-box;
-            left: var(--dx);
-            top: var(--dy);
-        }
-
-        .pd-nl-corner::before {
-            width: calc(14px * 1.41421);
-            height: 1px;
-            margin-top: -0.5px;
-            background: rgba(var(--void-gilt-rgb), 0.22);
-            transform-origin: 0 50%;
-            transform: rotate(var(--a));
-        }
-
-        .pd-nl-corner::after {
-            width: 5px;
-            height: 5px;
-            margin: -2.5px 0 0 -2.5px;
-            border: 1px solid rgba(var(--void-gilt-rgb), 0.6);
-            background: var(--void-ink);
-            transform: rotate(45deg);
-        }
-
-        /* ── Content ── */
+        /* ── Content: scrolls on its own if a short screen needs it ── */
         .pd-nl-content {
             position: relative;
             z-index: 2;
@@ -9666,126 +9535,241 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Optically centred: a little more room below than above. */
-            padding:
-                calc(var(--nl-i) + 40px)
-                calc(var(--nl-i) + clamp(16px, 5vw, 48px))
-                calc(var(--nl-i) + 64px);
+            padding: 72px clamp(16px, 5vw, 48px) 48px;
+        }
+
+        /* ── The invitation ── */
+        .pd-nl-card {
+            position: relative;
+            box-sizing: border-box;
+            width: min(528px, 100%);
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 64px clamp(24px, 6vw, 56px) 40px;
+        }
+
+        /* A double hairline, 6px apart: the outer line carries the colour,
+           the inner one only answers it. Both top lines part for the seal. */
+        .pd-nl-frame {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .pd-nl-rule {
+            position: absolute;
+            background: rgba(var(--nl-antique-rgb), 0.55);
+        }
+
+        .pd-nl-rule.is-outer { --r: 0px; }
+        .pd-nl-rule.is-inner { --r: var(--nl-gap); background: rgba(var(--nl-antique-rgb), 0.24); }
+
+        .pd-nl-rule.is-top,
+        .pd-nl-rule.is-bottom { left: var(--r); right: var(--r); height: 1px; }
+        .pd-nl-rule.is-left,
+        .pd-nl-rule.is-right { top: var(--r); bottom: var(--r); width: 1px; }
+        .pd-nl-rule.is-top { top: var(--r); }
+        .pd-nl-rule.is-bottom { bottom: var(--r); }
+        .pd-nl-rule.is-left { left: var(--r); }
+        .pd-nl-rule.is-right { right: var(--r); }
+
+        .pd-nl-rule.is-top {
+            -webkit-mask: linear-gradient(90deg, #000 calc(50% - 34px), transparent calc(50% - 34px), transparent calc(50% + 34px), #000 calc(50% + 34px));
+            mask: linear-gradient(90deg, #000 calc(50% - 34px), transparent calc(50% - 34px), transparent calc(50% + 34px), #000 calc(50% + 34px));
+        }
+
+        /* Engraved corners: a small rivet bridging both hairlines and a short
+           bracket set just inside them. Each anchor is drawn as the top-left
+           corner and mirrored into place, so all four are identical. */
+        .pd-nl-corner {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            transform-origin: 0 0;
+            transform: scale(var(--sx), var(--sy));
+        }
+
+        .pd-nl-corner.is-tl { left: 0;    top: 0;    --sx: 1;  --sy: 1; }
+        .pd-nl-corner.is-tr { left: 100%; top: 0;    --sx: -1; --sy: 1; }
+        .pd-nl-corner.is-br { left: 100%; top: 100%; --sx: -1; --sy: -1; }
+        .pd-nl-corner.is-bl { left: 0;    top: 100%; --sx: 1;  --sy: -1; }
+
+        .pd-nl-corner::before,
+        .pd-nl-corner::after {
+            content: '';
+            position: absolute;
+            box-sizing: border-box;
+        }
+
+        .pd-nl-corner::before {
+            left: 13px;
+            top: 13px;
+            width: 14px;
+            height: 14px;
+            border-top: 1px solid rgba(var(--nl-antique-rgb), 0.6);
+            border-left: 1px solid rgba(var(--nl-antique-rgb), 0.6);
+        }
+
+        .pd-nl-corner::after {
+            left: 0.5px;
+            top: 0.5px;
+            width: 6px;
+            height: 6px;
+            border: 1px solid rgba(var(--nl-antique-rgb), 0.75);
+            background: var(--nl-ink);
+            transform: rotate(45deg);
+        }
+
+        /* The seal: the canonical EV emblem (assets/ev-emblem.png), drawn
+           from its own alpha in engraved gold, set into the parted top
+           lines. */
+        .pd-nl-seal {
+            position: absolute;
+            left: 50%;
+            top: calc(var(--nl-gap) / 2);
+            width: 34px;
+            height: 29px;
+            margin: -14.5px 0 0 -17px;
+        }
+
+        .pd-nl-seal-mark {
+            position: absolute;
+            inset: 0;
+            background: var(--void-gold-gradient);
+            -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+            mask: url('/assets/ev-emblem.png') center / contain no-repeat;
         }
 
         .pd-nl-kicker {
             display: inline-flex;
             align-items: center;
-            gap: 16px;
-            margin: 0 0 20px;
+            gap: 14px;
+            margin: 0;
             font-family: 'Jost', sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 500;
             line-height: 16px;
-            letter-spacing: 0.4em;
+            letter-spacing: 0.46em;
             text-transform: uppercase;
-            color: var(--void-gilt);
+            color: var(--void-gold-soft);
         }
 
         .pd-nl-kicker::before,
         .pd-nl-kicker::after {
             content: '';
             flex: none;
-            width: 40px;
+            width: 24px;
             height: 1px;
-            background: rgba(var(--void-gilt-rgb), 0.55);
+            background: rgba(var(--nl-antique-rgb), 0.6);
         }
 
         /* The tracking leaves a space after the last letter; the same space
            before the first keeps both hairlines equidistant. */
-        .pd-nl-kicker::before { margin-right: 0.4em; }
+        .pd-nl-kicker::before { margin-right: 0.46em; }
 
         .pd-nl-title {
-            width: min(720px, 100%);
-            margin: 0;
+            width: 100%;
+            margin: 24px 0 0;
             font-family: 'Cormorant Garamond', serif;
             font-weight: 400;
-            font-size: clamp(2.75rem, 5vw, 4.5rem);
-            line-height: 1.04;
-            letter-spacing: -0.01em;
+            font-size: clamp(2.4rem, 4vw, 3.25rem);
+            line-height: 1.02;
+            letter-spacing: -0.005em;
             color: var(--void-ivory);
+            font-kerning: normal;
+            font-feature-settings: 'liga' 1, 'kern' 1;
             text-wrap: balance;
         }
 
-        /* Ivory that warms to gilt towards the baseline. `color` stays the
-           solid ivory, so contrast is measured on it. */
-        @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-            .pd-nl-title {
-                background: linear-gradient(180deg, #f8f3e8 0%, var(--void-ivory) 46%, #dcc697 118%);
-                -webkit-background-clip: text;
-                background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
+        /* A hairline with a lozenge at its centre, between the headline and
+           the words that follow it. */
+        .pd-nl-divider {
+            position: relative;
+            display: block;
+            width: 64px;
+            height: 7px;
+            margin: 22px auto 0;
+            background: linear-gradient(rgba(var(--nl-antique-rgb), 0.5), rgba(var(--nl-antique-rgb), 0.5)) center / 100% 1px no-repeat;
+        }
+
+        .pd-nl-divider::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            box-sizing: border-box;
+            width: 7px;
+            height: 7px;
+            margin: -3.5px 0 0 -3.5px;
+            border: 1px solid rgba(var(--nl-antique-rgb), 0.8);
+            background: var(--nl-ink);
+            transform: rotate(45deg);
         }
 
         .pd-nl-copy {
-            max-width: 34ch;
-            margin: 24px auto 0;
+            max-width: 30ch;
+            margin: 20px auto 0;
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.35rem;
+            font-size: 1.28rem;
             font-style: italic;
             font-weight: 400;
             line-height: 1.45;
-            color: rgba(var(--void-ivory-rgb), 0.65);
+            color: rgba(var(--void-ivory-rgb), 0.7);
             text-wrap: balance;
         }
 
-        /* ── Form: one object, field and action ── */
+        /* ── Form: a labelled field, the house button beneath it ── */
         .pd-nl-form {
-            width: min(480px, 100%);
-            margin-top: 56px;
+            width: 100%;
+            margin-top: 36px;
             text-align: left;
         }
 
         .pd-nl-label {
             display: block;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             font-family: 'Jost', sans-serif;
             font-size: 10px;
             font-weight: 500;
             line-height: 16px;
             letter-spacing: 0.3em;
             text-transform: uppercase;
-            color: rgba(var(--void-ivory-rgb), 0.6);
-            transition: color 0.4s ease;
+            color: rgba(var(--void-ivory-rgb), 0.66);
+            transition: color 0.42s var(--ease-lux);
         }
 
-        .pd-nl-form:has(.pd-nl-input:focus) .pd-nl-label { color: var(--void-gilt); }
+        .pd-nl-form:has(.pd-nl-input:focus) .pd-nl-label { color: var(--void-gold-soft); }
 
         .pd-nl-row {
             display: flex;
-            align-items: stretch;
-            height: 56px;
-            border: 1px solid rgba(var(--void-gilt-rgb), 0.35);
+            height: 52px;
+            border: 1px solid rgba(var(--nl-antique-rgb), 0.45);
             border-radius: 0;
-            background: rgba(7, 6, 5, 0.6);
-            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+            background: rgba(255, 255, 255, 0.015);
+            transition: border-color 0.42s var(--ease-lux), box-shadow 0.42s var(--ease-lux);
         }
 
         .pd-nl-row:focus-within {
-            border-color: var(--void-gilt);
-            box-shadow: 0 0 24px rgba(var(--void-gilt-rgb), 0.2);
+            border-color: var(--void-gold-soft);
+            box-shadow: inset 0 0 0 1px rgba(216, 192, 138, 0.22);
         }
 
-        .pd-nl-row:has(.pd-nl-input[aria-invalid="true"]) { border-color: rgba(230, 168, 147, 0.6); }
+        .pd-nl-row:has(.pd-nl-input[aria-invalid="true"]) { border-color: rgba(230, 168, 147, 0.7); }
 
         .pd-nl-input {
             flex: 1 1 auto;
             min-width: 0;
             height: 100%;
-            padding: 0 20px;
+            padding: 0 18px;
             border: 0;
             border-radius: 0;
             background: transparent;
             -webkit-appearance: none;
             appearance: none;
             color: var(--void-ivory);
-            caret-color: var(--void-gilt);
+            caret-color: var(--void-gold-soft);
             font-family: 'Jost', sans-serif;
             font-size: 15px;
             font-weight: 400;
@@ -9800,14 +9784,14 @@
             font-family: 'Jost', sans-serif;
             font-weight: 400;
             letter-spacing: 0.02em;
-            color: rgba(var(--void-ivory-rgb), 0.35);
+            color: rgba(var(--void-ivory-rgb), 0.38);
             opacity: 1;
         }
 
         .pd-nl-input:-webkit-autofill {
             -webkit-text-fill-color: var(--void-ivory);
-            caret-color: var(--void-gilt);
-            box-shadow: inset 0 0 0 60px #0b0907;
+            caret-color: var(--void-gold-soft);
+            box-shadow: inset 0 0 0 60px #0a0a09;
             transition: background-color 9999s ease 0s;
         }
 
@@ -9820,34 +9804,42 @@
 
         .pd-nl-cta {
             position: relative;
-            flex: 0 0 auto;
             display: flex;
+            height: 52px;
+            margin-top: 12px;
         }
 
-        /* Brushed gilt with a 1px highlight along the top edge. The gilt and
-           the light that crosses it are pseudo-layers beneath the label, so
-           success can fade the gilt away and leave a quiet ink cell. */
+        /* The house's primary button (.void-auth-submit), full width: gold
+           fill, fine gold edge, dark lettering; on hover and keyboard focus
+           the fill empties to the matte ground and the lettering turns soft
+           gold. The fill is its own layer so it can fade with the lettering
+           and the edge on one curve; the box never changes size. */
         .pd-nl-submit {
             position: relative;
             isolation: isolate;
             overflow: hidden;
-            min-width: 176px;
+            width: 100%;
             height: 100%;
-            padding: 0 28px;
-            border: 0;
+            padding: 0 24px;
+            border: 1px solid var(--void-accent);
             border-radius: 0;
             background: transparent;
-            color: var(--void-gilt-ink);
+            color: #090909;
             font-family: 'Jost', sans-serif;
-            font-size: 11px;
-            font-weight: 500;
+            font-size: 0.74rem;
+            font-weight: 600;
             line-height: 1;
-            letter-spacing: 0.28em;
-            text-indent: 0.28em;
+            letter-spacing: 0.2em;
+            text-indent: 0.2em;
             text-transform: uppercase;
             white-space: nowrap;
             cursor: pointer;
-            transition: color 0.45s ease, transform 0.18s ease;
+            box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.35);
+            transition:
+                color 0.42s var(--ease-lux),
+                border-color 0.42s var(--ease-lux),
+                box-shadow 0.42s var(--ease-lux),
+                transform 0.42s var(--ease-lux);
         }
 
         .pd-nl-submit::before,
@@ -9860,38 +9852,45 @@
 
         .pd-nl-submit::before {
             inset: 0;
-            background: var(--void-gilt-brushed);
-            box-shadow: inset 0 1px 0 rgba(255, 246, 222, 0.6), inset 0 -1px 0 rgba(84, 60, 22, 0.28);
-            transition: opacity 0.6s ease;
+            background: var(--void-gold-gradient);
+            transition: opacity 0.42s var(--ease-lux);
         }
 
+        /* A pass of light, used only while the request is in flight. */
         .pd-nl-submit::after {
             top: 0;
             bottom: 0;
             left: 0;
             width: 60%;
-            background: linear-gradient(100deg, transparent 18%, rgba(255, 249, 232, 0.5) 50%, transparent 82%);
+            background: linear-gradient(100deg, transparent 18%, rgba(255, 249, 232, 0.42) 50%, transparent 82%);
+            opacity: 0;
             transform: translate3d(-115%, 0, 0) skewX(-18deg);
         }
 
-        .pd-nl-submit:not(:disabled):hover::after,
-        .pd-nl-submit:not(:disabled):focus-visible::after {
-            transform: translate3d(190%, 0, 0) skewX(-18deg);
-            transition: transform 0.6s ease;
+        .pd-nl-submit:not(:disabled):hover,
+        .pd-nl-submit:not(:disabled):focus-visible {
+            color: var(--void-gold-soft);
+            box-shadow: 0 0 26px rgba(199, 169, 108, 0.24), 0 10px 26px rgba(0, 0, 0, 0.42);
+            transform: translateY(-1px);
         }
 
-        .pd-nl-submit:not(:disabled):active { transform: translateY(1px); }
+        .pd-nl-submit:not(:disabled):hover::before,
+        .pd-nl-submit:not(:disabled):focus-visible::before { opacity: 0; }
+
+        .pd-nl-submit:not(:disabled):active { transform: translateY(0); }
 
         .pd-nl-submit:focus-visible {
-            outline: 1px solid rgba(20, 17, 10, 0.75);
-            outline-offset: -6px;
+            outline: 1px solid rgba(199, 169, 108, 0.6);
+            outline-offset: 4px;
         }
 
         .pd-nl-submit:disabled { cursor: default; }
 
-        /* Joining: the label quietens and the light keeps passing. */
-        .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled { color: rgba(20, 17, 10, 0.55); }
+        /* Joining: the fill quietens and the light keeps passing. */
+        .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled { cursor: progress; color: rgba(9, 9, 9, 0.6); }
+        .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::before { opacity: 0.72; }
         .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::after {
+            opacity: 1;
             animation: pdNlPending 1.6s ease-in-out infinite;
         }
 
@@ -9900,9 +9899,10 @@
             to   { transform: translate3d(190%, 0, 0) skewX(-18deg); }
         }
 
-        /* Joined: the gilt fades to ink and "Welcome" takes its place, with
-           a hairline check that draws itself. The button keeps its own label
-           underneath for assistive tech; the status line announces it. */
+        /* Joined: the fill empties to the gold edge and "Welcome" takes its
+           place, with a hairline check that draws itself. The button keeps
+           its own label underneath for assistive tech; the status line
+           announces it. */
         .pd-nl-welcome {
             position: absolute;
             inset: 0;
@@ -9912,19 +9912,19 @@
             justify-content: center;
             gap: 10px;
             pointer-events: none;
-            color: var(--void-gilt-light);
+            color: var(--void-gold-soft);
             font-family: 'Jost', sans-serif;
-            font-size: 11px;
-            font-weight: 500;
+            font-size: 0.74rem;
+            font-weight: 600;
             line-height: 1;
-            letter-spacing: 0.28em;
+            letter-spacing: 0.2em;
             text-transform: uppercase;
             white-space: nowrap;
             opacity: 0;
             transition: opacity 0.6s ease 0.15s;
         }
 
-        .pd-nl-welcome > span { margin-right: -0.28em; }
+        .pd-nl-welcome > span { margin-right: -0.2em; }
 
         .pd-nl-check {
             flex: none;
@@ -9945,120 +9945,113 @@
         }
 
         .pd-nl-form.is-joined .pd-nl-input { opacity: 0.5; }
-        .pd-nl-form.is-joined .pd-nl-submit { color: transparent; }
+        .pd-nl-form.is-joined .pd-nl-submit { color: transparent; box-shadow: none; }
         .pd-nl-form.is-joined .pd-nl-submit::before { opacity: 0; }
-        .pd-nl-form.is-joined .pd-nl-cta { box-shadow: inset 1px 0 0 rgba(var(--void-gilt-rgb), 0.35); }
         .pd-nl-form.is-joined .pd-nl-welcome { opacity: 1; }
         .pd-nl-form.is-joined .pd-nl-check path { stroke-dashoffset: 0; }
 
         /* Room for one line is always held, so a message never moves the
-           form: 8px + 20px puts the fine print 28px under the field. */
+           form. */
         .pd-nl-status {
             min-height: 20px;
-            margin: 8px 0 0;
+            margin: 10px 0 0;
             font-family: 'Jost', sans-serif;
             font-size: 12px;
             line-height: 20px;
             letter-spacing: 0.04em;
             text-align: center;
-            color: rgba(var(--void-ivory-rgb), 0.7);
+            color: rgba(var(--void-ivory-rgb), 0.72);
         }
 
         .pd-nl-status[data-state="error"] { color: #e6a893; }
-        .pd-nl-status[data-state="success"] { color: var(--void-gilt-light); }
+        .pd-nl-status[data-state="success"] { color: var(--void-gold-soft); }
 
         .pd-nl-consent {
-            margin: 0;
+            max-width: 44ch;
+            margin: 6px auto 0;
             font-family: 'Jost', sans-serif;
-            font-size: 11px;
+            font-size: 11.5px;
             line-height: 1.7;
             letter-spacing: 0.02em;
-            color: var(--void-fine-print);
+            color: #9a9385;
             text-align: center;
             text-wrap: pretty;
         }
 
         .pd-nl-consent a {
-            color: var(--void-gilt);
+            color: var(--void-gold-soft);
             text-decoration: underline;
             text-decoration-thickness: 1px;
-            text-decoration-color: rgba(var(--void-gilt-rgb), 0.45);
+            text-decoration-color: rgba(var(--nl-antique-rgb), 0.55);
             text-underline-offset: 3px;
             transition: color 0.3s ease, text-decoration-color 0.3s ease, text-underline-offset 0.3s ease;
         }
 
         .pd-nl-consent a:hover,
         .pd-nl-consent a:focus-visible {
-            color: var(--void-gilt-light);
+            color: var(--void-gold-bright);
             text-decoration-color: currentColor;
             text-underline-offset: 5px;
         }
 
         .pd-nl-consent a:focus-visible {
-            outline: 1px solid var(--void-gilt);
+            outline: 1px solid var(--void-accent);
             outline-offset: 3px;
         }
 
-        /* ── Back to the piece: a ghost link ── */
+        /* ── Back to the piece: outside the card, a compact outlined button
+           in the same family — the house button at rest on its hover face. ── */
         .pd-nl-back {
+            flex: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 48px;
-            padding: 8px 4px;
-            border: 0;
-            background: none;
-            color: rgba(var(--void-ivory-rgb), 0.72);
+            min-height: 40px;
+            margin-top: 32px;
+            padding: 0 20px;
+            border: 1px solid rgba(var(--nl-antique-rgb), 0.4);
+            border-radius: 0;
+            background: transparent;
+            color: rgba(var(--void-ivory-rgb), 0.78);
             font-family: 'Jost', sans-serif;
-            font-size: 11px;
-            font-weight: 400;
+            font-size: 10.5px;
+            font-weight: 500;
             line-height: 16px;
-            letter-spacing: 0.3em;
+            letter-spacing: 0.28em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: color 0.35s ease;
+            transition:
+                color 0.42s var(--ease-lux),
+                border-color 0.42s var(--ease-lux),
+                box-shadow 0.42s var(--ease-lux);
         }
 
         .pd-nl-back svg {
             width: 12px;
             height: 12px;
-            transition: transform 0.45s var(--void-ease-reveal);
+            transition: transform 0.42s var(--ease-lux);
         }
 
-        .pd-nl-back span {
-            position: relative;
-            padding-bottom: 4px;
-            margin-right: -0.3em;
-        }
-
-        .pd-nl-back span::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0.3em;
-            bottom: 0;
-            height: 1px;
-            background: currentColor;
-            transform: scaleX(0);
-            transform-origin: center;
-            transition: transform 0.45s var(--void-ease-reveal);
-        }
+        .pd-nl-back span { margin-right: -0.28em; }
 
         .pd-nl-back:hover,
-        .pd-nl-back:focus-visible { color: var(--void-gilt-light); }
+        .pd-nl-back:focus-visible {
+            border-color: var(--void-accent);
+            color: var(--void-gold-soft);
+            box-shadow: 0 0 18px rgba(199, 169, 108, 0.16);
+        }
         .pd-nl-back:hover svg,
         .pd-nl-back:focus-visible svg { transform: translateX(-3px); }
-        .pd-nl-back:hover span::after,
-        .pd-nl-back:focus-visible span::after { transform: scaleX(1); }
 
         .pd-nl-back:focus-visible {
-            outline: 1px solid var(--void-gilt);
+            outline: 1px solid rgba(199, 169, 108, 0.6);
             outline-offset: 4px;
         }
 
-        /* ── The dialog's close, in the scene: a hairline circle that sits
-           inside the frame and turns a quarter on hover. ── */
+        /* ── The dialog's close, in the scene: an icon-only control in the
+           same family — a fine gold ring, soft-gold glyph, a bloom on hover
+           and a ring outside it for the keyboard. ── */
         .pd-close {
             transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease,
                 transform 0.5s var(--void-ease-reveal),
@@ -10067,28 +10060,32 @@
         }
 
         .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close {
-            top: calc(var(--pd-nl-top, 0px) + var(--nl-i) + 12px);
-            right: calc(var(--nl-i) + 12px);
+            top: calc(var(--pd-nl-top, 0px) + 20px);
+            right: 20px;
             width: 40px;
             height: 40px;
-            border-color: rgba(var(--void-gilt-rgb), 0.3);
-            background: rgba(7, 6, 5, 0.5);
-            color: rgba(var(--void-ivory-rgb), 0.72);
+            border-color: rgba(199, 169, 108, 0.45);
+            background: var(--nl-ink, #050505);
+            color: var(--void-gold-soft);
             font-size: 0.7rem;
             box-shadow: none;
+            transition: border-color 0.42s var(--ease-lux), color 0.42s var(--ease-lux), box-shadow 0.42s var(--ease-lux),
+                background-color 0.42s var(--ease-lux), transform 0.42s var(--ease-lux),
+                top 0.7s var(--void-ease-reveal), right 0.7s var(--void-ease-reveal),
+                width 0.7s var(--void-ease-reveal), height 0.7s var(--void-ease-reveal);
         }
 
         .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:hover,
         .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:focus-visible {
-            border-color: var(--void-gilt);
-            color: var(--void-gilt-light);
+            border-color: var(--void-accent);
+            color: var(--void-gold-bright);
             transform: rotate(90deg);
-            box-shadow: none;
+            box-shadow: 0 0 18px rgba(199, 169, 108, 0.2);
         }
 
         .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:focus-visible {
-            outline: 1px solid var(--void-gilt);
-            outline-offset: 3px;
+            outline: 1px solid rgba(199, 169, 108, 0.6);
+            outline-offset: 4px;
         }
 
         .product-detail-panel.is-newsletter .pd-layout {
@@ -10097,67 +10094,81 @@
         }
 
         /* Short panels: the same rhythm, condensed. */
-        @media (max-height: 760px) {
-            .pd-nl-content {
-                padding-top: calc(var(--nl-i) + 24px);
-                padding-bottom: calc(var(--nl-i) + 40px);
-            }
-            .pd-nl-kicker { margin-bottom: 16px; }
-            .pd-nl-copy { margin-top: 16px; }
-            .pd-nl-form { margin-top: 40px; }
-            .pd-nl-back { margin-top: 32px; }
+        @media (max-height: 860px) {
+            .pd-nl-content { padding-top: 40px; padding-bottom: 24px; }
+            .pd-nl-card { padding-top: 52px; padding-bottom: 32px; }
+            .pd-nl-title { margin-top: 18px; }
+            .pd-nl-divider { margin-top: 18px; }
+            .pd-nl-copy { margin-top: 14px; }
+            .pd-nl-form { margin-top: 28px; }
+            .pd-nl-back { margin-top: 24px; }
+        }
+
+        /* Shorter still: tighter, never cramped. */
+        @media (max-height: 780px) {
+            .pd-nl-card { padding-top: 44px; padding-bottom: 24px; }
+            .pd-nl-title { margin-top: 14px; font-size: clamp(2.2rem, 3.6vw, 2.9rem); }
+            .pd-nl-divider { margin-top: 14px; }
+            .pd-nl-form { margin-top: 22px; }
+            .pd-nl-back { margin-top: 18px; }
         }
 
         @media (max-width: 480px) {
-            .pd-nl-kicker { gap: 12px; letter-spacing: 0.34em; }
+            .pd-nl-content { padding: 72px 16px 32px; }
+            .pd-nl-card { padding: 52px 22px 28px; }
+            .pd-nl-kicker { gap: 10px; letter-spacing: 0.38em; }
             .pd-nl-kicker::before,
-            .pd-nl-kicker::after { width: 28px; }
-            .pd-nl-kicker::before { margin-right: 0.34em; }
-            .pd-nl-copy { font-size: 1.25rem; }
-            .pd-nl-form { margin-top: 40px; }
-            /* Field and action stack, still one bordered object. */
-            .pd-nl-row { flex-direction: column; height: auto; }
-            .pd-nl-input { height: 56px; }
-            .pd-nl-cta { height: 56px; }
-            .pd-nl-submit { width: 100%; }
-            .pd-nl-form.is-joined .pd-nl-cta { box-shadow: inset 0 1px 0 rgba(var(--void-gilt-rgb), 0.35); }
+            .pd-nl-kicker::after { width: 18px; }
+            .pd-nl-kicker::before { margin-right: 0.38em; }
+            .pd-nl-title { margin-top: 20px; font-size: 2.3rem; }
+            .pd-nl-copy { font-size: 1.18rem; }
+            .pd-nl-form { margin-top: 28px; }
+            .pd-nl-back { margin-top: 24px; }
+            .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close {
+                top: calc(var(--pd-nl-top, 0px) + 14px);
+                right: 14px;
+            }
+        }
+
+        @media (max-width: 480px) and (max-height: 700px) {
+            .pd-nl-content { padding-top: 64px; padding-bottom: 20px; }
+            .pd-nl-card { padding-top: 40px; padding-bottom: 20px; }
+            .pd-nl-title { margin-top: 14px; font-size: 2.1rem; }
+            .pd-nl-form { margin-top: 20px; }
+            .pd-nl-back { margin-top: 16px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .pd-nl-mote,
-            .pd-nl-glow::after,
-            .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::after { animation: none; }
-            .pd-nl-mote { opacity: calc(var(--o, 0.25) * 0.8); }
-            .pd-nl-submit::after { display: none; }
+            .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::after { animation: none; opacity: 0; }
             .pd-nl-submit,
             .pd-nl-submit::before,
             .pd-nl-welcome,
             .pd-nl-check path,
+            .pd-nl-back,
             .pd-nl-back svg,
-            .pd-nl-back span::after,
             .pd-nl-consent a,
-            .pd-close { transition: none; }
-            .pd-nl-submit:not(:disabled):active,
+            .pd-close,
+            .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close { transition: none; }
+            .pd-nl-submit:not(:disabled):hover,
+            .pd-nl-submit:not(:disabled):focus-visible,
             .pd-nl-back:hover svg,
             .pd-nl-back:focus-visible svg,
             .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:hover,
             .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:focus-visible { transform: none; }
         }
 
-        html.reduce-motion .pd-nl-mote,
-        html.reduce-motion .pd-nl-glow::after,
-        html.reduce-motion .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::after { animation: none; }
-        html.reduce-motion .pd-nl-mote { opacity: calc(var(--o, 0.25) * 0.8); }
-        html.reduce-motion .pd-nl-submit::after { display: none; }
+        html.reduce-motion .pd-nl-form:not(.is-joined) .pd-nl-submit:disabled::after { animation: none; opacity: 0; }
         html.reduce-motion .pd-nl-submit,
         html.reduce-motion .pd-nl-submit::before,
         html.reduce-motion .pd-nl-welcome,
         html.reduce-motion .pd-nl-check path,
+        html.reduce-motion .pd-nl-back,
         html.reduce-motion .pd-nl-back svg,
-        html.reduce-motion .pd-nl-back span::after,
         html.reduce-motion .pd-nl-consent a,
-        html.reduce-motion .pd-close { transition: none; }
-        html.reduce-motion .pd-nl-submit:not(:disabled):active,
+        html.reduce-motion .pd-close,
+        html.reduce-motion .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close { transition: none; }
+        html.reduce-motion .pd-nl-submit:not(:disabled):hover,
+        html.reduce-motion .pd-nl-submit:not(:disabled):focus-visible,
         html.reduce-motion .pd-nl-back:hover svg,
         html.reduce-motion .pd-nl-back:focus-visible svg,
         html.reduce-motion .product-detail-panel:is([data-pd-view="newsletter"], [data-pd-view="transition"]) > .pd-close:hover,
@@ -14900,34 +14911,33 @@
                  over the visible part of the panel by JS and is inert
                  whenever it is not the view in use. -->
             <section class="pd-nl" id="pdNewsletter" aria-labelledby="pdNlTitle" hidden>
-                <div class="pd-nl-atmos" aria-hidden="true">
-                    <span class="pd-nl-glow"></span>
-                    <span class="pd-nl-motes"></span>
-                    <span class="pd-nl-grain"></span>
-                    <span class="pd-nl-vignette"></span>
-                </div>
-                <div class="pd-nl-frame" aria-hidden="true">
-                    <span class="pd-nl-rule is-outer is-top"></span>
-                    <span class="pd-nl-rule is-outer is-right"></span>
-                    <span class="pd-nl-rule is-outer is-bottom"></span>
-                    <span class="pd-nl-rule is-outer is-left"></span>
-                    <span class="pd-nl-rule is-inner is-top"></span>
-                    <span class="pd-nl-rule is-inner is-right"></span>
-                    <span class="pd-nl-rule is-inner is-bottom"></span>
-                    <span class="pd-nl-rule is-inner is-left"></span>
-                    <span class="pd-nl-corner is-tl"></span>
-                    <span class="pd-nl-corner is-tr"></span>
-                    <span class="pd-nl-corner is-br"></span>
-                    <span class="pd-nl-corner is-bl"></span>
-                </div>
+                <div class="pd-nl-surface" aria-hidden="true"></div>
                 <div class="pd-nl-content">
-                    <p class="pd-nl-kicker" data-i18n="privateAccess">Private Access</p>
-                    <h2 class="pd-nl-title" id="pdNlTitle" data-i18n="pdNlTitle">Enter the inner circle</h2>
-                    <p class="pd-nl-copy" data-i18n="pdNlCopy">Be first to discover upcoming drops and new releases.</p>
-                    <form class="pd-nl-form" id="pdNlForm" novalidate>
-                        <label class="pd-nl-label" for="pdNlEmail" data-i18n="email">Email</label>
-                        <div class="pd-nl-row">
-                            <input class="pd-nl-input" id="pdNlEmail" name="email" type="email" inputmode="email" autocomplete="email" spellcheck="false" placeholder="you@example.com" required aria-describedby="pdNlStatus pdNlConsent">
+                    <div class="pd-nl-card">
+                        <div class="pd-nl-frame" aria-hidden="true">
+                            <span class="pd-nl-rule is-outer is-top"></span>
+                            <span class="pd-nl-rule is-outer is-right"></span>
+                            <span class="pd-nl-rule is-outer is-bottom"></span>
+                            <span class="pd-nl-rule is-outer is-left"></span>
+                            <span class="pd-nl-rule is-inner is-top"></span>
+                            <span class="pd-nl-rule is-inner is-right"></span>
+                            <span class="pd-nl-rule is-inner is-bottom"></span>
+                            <span class="pd-nl-rule is-inner is-left"></span>
+                            <span class="pd-nl-corner is-tl"></span>
+                            <span class="pd-nl-corner is-tr"></span>
+                            <span class="pd-nl-corner is-br"></span>
+                            <span class="pd-nl-corner is-bl"></span>
+                        </div>
+                        <span class="pd-nl-seal" aria-hidden="true"><span class="pd-nl-seal-mark"></span></span>
+                        <p class="pd-nl-kicker" data-i18n="privateAccess">Private Access</p>
+                        <h2 class="pd-nl-title" id="pdNlTitle" data-i18n="pdNlTitle">Enter the inner circle</h2>
+                        <span class="pd-nl-divider" aria-hidden="true"></span>
+                        <p class="pd-nl-copy" data-i18n="pdNlCopy">Be first to discover upcoming drops and new releases.</p>
+                        <form class="pd-nl-form" id="pdNlForm" novalidate>
+                            <label class="pd-nl-label" for="pdNlEmail" data-i18n="email">Email</label>
+                            <div class="pd-nl-row">
+                                <input class="pd-nl-input" id="pdNlEmail" name="email" type="email" inputmode="email" autocomplete="email" spellcheck="false" placeholder="you@example.com" required aria-describedby="pdNlStatus pdNlConsent">
+                            </div>
                             <span class="pd-nl-cta">
                                 <button type="submit" class="pd-nl-submit" id="pdNlSubmit" data-i18n="pdNlJoin">Join the list</button>
                                 <span class="pd-nl-welcome" aria-hidden="true">
@@ -14935,10 +14945,10 @@
                                     <span data-i18n="pdNlWelcome">Welcome</span>
                                 </span>
                             </span>
-                        </div>
-                        <p class="pd-nl-status" id="pdNlStatus" role="status" aria-live="polite"></p>
-                        <p class="pd-nl-consent" id="pdNlConsent" data-i18n-html="pdNlConsent">By joining, you agree to receive emails about VOID<sup class="brand-copyright">©</sup> drops and new releases. You can unsubscribe at any time. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
-                    </form>
+                            <p class="pd-nl-status" id="pdNlStatus" role="status" aria-live="polite"></p>
+                            <p class="pd-nl-consent" id="pdNlConsent" data-i18n-html="pdNlConsent">By joining, you agree to receive emails about VOID<sup class="brand-copyright">©</sup> drops and new releases. You can unsubscribe at any time. Read our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+                        </form>
+                    </div>
                     <button type="button" class="pd-nl-back" id="pdNlBack">
                         <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="M7.5 2.5L4 6L7.5 9.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         <span data-i18n="pdNlBack">Back to the piece</span>
@@ -21191,7 +21201,7 @@
         var PD_NL_ARRIVE = 'cubic-bezier(0.4, 0, 0.2, 1)';
         var PD_NL_RECEDE = 'cubic-bezier(0.5, 0, 0.3, 1)';
         var PD_NL_SETTLE = 'cubic-bezier(0.22, 1, 0.36, 1)';
-        var PD_NL_EXIT_MS = 300;
+        var PD_NL_EXIT_MS = 420;
 
         function pdNlEl(selector) { return pdNlScene ? pdNlScene.querySelector(selector) : null; }
 
@@ -21206,29 +21216,6 @@
         function pdNlSlug(name) {
             return String(name || '').trim().toLowerCase().replace(/\s+/g, '-');
         }
-
-        // ---- the dust: a few dozen motes, placed once, deterministic ----
-        // Long, slow loops (40–80s) at 0.1–0.4 opacity, offset so the field
-        // is already populated on arrival rather than rising from empty.
-        (function buildPdNlMotes() {
-            const host = pdNlEl('.pd-nl-motes');
-            if (!host) return;
-            for (let i = 0; i < 26; i += 1) {
-                const mote = document.createElement('span');
-                mote.className = 'pd-nl-mote';
-                const r = (n) => ((Math.sin((i + 1) * n) + 1) / 2);   // stable 0..1
-                const duration = 40 + r(5.7) * 40;
-                mote.style.left = (4 + r(12.9898) * 92).toFixed(1) + '%';
-                mote.style.top = (18 + r(78.233) * 80).toFixed(1) + '%';
-                mote.style.setProperty('--s', (1 + r(3.1) * 1.2).toFixed(2) + 'px');
-                mote.style.setProperty('--d', duration.toFixed(1) + 's');
-                mote.style.setProperty('--w', (-r(9.3) * duration).toFixed(1) + 's');
-                mote.style.setProperty('--dx', ((r(2.2) - 0.5) * 80).toFixed(1) + 'px');
-                mote.style.setProperty('--dy', (-(120 + r(6.6) * 160)).toFixed(0) + 'px');
-                mote.style.setProperty('--o', (0.1 + r(4.4) * 0.3).toFixed(2));
-                host.appendChild(mote);
-            }
-        })();
 
         // ---- geometry: lay the scene over exactly what is visible ----
         function pdNlScroller() {
@@ -21272,65 +21259,70 @@
             if (pdNlReduced()) {
                 // Short and simple: a crossfade, nothing travels.
                 add(pdLayout, [{ opacity: 1 }, { opacity: 0 }], 0, 180, 'ease');
-                add(pdNlEl('.pd-nl-atmos'), [{ opacity: 0 }, { opacity: 1 }], 60, 200, 'ease');
-                add(pdNlEl('.pd-nl-frame'), [{ opacity: 0 }, { opacity: 1 }], 60, 200, 'ease');
+                add(pdNlEl('.pd-nl-surface'), [{ opacity: 0 }, { opacity: 1 }], 60, 200, 'ease');
                 add(content, [{ opacity: 0 }, { opacity: 1 }], 100, 200, 'ease');
             } else {
-                // 1 · The piece recedes, with depth: the image further and
-                //     softer than the details, a beat apart.
+                // About 1.3s in all. Transforms and opacity only.
+                //
+                // 1 · The piece recedes, the image a touch further than the
+                //     details.
                 const switcher = pdLayout.querySelector('.pd-switcher');
                 add(pdMediaEl, [
-                    { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)', filter: 'blur(0px)' },
-                    { opacity: 0, transform: 'translate3d(0, 10px, 0) scale(0.96)', filter: 'blur(8px)' }
-                ], 0, 700, PD_NL_RECEDE);
+                    { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' },
+                    { opacity: 0, transform: 'translate3d(0, 8px, 0) scale(0.97)' }
+                ], 0, 560, PD_NL_RECEDE);
                 add(pdInfoEl, [
-                    { opacity: 1, transform: 'translate3d(0, 0, 0)', filter: 'blur(0px)' },
-                    { opacity: 0, transform: 'translate3d(0, 16px, 0)', filter: 'blur(6px)' }
-                ], 60, 640, PD_NL_RECEDE);
-                if (switcher && !switcher.hidden) add(switcher, [{ opacity: 1 }, { opacity: 0 }], 0, 480, PD_NL_RECEDE);
+                    { opacity: 1, transform: 'translate3d(0, 0, 0)' },
+                    { opacity: 0, transform: 'translate3d(0, 12px, 0)' }
+                ], 40, 520, PD_NL_RECEDE);
+                if (switcher && !switcher.hidden) add(switcher, [{ opacity: 1 }, { opacity: 0 }], 0, 400, PD_NL_RECEDE);
 
-                // 2 · The ink comes up, and the light gathers behind the
-                //     headline.
-                add(pdNlEl('.pd-nl-atmos'), [{ opacity: 0 }, { opacity: 1 }], 120, 760, PD_NL_ARRIVE);
-                add(pdNlEl('.pd-nl-glow'), [
-                    { opacity: 0, transform: 'translate(-50%, -50%) scale(0.86)' },
-                    { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }
-                ], 360, 1200, PD_NL_SETTLE);
-                add(pdNlEl('.pd-nl-motes'), [{ opacity: 0 }, { opacity: 1 }], 700, 1100, PD_NL_ARRIVE);
+                // 2 · The matte ground comes up, and the invitation settles
+                //     towards the eye.
+                add(pdNlEl('.pd-nl-surface'), [{ opacity: 0 }, { opacity: 1 }], 80, 520, PD_NL_ARRIVE);
+                add(pdNlEl('.pd-nl-card'), [
+                    { transform: 'translate3d(0, 14px, 0) scale(0.985)' },
+                    { transform: 'translate3d(0, 0, 0) scale(1)' }
+                ], 120, 820, PD_NL_SETTLE);
 
-                // 3 · The frame draws itself first: each hairline grows from
-                //     its centre, the outer a beat before the inner, then the
-                //     corner ornaments settle onto the joins.
+                // 3 · The frame draws itself: each hairline grows from its
+                //     centre, the outer a beat before the inner; then the seal
+                //     and the engraved corners settle onto it.
                 pdNlScene.querySelectorAll('.pd-nl-rule').forEach((rule) => {
                     const axis = rule.classList.contains('is-top') || rule.classList.contains('is-bottom') ? 'scaleX' : 'scaleY';
-                    const start = rule.classList.contains('is-outer') ? 220 : 320;
+                    const start = rule.classList.contains('is-outer') ? 260 : 340;
                     add(rule, [
                         { opacity: 0, transform: axis + '(0)' },
-                        { opacity: 1, offset: 0.25 },
+                        { opacity: 1, offset: 0.2 },
                         { opacity: 1, transform: axis + '(1)' }
-                    ], start, 900, PD_NL_SETTLE);
+                    ], start, 720, PD_NL_SETTLE);
                 });
+                add(pdNlEl('.pd-nl-seal'), [
+                    { opacity: 0, scale: '0.82' },
+                    { opacity: 1, scale: '1' }
+                ], 520, 600, PD_NL_SETTLE);
                 pdNlScene.querySelectorAll('.pd-nl-corner').forEach((corner) => {
                     add(corner, [
-                        { opacity: 0, transform: 'scale(0.4)' },
-                        { opacity: 1, transform: 'scale(1)' }
-                    ], 860, 700, PD_NL_SETTLE);
+                        { opacity: 0, scale: '0.5' },
+                        { opacity: 1, scale: '1' }
+                    ], 700, 520, PD_NL_SETTLE);
                 });
 
-                // 4 · The words, then the form, settle into place one after
-                //     another: 80ms apart, each rising 12px out of a soft blur.
+                // 4 · The words, then the form, rise into place one after
+                //     another, 60ms apart.
                 const reveal = [
                     [pdNlEl('.pd-nl-kicker')],
                     [pdNlEl('.pd-nl-title')],
+                    [pdNlEl('.pd-nl-divider')],
                     [pdNlEl('.pd-nl-copy')],
-                    [pdNlEl('.pd-nl-label'), pdNlEl('.pd-nl-row'), pdNlEl('.pd-nl-status')],
+                    [pdNlEl('.pd-nl-label'), pdNlEl('.pd-nl-row'), pdNlEl('.pd-nl-cta'), pdNlEl('.pd-nl-status')],
                     [pdNlEl('.pd-nl-consent')],
                     [pdNlEl('.pd-nl-back')]
                 ];
                 reveal.forEach((group, i) => group.forEach((el) => add(el, [
-                    { opacity: 0, transform: 'translate3d(0, 12px, 0)', filter: 'blur(6px)' },
-                    { opacity: 1, transform: 'translate3d(0, 0, 0)', filter: 'blur(0px)' }
-                ], 660 + i * 80, 900, PD_NL_SETTLE)));
+                    { opacity: 0, transform: 'translate3d(0, 10px, 0)' },
+                    { opacity: 1, transform: 'translate3d(0, 0, 0)' }
+                ], 500 + i * 60, 420, PD_NL_SETTLE)));
             }
 
             const total = specs.reduce((max, sp) => Math.max(max, sp.delay + sp.duration), 0);

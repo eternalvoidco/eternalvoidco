@@ -27,6 +27,13 @@
     --nt-hair: rgba(199, 169, 108, 0.26);
     --nt-hair-soft: rgba(236, 227, 209, 0.1);
     --nt-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    /* The house's primary button (.void-auth-submit on the main site). This
+       page does not load that stylesheet, so its tokens are restated here. */
+    --void-accent: #c7a96c;
+    --void-gold-soft: #d8c08a;
+    --void-gold-gradient: linear-gradient(135deg, #e7d4a6 0%, #c7a96c 46%, #9c7c46 100%);
+    --void-button-ink: #090909;
+    --void-button-dur: 0.42s;
     --nt-serif: 'Bodoni Moda', 'Didot', 'Bodoni 72', 'Times New Roman', serif;
     --nt-sans: 'Jost', system-ui, -apple-system, sans-serif;
     --nt-gutter: clamp(1.25rem, 5vw, 4rem);
@@ -143,40 +150,79 @@ img { display: block; max-width: 100%; }
     transform: rotate(45deg);
 }
 
-/* ── Buttons and links ── */
-.nt-button {
+/* ── Buttons and links ──
+   Every button-style action here is the house's primary button: a
+   champagne-to-antique-gold fill inside a fine gold edge, with dark
+   lettering. On hover and keyboard focus the fill empties to the dark
+   surface, leaving the gold edge and soft-gold lettering. The fill is its
+   own layer (::before) so it can fade — a gradient cannot transition — and
+   fill, lettering and edge move together on one curve. Only colour,
+   opacity, shadow and a 1px lift change: the box never resizes. */
+.nt-button,
+.nt-form-submit {
+    position: relative;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
     min-height: 52px;
     padding: 0 1.6rem;
-    border: 1px solid transparent;
-    background: linear-gradient(135deg, #e9d3a1 0%, #c7a96c 48%, #9c7c43 100%);
-    color: #140e05;
+    border: 1px solid var(--void-accent);
+    border-radius: 0;
+    background: transparent;
+    color: var(--void-button-ink);
     font-family: var(--nt-sans);
     font-size: 0.72rem;
     font-weight: 600;
+    line-height: 1.2;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     text-decoration: none;
     cursor: pointer;
-    transition: filter 0.25s ease, transform 0.15s ease, border-color 0.25s ease, color 0.25s ease, background-color 0.25s ease;
+    box-shadow: inset 0 1px 0 rgba(255, 248, 232, 0.35);
+    transition:
+        color var(--void-button-dur) var(--nt-ease),
+        border-color var(--void-button-dur) var(--nt-ease),
+        box-shadow var(--void-button-dur) var(--nt-ease),
+        transform var(--void-button-dur) var(--nt-ease);
 }
 
-.nt-button:hover, .nt-button:focus-visible { filter: brightness(1.08); }
-.nt-button:active { transform: translateY(1px); }
+.nt-button::before,
+.nt-form-submit::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--void-gold-gradient);
+    transition: opacity var(--void-button-dur) var(--nt-ease);
+}
 
-.nt-button--ghost {
-    background: transparent;
-    border-color: rgba(var(--nt-gold-rgb), 0.55);
-    color: var(--nt-gold-bright);
+.nt-button:hover,
+.nt-button:focus-visible,
+.nt-form-submit:not(:disabled):hover,
+.nt-form-submit:not(:disabled):focus-visible {
+    color: var(--void-gold-soft);
+    box-shadow: 0 0 26px rgba(var(--nt-gold-rgb), 0.24), 0 10px 26px rgba(0, 0, 0, 0.42);
+    transform: translateY(-1px);
 }
-.nt-button--ghost:hover, .nt-button--ghost:focus-visible {
-    filter: none;
-    border-color: var(--nt-gold-bright);
-    background-color: rgba(var(--nt-gold-rgb), 0.08);
+
+.nt-button:hover::before,
+.nt-button:focus-visible::before,
+.nt-form-submit:not(:disabled):hover::before,
+.nt-form-submit:not(:disabled):focus-visible::before { opacity: 0; }
+
+/* Keyboard focus also carries a ring, so it never depends on hover alone. */
+.nt-button:focus-visible {
+    outline: 1px solid rgba(var(--nt-gold-rgb), 0.6);
+    outline-offset: 4px;
 }
+
+.nt-button:active,
+.nt-form-submit:not(:disabled):active { transform: translateY(0); }
+
+/* Kept for the markup: the secondary button now wears the same house style. */
+.nt-button--ghost { white-space: nowrap; }
 
 .nt-link {
     display: inline-flex;
@@ -559,28 +605,26 @@ img { display: block; max-width: 100%; }
 .nt-form-input[aria-invalid="true"] { color: #f0c2b3; }
 .nt-form-row:has(.nt-form-input[aria-invalid="true"]) { border-color: rgba(240, 194, 179, 0.7); }
 
+/* The house button (see .nt-button), set into the field's frame: its edge
+   lies over the frame's own line, so the two read as one object. */
 .nt-form-submit {
     flex: 0 0 auto;
-    min-height: 52px;
+    margin: -1px -1px -1px 0;
     padding: 0 1.4rem;
-    border: 0;
-    border-radius: 0;
-    background: linear-gradient(135deg, #e9d3a1 0%, #c7a96c 48%, #9c7c43 100%);
-    color: #140e05;
-    font-family: var(--nt-sans);
     font-size: 0.68rem;
-    font-weight: 600;
     letter-spacing: 0.18em;
-    text-transform: uppercase;
     white-space: nowrap;
-    cursor: pointer;
-    transition: filter 0.2s ease, transform 0.15s ease;
 }
 
-.nt-form-submit:hover, .nt-form-submit:focus-visible { filter: brightness(1.08); }
-.nt-form-submit:active:not(:disabled) { transform: translateY(1px); }
-.nt-form-submit:focus-visible { outline: 1px solid #140e05; outline-offset: -5px; }
-.nt-form-submit:disabled { cursor: progress; filter: saturate(0.6) brightness(0.85); }
+/* Inside the frame the ring is drawn within the button's own edge. */
+.nt-form-submit:focus-visible {
+    outline: 1px solid rgba(var(--nt-gold-rgb), 0.6);
+    outline-offset: -6px;
+}
+
+/* Sending: the fill stays, quieter, and nothing answers the pointer. */
+.nt-form-submit:disabled { cursor: progress; color: rgba(9, 9, 9, 0.6); }
+.nt-form-submit:disabled::before { opacity: 0.72; }
 
 .nt-form-status {
     min-height: 1.5em;
@@ -946,7 +990,7 @@ img { display: block; max-width: 100%; }
 
     .nt-form-row { flex-direction: column; }
     .nt-form-input { min-height: 52px; }
-    .nt-form-submit { width: 100%; }
+    .nt-form-submit { width: auto; margin: 0 -1px -1px; }
 
     .nt-spec > div { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; }
     .nt-pieces { grid-template-columns: minmax(0, 1fr); }
