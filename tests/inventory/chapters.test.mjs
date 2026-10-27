@@ -246,7 +246,9 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         await waitWritten(page, 9000);
         const t = await page.evaluate(() => window.__chapterStage.time);
         assert.ok(t >= 5000 && t <= 7600, `the whole reveal takes 5–7.5s (${t})`);
-        await page.waitForTimeout(120);
+        // The canvases are let go one frame after the real text shows (so no
+        // frame is ever without either); a slow frame must not fail this.
+        await page.waitForFunction(() => [...document.querySelectorAll('#chapterStage canvas')].every((c) => c.hidden), null, { timeout: 1500 });
         s = await snap(page, 'fallen');
         assert.deepEqual([s.canvases, s.writing], [0, false]);
         const w = await words(page);
@@ -462,7 +464,7 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         await page.waitForTimeout(100);
         w = await words(page);
         assert.deepEqual([w.pieceKicker, w.specs[1]], ['Das Stück', 'Leicht oversized geschnitten']);
-        assert.equal((await snap(page, 'fallen')).canvases, 0);
+        await page.waitForFunction(() => [...document.querySelectorAll('#chapterStage canvas')].every((c) => c.hidden), null, { timeout: 1500 });
         assert.deepEqual(page.errors, []);
         await context.close();
     });
