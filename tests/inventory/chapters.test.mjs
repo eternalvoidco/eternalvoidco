@@ -441,6 +441,101 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         await context.close();
     });
 
+    it('keeps the Insigne facts visible after each switch, rapid switching and reopening', async () => {
+        const { context, page } = await shop(browser, stack);
+        await toChapter(page, 'eternal');
+        await page.click(seal('eternal'));
+        await waitWritten(page);
+
+        const settledFacts = async (name) => {
+            await page.waitForFunction((expected) => document.querySelector('.cst-name').textContent === expected, name);
+            await waitWritten(page);
+            // Wait for the real text to take over, rather than accepting the
+            // canvas that temporarily paints above a stuck opacity:0 fade.
+            await page.waitForFunction(() => [...document.querySelectorAll('.cst-col.is-piece canvas, .cst-name-box canvas')].every((c) => c.hidden));
+            const rendered = await page.evaluate(() => {
+                const visible = (n) => {
+                    if (!n || n.hidden || !n.getClientRects().length) return false;
+                    for (let p = n; p; p = p.parentElement) {
+                        const cs = getComputedStyle(p);
+                        if (Number(cs.opacity) < 0.99 || cs.visibility === 'hidden' || cs.display === 'none') return false;
+                    }
+                    return true;
+                };
+                return ['.cst-spec', '.cst-price', '.cst-status', '.cst-name'].map((s) => visible(document.querySelector(s)));
+            });
+            assert.deepEqual(rendered, [true, true, true, true], `${name}: settled text is actually painted`);
+        };
+
+        await settledFacts('INSIGNE IVOIRE');
+        for (const name of ['INSIGNE NOIR', 'INSIGNE AZURE', 'INSIGNE IVOIRE']) {
+            await page.click('.cst-step.is-next');
+            await settledFacts(name);
+        }
+        await page.evaluate(() => {
+            document.querySelector('.cst-step.is-next').click();
+            document.querySelector('.cst-step.is-next').click();
+            document.querySelector('.cst-step.is-prev').click();
+        });
+        await settledFacts('INSIGNE NOIR');
+        assert.equal(await page.locator('.cst-spec').textContent(), 'Relaxed oversized fit');
+        assert.equal(await page.locator('.cst-price').textContent(), '€250');
+        await page.click('.cst-close');
+        await waitPhase(page, 'closed', 3500);
+        await page.click(seal('eternal'));
+        await settledFacts('INSIGNE IVOIRE');
+        await page.keyboard.press('Escape');
+        await waitPhase(page, 'closed', 3500);
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
+    it('lets sign-in own pointer and keyboard input above a chapter, then restores the chapter', async () => {
+        for (const mobile of [false, true]) {
+            const { context, page } = await shop(browser, stack, { viewport: mobile ? PHONE : DESKTOP, mobile });
+            await toChapter(page, 'fallen');
+            const before = await snap(page, 'fallen');
+            await page.click(seal('fallen'));
+            await page.evaluate(() => window.voidAuthOpen());
+            await page.waitForFunction(() => document.activeElement === document.getElementById('voidAuthEmail'));
+            assert.equal(await page.locator('#voidAuth').evaluate((n) => !!n.closest('[inert]')), false);
+            assert.equal(await page.locator('#chapterStage').evaluate((n) => n.inert), true);
+            assert.equal(await page.getAttribute('#chapterStage', 'aria-modal'), 'false');
+
+            await page.click('#voidAuthEmail');
+            await page.fill('#voidAuthEmail', 'guest@example.com');
+            await page.fill('#voidAuthPass', 'example-password');
+            await page.click('#voidAuthEye');
+            assert.equal(await page.getAttribute('#voidAuthPass', 'type'), 'text');
+
+            // Tab and Shift+Tab wrap in the visible sign-in dialog, never in
+            // the stage underneath it.
+            await page.locator('#voidAuthModeToggle').focus();
+            await page.keyboard.press('Tab');
+            assert.equal(await page.evaluate(() => document.activeElement.id), 'voidAuthClose');
+            await page.keyboard.press('Shift+Tab');
+            assert.equal(await page.evaluate(() => document.activeElement.id), 'voidAuthModeToggle');
+
+            await page.click('#voidAuthClose');
+            assert.equal(await page.getAttribute('#voidAuth', 'aria-hidden'), 'true');
+            assert.equal(await page.locator('#chapterStage').evaluate((n) => n.inert), false);
+            assert.equal(await page.evaluate(() => document.getElementById('chapterStage').contains(document.activeElement)), true);
+            assert.notEqual(await phase(page), 'closing');
+
+            await page.evaluate(() => window.voidAuthOpen());
+            await page.waitForFunction(() => document.activeElement === document.getElementById('voidAuthEmail'));
+            await page.keyboard.press('Escape');
+            assert.equal(await page.getAttribute('#voidAuth', 'aria-hidden'), 'true');
+            assert.notEqual(await phase(page), 'closing', 'Escape dismisses only the foreground dialog');
+            await page.keyboard.press('Escape');
+            await waitPhase(page, 'closed', 3500);
+            const after = await snap(page, 'fallen');
+            assert.deepEqual([after.original, after.scrollY, after.originalHidden], [before.original, before.scrollY, false]);
+            assert.deepEqual(page.errors, []);
+            await context.close();
+        }
+    });
+
     it('speaks the visitor\'s language, and follows a change of it', async () => {
         let { context, page } = await shop(browser, stack, { language: 'fr' });
         await toChapter(page, 'sigil');

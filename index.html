@@ -7204,10 +7204,10 @@
 
         /* While the stage is up, the page's own CSS animations hold still:
            nothing behind the veil is worth a frame. */
-        html.cst-hold body > :not(.chapter-stage),
-        html.cst-hold body > :not(.chapter-stage) *,
-        html.cst-hold body > :not(.chapter-stage) *::before,
-        html.cst-hold body > :not(.chapter-stage) *::after { animation-play-state: paused !important; }
+        html.cst-hold body > :not(.chapter-stage):not(#voidAuth),
+        html.cst-hold body > :not(.chapter-stage):not(#voidAuth) *,
+        html.cst-hold body > :not(.chapter-stage):not(#voidAuth) *::before,
+        html.cst-hold body > :not(.chapter-stage):not(#voidAuth) *::after { animation-play-state: paused !important; }
 
         /* The original card, while its double is on the stage. */
         .product-card.is-staged { visibility: hidden; }
@@ -22562,6 +22562,8 @@
         (function chapterStage() {
             const stage = document.getElementById('chapterStage');
             if (!stage) return;
+            const authOverlay = document.getElementById('voidAuth');
+            const authIsOpen = () => Boolean(authOverlay && authOverlay.classList.contains('active'));
 
             /* The house switch only, as for the rest of the chapter work and the
                language transition: html.reduce-motion is what the site's own
@@ -22716,6 +22718,7 @@
                 returnFocus: null,
                 inerted: [],
                 queued: null,
+                pieceSwap: 0,
                 calm: false
             };
 
@@ -22822,7 +22825,13 @@
                 if (!target) return null;
                 const a = target.animate(frames, Object.assign({ fill: 'both' }, timing));
                 S.loose.add(a);
-                a.finished.then(() => S.loose.delete(a), () => S.loose.delete(a));
+                a.finished.then(() => {
+                    // A finished forwards/both animation still controls its
+                    // target. Keep it reachable until explicitly cancelled, or
+                    // a piece's finished fade-out will hide the new copy too.
+                    const fill = a.effect && a.effect.getTiming().fill;
+                    if (fill !== 'forwards' && fill !== 'both') S.loose.delete(a);
+                }, () => S.loose.delete(a));
                 return a;
             };
 
@@ -22963,13 +22972,25 @@
             // ---- the background ----
             function setPageInert(on) {
                 if (on) {
-                    S.inerted = Array.from(document.body.children).filter((n) => n !== stage && !n.inert && n.tagName !== 'SCRIPT');
+                    // The sign-in prompt can arrive asynchronously above the
+                    // stage. Its own hidden state keeps it out of the way until
+                    // then; it must never inherit the background's inert state.
+                    S.inerted = Array.from(document.body.children).filter((n) => n !== stage && n !== authOverlay && !n.inert && n.tagName !== 'SCRIPT');
                     S.inerted.forEach((n) => { n.inert = true; });
                 } else {
                     S.inerted.forEach((n) => { n.inert = false; });
                     S.inerted = [];
                 }
             }
+
+            document.addEventListener('void-auth-statechange', () => {
+                if (S.phase === 'closed') return;
+                const foreground = authIsOpen();
+                stage.inert = foreground;
+                stage.setAttribute('aria-modal', String(!foreground));
+                if (foreground) stage.setAttribute('aria-hidden', 'true');
+                else stage.removeAttribute('aria-hidden');
+            });
 
             function holdPage(on) {
                 clearTimeout(S.holdTimer);
@@ -22978,6 +22999,7 @@
 
             // ---- opening ----
             function open(chapter, trigger) {
+                if (authIsOpen()) return;
                 if (S.phase === 'closing') {
                     if (chapter === S.chapter) { reopen(); return; }
                     S.queued = { chapter, trigger };
@@ -22999,6 +23021,9 @@
                 guardScroll(true);
                 chapter.seal.setAttribute('aria-expanded', 'true');
                 stage.hidden = false;
+                stage.inert = false;
+                stage.setAttribute('aria-modal', 'true');
+                stage.removeAttribute('aria-hidden');
                 stage.classList.remove('is-closing', 'is-idle');
                 setPageInert(true);
                 focusElementSafely(el.scroll);
@@ -23216,6 +23241,9 @@
                 el.close.classList.remove('is-pressed');
                 stage.classList.remove('is-closing', 'is-idle');
                 stage.hidden = true;
+                stage.inert = false;
+                stage.setAttribute('aria-modal', 'true');
+                stage.removeAttribute('aria-hidden');
                 guardScroll(false);
                 S.phase = 'closed';
                 S.parts = null;
@@ -23252,6 +23280,7 @@
             // ---- another piece of the same chapter ----
             function step(dir) {
                 if ((S.phase !== 'open' && S.phase !== 'opening') || S.pieces.length < 2) return;
+                const swap = ++S.pieceSwap;
                 const old = S.parts;
                 const oldCard = S.card;
                 S.index = (S.index + dir + S.pieces.length) % S.pieces.length;
@@ -23290,8 +23319,14 @@
                 writers.name.finishNow();
                 written.forEach((n) => once(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: EASE.away, fill: 'forwards' }));
                 cue(t0 + 340, () => {
+                    if (swap !== S.pieceSwap) return;
                     fillPiece();
-                    S.loose.forEach((a) => { if (written.includes(a.effect && a.effect.target)) a.cancel(); });
+                    S.loose.forEach((a) => {
+                        if (written.includes(a.effect && a.effect.target)) {
+                            a.cancel();
+                            S.loose.delete(a);
+                        }
+                    });
                     if (document.fonts && document.fonts.status === 'loaded' && !S.calm) {
                         const at = now();
                         const plan = [];
@@ -23320,7 +23355,7 @@
             const canScroll = () => el.scroll.scrollHeight > el.scroll.clientHeight + 1;
 
             window.addEventListener('keydown', (e) => {
-                if (S.phase === 'closed') return;
+                if (S.phase === 'closed' || authIsOpen()) return;
                 if (S.phase === 'closing') {
                     // The page must not move while the card is on its way home.
                     if (SCROLL_KEYS.has(e.key) && !(e.key === ' ' && e.target.closest && e.target.closest('button'))) e.preventDefault();
@@ -23348,7 +23383,7 @@
             // up: a non-passive listener left on the window for the rest of the
             // session would take page scrolling off the compositor thread.
             const holdStill = (e) => {
-                if (S.phase === 'closed') return;
+                if (S.phase === 'closed' || authIsOpen()) return;
                 if (S.phase !== 'closing' && canScroll() && el.scroll.contains(e.target)) return;
                 e.preventDefault();
             };
@@ -23697,6 +23732,7 @@
             const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
             let gateRan = false, activeIndex = -1, toastTimer = null, mode = 'signin', sbClient = null, greetedThisLoad = false;
+            let modalReturnFocus = null, modalFocusTimer = null;
 
             function escapeHtml(s) {
                 return String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -23801,22 +23837,50 @@
 
             // ── Modal open / close ──
             function openModal() {
+                if (!overlay.classList.contains('active')) {
+                    modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                }
                 overlay.classList.add('active');
                 overlay.setAttribute('aria-hidden', 'false');
                 document.body.classList.add('void-auth-open');
+                document.dispatchEvent(new Event('void-auth-statechange'));
                 errorEl.textContent = '';
-                window.setTimeout(() => { try { input.focus(); } catch (e) {} }, 420);
+                window.clearTimeout(modalFocusTimer);
+                modalFocusTimer = window.setTimeout(() => {
+                    if (overlay.classList.contains('active')) { try { input.focus(); } catch (e) {} }
+                }, 420);
             }
             function closeModal() {
+                if (!overlay.classList.contains('active')) return;
+                window.clearTimeout(modalFocusTimer);
                 overlay.classList.remove('active');
                 overlay.setAttribute('aria-hidden', 'true');
                 if (!document.querySelector('.void-modal.active')) document.body.classList.remove('void-auth-open');
                 hideSuggest();
+                document.dispatchEvent(new Event('void-auth-statechange'));
+                if (modalReturnFocus && modalReturnFocus.isConnected && !modalReturnFocus.closest('[hidden], [inert]')) {
+                    try { modalReturnFocus.focus({ preventScroll: true }); } catch (e) {}
+                }
+                modalReturnFocus = null;
             }
             if (closeBtn) closeBtn.addEventListener('click', closeModal);
             overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) closeModal(); });
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && overlay.classList.contains('active')) closeModal();
+                if (!overlay.classList.contains('active')) return;
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    closeModal();
+                } else if (e.key === 'Tab') {
+                    const focusable = Array.from(overlay.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+                        .filter((n) => !n.disabled && !n.closest('[hidden], [inert]') && n.getClientRects().length && getComputedStyle(n).visibility !== 'hidden');
+                    if (!focusable.length) { e.preventDefault(); return; }
+                    const index = focusable.indexOf(document.activeElement);
+                    if (index === -1 || (e.shiftKey && index === 0) || (!e.shiftKey && index === focusable.length - 1)) {
+                        e.preventDefault();
+                        focusable[e.shiftKey ? focusable.length - 1 : 0].focus();
+                    }
+                }
             });
 
             // ── Gold toast ──
