@@ -60,7 +60,7 @@
         .btn:disabled { opacity: 0.5; cursor: default; }
         .card { border: 1px solid var(--line); background: linear-gradient(145deg, rgba(14, 13, 11, 0.96), rgba(0, 0, 0, 0.98)); padding: 1.4rem; }
         .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-        .totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-top: 0.9rem; }
+        .totals { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; margin-top: 0.9rem; }
         .total b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 500; line-height: 1.1; }
         .total span { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); }
         .total.gold b { color: var(--gold-bright); }
@@ -130,13 +130,13 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Size</th><th>Available</th><th>Reserved</th><th>On hand</th><th>Sold</th><th>Returned</th><th>Adjustments</th>
+                            <th>Size</th><th>Allocated</th><th>Available</th><th>Reserved</th><th>On hand</th><th>Sold</th><th>Returned</th><th>Adjustments</th>
                         </tr>
                     </thead>
                     <tbody id="sizeRows"></tbody>
                 </table>
             </div>
-            <p class="help">Available = on hand − reserved. Reserved units are held by open checkouts and are never counted as sold; they return on their own if the checkout ends unpaid. Adjustments are the net of manual adjustments, stocktakes and the initial reconciliation.</p>
+            <p class="help">Available = on hand − reserved. Reserved units are held by open checkouts and are never counted as sold; they return on their own if the checkout ends unpaid. Allocated is the production run for that size; it changes only through a recorded allocation. Adjustments are the net of manual adjustments, stocktakes and the initial reconciliation.</p>
 
             <h2>Adjust stock</h2>
             <div class="card">
@@ -195,7 +195,7 @@
         const $ = (id) => document.getElementById(id);
         const NAMES = { 'levitate-tee': 'Levitate', 'endzustand-tee': 'Endzustand', neant: 'NÉANT' };
         const KIND = {
-            initial: 'Initial allocation', reconciliation: 'Reconciliation', adjustment: 'Adjustment',
+            initial: 'Initial allocation', allocation: 'Production allocation', reconciliation: 'Reconciliation', adjustment: 'Adjustment',
             stocktake: 'Stocktake', return_restock: 'Return restocked', sale: 'Sale', sale_shortfall: 'Paid without stock'
         };
         const ERRORS = {
@@ -294,8 +294,8 @@
             // Per design
             const bySlug = {};
             data.items.forEach((item) => {
-                const t = bySlug[item.productSlug] || (bySlug[item.productSlug] = { available: 0, reserved: 0, sold: 0, returned: 0, onHand: 0 });
-                ['available', 'reserved', 'sold', 'returned', 'onHand'].forEach((k) => { t[k] += item[k]; });
+                const t = bySlug[item.productSlug] || (bySlug[item.productSlug] = { allocated: 0, available: 0, reserved: 0, sold: 0, returned: 0, onHand: 0 });
+                ['allocated', 'available', 'reserved', 'sold', 'returned', 'onHand'].forEach((k) => { t[k] += Number(item[k]) || 0; });
             });
             const cards = $('productCards');
             cards.textContent = '';
@@ -307,7 +307,7 @@
                 title.textContent = NAMES[slug] || slug;
                 const totals = document.createElement('div');
                 totals.className = 'totals';
-                [['Available', t.available, 'gold'], ['Reserved', t.reserved], ['Sold', t.sold], ['Returned', t.returned]].forEach(([label, value, cls]) => {
+                [['Production', t.allocated], ['Available', t.available, 'gold'], ['Reserved', t.reserved], ['Sold', t.sold], ['Returned', t.returned]].forEach(([label, value, cls]) => {
                     const box = document.createElement('div');
                     box.className = `total ${cls || ''}`;
                     const b = document.createElement('b');
@@ -331,12 +331,12 @@
                     const tr = document.createElement('tr');
                     tr.className = 'group';
                     const td = cell(NAMES[group] || group);
-                    td.colSpan = 7;
+                    td.colSpan = 8;
                     tr.appendChild(td);
                     rows.appendChild(tr);
                 }
                 const tr = document.createElement('tr');
-                tr.append(cell(item.size), num(item.available), num(item.reserved), num(item.onHand),
+                tr.append(cell(item.size), num(item.allocated), num(item.available), num(item.reserved), num(item.onHand),
                     num(item.sold), num(item.returned), num(item.adjustments, { signed: true }));
                 rows.appendChild(tr);
             });

@@ -4,13 +4,22 @@ Stock for **Levitate Tee** (`levitate-tee`) and **Endzustand Tee** (`endzustand-
 tracked per size in Supabase Postgres. The database is the only source of truth;
 the browser never holds a stock figure it is trusted on.
 
+Production allocation (target totals per size):
+
 | Size | Levitate | Endzustand |
 |---|---:|---:|
-| S | 2 | 2 |
-| M | 16 | 16 |
-| L | 10 | 10 |
-| XL | 2 | 2 |
-| **Total** | **30** | **30** |
+| S | 4 | 4 |
+| M | 25 | 25 |
+| L | 17 | 17 |
+| XL | 4 | 4 |
+| **Total** | **50** | **50** |
+
+100 pieces in all. A size's allocation is the sum of its `initial` and
+`allocation` movements, shown as *Allocated* on the dashboard. Raising a
+production run is a migration that moves the allocation to a target and adds
+only the difference to on hand (see `20261031120000_production_allocation_50.sql`),
+so sales, holds, returns and adjustments are kept, and rerunning it adds
+nothing.
 
 Both designs are cut in S–XL only. XS is not offered on the storefront, and an
 XS line for either (an old bag, a direct request) is refused at checkout.
@@ -44,7 +53,8 @@ XS line for either (an old bag, a direct request) is refused at checkout.
 
 Step-by-step for a new project: [database-setup.md](database-setup.md).
 
-1. **Apply the migration** `supabase/migrations/20261004120000_inventory.sql`
+1. **Apply the migrations** `supabase/migrations/20261004120000_inventory.sql`
+   and then `20261031120000_production_allocation_50.sql`
    (Supabase → SQL editor, or `supabase db push`) after the two orders migrations. It is safe to run more than once:
    it never resets existing stock. On first run it subtracts units already sold in
    orders marked `paid`/`refunded`, and records that as a *Reconciliation* row.
@@ -65,6 +75,47 @@ Step-by-step for a new project: [database-setup.md](database-setup.md).
 
 Keep test keys and live keys pointed at separate databases: a test-mode payment
 against the production database would consume production stock.
+
+## Raising the production run to 50 per design (production runbook)
+
+`20261031120000_production_allocation_50.sql` moves an existing store from
+S 2 · M 16 · L 10 · XL 2 to S 4 · M 25 · L 17 · XL 4 per design. Apply it in
+Supabase → SQL Editor (paste the whole file → **Run**) or with `supabase db push`.
+
+1. **Preflight** — check whether anyone already added the new pieces by hand
+   (an Adjust or Stocktake for the delivery). The migration adds the
+   allocation difference on top of whatever is on hand, so a manual top-up
+   made for the same delivery would be counted twice:
+
+   ```sql
+   select variant_id, kind, delta, reason, actor_email, created_at
+     from inventory_movements
+    where kind in ('adjustment', 'stocktake')
+    order by created_at;
+   ```
+
+   If a row there already covers the extra 20 pieces per design, reverse it
+   with an Adjust on the dashboard first, or correct after with a stocktake.
+2. **Apply** the file. Its notices list each size: old → new allocation, the
+   change applied, and the resulting on hand / reserved / available.
+3. **Verify** — every size must show the target allocation:
+
+   ```sql
+   select i.variant_id,
+          (select sum(m.delta) from inventory_movements m
+            where m.variant_id = i.variant_id and m.kind in ('initial', 'allocation')) as allocated,
+          i.on_hand, i.reserved, i.on_hand - i.reserved as available, i.sold, i.returned
+     from inventory_items i
+    where i.product_slug in ('levitate-tee', 'endzustand-tee')
+    order by i.variant_id;
+   ```
+
+   On `/admin/inventory` each design's card shows **Production 50**, and the
+   *Allocated* column reads 4 / 25 / 17 / 4.
+
+Running the file again changes nothing. It never touches orders, reservations,
+`sold`, `returned` or earlier movements, and it does not change the 30-minute
+hold, payment confirmation, the expiry sweep or `VOID_SALES_OPEN`.
 
 ## Endpoints
 

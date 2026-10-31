@@ -83,7 +83,7 @@ describe('storefront', { skip: !CHROME && 'no Chromium found (set CHROMIUM_PATH)
         await enterShop(a.page, stack.origin);
         await enterShop(b.page, stack.origin);
 
-        // 30 available: the normal interface, no urgency label.
+        // 50 available: the normal interface, no urgency label.
         assert.equal(await badgeText(a.page, 'Levitate Tee'), '');
         assert.equal(await badgeText(b.page, 'Endzustand Tee'), '');
 
@@ -375,9 +375,16 @@ describe('inventory dashboard', { skip: !CHROME && 'no Chromium found (set CHROM
         assert.equal(await page.locator('#whoEmail').textContent(), 'owner@eternalvoid.co');
 
         const row = (size, nth) => page.locator('#sizeRows tr:not(.group)').nth(nth).locator('td');
-        // Endzustand is listed first (alphabetical by slug): S M L XL
+        // Endzustand is listed first (alphabetical by slug): S M L XL.
+        // Size, Allocated, Available, Reserved, On hand, Sold, Returned, Adjustments.
         const m = row('M', 1);
-        assert.deepEqual(await m.allTextContents(), ['M', '14', '2', '16', '0', '0', '0']);
+        assert.deepEqual(await m.allTextContents(), ['M', '25', '23', '2', '25', '0', '0', '0']);
+        const allocated = await page.locator('#sizeRows tr:not(.group)').evaluateAll((trs) => trs.map((tr) => tr.children[1].textContent));
+        assert.deepEqual(allocated, ['4', '25', '17', '4', '4', '25', '17', '4']);
+        // Each design's card leads with its production run: 50.
+        const production = await page.locator('#productCards .card').evaluateAll((cards) => cards.map((c) =>
+            [c.querySelector('h2').textContent, c.querySelector('.total b').textContent, c.querySelector('.total span').textContent]));
+        assert.deepEqual(production, [['Endzustand', '50', 'Production'], ['Levitate', '50', 'Production']]);
         assert.match(await page.locator('#holdRows').textContent(), new RegExp(res.data.orderNumber));
 
         await page.selectOption('#adjVariant', 'levitate-tee:XL');
@@ -386,11 +393,11 @@ describe('inventory dashboard', { skip: !CHROME && 'no Chromium found (set CHROM
         await page.fill('#adjReason', 'Sample kept for the archive');
         await page.click('#adjSubmit');
         await page.waitForSelector('#adjResult:not([hidden])');
-        assert.match(await page.locator('#adjResult').textContent(), /1 on hand, 1 available/);
+        assert.match(await page.locator('#adjResult').textContent(), /3 on hand, 3 available/);
         // The audit table is refreshed right after the result is shown.
         await page.waitForFunction(() => /Sample kept for the archive/.test(document.querySelector('#movementRows tr').textContent));
         assert.match(await page.locator('#movementRows tr').first().textContent(), /Adjustment.*-1.*owner@eternalvoid\.co.*Sample kept for the archive/);
-        assert.deepEqual(await stack.stock(LVT('XL')), { onHand: 1, reserved: 0, available: 1, sold: 0, returned: 0 });
+        assert.deepEqual(await stack.stock(LVT('XL')), { onHand: 3, reserved: 0, available: 3, sold: 0, returned: 0 });
         await page.screenshot({ path: new URL('./.artifacts/dashboard.png', import.meta.url).pathname, fullPage: true });
         await context.close();
     });

@@ -14,18 +14,19 @@ Infrastructure shows the version).
 
 ## 2. Run the migrations, in this order
 
-All four live in `supabase/migrations/`. Each must finish without an error before
+All five live in `supabase/migrations/`. Each must finish without an error before
 the next one runs: later files use tables and functions that earlier files create.
 
 | # | File | Creates |
 |---|---|---|
 | 1 | `20260906120000_orders.sql` | `orders`, `order_items`, `stripe_events`, the order enums, the `touch_updated_at()` trigger function |
 | 2 | `20260907090000_orders_grants.sql` | table privileges for those three tables (`service_role` writes; signed-in customers read their own orders) |
-| 3 | `20261004120000_inventory.sql` | inventory tables and functions, plus the initial allocation of S 2 · M 16 · L 10 · XL 2 for each design |
+| 3 | `20261004120000_inventory.sql` | inventory tables and functions, plus the initial allocation of S 4 · M 25 · L 17 · XL 4 for each design |
 | 4 | `20261004130000_newsletter.sql` | `newsletter_subscribers`, the `newsletter_audience` view, and the subscribe/unsubscribe functions |
+| 5 | `20261031120000_production_allocation_50.sql` | moves an existing store's allocation to S 4 · M 25 · L 17 · XL 4 per design (no-op on a new one), and shows the allocation on the dashboard |
 
 **Option A — SQL editor:** Supabase → SQL Editor → New query. Paste the whole of
-file 1 → **Run**, wait for "Success". Then repeat with files 2, 3 and 4.
+file 1 → **Run**, wait for "Success". Then repeat with files 2, 3, 4 and 5.
 
 **Option B — Supabase CLI** (it applies the files in filename order, which is the
 order above):
@@ -35,7 +36,7 @@ supabase link --project-ref <your-test-project-ref>
 supabase db push
 ```
 
-You can run any of the four files again safely: they never reset stock, delete
+You can run any of the five files again safely: they never reset stock, delete
 orders or remove subscribers.
 
 ## 3. Check the result

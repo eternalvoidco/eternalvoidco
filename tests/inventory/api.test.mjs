@@ -4,7 +4,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import pg from 'pg';
-import { startStack, checkoutBody, applyInventoryMigrationAgain } from './harness.mjs';
+import { startStack, checkoutBody, applyInventoryMigrationAgain, applyAllocationMigration, readMigration, INVENTORY_MIGRATION } from './harness.mjs';
 
 const LVT = (size) => `levitate-tee:${size}`;
 const END = (size) => `endzustand-tee:${size}`;
@@ -24,19 +24,19 @@ describe('initial allocation', () => {
     before(async () => { stack = await startStack(); });
     after(async () => { await stack.stop(); });
 
-    it('holds 30 pieces per design, 60 in total, split S2 M16 L10 XL2', async () => {
+    it('holds 50 pieces per design, 100 in total, split S4 M25 L17 XL4', async () => {
         const { rows } = await stack.db.query('select sum(on_hand)::int as total from inventory_items');
-        assert.equal(rows[0].total, 60);
+        assert.equal(rows[0].total, 100);
 
         const res = await stack.api('GET', '/api/inventory');
         assert.equal(res.status, 200);
         for (const slug of ['levitate-tee', 'endzustand-tee']) {
             const p = res.data.products[slug];
-            assert.equal(p.available, 30, slug);
+            assert.equal(p.available, 50, slug);
             assert.equal(p.state, 'in_stock');
             assert.deepEqual(
                 Object.fromEntries(Object.entries(p.sizes).map(([s, v]) => [s, v.available])),
-                { S: 2, M: 16, L: 10, XL: 2 }
+                { S: 4, M: 25, L: 17, XL: 4 }
             );
             // Both designs are cut in S–XL only; XS does not exist for them.
             assert.equal(p.sizes.XS, undefined);
@@ -72,7 +72,7 @@ describe('initial allocation', () => {
         const movementsAfter = await stack.db.query('select count(*)::int as n from inventory_movements');
         assert.deepEqual(afterRows.rows, before.rows);
         assert.equal(movementsAfter.rows[0].n, movementsBefore.rows[0].n);
-        assert.deepEqual(await stack.stock(LVT('M')), { onHand: 14, reserved: 0, available: 14, sold: 2, returned: 0 });
+        assert.deepEqual(await stack.stock(LVT('M')), { onHand: 23, reserved: 0, available: 23, sold: 2, returned: 0 });
         assert.equal((await stack.stock(LVT('L'))).reserved, 1);
     });
 });
@@ -97,12 +97,184 @@ describe('initialisation reconciles orders paid before tracking', () => {
 
             await applyInventoryMigrationAgain(stack.db);
 
-            assert.deepEqual(await stack.stock(END('M')), { onHand: 13, reserved: 0, available: 13, sold: 3, returned: 0 });
+            assert.deepEqual(await stack.stock(END('M')), { onHand: 22, reserved: 0, available: 22, sold: 3, returned: 0 });
             const { rows } = await stack.db.query(
                 "select kind, delta from inventory_movements where variant_id = 'endzustand-tee:M' order by id");
-            assert.deepEqual(rows, [{ kind: 'initial', delta: 16 }, { kind: 'reconciliation', delta: -3 }]);
+            assert.deepEqual(rows, [{ kind: 'initial', delta: 25 }, { kind: 'reconciliation', delta: -3 }]);
             const total = await stack.api('GET', '/api/inventory');
-            assert.equal(total.data.products['endzustand-tee'].available, 27);
+            assert.equal(total.data.products['endzustand-tee'].available, 47);
+        } finally {
+            await stack.stop();
+        }
+    });
+});
+
+// Rebuilds the store as production was stocked before 2026-10-31: the
+// inventory migration as it stood, with the old allocation S2 M16 L10 XL2.
+async function stockAtOldAllocation(stack) {
+    await stack.db.query('truncate inventory_reservations, inventory_items, inventory_movements cascade');
+    const current = readMigration(INVENTORY_MIGRATION);
+    const old = current
+        .replace("('levitate-tee',   'S', 4), ('levitate-tee',   'M', 25)", "('levitate-tee',   'S', 2), ('levitate-tee',   'M', 16)")
+        .replace("('levitate-tee',   'L', 17), ('levitate-tee',   'XL', 4)", "('levitate-tee',   'L', 10), ('levitate-tee',   'XL', 2)")
+        .replace("('endzustand-tee', 'S', 4), ('endzustand-tee', 'M', 25)", "('endzustand-tee', 'S', 2), ('endzustand-tee', 'M', 16)")
+        .replace("('endzustand-tee', 'L', 17), ('endzustand-tee', 'XL', 4)", "('endzustand-tee', 'L', 10), ('endzustand-tee', 'XL', 2)");
+    assert.notEqual(old, current, 'the old allocation was substituted');
+    await stack.db.query(old);
+}
+
+const allocatedBy = (stack) => stack.db.query(`select variant_id, sum(delta)::int as n from inventory_movements
+    where kind in ('initial', 'allocation') group by 1 order by 1`).then((r) => Object.fromEntries(r.rows.map((x) => [x.variant_id, x.n])));
+
+// A store stocked before the production run grew: allocated S2 M16 L10 XL2,
+// with sales, an open hold, a restocked return and manual adjustments on it.
+// The allocation migration must move only the allocation, once.
+describe('production allocation 50 per design', () => {
+    const TARGET = { S: 4, M: 25, L: 17, XL: 4 };
+    let stack;
+    let admin;
+    let held;
+    let snapshot;
+    let movementsBefore;
+    const items = () => stack.db.query('select variant_id, on_hand, reserved, sold, returned from inventory_items order by 1')
+        .then((r) => Object.fromEntries(r.rows.map((x) => [x.variant_id, x])));
+    const allocated = () => allocatedBy(stack);
+    const adjust = (body) => stack.api('POST', '/api/inventory', { action: 'adjust', ...body }, { Authorization: `Bearer ${admin}` });
+
+    before(async () => {
+        stack = await startStack();
+        admin = stack.addUser({ email: 'owner@eternalvoid.co' });
+        await stockAtOldAllocation(stack);
+        assert.deepEqual(await allocated(), {
+            [END('L')]: 10, [END('M')]: 16, [END('S')]: 2, [END('XL')]: 2,
+            [LVT('L')]: 10, [LVT('M')]: 16, [LVT('S')]: 2, [LVT('XL')]: 2
+        });
+    });
+    after(async () => { await stack.stop(); });
+
+    it('keeps sales, holds, returns and adjustments, and adds only the difference', async () => {
+        // Two sold Levitate M, one of them returned and restocked; an Endzustand L held
+        // in an open checkout; an Endzustand S written off; a Levitate XL found.
+        const sale = await openCheckout(stack, [{ variantId: LVT('M'), quantity: 2 }]);
+        await pay(stack, sale.data.clientSecret);
+        assert.equal((await adjust({ variantId: LVT('M'), mode: 'return', quantity: 1, reason: 'Approved return', orderNumber: sale.data.orderNumber })).status, 200);
+        held = await openCheckout(stack, [{ variantId: END('L'), quantity: 3 }]);
+        assert.equal(held.status, 200);
+        assert.equal((await adjust({ variantId: END('S'), mode: 'adjust', quantity: -1, reason: 'Damaged in transit' })).status, 200);
+        assert.equal((await adjust({ variantId: LVT('XL'), mode: 'adjust', quantity: 1, reason: 'Found in stockroom' })).status, 200);
+
+        snapshot = await items();
+        movementsBefore = (await stack.db.query('select * from inventory_movements order by id')).rows;
+        const reservationsBefore = (await stack.db.query('select id, status, quantity, expires_at from inventory_reservations order by id')).rows;
+        const ordersBefore = (await stack.db.query('select id, payment_status, status from orders order by id')).rows;
+
+        await applyAllocationMigration(stack.db);
+
+        const after = await items();
+        const old = { S: 2, M: 16, L: 10, XL: 2 };
+        for (const slug of ['levitate-tee', 'endzustand-tee']) {
+            for (const size of Object.keys(TARGET)) {
+                const id = `${slug}:${size}`;
+                assert.equal(after[id].on_hand, snapshot[id].on_hand + TARGET[size] - old[size], `${id} on hand`);
+                assert.deepEqual([after[id].reserved, after[id].sold, after[id].returned],
+                    [snapshot[id].reserved, snapshot[id].sold, snapshot[id].returned], `${id} untouched otherwise`);
+            }
+        }
+        assert.deepEqual(await allocated(), {
+            [END('L')]: 17, [END('M')]: 25, [END('S')]: 4, [END('XL')]: 4,
+            [LVT('L')]: 17, [LVT('M')]: 25, [LVT('S')]: 4, [LVT('XL')]: 4
+        });
+        // The figures a shopper and the dashboard see.
+        assert.deepEqual(await stack.stock(LVT('M')), { onHand: 24, reserved: 0, available: 24, sold: 2, returned: 1 });
+        assert.deepEqual(await stack.stock(END('L')), { onHand: 17, reserved: 3, available: 14, sold: 0, returned: 0 });
+        assert.deepEqual(await stack.stock(END('S')), { onHand: 3, reserved: 0, available: 3, sold: 0, returned: 0 });
+        assert.deepEqual(await stack.stock(LVT('XL')), { onHand: 5, reserved: 0, available: 5, sold: 0, returned: 0 });
+
+        // History is appended to, never rewritten; holds and orders are as they were.
+        const movementsAfter = (await stack.db.query('select * from inventory_movements order by id')).rows;
+        assert.deepEqual(movementsAfter.slice(0, movementsBefore.length), movementsBefore);
+        const added = movementsAfter.slice(movementsBefore.length);
+        assert.equal(added.length, 8);
+        assert.ok(added.every((m) => m.kind === 'allocation' && /→/.test(m.reason) && m.actor_email === null));
+        assert.deepEqual((await stack.db.query('select id, status, quantity, expires_at from inventory_reservations order by id')).rows, reservationsBefore);
+        assert.deepEqual((await stack.db.query('select id, payment_status, status from orders order by id')).rows, ordersBefore);
+
+        // Nothing else is stocked: Insigne stays untracked, XS stays absent.
+        assert.deepEqual(Object.keys(after).sort(), Object.keys(snapshot).sort());
+        assert.equal(Object.keys(after).some((id) => id.startsWith('insigne') || id.endsWith(':XS')), false);
+    });
+
+    it('is idempotent: running it again adds nothing', async () => {
+        const once = await items();
+        const count = (await stack.db.query('select count(*)::int as n from inventory_movements')).rows[0].n;
+        await applyAllocationMigration(stack.db);
+        await applyAllocationMigration(stack.db);
+        await applyInventoryMigrationAgain(stack.db);
+        assert.deepEqual(await items(), once);
+        assert.equal((await stack.db.query('select count(*)::int as n from inventory_movements')).rows[0].n, count);
+    });
+
+    it('leaves the 30-minute hold, payment confirmation and release working on the new stock', async () => {
+        assert.ok(Date.parse(held.data.holdExpiresAt) > Date.now() + 25 * 60 * 1000);
+        await pay(stack, held.data.clientSecret);
+        assert.deepEqual(await stack.stock(END('L')), { onHand: 14, reserved: 0, available: 14, sold: 3, returned: 0 });
+        // All 25 M can be held (at most 10 per line, as always), and no 26th.
+        const opened = [];
+        for (const quantity of [10, 10, 5]) {
+            const res = await openCheckout(stack, [{ variantId: END('M'), quantity }]);
+            assert.equal(res.status, 200, `hold ${quantity}`);
+            opened.push(res);
+        }
+        assert.equal((await openCheckout(stack, [{ variantId: END('M'), quantity: 1 }])).status, 409, 'and no 26th');
+        for (const res of opened) await stack.api('POST', '/api/checkout/order', { action: 'release', clientSecret: res.data.clientSecret });
+        assert.deepEqual(await stack.stock(END('M')), { onHand: 25, reserved: 0, available: 25, sold: 0, returned: 0 });
+    });
+
+    it('shows each design\'s production allocation on the admin dashboard data, to admins only', async () => {
+        const res = await stack.api('GET', '/api/inventory?scope=admin', undefined, { Authorization: `Bearer ${admin}` });
+        assert.equal(res.status, 200);
+        const by = {};
+        res.data.items.forEach((i) => { by[i.productSlug] = (by[i.productSlug] || 0) + i.allocated; });
+        assert.deepEqual(by, { 'endzustand-tee': 50, 'levitate-tee': 50 });
+        assert.ok(res.data.movements.some((m) => m.kind === 'allocation'));
+        assert.equal((await stack.api('GET', '/api/inventory?scope=admin')).status, 401);
+        const customer = stack.addUser({ email: 'shopper@example.com' });
+        assert.equal((await stack.api('GET', '/api/inventory?scope=admin', undefined, { Authorization: `Bearer ${customer}` })).status, 403);
+    });
+});
+
+describe('production allocation from two sessions at once', () => {
+    it('raises each size exactly once when two runs race', async () => {
+        const stack = await startStack();
+        const extra = new pg.Client({ host: stack.db.host, port: stack.db.port, user: stack.db.user, database: stack.db.database });
+        try {
+            await stockAtOldAllocation(stack);
+            await extra.connect();
+            await Promise.all([applyAllocationMigration(stack.db), applyAllocationMigration(extra)]);
+            assert.deepEqual(await allocatedBy(stack), {
+                [END('L')]: 17, [END('M')]: 25, [END('S')]: 4, [END('XL')]: 4,
+                [LVT('L')]: 17, [LVT('M')]: 25, [LVT('S')]: 4, [LVT('XL')]: 4
+            });
+            const { rows } = await stack.db.query(`select i.variant_id, i.on_hand,
+                    (select count(*)::int from inventory_movements m where m.variant_id = i.variant_id and m.kind = 'allocation') as raises
+                from inventory_items i order by 1`);
+            assert.deepEqual(rows.map((r) => [r.variant_id, r.on_hand, r.raises]), [
+                [END('L'), 17, 1], [END('M'), 25, 1], [END('S'), 4, 1], [END('XL'), 4, 1],
+                [LVT('L'), 17, 1], [LVT('M'), 25, 1], [LVT('S'), 4, 1], [LVT('XL'), 4, 1]
+            ]);
+        } finally {
+            await extra.end().catch(() => {});
+            await stack.stop();
+        }
+    });
+
+    it('is a no-op on a store created at 50 per design', async () => {
+        const stack = await startStack();
+        try {
+            // Every migration has already run once on a new store.
+            const { rows } = await stack.db.query("select count(*)::int as n from inventory_movements where kind = 'allocation'");
+            assert.equal(rows[0].n, 0);
+            assert.equal((await stack.db.query('select sum(on_hand)::int as n from inventory_items')).rows[0].n, 100);
         } finally {
             await stack.stop();
         }
@@ -117,14 +289,14 @@ describe('checkout holds and sales', () => {
     it('holds stock when checkout starts, not before', async () => {
         const quote = await stack.api('POST', '/api/checkout/quote', { items: [{ variantId: END('M'), quantity: 3 }] });
         assert.equal(quote.data.ok, true);
-        assert.equal(quote.data.lines[0].available, 16);
+        assert.equal(quote.data.lines[0].available, 25);
         assert.equal((await stack.stock(END('M'))).reserved, 0, 'a quote never holds stock');
 
         const res = await openCheckout(stack, [{ variantId: END('M'), quantity: 3 }]);
         assert.equal(res.status, 200);
         assert.ok(res.data.clientSecret);
         assert.ok(Date.parse(res.data.holdExpiresAt) > Date.now() + 25 * 60 * 1000);
-        assert.deepEqual(await stack.stock(END('M')), { onHand: 16, reserved: 3, available: 13, sold: 0, returned: 0 });
+        assert.deepEqual(await stack.stock(END('M')), { onHand: 25, reserved: 3, available: 22, sold: 0, returned: 0 });
 
         // A hold is not a sale.
         const { rows } = await stack.db.query("select count(*)::int as n from inventory_movements where kind = 'sale'");
@@ -136,7 +308,7 @@ describe('checkout holds and sales', () => {
         const delivery = await pay(stack, stack.lastCheckout.clientSecret);
         assert.equal(delivery.status, 200);
         assert.equal(delivery.data.outcome, 'confirmed');
-        assert.deepEqual(await stack.stock(END('M')), { onHand: 13, reserved: 0, available: 13, sold: 3, returned: 0 });
+        assert.deepEqual(await stack.stock(END('M')), { onHand: 22, reserved: 0, available: 22, sold: 3, returned: 0 });
         const { rows } = await stack.db.query("select payment_status, status, livemode from orders where order_number = $1",
             [stack.lastCheckout.orderNumber]);
         assert.deepEqual(rows[0], { payment_status: 'paid', status: 'confirmed', livemode: false });
@@ -171,7 +343,7 @@ describe('checkout holds and sales', () => {
         ]);
         racing.forEach((r) => assert.equal(r.data.outcome, 'already_paid'));
 
-        assert.deepEqual(await stack.stock(END('L')), { onHand: 8, reserved: 0, available: 8, sold: 2, returned: 0 });
+        assert.deepEqual(await stack.stock(END('L')), { onHand: 15, reserved: 0, available: 15, sold: 2, returned: 0 });
         const { rows } = await stack.db.query(
             "select count(*)::int as n from inventory_movements where kind = 'sale' and variant_id = 'endzustand-tee:L'");
         assert.equal(rows[0].n, 1);
@@ -195,7 +367,7 @@ describe('checkout holds and sales', () => {
 
         const ok = await stack.deliver('payment_intent.succeeded', stack.stripe.succeed(piId));
         assert.equal(ok.data.outcome, 'confirmed');
-        assert.deepEqual(await stack.stock(LVT('S')), { onHand: 1, reserved: 0, available: 1, sold: 1, returned: 0 });
+        assert.deepEqual(await stack.stock(LVT('S')), { onHand: 3, reserved: 0, available: 3, sold: 1, returned: 0 });
     });
 
     it('flags, and does not fulfil, a payment for the wrong amount', async () => {
@@ -206,7 +378,7 @@ describe('checkout holds and sales', () => {
         const { rows } = await stack.db.query('select payment_status, inventory_status from orders where order_number = $1',
             [res.data.orderNumber]);
         assert.deepEqual(rows[0], { payment_status: 'failed', inventory_status: 'amount_mismatch' });
-        assert.deepEqual(await stack.stock(LVT('L')), { onHand: 10, reserved: 1, available: 9, sold: 0, returned: 0 });
+        assert.deepEqual(await stack.stock(LVT('L')), { onHand: 17, reserved: 1, available: 16, sold: 0, returned: 0 });
     });
 
     it('does not restock on a refund event', async () => {
@@ -297,12 +469,12 @@ describe('concurrency', () => {
         assert.equal(rows[0].n, 1, 'the losing request wrote nothing');
     });
 
-    it('never oversells under a burst of 40 simultaneous checkouts for 16 pieces', async () => {
+    it('never oversells under a burst of 40 simultaneous checkouts for 25 pieces', async () => {
         const results = await Promise.all(Array.from({ length: 40 }, () =>
             openCheckout(stack, [{ variantId: END('M'), quantity: 1 }])));
-        assert.equal(results.filter((r) => r.status === 200).length, 16);
-        assert.equal(results.filter((r) => r.status === 409).length, 24);
-        assert.deepEqual(await stack.stock(END('M')), { onHand: 16, reserved: 16, available: 0, sold: 0, returned: 0 });
+        assert.equal(results.filter((r) => r.status === 200).length, 25);
+        assert.equal(results.filter((r) => r.status === 409).length, 15);
+        assert.deepEqual(await stack.stock(END('M')), { onHand: 25, reserved: 25, available: 0, sold: 0, returned: 0 });
     });
 
     it('holds under contention straight at the database, across separate connections', async () => {
@@ -356,11 +528,11 @@ describe('releasing holds', () => {
 
         await expire(res.data.orderNumber);
         const inv = await stack.api('GET', '/api/inventory');   // the public read sweeps inline
-        assert.equal(inv.data.products['levitate-tee'].sizes.M.available, 16);
+        assert.equal(inv.data.products['levitate-tee'].sizes.M.available, 25);
 
         const piId = res.data.clientSecret.split('_secret_')[0];
         assert.equal(stack.stripe.get(piId).status, 'canceled', 'the intent can no longer be charged');
-        assert.deepEqual(await stack.stock(LVT('M')), { onHand: 16, reserved: 0, available: 16, sold: 0, returned: 0 });
+        assert.deepEqual(await stack.stock(LVT('M')), { onHand: 25, reserved: 0, available: 25, sold: 0, returned: 0 });
         const { rows } = await stack.db.query('select status, payment_status from orders where order_number = $1', [res.data.orderNumber]);
         assert.deepEqual(rows[0], { status: 'cancelled', payment_status: 'failed' });
 
@@ -384,7 +556,7 @@ describe('releasing holds', () => {
         assert.equal(rows[0].expires_at, null);
 
         await stack.deliver('payment_intent.succeeded', stack.stripe.succeed(piId));
-        assert.deepEqual(await stack.stock(LVT('L')), { onHand: 9, reserved: 0, available: 9, sold: 1, returned: 0 });
+        assert.deepEqual(await stack.stock(LVT('L')), { onHand: 16, reserved: 0, available: 16, sold: 1, returned: 0 });
     });
 
     it('confirms, rather than releases, an expired hold whose payment actually went through', async () => {
@@ -394,7 +566,7 @@ describe('releasing holds', () => {
         await expire(res.data.orderNumber);
         const sweep = await stack.api('GET', '/api/inventory?sweep=1');
         assert.equal(sweep.data.results[0].outcome, 'confirmed');
-        assert.deepEqual(await stack.stock(END('XL')), { onHand: 1, reserved: 0, available: 1, sold: 1, returned: 0 });
+        assert.deepEqual(await stack.stock(END('XL')), { onHand: 3, reserved: 0, available: 3, sold: 1, returned: 0 });
     });
 
     it('releases straight away when the customer leaves the payment step', async () => {
@@ -458,11 +630,11 @@ describe('stale carts and direct requests', () => {
     });
 
     it('rejects more units than remain, including when split across duplicate lines', async () => {
-        const over = await openCheckout(stack, [{ variantId: LVT('S'), quantity: 3 }]);
+        const over = await openCheckout(stack, [{ variantId: LVT('S'), quantity: 5 }]);
         assert.equal(over.status, 409);
-        assert.equal(over.data.issues[0].available, 2);
+        assert.equal(over.data.issues[0].available, 4);
         const split = await openCheckout(stack, [
-            { variantId: LVT('S'), quantity: 2 }, { variantId: LVT('S'), quantity: 1 }
+            { variantId: LVT('S'), quantity: 4 }, { variantId: LVT('S'), quantity: 1 }
         ]);
         assert.equal(split.status, 409);
         assert.equal((await stack.stock(LVT('S'))).reserved, 0);
@@ -515,7 +687,7 @@ describe('inventory administration', () => {
         assert.equal((await adjust(unconfirmed, body)).status, 403);
         assert.equal((await stack.api('GET', '/api/inventory?scope=admin', undefined, { Authorization: `Bearer ${customer}` })).status, 403);
         assert.equal((await stack.api('GET', '/api/inventory?scope=admin')).status, 401);
-        assert.equal((await stack.stock(LVT('M'))).onHand, 16);
+        assert.equal((await stack.stock(LVT('M'))).onHand, 25);
     });
 
     it('gives the public and signed-in customers no route to the tables or functions', async () => {
@@ -535,15 +707,15 @@ describe('inventory administration', () => {
             });
             assert.ok([401, 403].includes(patch.status), `patch refused (${patch.status})`);
         }
-        assert.equal((await stack.stock(LVT('M'))).onHand, 16);
+        assert.equal((await stack.stock(LVT('M'))).onHand, 25);
     });
 
     it('adjusts, takes stock and keeps an audit trail naming the admin', async () => {
         const down = await adjust(admin, { variantId: LVT('M'), mode: 'adjust', quantity: -2, reason: 'Two damaged in transit' });
         assert.equal(down.status, 200);
-        assert.equal(down.data.item.onHand, 14);
-        const count = await adjust(admin, { variantId: LVT('M'), mode: 'set', quantity: 15, reason: 'Stocktake 4 Oct' });
-        assert.equal(count.data.item.onHand, 15);
+        assert.equal(down.data.item.onHand, 23);
+        const count = await adjust(admin, { variantId: LVT('M'), mode: 'set', quantity: 24, reason: 'Stocktake 4 Oct' });
+        assert.equal(count.data.item.onHand, 24);
 
         const noReason = await adjust(admin, { variantId: LVT('M'), mode: 'adjust', quantity: 1, reason: '' });
         assert.equal(noReason.status, 409);
@@ -556,7 +728,7 @@ describe('inventory administration', () => {
             ['stocktake', 1, 'owner@eternalvoid.co'], ['adjustment', -2, 'owner@eternalvoid.co']
         ]);
         const row = snap.data.items.find((i) => i.variantId === LVT('M'));
-        assert.deepEqual([row.onHand, row.reserved, row.available, row.sold, row.adjustments], [15, 0, 15, 0, -1]);
+        assert.deepEqual([row.onHand, row.reserved, row.available, row.sold, row.adjustments], [24, 0, 24, 0, -1]);
 
         // The trail cannot be rewritten, even with the service role.
         await assert.rejects(stack.db.query('delete from inventory_movements'), /append-only/);
@@ -573,7 +745,7 @@ describe('inventory administration', () => {
     it('restocks a return only when told to, against the order it was sold in', async () => {
         const res = await openCheckout(stack, [{ variantId: END('L'), quantity: 2 }]);
         await pay(stack, res.data.clientSecret);
-        assert.deepEqual(await stack.stock(END('L')), { onHand: 8, reserved: 0, available: 8, sold: 2, returned: 0 });
+        assert.deepEqual(await stack.stock(END('L')), { onHand: 15, reserved: 0, available: 15, sold: 2, returned: 0 });
 
         const noOrder = await adjust(admin, { variantId: END('L'), mode: 'return', quantity: 1, reason: 'Returned' });
         assert.equal(noOrder.data.error, 'order_not_found');
@@ -582,7 +754,7 @@ describe('inventory administration', () => {
 
         const one = await adjust(admin, { variantId: END('L'), mode: 'return', quantity: 1, reason: 'Inspected, resaleable', orderNumber: res.data.orderNumber });
         assert.equal(one.status, 200);
-        assert.deepEqual(await stack.stock(END('L')), { onHand: 9, reserved: 0, available: 9, sold: 2, returned: 1 });
+        assert.deepEqual(await stack.stock(END('L')), { onHand: 16, reserved: 0, available: 16, sold: 2, returned: 1 });
         const tooMany = await adjust(admin, { variantId: END('L'), mode: 'return', quantity: 2, reason: 'Returned', orderNumber: res.data.orderNumber });
         assert.equal(tooMany.data.error, 'exceeds_returnable');
         assert.equal(tooMany.data.returnable, 1);

@@ -337,7 +337,7 @@ describe('drop updates scene', { skip: !CHROME && 'no Chromium found (set CHROMI
         await page.click('#pdNlBack');
         await waitView(page, 'product');
         assert.equal(await page.evaluate(() => document.activeElement.id), 'pdNotify', 'focus back on its trigger');
-        await stack.db.query("update inventory_items set on_hand = case size when 'S' then 2 when 'M' then 16 when 'L' then 10 else 2 end, sold = 0 where product_slug = 'endzustand-tee'");
+        await stack.db.query("update inventory_items set on_hand = case size when 'S' then 4 when 'M' then 25 when 'L' then 17 else 4 end, sold = 0 where product_slug = 'endzustand-tee'");
         await context.close();
     });
 
