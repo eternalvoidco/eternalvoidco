@@ -603,10 +603,86 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
                 const all = [w.desc, ...w.details].join(' ');
                 assert.doesNotMatch(all, /GSM|ritual|rituel|Ritual|\[|\]/, `${label}: no unconfirmed specification or placeholder`);
                 if (insigne) assert.doesNotMatch(all, /oversize/i, `${label}: Insigne is never oversized`);
+                // Natural French and Italian: "le t-shirt Endzustand", "la T-shirt Insigne",
+                // never an article set straight before the product name.
+                if (language === 'fr') assert.match(w.desc, /le t-shirt (Endzustand|Levitate|Insigne)/, label);
+                if (language === 'it') assert.match(w.desc, /la T-shirt (Endzustand|Levitate|Insigne)/, label);
+                assert.doesNotMatch(w.desc, /\b(le|la|Le|La) (Endzustand|Levitate|Insigne)\b/, `${label}: no article before the bare name`);
             });
             assert.deepEqual(page.errors, []);
             await context.close();
         }
+    });
+
+    it('states the confirmed fit in the size popup and the product view, in every language', async () => {
+        const FIT = {
+            en: ['Slightly oversized fit', 'Regular fit'],
+            fr: ['Coupe légèrement oversize', 'Coupe classique'],
+            it: ['Vestibilità leggermente oversize', 'Vestibilità regolare'],
+            de: ['Leicht oversized geschnitten', 'Reguläre Passform']
+        };
+        const OPENING = {
+            en: ['A 100% cotton tee with a slightly oversized fit', 'A 100% cotton tee with a regular fit.'],
+            fr: ['Un t-shirt en 100 % coton à la coupe légèrement oversize', 'Un t-shirt en 100 % coton à la coupe classique.'],
+            it: ['Una T-shirt in 100% cotone dalla vestibilità leggermente oversize', 'Una T-shirt in 100% cotone dalla vestibilità regolare.'],
+            de: ['Ein T-Shirt aus 100 % Baumwolle in leicht oversized Passform', 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform.']
+        };
+        const PIECES = ['Endzustand Tee', 'Levitate Tee', 'Insigne Ivoire', 'Insigne Noir', 'Insigne Azure'];
+        for (const language of ['en', 'fr', 'it', 'de']) {
+            const { context, page } = await shop(browser, stack, { language });
+            for (const name of PIECES) {
+                const regular = name.startsWith('Insigne') ? 1 : 0;
+                const seen = await page.evaluate((n) => {
+                    const card = document.querySelector(`.collection-chapter [data-product-name="${n}"]`);
+                    openSizePopup(card, null);
+                    updateSizePopupFit(card, 'M');
+                    const popup = [document.getElementById('sizePopupFitTitle').textContent, document.getElementById('sizePopupFitNote').textContent];
+                    closeSizePopup();
+                    openProductDetail(card);
+                    const view = document.getElementById('pdDesc').textContent;
+                    closeProductDetail();
+                    return { popup, view, data: [card.dataset.fit, card.dataset.fitTitle, card.dataset.fitNote] };
+                }, name);
+                const label = `${language} ${name}`;
+                assert.deepEqual(seen.data, [regular ? 'regular' : 'slightly-oversized', undefined, undefined], `${label}: one fit key on the card`);
+                assert.equal(seen.popup[0], FIT[language][regular], `${label}: popup title`);
+                assert.ok(seen.view.startsWith(OPENING[language][regular]), `${label}: product view opens with the fit (${seen.view.slice(0, 60)})`);
+                const all = `${seen.popup.join(' ')} ${seen.view}`;
+                assert.doesNotMatch(all, /ritual|rituel|rituale|rituell|relaxed oversized|oversize détendue|oversize rilassato|entspannter, oversized|boxy|boxiges/i, `${label}: no old fit wording`);
+                if (regular) assert.doesNotMatch(all, /oversize/i, `${label}: Insigne is never oversized`);
+                await page.waitForTimeout(200);
+            }
+            assert.deepEqual(page.errors, []);
+            await context.close();
+        }
+    });
+
+    it('fits Chapter III\'s card, name and arrows on a 1280×720 screen without shrinking the copy', async () => {
+        const { context, page } = await shop(browser, stack, { viewport: { width: 1280, height: 720 } });
+        for (const key of ['fallen', 'eternal']) {
+            await toChapter(page, key);
+            await page.click(seal(key));
+            await waitWritten(page);
+            const m = await page.evaluate(() => {
+                const sc = document.querySelector('.cst-scroll');
+                const nav = document.querySelector('.cst-pieces');
+                const last = (nav.hidden ? document.querySelector('.cst-name-box') : nav).getBoundingClientRect();
+                return {
+                    overflow: sc.scrollHeight - sc.clientHeight,
+                    centreBottom: last.bottom,
+                    height: innerHeight,
+                    desc: parseFloat(getComputedStyle(document.querySelector('.cst-desc')).fontSize),
+                    detail: parseFloat(getComputedStyle(document.querySelector('.cst-details li')).fontSize)
+                };
+            });
+            assert.ok(m.overflow <= 0, `${key}: no scroll needed (${m.overflow}px)`);
+            assert.ok(m.centreBottom < m.height - 40, `${key}: the arrows sit clear of the edge (${m.centreBottom})`);
+            assert.ok(m.desc >= 14 && m.detail >= 13, `${key}: body copy kept readable (${m.desc}/${m.detail})`);
+            await page.keyboard.press('Escape');
+            await waitPhase(page, 'closed', 3500);
+        }
+        assert.deepEqual(page.errors, []);
+        await context.close();
     });
 
     it('speaks the visitor\'s language, and follows a change of it', async () => {
@@ -619,7 +695,7 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         assert.deepEqual([w.pieceKicker, w.details, w.name, w.theme, w.close], ['La pièce',
             ['100 % coton', 'Coupe légèrement oversize', 'Blanc', 'Col rond', 'Lettrage VOID brodé sur la poitrine', 'Figure contrastée au dos'],
             'LEVITATE', 'Mystère. Élévation. Éveil.', 'Fermer']);
-        assert.match(w.desc, /^Confectionné en 100 % coton, le Levitate\u00a0Tee/);
+        assert.match(w.desc, /^Confectionné en 100 % coton, le t-shirt Levitate présente/);
         assert.match(w.text, /^Le poids se dissipe\. Le Levitate Tee/);
         await page.keyboard.press('Escape');
         await waitPhase(page, 'closed', 3500);
