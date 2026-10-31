@@ -608,6 +608,10 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
                 if (language === 'fr') assert.match(w.desc, /le t-shirt (Endzustand|Levitate|Insigne)/, label);
                 if (language === 'it') assert.match(w.desc, /la T-shirt (Endzustand|Levitate|Insigne)/, label);
                 assert.doesNotMatch(w.desc, /\b(le|la|Le|La) (Endzustand|Levitate|Insigne)\b/, `${label}: no article before the bare name`);
+                // The chapter's story, on the right, names the piece the same way.
+                assert.doesNotMatch(w.text, /\b(le|la|Le|La) (Endzustand|Levitate|Insigne)\b/, `${label}: story phrasing`);
+                if (language === 'fr' && i < 2) assert.match(w.text, /Le t-shirt (Endzustand|Levitate) /, `${label}: story`);
+                if (language === 'it' && i < 2) assert.match(w.text, /La T-shirt (Endzustand|Levitate) /, `${label}: story`);
             });
             assert.deepEqual(page.errors, []);
             await context.close();
@@ -628,6 +632,15 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
             de: ['Ein T-Shirt aus 100 % Baumwolle in leicht oversized Passform', 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform.']
         };
         const PIECES = ['Endzustand Tee', 'Levitate Tee', 'Insigne Ivoire', 'Insigne Noir', 'Insigne Azure'];
+        const EMBROIDERY = {
+            en: /(embroidered (VOID signature|in (gold|blue)))/,
+            fr: /(signature VOID brodée|lettrage signature oblique est brodé)/,
+            it: /(firma VOID ricamata|scritta signature obliqua è ricamata)/,
+            de: /(gestickte[rn]? VOID-Signatur|Signatur-Schriftzug ist in (Gold|Blau) auf \S+ gestickt)/
+        };
+        const MOTIF = { en: /tonal EV motif/, fr: /motif EV ton sur ton/, it: /motivo EV tono su tono/, de: /Ton-in-Ton-EV-Motiv/ };
+        // An embroidery word directly attached to the motif or the artwork.
+        const MOTIF_EMBROIDERED = /(embroidered|brodée?s?|ricamat[oaie]|gestickte[rsn]?)\s+(\S+\s+){0,1}(tonal|EV|motif|motivo|Motiv|artwork|graphi|figure|figura|Grafik|Figur)/i;
         for (const language of ['en', 'fr', 'it', 'de']) {
             const { context, page } = await shop(browser, stack, { language });
             for (const name of PIECES) {
@@ -650,6 +663,12 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
                 const all = `${seen.popup.join(' ')} ${seen.view}`;
                 assert.doesNotMatch(all, /ritual|rituel|rituale|rituell|relaxed oversized|oversize détendue|oversize rilassato|entspannter, oversized|boxy|boxiges/i, `${label}: no old fit wording`);
                 if (regular) assert.doesNotMatch(all, /oversize/i, `${label}: Insigne is never oversized`);
+                // Lettering: embroidered on every piece, never printed; the EV motif
+                // and the artwork are named apart from it, with no technique.
+                assert.match(seen.view, EMBROIDERY[language], `${label}: the lettering is embroidered`);
+                assert.doesNotMatch(seen.view, /printed|imprim|stampat|gedruckt/i, `${label}: nothing is said to be printed`);
+                assert.doesNotMatch(seen.view, MOTIF_EMBROIDERED, `${label}: the motif or artwork is not called embroidered`);
+                if (regular) assert.match(seen.view, MOTIF[language], `${label}: the EV motif is named`);
                 await page.waitForTimeout(200);
             }
             assert.deepEqual(page.errors, []);
@@ -696,7 +715,7 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
             ['100 % coton', 'Coupe légèrement oversize', 'Blanc', 'Col rond', 'Lettrage VOID brodé sur la poitrine', 'Figure contrastée au dos'],
             'LEVITATE', 'Mystère. Élévation. Éveil.', 'Fermer']);
         assert.match(w.desc, /^Confectionné en 100 % coton, le t-shirt Levitate présente/);
-        assert.match(w.text, /^Le poids se dissipe\. Le Levitate Tee/);
+        assert.match(w.text, /^Le poids se dissipe\. Le t-shirt Levitate saisit/);
         await page.keyboard.press('Escape');
         await waitPhase(page, 'closed', 3500);
         await context.close();

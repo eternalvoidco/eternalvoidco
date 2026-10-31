@@ -7302,6 +7302,11 @@
             .cst-centre.has-pieces { --cst-nav: 3rem; }
         }
 
+        /* On narrow screens the stage scrolls under a fixed Close. This band
+           lets the text pass beneath it into darkness rather than collide with
+           the lettering; Close itself stays a transparent text control. */
+        .cst-shade { display: none; }
+
         /* ── Narrow screens: one column, read from the top ──
            The piece first, then its facts, then the story. The stage scrolls
            on its own; the page under it never does. */
@@ -7319,6 +7324,18 @@
             .cst-col.is-story { order: 3; }
             .cst-slot { width: min(76vw, 360px, calc((100svh - 2 * var(--cst-bar) - 13rem) * var(--cst-aspect))); }
             .cst-close { top: calc(var(--cst-bar) + 0.6rem); right: 0.9rem; }
+            .cst-shade {
+                display: block;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                z-index: 2;
+                height: calc(var(--cst-bar) + 3.9rem);
+                background: linear-gradient(180deg, rgba(4, 4, 3, 0.97) 0%, rgba(4, 4, 3, 0.94) 66%, rgba(4, 4, 3, 0) 100%);
+                opacity: 0;
+                pointer-events: none;
+            }
             .cst-col { width: min(100%, 30rem); }
             .cst-sep { margin: 1.25rem auto; }
             .cst-name { letter-spacing: 0.3em; text-indent: 0.3em; }
@@ -14243,6 +14260,7 @@
                 </section>
             </div>
         </div>
+        <span class="cst-shade" aria-hidden="true"></span>
         <button type="button" class="cst-close"><span class="cst-close-label"></span><span class="cst-close-x" aria-hidden="true">×</span></button>
     </div>
     <div class="scroll-letterbox top" id="scrollLetterboxTop" aria-hidden="true"></div>
@@ -20456,22 +20474,22 @@
                 de: 'Ein T-Shirt aus 100 % Baumwolle in leicht oversized Passform, mit gestickter VOID-Signatur auf der Brust — eine stille Aussage in monochromer Spannung. Endzustand: der Zustand, in den ein System übergeht, sobald jede einwirkende Kraft ausgeglichen ist. Das Shirt ist nach demselben Prinzip gebaut — eine Struktur, die hält, weil nichts an ihr noch in der Schwebe ist.'
             } },
             'Insigne Ivoire': { code: 'EV·S1·OGW', description: {
-                en: 'A 100% cotton tee with a regular fit. Gold-on-ivory oblique signature, printed and finished for depth and permanence. An insignia earns its authority quietly, worn rather than announced. Set against ivory, the gold reads like early light — present before it is noticed.',
-                fr: 'Un t-shirt en 100 % coton à la coupe classique. Signature oblique or sur ivoire, imprimée et finie pour donner profondeur et permanence. Un insigne acquiert son autorité en silence, porté plutôt qu’annoncé. Sur l’ivoire, l’or se lit comme une lumière matinale — présent avant d’être remarqué.',
-                it: 'Una T-shirt in 100% cotone dalla vestibilità regolare. Firma obliqua oro su avorio, stampata e rifinita per profondità e permanenza. Un’insegna conquista la propria autorità in silenzio, indossata più che dichiarata. Sull’avorio, l’oro si legge come una luce del mattino — presente prima ancora di essere notato.',
-                de: 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform. Schräg gesetzte Signatur in Gold auf Elfenbein, gedruckt und veredelt für Tiefe und Bestand. Ein Zeichen gewinnt seine Autorität leise, getragen statt verkündet. Auf Elfenbein liest sich das Gold wie frühes Licht — da, bevor es bemerkt wird.'
+                en: 'A 100% cotton tee with a regular fit. Its oblique signature lettering is embroidered in gold on ivory, alongside a tonal EV motif. An insignia earns its authority quietly, worn rather than announced. Set against ivory, the gold reads like early light — present before it is noticed.',
+                fr: 'Un t-shirt en 100 % coton à la coupe classique. Son lettrage signature oblique est brodé en or sur ivoire, aux côtés d’un motif EV ton sur ton. Un insigne acquiert son autorité en silence, porté plutôt qu’annoncé. Sur l’ivoire, l’or se lit comme une lumière matinale — présent avant d’être remarqué.',
+                it: 'Una T-shirt in 100% cotone dalla vestibilità regolare. La scritta signature obliqua è ricamata in oro su avorio, accanto a un motivo EV tono su tono. Un’insegna conquista la propria autorità in silenzio, indossata più che dichiarata. Sull’avorio, l’oro si legge come una luce del mattino — presente prima ancora di essere notato.',
+                de: 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform. Der schräg gesetzte Signatur-Schriftzug ist in Gold auf Elfenbein gestickt, neben einem Ton-in-Ton-EV-Motiv. Ein Zeichen gewinnt seine Autorität leise, getragen statt verkündet. Auf Elfenbein liest sich das Gold wie frühes Licht — da, bevor es bemerkt wird.'
             } },
             'Insigne Noir': { code: 'EV·S1·OGB', description: {
-                en: 'A 100% cotton tee with a regular fit. Gold-on-black oblique signature for maximum monochrome contrast. Against black, the same mark turns into something closer to an ember: the one point the eye is given permission to land on. Contrast, held in reserve rather than spent.',
-                fr: 'Un t-shirt en 100 % coton à la coupe classique. Signature oblique or sur noir, pour un contraste monochrome maximal. Sur le noir, le même signe se rapproche d’une braise : le seul point où l’œil est autorisé à se poser. Un contraste tenu en réserve plutôt que dépensé.',
-                it: 'Una T-shirt in 100% cotone dalla vestibilità regolare. Firma obliqua oro su nero, per un contrasto monocromo massimo. Sul nero, lo stesso segno si avvicina a una brace: l’unico punto in cui l’occhio ha il permesso di posarsi. Un contrasto tenuto in riserva più che consumato.',
-                de: 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform. Schräg gesetzte Signatur in Gold auf Schwarz, für maximalen monochromen Kontrast. Auf Schwarz wird dasselbe Zeichen fast zur Glut: der einzige Punkt, auf dem sich der Blick niederlassen darf. Ein Kontrast, der aufgespart bleibt, statt verbraucht zu werden.'
+                en: 'A 100% cotton tee with a regular fit. Its oblique signature lettering is embroidered in gold on black for maximum monochrome contrast, alongside a tonal EV motif. Against black, the same mark turns into something closer to an ember: the one point the eye is given permission to land on. Contrast, held in reserve rather than spent.',
+                fr: 'Un t-shirt en 100 % coton à la coupe classique. Son lettrage signature oblique est brodé en or sur noir, pour un contraste monochrome maximal, aux côtés d’un motif EV ton sur ton. Sur le noir, le même signe se rapproche d’une braise : le seul point où l’œil est autorisé à se poser. Un contraste tenu en réserve plutôt que dépensé.',
+                it: 'Una T-shirt in 100% cotone dalla vestibilità regolare. La scritta signature obliqua è ricamata in oro su nero, per un contrasto monocromo massimo, accanto a un motivo EV tono su tono. Sul nero, lo stesso segno si avvicina a una brace: l’unico punto in cui l’occhio ha il permesso di posarsi. Un contrasto tenuto in riserva più che consumato.',
+                de: 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform. Der schräg gesetzte Signatur-Schriftzug ist in Gold auf Schwarz gestickt, für maximalen monochromen Kontrast, neben einem Ton-in-Ton-EV-Motiv. Auf Schwarz wird dasselbe Zeichen fast zur Glut: der einzige Punkt, auf dem sich der Blick niederlassen darf. Ein Kontrast, der aufgespart bleibt, statt verbraucht zu werden.'
             } },
             'Insigne Azure': { code: 'EV·S1·OBW', description: {
-                en: 'A 100% cotton tee with a regular fit. Blue-on-ivory oblique signature — a cooler register in the season one lineup. Blue keeps the same insignia at a slight remove — a signature read like a horizon rather than a signal. The coolest register in the trio, and the one that asks to be noticed last.',
-                fr: 'Un t-shirt en 100 % coton à la coupe classique. Signature oblique bleue sur ivoire — un registre plus froid dans la ligne Saison Un. Le bleu tient le même insigne à une légère distance — une signature qui se lit comme un horizon plutôt que comme un signal. Le registre le plus froid du trio, celui qui demande à être remarqué en dernier.',
-                it: 'Una T-shirt in 100% cotone dalla vestibilità regolare. Firma obliqua blu su avorio — un registro più freddo nella linea Stagione Uno. L’azzurro tiene la stessa insegna a una lieve distanza — una firma che si legge come un orizzonte più che come un segnale. Il registro più freddo del trio, quello che chiede di essere notato per ultimo.',
-                de: 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform. Schräg gesetzte Signatur in Blau auf Elfenbein — das kühlere Register in der Saison-Eins-Linie. Blau hält dasselbe Zeichen auf leichter Distanz — eine Signatur, die sich eher wie ein Horizont liest als wie ein Signal. Das kühlste Register im Trio, und jenes, das zuletzt bemerkt werden will.'
+                en: 'A 100% cotton tee with a regular fit. Its oblique signature lettering is embroidered in blue on ivory, alongside a tonal EV motif — a cooler register in the season one lineup. Blue keeps the same insignia at a slight remove — a signature read like a horizon rather than a signal. The coolest register in the trio, and the one that asks to be noticed last.',
+                fr: 'Un t-shirt en 100 % coton à la coupe classique. Son lettrage signature oblique est brodé en bleu sur ivoire, aux côtés d’un motif EV ton sur ton — un registre plus froid dans la ligne Saison Un. Le bleu tient le même insigne à une légère distance — une signature qui se lit comme un horizon plutôt que comme un signal. Le registre le plus froid du trio, celui qui demande à être remarqué en dernier.',
+                it: 'Una T-shirt in 100% cotone dalla vestibilità regolare. La scritta signature obliqua è ricamata in blu su avorio, accanto a un motivo EV tono su tono — un registro più freddo nella linea Stagione Uno. L’azzurro tiene la stessa insegna a una lieve distanza — una firma che si legge come un orizzonte più che come un segnale. Il registro più freddo del trio, quello che chiede di essere notato per ultimo.',
+                de: 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform. Der schräg gesetzte Signatur-Schriftzug ist in Blau auf Elfenbein gestickt, neben einem Ton-in-Ton-EV-Motiv — das kühlere Register in der Saison-Eins-Linie. Blau hält dasselbe Zeichen auf leichter Distanz — eine Signatur, die sich eher wie ein Horizont liest als wie ein Signal. Das kühlste Register im Trio, und jenes, das zuletzt bemerkt werden will.'
             } },
 
             // ---- Pending specification -------------------------------------
@@ -22180,11 +22198,11 @@
             fr: {
                 fallen: {
                     theme: 'Ruine. Jugement. Transformation.',
-                    text: 'L’ancien soi se désagrège. Le Endzustand Tee marque le point de non-retour — une fin affrontée, une nouvelle identité qui s’élève des décombres.'
+                    text: 'L’ancien soi se désagrège. Le t-shirt Endzustand marque le point de non-retour — une fin affrontée, une nouvelle identité qui s’élève des décombres.'
                 },
                 sigil: {
                     theme: 'Mystère. Élévation. Éveil.',
-                    text: 'Le poids se dissipe. Le Levitate Tee saisit l’instant entre l’abandon et le devenir. À travers l’incertitude, un symbole révèle une direction.'
+                    text: 'Le poids se dissipe. Le t-shirt Levitate saisit l’instant entre l’abandon et le devenir. À travers l’incertitude, un symbole révèle une direction.'
                 },
                 eternal: {
                     theme: 'Identité. Permanence. Héritage.',
@@ -22194,11 +22212,11 @@
             it: {
                 fallen: {
                     theme: 'Rovina. Resa dei conti. Trasformazione.',
-                    text: 'Il vecchio io va in pezzi. La Endzustand Tee segna il punto di non ritorno — una fine affrontata, una nuova identità che risorge dalle macerie.'
+                    text: 'Il vecchio io va in pezzi. La T-shirt Endzustand segna il punto di non ritorno — una fine affrontata, una nuova identità che risorge dalle macerie.'
                 },
                 sigil: {
                     theme: 'Mistero. Elevazione. Risveglio.',
-                    text: 'Il peso svanisce. La Levitate Tee cattura l’istante tra il rilascio e il divenire. Attraverso l’incertezza, un simbolo rivela una direzione.'
+                    text: 'Il peso svanisce. La T-shirt Levitate cattura l’istante tra il rilascio e il divenire. Attraverso l’incertezza, un simbolo rivela una direzione.'
                 },
                 eternal: {
                     theme: 'Identità. Permanenza. Eredità.',
@@ -22793,6 +22811,7 @@
             const q = (sel) => stage.querySelector(sel);
             const el = {
                 veil: q('.cst-veil'),
+                shade: q('.cst-shade'),
                 barTop: q('.cst-bar.is-top'),
                 barBottom: q('.cst-bar.is-bottom'),
                 echo: q('.cst-echo'),
@@ -23278,6 +23297,7 @@
                 ], { duration: 2300, delay: -late }));
                 cue(150, (late) => {
                     play('veil', el.veil, [{ opacity: 0 }, { opacity: 1 }], { dur: 1450, ease: EASE.arrive }, { opacity: 0 }, late);
+                    play('shade', el.shade, [{ opacity: 0 }, { opacity: 1 }], { dur: 1450, ease: EASE.arrive }, { opacity: 0 }, late);
                     // From whatever each shows in the grid (the affordance rests at 0).
                     [['info', p.info], ['badge', p.badge], ['afford', p.afford]].forEach(([n, target]) => {
                         if (!target) return;
@@ -23333,7 +23353,7 @@
                 [...el.rules, ...el.seps].forEach((n) => { n.style.transform = 'none'; });
                 const fade = [{ opacity: 0 }, { opacity: 1 }];
                 const timing = { dur: 220, ease: 'linear' };
-                ['veil', 'piece', 'story', 'close', 'pieces'].forEach((n) => {
+                ['veil', 'shade', 'piece', 'story', 'close', 'pieces'].forEach((n) => {
                     if (n === 'pieces' && S.pieces.length < 2) return;
                     play(n, el[n], fade, timing, { opacity: 0 });
                 });
@@ -23360,6 +23380,7 @@
                 card: [420, 1450, EASE.mech],
                 plate: [800, 850, EASE.mech],
                 veil: [650, 1400, EASE.arrive],
+                shade: [650, 1400, EASE.arrive],
                 info: [1450, 600, EASE.arrive],
                 badge: [1450, 600, EASE.arrive],
                 afford: [1450, 600, EASE.arrive]
