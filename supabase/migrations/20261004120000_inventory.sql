@@ -90,7 +90,7 @@ create table if not exists public.inventory_movements (
     id              bigint generated always as identity primary key,
     variant_id      text not null references public.inventory_items(variant_id),
     kind            text not null check (kind in (
-                        'initial', 'reconciliation', 'adjustment', 'stocktake',
+                        'initial', 'allocation', 'reconciliation', 'adjustment', 'stocktake',
                         'return_restock', 'sale', 'sale_shortfall')),
     delta           integer not null,          -- change to on_hand
     on_hand_after   integer not null,
@@ -117,18 +117,22 @@ create trigger inventory_movements_append_only
     for each row execute function public.inventory_movements_append_only();
 
 -- ── Initial allocation ──────────────────────────────────────────────────────
--- Levitate and Endzustand: S 2 · M 16 · L 10 · XL 2 = 30 each, 60 in total.
+-- Levitate and Endzustand: S 4 · M 25 · L 17 · XL 4 = 50 each, 100 in total.
 -- Both designs are cut in S–XL only.
+--
+-- A database stocked before 2026-10-31 was given S 2 · M 16 · L 10 · XL 2;
+-- its rows already exist, so nothing here changes them, and
+-- 20261031120000_production_allocation_50.sql moves them to these figures.
 --
 -- Reconciled first: units already sold through a paid (or since refunded)
 -- order are subtracted, so the shop never offers a piece that has already
 -- left. Rows that already exist are left exactly as they are.
 with allocation (product_slug, size, initial) as (
     values
-        ('levitate-tee',   'S', 2), ('levitate-tee',   'M', 16),
-        ('levitate-tee',   'L', 10), ('levitate-tee',   'XL', 2),
-        ('endzustand-tee', 'S', 2), ('endzustand-tee', 'M', 16),
-        ('endzustand-tee', 'L', 10), ('endzustand-tee', 'XL', 2)
+        ('levitate-tee',   'S', 4), ('levitate-tee',   'M', 25),
+        ('levitate-tee',   'L', 17), ('levitate-tee',   'XL', 4),
+        ('endzustand-tee', 'S', 4), ('endzustand-tee', 'M', 25),
+        ('endzustand-tee', 'L', 17), ('endzustand-tee', 'XL', 4)
 ),
 paid as (
     select oi.variant_id, sum(oi.quantity)::int as units
@@ -536,6 +540,10 @@ as $$
                        'available', i.on_hand - i.reserved,
                        'sold', i.sold,
                        'returned', i.returned,
+                       'allocated', coalesce((
+                           select sum(m.delta)::int from public.inventory_movements m
+                            where m.variant_id = i.variant_id
+                              and m.kind in ('initial', 'allocation')), 0),
                        'adjustments', coalesce((
                            select sum(m.delta)::int from public.inventory_movements m
                             where m.variant_id = i.variant_id
@@ -759,5 +767,5 @@ end $$;
 --   select variant_id, on_hand, reserved, on_hand - reserved as available, sold
 --     from public.inventory_items order by variant_id;
 --
--- Expected on a store with no prior sales: S 2, M 16, L 10, XL 2 for both
--- tees — 30 per design, 60 in total.
+-- Expected on a store with no prior sales: S 4, M 25, L 17, XL 4 for both
+-- tees — 50 per design, 100 in total.

@@ -78,9 +78,20 @@ async function createDatabase(name, { strict = false } = {}) {
     return db;
 }
 
+export const INVENTORY_MIGRATION = '20261004120000_inventory.sql';
+export const ALLOCATION_50_MIGRATION = '20261031120000_production_allocation_50.sql';
+
+export function readMigration(file) {
+    return fs.readFileSync(path.join(ROOT, 'supabase', 'migrations', file), 'utf8');
+}
+
+// Named, not found by pattern: a later migration may mention inventory too.
 export async function applyInventoryMigrationAgain(db) {
-    const file = fs.readdirSync(path.join(ROOT, 'supabase', 'migrations')).find((f) => f.includes('inventory'));
-    await db.query(fs.readFileSync(path.join(ROOT, 'supabase', 'migrations', file), 'utf8'));
+    await db.query(readMigration(INVENTORY_MIGRATION));
+}
+
+export async function applyAllocationMigration(db) {
+    await db.query(readMigration(ALLOCATION_50_MIGRATION));
 }
 
 async function dropDatabase(name) {

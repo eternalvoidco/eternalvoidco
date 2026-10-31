@@ -272,7 +272,7 @@ describe('a fresh project with no default grants', () => {
         assert.equal((await stack.api('POST', '/api/preorder', { email: 'p@example.com', country: 'Hungary' })).status, 200);
         assert.equal((await stack.api('POST', '/api/unsubscribe', { email: 'p@example.com' })).status, 200);
         const inv = await stack.api('GET', '/api/inventory');
-        assert.equal(inv.data.products['levitate-tee'].available, 30);
+        assert.equal(inv.data.products['levitate-tee'].available, 50);
         const order = await stack.api('POST', '/api/checkout/create', checkoutBody([{ variantId: 'endzustand-tee:L', quantity: 2 }]));
         assert.equal(order.status, 200);
         const paid = await stack.deliver('payment_intent.succeeded', stack.stripe.succeed(order.data.clientSecret.split('_secret_')[0]));
