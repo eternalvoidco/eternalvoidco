@@ -6764,11 +6764,15 @@
             pointer-events: none;
         }
 
+        /* The one scroll area: on a short screen, or with a long translation,
+           the stage scrolls on its own rather than clipping; the page under
+           it never moves. */
         .cst-scroll {
             position: absolute;
             inset: 0;
             display: flex;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             overscroll-behavior: contain;
             outline: none;
         }
@@ -6844,16 +6848,84 @@
 
         .cst-writer-canvas[hidden] { display: none; }
 
-        .cst-specs { margin-top: clamp(1.4rem, 3.4vh, 2.2rem); }
+        /* ── The piece, described ──
+           A product description and a short list of facts, read the way a
+           house's product page is read: prose first, then the details,
+           left-aligned in a measure that keeps the lines comfortable. Jost,
+           as the rest of the house's body copy; no tracking beyond a breath,
+           so it reads as text rather than as a label. */
+        .cst-about {
+            width: 100%;
+            max-width: 23.5rem;
+            margin: clamp(1.3rem, 3.2vh, 2rem) auto 0;
+            text-align: left;
+        }
 
-        .cst-spec {
+        .cst-desc {
             margin: 0;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.45rem, 2.1vw, 2rem);
-            font-weight: 500;
-            line-height: 1.32;
-            letter-spacing: 0.035em;
-            color: rgba(245, 242, 236, 0.94);
+            font-family: 'Jost', sans-serif;
+            font-size: clamp(0.88rem, 0.95vw, 0.95rem);
+            font-weight: 400;
+            line-height: 1.72;
+            letter-spacing: 0.01em;
+            color: rgba(245, 242, 236, 0.86);
+            text-wrap: pretty;
+            hyphens: manual;
+        }
+
+        /* The details: one fact per line, each set off by a small engraved
+           lozenge (the house's diamond, drawn in hairline), with a single
+           faint rule above the list. */
+        .cst-details {
+            display: grid;
+            gap: 0.42rem;
+            margin: 1.15rem 0 0;
+            padding: 1rem 0 0;
+            border-top: 1px solid rgba(199, 169, 108, 0.2);
+            list-style: none;
+        }
+
+        .cst-details li {
+            position: relative;
+            padding-left: 1.1rem;
+            font-family: 'Jost', sans-serif;
+            font-size: clamp(0.82rem, 0.88vw, 0.87rem);
+            font-weight: 400;
+            line-height: 1.55;
+            letter-spacing: 0.015em;
+            color: rgba(245, 242, 236, 0.76);
+        }
+
+        .cst-details li::before {
+            content: '';
+            position: absolute;
+            left: 0.15rem;
+            top: calc(0.775em - 2.5px);
+            box-sizing: border-box;
+            width: 5px;
+            height: 5px;
+            border: 1px solid rgba(199, 169, 108, 0.75);
+            transform: rotate(45deg);
+        }
+
+        /* Arrival: the paragraph, then each fact, rising a few pixels out of
+           nothing on the language transition's arrive curve. Short steps, so
+           the panel is readable almost at once; the hand is kept for the
+           price, the availability and the name. A piece change takes
+           .is-in away and gives it back, which plays it again for the new
+           piece. */
+        .cst-desc,
+        .cst-details li { opacity: 0; }
+
+        .cst-about.is-in .cst-desc,
+        .cst-about.is-in .cst-details li {
+            animation: cstCopyIn 760ms var(--lang-ease-arrive) both;
+            animation-delay: calc(var(--i, 0) * 70ms);
+        }
+
+        @keyframes cstCopyIn {
+            from { opacity: 0; transform: translate3d(0, 6px, 0); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0); }
         }
 
         /* A delicate separator: a hairline that is strongest at its centre,
@@ -6892,7 +6964,7 @@
         }
 
         .cst-status[hidden],
-        .cst-specs[hidden],
+        .cst-about[hidden],
         .cst-sep[hidden] { display: none; }
 
         .cst-title {
@@ -7216,7 +7288,9 @@
         @media (max-height: 760px) and (min-width: 861px) {
             .chapter-stage { --cst-bar: clamp(22px, 4.5vh, 40px); }
             .cst-sep { margin: 1.1rem auto; }
-            .cst-specs { margin-top: 1.1rem; }
+            .cst-about { margin-top: 1.1rem; }
+            .cst-desc { line-height: 1.64; }
+            .cst-details { margin-top: 0.9rem; padding-top: 0.8rem; gap: 0.3rem; }
             .cst-slot { width: min(30vw, 450px, calc((100svh - 2 * var(--cst-bar) - 10rem) * var(--cst-aspect))); }
         }
 
@@ -7248,7 +7322,9 @@
         html.reduce-motion .chapter-stage *,
         html.reduce-motion .chapter-stage *::before,
         html.reduce-motion .chapter-stage *::after { animation: none !important; transition: none !important; }
-        html.reduce-motion .cst-glyph { opacity: 1; }
+        html.reduce-motion .cst-glyph,
+        html.reduce-motion .cst-desc,
+        html.reduce-motion .cst-details li { opacity: 1; }
 
         .collection-chapter-status {
             margin-top: 1.35rem;
@@ -14131,7 +14207,10 @@
             <div class="cst-layout">
                 <section class="cst-col is-piece" aria-labelledby="cstPieceKicker">
                     <p class="cst-kicker" id="cstPieceKicker"><span class="cst-kicker-rule is-start" aria-hidden="true"></span><span class="cst-kicker-text"></span><span class="cst-kicker-rule is-end" aria-hidden="true"></span></p>
-                    <div class="cst-specs"></div>
+                    <div class="cst-about">
+                        <p class="cst-desc"></p>
+                        <ul class="cst-details"></ul>
+                    </div>
                     <span class="cst-sep is-a" aria-hidden="true"></span>
                     <p class="cst-price cst-ink"></p>
                     <span class="cst-sep is-b" aria-hidden="true"></span>
@@ -22581,36 +22660,110 @@
                 carry: 'cubic-bezier(0.5, 0, 0.2, 1)'
             };
 
-            // Only what the stage adds to the house's copy. Spec lines are bound
-            // to the piece; none is invented for a piece that has none on record.
+            // Only what the stage adds to the house's copy.
             const STAGE_COPY = {
                 en: { piece: 'The Piece', prev: 'Previous piece', next: 'Next piece' },
                 fr: { piece: 'La pièce', prev: 'Pièce précédente', next: 'Pièce suivante' },
                 it: { piece: 'Il capo', prev: 'Capo precedente', next: 'Capo successivo' },
                 de: { piece: 'Das Stück', prev: 'Vorheriges Stück', next: 'Nächstes Stück' }
             };
-            const PIECE_SPECS = {
-                'Endzustand Tee': {
-                    en: ['300+ GSM', 'Slightly oversized fit'],
-                    fr: ['300+ GSM', 'Coupe légèrement oversize'],
-                    it: ['300+ GSM', 'Vestibilità leggermente oversize'],
-                    de: ['300+ GSM', 'Leicht oversized geschnitten']
+            // ---- The piece, described ----
+            // Each piece's description and details, per site language, kept here
+            // beside CHAPTER_STORIES in the same way. Only confirmed facts: the
+            // cotton, the fit, the colour, the neckline, that the lettering is
+            // embroidered, and what the artwork is — never that the artwork or
+            // the EV motif is embroidered, and nothing about origin, treatment,
+            // printing or care. The Insigne line shares one text; its colour is
+            // the selected piece's, set into the details where `colour` stands.
+            const PIECE_LINES = {
+                'Endzustand Tee': { line: 'endzustand', colour: 'black' },
+                'Levitate Tee': { line: 'levitate', colour: 'white' },
+                'Insigne Ivoire': { line: 'insigne', colour: 'ivoire' },
+                'Insigne Noir': { line: 'insigne', colour: 'noir' },
+                'Insigne Azure': { line: 'insigne', colour: 'azure' }
+            };
+            const COLOUR = Symbol('colour');
+            const PIECE_COPY = {
+                en: {
+                    colours: { black: 'Black', white: 'White', ivoire: 'Ivoire', noir: 'Noir', azure: 'Azure' },
+                    details: 'Details',
+                    endzustand: {
+                        text: 'Crafted from 100% cotton, the Endzustand Tee combines a slightly oversized silhouette with an embroidered VOID signature at the chest. Contrasting artwork on the reverse completes the design, balancing understated lettering with a distinctive graphic composition.',
+                        details: ['100% cotton', 'Slightly oversized fit', COLOUR, 'Crew neckline', 'Embroidered VOID lettering at the chest', 'Contrasting graphic artwork on the back']
+                    },
+                    levitate: {
+                        text: 'Crafted from 100% cotton, the Levitate Tee features a slightly oversized silhouette in white, finished with an embroidered VOID signature at the chest. Dark figure artwork on the reverse introduces a striking contrast to the clean front.',
+                        details: ['100% cotton', 'Slightly oversized fit', COLOUR, 'Crew neckline', 'Embroidered VOID lettering at the chest', 'Contrasting figure artwork on the back']
+                    },
+                    insigne: {
+                        text: 'Crafted from 100% cotton, the Insigne Tee combines a regular fit with a tonal EV motif and embroidered signature lettering. Clean proportions and considered detailing give the piece a refined, understated finish.',
+                        details: ['100% cotton', 'Regular fit', COLOUR, 'Crew neckline', 'Embroidered signature lettering', 'Tonal EV motif']
+                    }
+                },
+                fr: {
+                    colours: { black: 'Noir', white: 'Blanc', ivoire: 'Ivoire', noir: 'Noir', azure: 'Azur' },
+                    details: 'Détails',
+                    endzustand: {
+                        text: 'Confectionné en 100 % coton, le Endzustand Tee associe une silhouette légèrement oversize à une signature VOID brodée sur la poitrine. Au dos, un graphisme contrasté complète la pièce, en équilibrant la sobriété du lettrage et une composition graphique singulière.',
+                        details: ['100 % coton', 'Coupe légèrement oversize', COLOUR, 'Col rond', 'Lettrage VOID brodé sur la poitrine', 'Graphisme contrasté au dos']
+                    },
+                    levitate: {
+                        text: 'Confectionné en 100 % coton, le Levitate Tee présente une silhouette légèrement oversize en blanc, rehaussée d’une signature VOID brodée sur la poitrine. Au dos, une figure sombre crée un contraste saisissant avec la pureté du devant.',
+                        details: ['100 % coton', 'Coupe légèrement oversize', COLOUR, 'Col rond', 'Lettrage VOID brodé sur la poitrine', 'Figure contrastée au dos']
+                    },
+                    insigne: {
+                        text: 'Confectionné en 100 % coton, le Insigne Tee associe une coupe classique à un motif EV ton sur ton et à un lettrage signature brodé. Des proportions nettes et des détails soignés lui confèrent une finition raffinée et discrète.',
+                        details: ['100 % coton', 'Coupe classique', COLOUR, 'Col rond', 'Lettrage signature brodé', 'Motif EV ton sur ton']
+                    }
+                },
+                it: {
+                    colours: { black: 'Nero', white: 'Bianco', ivoire: 'Avorio', noir: 'Nero', azure: 'Azzurro' },
+                    details: 'Dettagli',
+                    endzustand: {
+                        text: 'Realizzata in 100% cotone, la Endzustand Tee unisce una silhouette leggermente oversize alla firma VOID ricamata sul petto. Sul retro, un artwork a contrasto completa il design, bilanciando la discrezione della scritta con una composizione grafica distintiva.',
+                        details: ['100% cotone', 'Vestibilità leggermente oversize', COLOUR, 'Girocollo', 'Scritta VOID ricamata sul petto', 'Artwork grafico a contrasto sul retro']
+                    },
+                    levitate: {
+                        text: 'Realizzata in 100% cotone, la Levitate Tee presenta una silhouette leggermente oversize in bianco, rifinita dalla firma VOID ricamata sul petto. Sul retro, una figura scura crea un contrasto deciso con la pulizia del davanti.',
+                        details: ['100% cotone', 'Vestibilità leggermente oversize', COLOUR, 'Girocollo', 'Scritta VOID ricamata sul petto', 'Figura a contrasto sul retro']
+                    },
+                    insigne: {
+                        text: 'Realizzata in 100% cotone, la Insigne Tee unisce una vestibilità regolare a un motivo EV tono su tono e a una scritta signature ricamata. Proporzioni pulite e dettagli curati le conferiscono una finitura raffinata e discreta.',
+                        details: ['100% cotone', 'Vestibilità regolare', COLOUR, 'Girocollo', 'Scritta signature ricamata', 'Motivo EV tono su tono']
+                    }
+                },
+                de: {
+                    colours: { black: 'Schwarz', white: 'Weiß', ivoire: 'Elfenbein', noir: 'Schwarz', azure: 'Azurblau' },
+                    details: 'Details',
+                    endzustand: {
+                        text: 'Aus 100 % Baumwolle gefertigt, verbindet das Endzustand Tee eine leicht oversized Silhouette mit einer gestickten VOID-Signatur auf der Brust. Ein kontrastierendes Artwork auf der Rückseite vervollständigt das Design und stellt dem zurückhaltenden Schriftzug eine markante Grafik gegenüber.',
+                        details: ['100 % Baumwolle', 'Leicht oversized geschnitten', COLOUR, 'Rundhalsausschnitt', 'Gestickter VOID-Schriftzug auf der Brust', 'Kontrastierendes Grafik-Artwork auf dem Rücken']
+                    },
+                    levitate: {
+                        text: 'Aus 100 % Baumwolle gefertigt, zeigt das Levitate Tee eine leicht oversized Silhouette in Weiß, vollendet von einer gestickten VOID-Signatur auf der Brust. Eine dunkle Figur auf der Rückseite setzt einen markanten Kontrast zur klaren Vorderseite.',
+                        details: ['100 % Baumwolle', 'Leicht oversized geschnitten', COLOUR, 'Rundhalsausschnitt', 'Gestickter VOID-Schriftzug auf der Brust', 'Kontrastierende Figur auf dem Rücken']
+                    },
+                    insigne: {
+                        text: 'Aus 100 % Baumwolle gefertigt, verbindet das Insigne Tee eine reguläre Passform mit einem Ton-in-Ton-EV-Motiv und einem gestickten Signatur-Schriftzug. Klare Proportionen und durchdachte Details verleihen dem Stück ein raffiniertes, zurückhaltendes Finish.',
+                        details: ['100 % Baumwolle', 'Reguläre Passform', COLOUR, 'Rundhalsausschnitt', 'Gestickter Signatur-Schriftzug', 'Ton-in-Ton-EV-Motiv']
+                    }
                 }
             };
-            // Otherwise the piece's fit, as the card itself records it
-            // (data-fit-title), in the visitor's language.
-            const FIT_TITLES = {
-                'Oversized Ritual Fit': { en: 'Oversized ritual fit', fr: 'Coupe oversize rituelle', it: 'Vestibilità oversize rituale', de: 'Oversized Ritual-Schnitt' },
-                'Relaxed Oversized Fit': { en: 'Relaxed oversized fit', fr: 'Coupe oversize décontractée', it: 'Vestibilità oversize rilassata', de: 'Lässig oversized geschnitten' },
-                'Boxy Oversized Fit': { en: 'Boxy oversized fit', fr: 'Coupe oversize carrée', it: 'Vestibilità oversize squadrata', de: 'Kastig oversized geschnitten' }
-            };
+            // The description and details for one piece, in the visitor's
+            // language (English if a piece or language has none).
+            function pieceCopy(card) {
+                const piece = PIECE_LINES[card.dataset.productName];
+                if (!piece) return null;
+                const lang = PIECE_COPY[currentLanguage] || PIECE_COPY.en;
+                const own = lang[piece.line] || PIECE_COPY.en[piece.line];
+                return {
+                    // "Endzustand Tee" and the like never break across a line.
+                    text: own.text.replace(/ Tee\b/g, '\u00a0Tee'),
+                    label: lang.details,
+                    details: own.details.map((d) => (d === COLOUR ? lang.colours[piece.colour] : d))
+                };
+            }
             const copy = (key) => (STAGE_COPY[currentLanguage] || STAGE_COPY.en)[key];
-            const specsFor = (card) => {
-                const own = PIECE_SPECS[card.dataset.productName];
-                if (own) return own[currentLanguage] || own.en;
-                const fit = FIT_TITLES[card.dataset.fitTitle];
-                return fit ? [fit[currentLanguage] || fit.en] : [];
-            };
             const upper = (str) => String(str).toLocaleUpperCase(currentLanguage || 'en');
             // "Endzustand Tee" is written ENDZUSTAND beneath the piece: the name
             // without the garment word, in spaced capitals.
@@ -22628,7 +22781,9 @@
                 pieceKicker: q('.cst-col.is-piece .cst-kicker-text'),
                 storyKicker: q('.cst-col.is-story .cst-kicker-text'),
                 rules: Array.from(stage.querySelectorAll('.cst-kicker-rule')),
-                specs: q('.cst-specs'),
+                about: q('.cst-about'),
+                desc: q('.cst-desc'),
+                details: q('.cst-details'),
                 price: q('.cst-price'),
                 status: q('.cst-status'),
                 seps: Array.from(stage.querySelectorAll('.cst-sep')),
@@ -22865,16 +23020,21 @@
             function fillPiece() {
                 const card = S.card;
                 const name = card.dataset.productName || '';
-                const specs = specsFor(card);
-                el.specs.textContent = '';
-                specs.forEach((line) => {
-                    const p = document.createElement('p');
-                    p.className = 'cst-spec cst-ink';
-                    p.textContent = line;
-                    el.specs.appendChild(p);
+                // The description, then the details: real, selectable text, one
+                // list item per fact. --i staggers their arrival (see .is-in).
+                const about = pieceCopy(card);
+                el.desc.textContent = about ? about.text : '';
+                el.desc.style.setProperty('--i', '0');
+                el.details.textContent = '';
+                el.details.setAttribute('aria-label', about ? about.label : '');
+                (about ? about.details : []).forEach((fact, i) => {
+                    const li = document.createElement('li');
+                    li.textContent = fact;
+                    li.style.setProperty('--i', String(i + 2));
+                    el.details.appendChild(li);
                 });
-                el.specs.hidden = !specs.length;
-                sepBy('a').hidden = !specs.length;
+                el.about.hidden = !about;
+                sepBy('a').hidden = !about;
                 const pending = card.dataset.pricePending === 'true' || !card.dataset.productPrice;
                 el.price.textContent = pending ? '' : formatEuro(Number(card.dataset.productPrice));
                 el.price.hidden = pending;
@@ -23047,19 +23207,13 @@
             }
 
             function prepareWriters(from) {
-                const specs = Array.from(el.specs.children);
-                const hasSpecs = specs.length > 0;
-                const pieceStart = from + 50;
-                const plan = [];
-                let at = pieceStart;
-                specs.forEach((line, i) => {
-                    const dur = i === 0 ? 700 : 950;
-                    plan.push({ el: line, start: at, dur });
-                    at += i === 0 ? 450 : 600;
-                });
-                plan.push({ el: el.price, start: hasSpecs ? at : from + 200, dur: 650 });
-                plan.push({ el: el.status, start: (hasSpecs ? at : from + 200) + 500, dur: 550 });
-                writers.piece.prepare(plan);
+                // The description and details arrive by their own cue (see
+                // schedule); the hand writes the price and the availability
+                // beneath them as the details settle.
+                writers.piece.prepare([
+                    { el: el.price, start: from + 1000, dur: 650 },
+                    { el: el.status, start: from + 1500, dur: 550 }
+                ]);
                 writers.name.prepare([{ el: el.name, start: from + 350, dur: 1350 }]);
                 const letters = el.text.textContent.length;
                 writers.story.prepare([
@@ -23125,6 +23279,8 @@
                     play('rule' + i, rule, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { dur: 900, ease: EASE.mech }, { transform: 'scaleX(0)' }, late);
                 }));
                 cue(760, () => [el.pieceKicker, el.storyKicker].forEach((k) => k.classList.add('cst-glyphs-in')));
+                // The description, then its details, under the kicker.
+                cue(950, () => el.about.classList.add('is-in'));
                 cue(900, (late) => play('light', p.light, [{ opacity: 0 }, { opacity: 1 }], { dur: 900, ease: EASE.arrive }, { opacity: 0 }, late));
                 [['a', 1000], ['c', 1150], ['b', 1300], ['d', 1450]].forEach(([k, at]) => {
                     cue(at, (late) => play('sep' + k, sepBy(k), [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { dur: 1000, ease: EASE.mech }, { transform: 'scaleX(0)' }, late));
@@ -23236,6 +23392,7 @@
                 clearRecs();
                 Object.values(writers).forEach((w) => w.reset());
                 [el.pieceKicker, el.storyKicker].forEach((k) => k.classList.remove('cst-glyphs-in'));
+                el.about.classList.remove('is-in');
                 clearBars();
                 [...el.rules, ...el.seps].forEach((n) => n.style.removeProperty('transform'));
                 el.close.classList.remove('is-pressed');
@@ -23314,13 +23471,17 @@
                 once(parts.clone, [{ opacity: 0 }, { opacity: 1 }], { duration: 700, delay: 180, easing: EASE.arrive });
 
                 // The facts and the name leave, then are written again.
-                const written = [el.specs, el.price, el.status, el.nameBox];
+                const written = [el.about, el.price, el.status, el.nameBox];
                 writers.piece.finishNow();
                 writers.name.finishNow();
                 written.forEach((n) => once(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: EASE.away, fill: 'forwards' }));
                 cue(t0 + 340, () => {
                     if (swap !== S.pieceSwap) return;
                     fillPiece();
+                    // The new piece's description and details arrive again.
+                    el.about.classList.remove('is-in');
+                    void el.about.offsetWidth;
+                    el.about.classList.add('is-in');
                     S.loose.forEach((a) => {
                         if (written.includes(a.effect && a.effect.target)) {
                             a.cancel();
@@ -23330,8 +23491,7 @@
                     if (document.fonts && document.fonts.status === 'loaded' && !S.calm) {
                         const at = now();
                         const plan = [];
-                        let x = at + 80;
-                        Array.from(el.specs.children).forEach((line, i) => { plan.push({ el: line, start: x, dur: i ? 900 : 650 }); x += i ? 520 : 420; });
+                        const x = at + 650;
                         plan.push({ el: el.price, start: x, dur: 600 });
                         plan.push({ el: el.status, start: x + 420, dur: 520 });
                         writers.piece.prepare(plan);
