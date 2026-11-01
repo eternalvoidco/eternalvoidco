@@ -109,7 +109,8 @@ const words = (page) => page.evaluate(() => {
     const q = (s) => document.querySelector(s);
     return {
         pieceKicker: q('.cst-col.is-piece .cst-kicker-text').textContent,
-        specs: [...document.querySelectorAll('.cst-spec')].map((p) => p.textContent),
+        desc: q('.cst-desc').textContent,
+        details: [...document.querySelectorAll('.cst-details li')].map((li) => li.textContent),
         price: q('.cst-price').textContent,
         status: q('.cst-status').hidden ? '' : q('.cst-status').textContent,
         name: q('.cst-name').textContent,
@@ -253,7 +254,10 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         assert.deepEqual([s.canvases, s.writing], [0, false]);
         const w = await words(page);
         assert.deepEqual(w, {
-            pieceKicker: 'The Piece', specs: ['300+ GSM', 'Slightly oversized fit'], price: '€200', status: badge,
+            pieceKicker: 'The Piece',
+            desc: 'Crafted from 100% cotton, the Endzustand\u00a0Tee combines a slightly oversized silhouette with an embroidered VOID signature at the chest. Contrasting artwork on the reverse completes the design, balancing understated lettering with a distinctive graphic composition.',
+            details: ['100% cotton', 'Slightly oversized fit', 'Black', 'Crew neckline', 'Embroidered VOID lettering at the chest', 'Contrasting graphic artwork on the back'],
+            price: '€200', status: badge,
             name: 'ENDZUSTAND', storyKicker: 'Chapter I', title: 'The Fallen',
             theme: STORIES.fallen[0], text: STORIES.fallen[1], close: 'Close'
         });
@@ -409,7 +413,8 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         assert.deepEqual(layout, { order: [true, true], sideways: 0, scrolls: true });
         const w = await words(page);
         assert.equal(w.theme, 'Untergang. Abrechnung. Verwandlung.');
-        assert.deepEqual(w.specs, ['300+ GSM', 'Leicht oversized geschnitten']);
+        assert.deepEqual(w.details.slice(0, 3), ['100 % Baumwolle', 'Leicht oversized geschnitten', 'Schwarz']);
+        assert.match(w.desc, /gestickten VOID-Signatur/);
         assert.equal(w.close, 'Schließen');
         await page.evaluate(() => document.querySelector('.cst-scroll').scrollTo(0, 99999));
         assert.equal((await snap(page, 'fallen')).scrollY, before.scrollY);
@@ -453,7 +458,9 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
             // Wait for the real text to take over, rather than accepting the
             // canvas that temporarily paints above a stuck opacity:0 fade.
             await page.waitForFunction(() => [...document.querySelectorAll('.cst-col.is-piece canvas, .cst-name-box canvas')].every((c) => c.hidden));
-            const rendered = await page.evaluate(() => {
+            // The description and details arrive on a short stagger; once it has
+            // run, every line of the panel must actually be painted.
+            const painted = () => {
                 const visible = (n) => {
                     if (!n || n.hidden || !n.getClientRects().length) return false;
                     for (let p = n; p; p = p.parentElement) {
@@ -462,9 +469,17 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
                     }
                     return true;
                 };
-                return ['.cst-spec', '.cst-price', '.cst-status', '.cst-name'].map((s) => visible(document.querySelector(s)));
-            });
-            assert.deepEqual(rendered, [true, true, true, true], `${name}: settled text is actually painted`);
+                return ['.cst-desc', '.cst-details li:first-child', '.cst-details li:last-child', '.cst-price', '.cst-status', '.cst-name']
+                    .map((s) => visible(document.querySelector(s)));
+            };
+            await page.waitForFunction((fn) => new Function(`return (${fn})()`)().every(Boolean), painted.toString(), { timeout: 4000 })
+                .catch(() => {});
+            assert.deepEqual(await page.evaluate((fn) => new Function(`return (${fn})()`)(), painted.toString()),
+                [true, true, true, true, true, true], `${name}: settled text is actually painted`);
+            // The details always belong to the piece on show.
+            const colour = name.replace('INSIGNE ', '');
+            const w = await words(page);
+            assert.deepEqual([w.details[1], w.details[2]], ['Regular fit', colour[0] + colour.slice(1).toLowerCase()], name);
         };
 
         await settledFacts('INSIGNE IVOIRE');
@@ -478,7 +493,8 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
             document.querySelector('.cst-step.is-prev').click();
         });
         await settledFacts('INSIGNE NOIR');
-        assert.equal(await page.locator('.cst-spec').textContent(), 'Relaxed oversized fit');
+        assert.equal(await page.locator('.cst-details li:nth-child(2)').textContent(), 'Regular fit');
+        assert.equal(await page.locator('.cst-details li:nth-child(3)').textContent(), 'Noir');
         assert.equal(await page.locator('.cst-price').textContent(), '€250');
         await page.click('.cst-close');
         await waitPhase(page, 'closed', 3500);
@@ -536,6 +552,158 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         }
     });
 
+    it('describes every piece in every language with only the confirmed facts', async () => {
+        const EMBROIDERED = { en: /Embroidered/, fr: /brodé/, it: /ricamat/, de: /Gestickt/ };
+        const FIT = {
+            en: { loose: 'Slightly oversized fit', regular: 'Regular fit' },
+            fr: { loose: 'Coupe légèrement oversize', regular: 'Coupe classique' },
+            it: { loose: 'Vestibilità leggermente oversize', regular: 'Vestibilità regolare' },
+            de: { loose: 'Leicht oversized geschnitten', regular: 'Reguläre Passform' }
+        };
+        const COLOUR = {
+            en: ['Black', 'White', 'Ivoire', 'Noir', 'Azure'],
+            fr: ['Noir', 'Blanc', 'Ivoire', 'Noir', 'Azur'],
+            it: ['Nero', 'Bianco', 'Avorio', 'Nero', 'Azzurro'],
+            de: ['Schwarz', 'Weiß', 'Elfenbein', 'Schwarz', 'Azurblau']
+        };
+        for (const language of ['en', 'fr', 'it', 'de']) {
+            // The house's reduced motion opens the stage at once, so all five
+            // pieces can be read quickly; it also proves the copy is shown there.
+            const { context, page } = await shop(browser, stack, { language, calm: true });
+            const seen = [];
+            for (const key of ['fallen', 'sigil', 'eternal']) {
+                await toChapter(page, key);
+                await page.click(seal(key));
+                await waitPhase(page, 'open', 2000);
+                for (let i = 0; i < (key === 'eternal' ? 3 : 1); i++) {
+                    if (i) {
+                        await page.click('.cst-step.is-next');
+                        await page.waitForFunction((n) => window.__chapterStage.index === n, i);
+                        await page.waitForTimeout(500);
+                    }
+                    const w = await words(page);
+                    const shown = await page.evaluate(() => ['.cst-desc', '.cst-details'].map((s) => getComputedStyle(document.querySelector(s)).opacity));
+                    assert.deepEqual(shown, ['1', '1'], `${language} ${w.name}: shown under reduced motion`);
+                    seen.push(w);
+                }
+                await page.keyboard.press('Escape');
+                await waitPhase(page, 'closed', 2000);
+            }
+            assert.deepEqual(seen.map((w) => w.name), ['ENDZUSTAND', 'LEVITATE', 'INSIGNE IVOIRE', 'INSIGNE NOIR', 'INSIGNE AZURE']);
+            seen.forEach((w, i) => {
+                const insigne = i >= 2;
+                const label = `${language} ${w.name}`;
+                assert.equal(w.details.length, 6, label);
+                assert.match(w.details[0], /^100\s?%/, `${label}: 100% cotton`);
+                assert.equal(w.details[1], FIT[language][insigne ? 'regular' : 'loose'], `${label}: fit`);
+                assert.equal(w.details[2], COLOUR[language][i], `${label}: only the selected colour`);
+                assert.match(w.details[4], EMBROIDERED[language], `${label}: the lettering is embroidered`);
+                assert.doesNotMatch(w.details[5], EMBROIDERED[language], `${label}: the artwork or motif is not called embroidered`);
+                assert.match(w.desc, new RegExp(EMBROIDERED[language].source, 'i'), `${label}: description names the embroidery`);
+                const all = [w.desc, ...w.details].join(' ');
+                assert.doesNotMatch(all, /GSM|ritual|rituel|Ritual|\[|\]/, `${label}: no unconfirmed specification or placeholder`);
+                if (insigne) assert.doesNotMatch(all, /oversize/i, `${label}: Insigne is never oversized`);
+                // Natural French and Italian: "le t-shirt Endzustand", "la T-shirt Insigne",
+                // never an article set straight before the product name.
+                if (language === 'fr') assert.match(w.desc, /le t-shirt (Endzustand|Levitate|Insigne)/, label);
+                if (language === 'it') assert.match(w.desc, /la T-shirt (Endzustand|Levitate|Insigne)/, label);
+                assert.doesNotMatch(w.desc, /\b(le|la|Le|La) (Endzustand|Levitate|Insigne)\b/, `${label}: no article before the bare name`);
+                // The chapter's story, on the right, names the piece the same way.
+                assert.doesNotMatch(w.text, /\b(le|la|Le|La) (Endzustand|Levitate|Insigne)\b/, `${label}: story phrasing`);
+                if (language === 'fr' && i < 2) assert.match(w.text, /Le t-shirt (Endzustand|Levitate) /, `${label}: story`);
+                if (language === 'it' && i < 2) assert.match(w.text, /La T-shirt (Endzustand|Levitate) /, `${label}: story`);
+            });
+            assert.deepEqual(page.errors, []);
+            await context.close();
+        }
+    });
+
+    it('states the confirmed fit in the size popup and the product view, in every language', async () => {
+        const FIT = {
+            en: ['Slightly oversized fit', 'Regular fit'],
+            fr: ['Coupe légèrement oversize', 'Coupe classique'],
+            it: ['Vestibilità leggermente oversize', 'Vestibilità regolare'],
+            de: ['Leicht oversized geschnitten', 'Reguläre Passform']
+        };
+        const OPENING = {
+            en: ['A 100% cotton tee with a slightly oversized fit', 'A 100% cotton tee with a regular fit.'],
+            fr: ['Un t-shirt en 100 % coton à la coupe légèrement oversize', 'Un t-shirt en 100 % coton à la coupe classique.'],
+            it: ['Una T-shirt in 100% cotone dalla vestibilità leggermente oversize', 'Una T-shirt in 100% cotone dalla vestibilità regolare.'],
+            de: ['Ein T-Shirt aus 100 % Baumwolle in leicht oversized Passform', 'Ein T-Shirt aus 100 % Baumwolle in regulärer Passform.']
+        };
+        const PIECES = ['Endzustand Tee', 'Levitate Tee', 'Insigne Ivoire', 'Insigne Noir', 'Insigne Azure'];
+        const EMBROIDERY = {
+            en: /(embroidered (VOID signature|in (gold|blue)))/,
+            fr: /(signature VOID brodée|lettrage signature oblique est brodé)/,
+            it: /(firma VOID ricamata|scritta signature obliqua è ricamata)/,
+            de: /(gestickte[rn]? VOID-Signatur|Signatur-Schriftzug ist in (Gold|Blau) auf \S+ gestickt)/
+        };
+        const MOTIF = { en: /tonal EV motif/, fr: /motif EV ton sur ton/, it: /motivo EV tono su tono/, de: /Ton-in-Ton-EV-Motiv/ };
+        // An embroidery word directly attached to the motif or the artwork.
+        const MOTIF_EMBROIDERED = /(embroidered|brodée?s?|ricamat[oaie]|gestickte[rsn]?)\s+(\S+\s+){0,1}(tonal|EV|motif|motivo|Motiv|artwork|graphi|figure|figura|Grafik|Figur)/i;
+        for (const language of ['en', 'fr', 'it', 'de']) {
+            const { context, page } = await shop(browser, stack, { language });
+            for (const name of PIECES) {
+                const regular = name.startsWith('Insigne') ? 1 : 0;
+                const seen = await page.evaluate((n) => {
+                    const card = document.querySelector(`.collection-chapter [data-product-name="${n}"]`);
+                    openSizePopup(card, null);
+                    updateSizePopupFit(card, 'M');
+                    const popup = [document.getElementById('sizePopupFitTitle').textContent, document.getElementById('sizePopupFitNote').textContent];
+                    closeSizePopup();
+                    openProductDetail(card);
+                    const view = document.getElementById('pdDesc').textContent;
+                    closeProductDetail();
+                    return { popup, view, data: [card.dataset.fit, card.dataset.fitTitle, card.dataset.fitNote] };
+                }, name);
+                const label = `${language} ${name}`;
+                assert.deepEqual(seen.data, [regular ? 'regular' : 'slightly-oversized', undefined, undefined], `${label}: one fit key on the card`);
+                assert.equal(seen.popup[0], FIT[language][regular], `${label}: popup title`);
+                assert.ok(seen.view.startsWith(OPENING[language][regular]), `${label}: product view opens with the fit (${seen.view.slice(0, 60)})`);
+                const all = `${seen.popup.join(' ')} ${seen.view}`;
+                assert.doesNotMatch(all, /ritual|rituel|rituale|rituell|relaxed oversized|oversize détendue|oversize rilassato|entspannter, oversized|boxy|boxiges/i, `${label}: no old fit wording`);
+                if (regular) assert.doesNotMatch(all, /oversize/i, `${label}: Insigne is never oversized`);
+                // Lettering: embroidered on every piece, never printed; the EV motif
+                // and the artwork are named apart from it, with no technique.
+                assert.match(seen.view, EMBROIDERY[language], `${label}: the lettering is embroidered`);
+                assert.doesNotMatch(seen.view, /printed|imprim|stampat|gedruckt/i, `${label}: nothing is said to be printed`);
+                assert.doesNotMatch(seen.view, MOTIF_EMBROIDERED, `${label}: the motif or artwork is not called embroidered`);
+                if (regular) assert.match(seen.view, MOTIF[language], `${label}: the EV motif is named`);
+                await page.waitForTimeout(200);
+            }
+            assert.deepEqual(page.errors, []);
+            await context.close();
+        }
+    });
+
+    it('fits Chapter III\'s card, name and arrows on a 1280×720 screen without shrinking the copy', async () => {
+        const { context, page } = await shop(browser, stack, { viewport: { width: 1280, height: 720 } });
+        for (const key of ['fallen', 'eternal']) {
+            await toChapter(page, key);
+            await page.click(seal(key));
+            await waitWritten(page);
+            const m = await page.evaluate(() => {
+                const sc = document.querySelector('.cst-scroll');
+                const nav = document.querySelector('.cst-pieces');
+                const last = (nav.hidden ? document.querySelector('.cst-name-box') : nav).getBoundingClientRect();
+                return {
+                    overflow: sc.scrollHeight - sc.clientHeight,
+                    centreBottom: last.bottom,
+                    height: innerHeight,
+                    desc: parseFloat(getComputedStyle(document.querySelector('.cst-desc')).fontSize),
+                    detail: parseFloat(getComputedStyle(document.querySelector('.cst-details li')).fontSize)
+                };
+            });
+            assert.ok(m.overflow <= 0, `${key}: no scroll needed (${m.overflow}px)`);
+            assert.ok(m.centreBottom < m.height - 40, `${key}: the arrows sit clear of the edge (${m.centreBottom})`);
+            assert.ok(m.desc >= 14 && m.detail >= 13, `${key}: body copy kept readable (${m.desc}/${m.detail})`);
+            await page.keyboard.press('Escape');
+            await waitPhase(page, 'closed', 3500);
+        }
+        assert.deepEqual(page.errors, []);
+        await context.close();
+    });
+
     it('speaks the visitor\'s language, and follows a change of it', async () => {
         let { context, page } = await shop(browser, stack, { language: 'fr' });
         await toChapter(page, 'sigil');
@@ -543,8 +711,11 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         await page.click(seal('sigil'));
         await waitWritten(page);
         let w = await words(page);
-        assert.deepEqual([w.pieceKicker, w.specs, w.name, w.theme, w.close], ['La pièce', ['Coupe oversize rituelle'], 'LEVITATE', 'Mystère. Élévation. Éveil.', 'Fermer']);
-        assert.match(w.text, /^Le poids se dissipe\. Le Levitate Tee/);
+        assert.deepEqual([w.pieceKicker, w.details, w.name, w.theme, w.close], ['La pièce',
+            ['100 % coton', 'Coupe légèrement oversize', 'Blanc', 'Col rond', 'Lettrage VOID brodé sur la poitrine', 'Figure contrastée au dos'],
+            'LEVITATE', 'Mystère. Élévation. Éveil.', 'Fermer']);
+        assert.match(w.desc, /^Confectionné en 100 % coton, le t-shirt Levitate présente/);
+        assert.match(w.text, /^Le poids se dissipe\. Le t-shirt Levitate saisit/);
         await page.keyboard.press('Escape');
         await waitPhase(page, 'closed', 3500);
         await context.close();
@@ -558,7 +729,7 @@ describe('collection chapters', { skip: !CHROME && 'no Chromium found (set CHROM
         await page.waitForFunction(() => /^Untergang/.test(document.querySelector('.cst-theme').textContent));
         await page.waitForTimeout(100);
         w = await words(page);
-        assert.deepEqual([w.pieceKicker, w.specs[1]], ['Das Stück', 'Leicht oversized geschnitten']);
+        assert.deepEqual([w.pieceKicker, w.details[1]], ['Das Stück', 'Leicht oversized geschnitten']);
         await page.waitForFunction(() => [...document.querySelectorAll('#chapterStage canvas')].every((c) => c.hidden), null, { timeout: 1500 });
         assert.deepEqual(page.errors, []);
         await context.close();
