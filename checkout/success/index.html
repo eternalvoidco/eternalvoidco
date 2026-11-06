@@ -54,6 +54,14 @@
         <h1 class="ck-confirm-number" id="ckNumber">Thank you</h1>
         <p class="ck-confirm-copy" id="ckCopy">We are retrieving your order details. A confirmation is on its way to your email.</p>
 
+        <!-- Revealed once the order is read back, when the server reports it as
+             a test order. Nothing was bought and no confirmation was sent, so
+             the page must not imply otherwise. -->
+        <div class="ck-notice is-neutral" id="ckTestNotice" hidden>
+            <span class="ck-notice-title">Test checkout</span>
+            <span>Test checkout — no real payment was taken. Nothing will be shipped and no confirmation email is sent.</span>
+        </div>
+
         <section class="ck-confirm-panel" id="ckPanel" hidden>
             <h2 class="ck-summary-title" style="display:block;margin-bottom:1.2rem;">Your Selection</h2>
             <ul class="ck-lines" id="ckItems"></ul>
@@ -142,8 +150,11 @@
             if (paid) {
                 setResult('success');
                 setActions('success');
-                say('Payment Successful', order.orderNumber,
-                    `${order.firstName}, your selection has entered preparation. A confirmation is on its way to ${order.email}.`);
+                // A test order has entered nothing and sent nothing, so it is
+                // never told it is in preparation.
+                say('Payment Successful', order.orderNumber, order.testCheckout === true
+                    ? `${order.firstName}, this test checkout completed. No payment was taken, nothing enters preparation and no confirmation email is sent.`
+                    : `${order.firstName}, your selection has entered preparation. A confirmation is on its way to ${order.email}.`);
             } else if (order.paymentStatus === 'failed') {
                 setResult('failed');
                 setActions('failed');
@@ -218,9 +229,12 @@
                 a.line1, a.line2, `${a.postalCode || ''} ${a.city || ''}`.trim(), a.country
             ].filter(Boolean).map((line) => line.replace(/[<>&]/g, '')).join('<br>');
 
-            $('ckEmailNote').textContent = paid
-                ? `Quote ${order.orderNumber} in any correspondence about this order.`
-                : '';
+            const isTest = order.testCheckout === true;
+            $('ckTestNotice').hidden = !isTest;
+
+            $('ckEmailNote').textContent = isTest
+                ? 'No confirmation email is sent for a test order.'
+                : (paid ? `Quote ${order.orderNumber} in any correspondence about this order.` : '');
 
             $('ckPanel').hidden = false;
         }

@@ -17,6 +17,12 @@ const STAGES = ['details', 'delivery', 'payment'];
 
 // Matches the catalogue slugs in api/_catalog.js. The bag stores display names
 // (it predates variants), so this is the bridge until products live in a table.
+//
+// A line added by the current boutique also carries the slug the server said
+// was purchasable, which is what distinguishes the live Endzustand from its
+// test twin — they share a display name. The map below is the fallback for a
+// bag saved before that, and only ever resolves to live slugs. Either way the
+// server revalidates the variant, so a wrong guess is refused, not charged.
 const SLUGS = {
     'levitate tee': 'levitate-tee',
     'endzustand tee': 'endzustand-tee',
@@ -27,6 +33,8 @@ const SLUGS = {
     'track pants': 'track-pants',
     ensemble: 'ensemble'
 };
+
+const KNOWN_SLUGS = new Set(Object.values(SLUGS).concat(['endzustand-tee-test']));
 
 const COUNTRIES = [
     ['HU', 'Hungary'], ['AT', 'Austria'], ['BE', 'Belgium'], ['BG', 'Bulgaria'], ['HR', 'Croatia'],
@@ -70,7 +78,8 @@ function readCart() {
             .filter((item) => item && typeof item.name === 'string' && typeof item.size === 'string'
                 && Number.isInteger(item.quantity) && item.quantity > 0)
             .map((item) => {
-                const slug = SLUGS[item.name.trim().toLowerCase()];
+                const stored = typeof item.slug === 'string' && KNOWN_SLUGS.has(item.slug) ? item.slug : null;
+                const slug = stored || SLUGS[item.name.trim().toLowerCase()];
                 return slug ? { ...item, variantId: `${slug}:${item.size.toUpperCase()}` } : null;
             })
             .filter(Boolean);
@@ -215,6 +224,13 @@ function showBlocker(title, body, neutral = false) {
 
 function hideBlocker() { $('ckBlocker').hidden = true; }
 
+// The test-checkout banner. Driven only by what the server said when it priced
+// the bag, so it appears exactly when the charge would be a sandbox one.
+function renderTestNotice(isTest) {
+    const el = $('ckTestNotice');
+    if (el) el.hidden = !isTest;
+}
+
 const ISSUE_COPY = {
     not_for_sale: (i) => `${i.name || 'This piece'} is not available for purchase.`,
     unknown_variant: () => 'One of the pieces in your bag is no longer in the collection.',
@@ -289,7 +305,21 @@ async function refreshQuote() {
         return null;
     }
 
+    // Whatever the quote says about itself, said before anything else is
+    // decided — including on the refusals below, so a bag that cannot be
+    // priced still shows the visitor which kind of checkout they are in.
+    renderTestNotice(data.testCheckout === true);
+
     if (!data.ok) {
+        if (data.error === 'mixed_test_and_live_cart') {
+            showBlocker('Selection unavailable', 'Your bag mixes a test piece with a live one, which cannot be bought together. Empty the bag and start again.');
+            return null;
+        }
+        if (data.error === 'stripe_test_credentials_required') {
+            showBlocker('Test checkout unavailable', 'The test checkout is not configured with sandbox payment credentials, so it has been stopped before any payment could be attempted.');
+            document.querySelectorAll('[data-advance], #ckPayButton').forEach((button) => { button.disabled = true; });
+            return null;
+        }
         if (data.error === 'sales_not_open') {
             showBlocker('Coming soon', 'The collection has not launched yet. Return to the shop and choose Get Drop Updates to hear when it opens.');
             document.querySelectorAll('[data-advance], #ckPayButton').forEach((button) => { button.disabled = true; });
@@ -627,6 +657,12 @@ async function preparePayment() {
         const code = error.data?.error || error.message;
         if (code === 'stripe_not_configured' || code === 'orders_not_configured') {
             showBlocker('Checkout unavailable', 'Payments are not configured on this environment yet.');
+        } else if (code === 'stripe_test_credentials_required') {
+            // The server refused to open a test order against a live key. It
+            // stopped before anything was written, held or charged.
+            showBlocker('Test checkout unavailable', 'The test checkout is not configured with sandbox payment credentials, so it was stopped before any payment could be attempted.');
+        } else if (code === 'mixed_test_and_live_cart') {
+            showBlocker('Selection unavailable', 'Your bag mixes a test piece with a live one, which cannot be bought together. Empty the bag and start again.');
         } else if (code === 'shipping_unavailable' || code === 'invalid_shipping_method') {
             setStage('delivery');
             showBlocker('Delivery', 'That delivery method is no longer available. Please choose another.');
@@ -640,6 +676,8 @@ async function preparePayment() {
     }
 
     state.order = data;
+    // create() is authoritative over quote(): this is the order that exists.
+    renderTestNotice(data.testCheckout === true);
     rememberHold(data.clientSecret);
     showHoldNote(data.holdExpiresAt);
 

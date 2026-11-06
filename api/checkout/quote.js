@@ -1,4 +1,5 @@
-import { salesOpen } from '../_sales.js';
+import { salesOpen, testCheckoutEnabled, checkoutMode, gateIssues } from '../_sales.js';
+import { stripeTestCredentials } from '../_stripe.js';
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/checkout/quote
 //
@@ -24,7 +25,10 @@ export default async function handler(request, response) {
         return response.status(405).json({ error: 'method_not_allowed' });
     }
 
-    if (!salesOpen()) return response.status(409).json({ ok: false, error: 'sales_not_open', message: 'Coming soon. Join the newsletter for drop updates.' });
+    // Nothing at all is for sale: neither switch is on.
+    if (!salesOpen() && !testCheckoutEnabled()) {
+        return response.status(409).json({ ok: false, error: 'sales_not_open', message: 'Coming soon. Join the newsletter for drop updates.' });
+    }
 
     const body = request.body || {};
     const result = validateLines(body.items);
@@ -39,6 +43,25 @@ export default async function handler(request, response) {
             issues: result.issues,
             lines: result.lines
         });
+    }
+
+    // ── the gate, per line ──────────────────────────────────────────────────
+    // Which pieces may be bought at all. Refused the same way a sold-out line
+    // is, so a bag assembled by hand — or carried over from before the gate
+    // changed — is corrected rather than quoted.
+    const refused = gateIssues(result.lines);
+    if (refused.length) {
+        return response.status(200).json({ ok: false, error: 'line_issues', issues: refused, lines: result.lines });
+    }
+
+    const mode = checkoutMode(result.lines);
+    if (mode === 'mixed') {
+        return response.status(409).json({ ok: false, error: 'mixed_test_and_live_cart' });
+    }
+    // A test quote is only ever given against sandbox credentials, so the
+    // figure quoted is the figure a sandbox PaymentIntent will carry.
+    if (mode === 'test' && !stripeTestCredentials()) {
+        return response.status(503).json({ ok: false, error: 'stripe_test_credentials_required' });
     }
 
     // A stale bag — an old tab, a cart saved before the drop sold through — is
@@ -76,6 +99,9 @@ export default async function handler(request, response) {
     return response.status(200).json({
         ok: true,
         currency: CURRENCY,
+        // The page labels itself from this, so the notice follows the bag the
+        // server actually priced rather than a flag the client kept.
+        testCheckout: mode === 'test',
         lines,
         subtotalAmount: subtotal,
         shippingAmount,

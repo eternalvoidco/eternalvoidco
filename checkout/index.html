@@ -58,6 +58,15 @@
         </section>
 
         <div id="ckMain">
+            <!-- Shown for the whole flow whenever the server has priced the bag
+                 as a test checkout, so the notice can never be out of step with
+                 what is actually charged: it is set from the quote, not from a
+                 flag this page carried over. -->
+            <div class="ck-notice is-neutral" id="ckTestNotice" hidden>
+                <span class="ck-notice-title">Test checkout</span>
+                <span>Test checkout — no real payment will be taken. Use a Stripe test card; nothing will be shipped.</span>
+            </div>
+
             <ol class="ck-progress" id="ckProgress" aria-label="Checkout progress">
                 <li class="ck-step" data-step="details" data-state="active"><span class="ck-step-n">01</span><span class="ck-step-label">Details</span></li>
                 <li class="ck-step" data-step="delivery"><span class="ck-step-n">02</span><span class="ck-step-label">Delivery</span></li>

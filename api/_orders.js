@@ -206,8 +206,8 @@ export async function findOrderForConfirmation(orderNumber, email) {
         `/orders?order_number=eq.${encodeURIComponent(number)}`
         + `&customer_email=eq.${encodeURIComponent(mail)}`
         + '&select=order_number,status,payment_status,currency,subtotal_amount,shipping_amount,'
-        + 'tax_amount,total_amount,shipping_address,customer_email,customer_first_name,created_at,paid_at,'
-        + 'order_items(product_name,size,sku,unit_amount,quantity,image_path)'
+        + 'tax_amount,total_amount,shipping_address,customer_email,customer_first_name,created_at,paid_at,livemode,'
+        + 'order_items(product_name,size,sku,product_slug,unit_amount,quantity,image_path)'
     );
     return (rows && rows[0]) || null;
 }

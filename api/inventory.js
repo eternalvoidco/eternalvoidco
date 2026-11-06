@@ -1,4 +1,4 @@
-import { salesOpen } from './_sales.js';
+import { salesOpen, testCheckoutEnabled } from './_sales.js';
 // ─────────────────────────────────────────────────────────────────────────────
 // /api/inventory
 //
@@ -51,7 +51,16 @@ async function publicRead(request, response) {
     }
 
     // No timestamp in the body, so an unchanged stock picture keeps its ETag.
-    const body = JSON.stringify({ ok: true, salesOpen: salesOpen(), products: summarize(snap).products });
+    //
+    // `products` holds only what may be bought (see summarize), so the two
+    // flags are for presentation: salesOpen decides whether the boutique reads
+    // as open at all, testCheckout whether the bag carries its test notice.
+    const body = JSON.stringify({
+        ok: true,
+        salesOpen: salesOpen(),
+        testCheckout: testCheckoutEnabled(),
+        products: summarize(snap).products
+    });
     const etag = `W/"${crypto.createHash('sha1').update(body).digest('base64url')}"`;
 
     // Browsers revalidate every time (max-age=0); the edge may answer for 3s.

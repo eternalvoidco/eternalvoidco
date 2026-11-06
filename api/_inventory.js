@@ -19,6 +19,7 @@ import { rpc, findOrderItems, findOrderIdByIntent, describeSupabaseError } from 
 import { cancelPaymentIntent, retrievePaymentIntent } from './_stripe.js';
 import { sendOrderConfirmation } from './_email.js';
 import { productInfo } from './_catalog.js';
+import { linePurchasable } from './_sales.js';
 
 // ── Thresholds ───────────────────────────────────────────────────────────────
 // Genuine availability only. 11 or more says nothing; 2–10 states the number;
@@ -77,11 +78,17 @@ export function adminAdjust({ variantId, mode, quantity, reason, orderNumber, ac
 
 // The storefront payload: per design, the total available across sizes and a
 // state for it; per size, the same. Who holds what is never exposed.
+//
+// Only pieces that may be bought right now appear. That is what keeps the test
+// twin and the live Endzustand — which share a display name — from both
+// reaching the storefront, and it means membership of this map is itself the
+// client's answer to "can this be bought", with no second flag to drift.
 export function summarize(snap) {
     const products = {};
     (snap.items || []).forEach((item) => {
         const info = productInfo(item.productSlug);
         if (!info) return;
+        if (!linePurchasable(info)) return;
         const product = products[item.productSlug] || (products[item.productSlug] = {
             slug: item.productSlug,
             name: info.name,
@@ -165,8 +172,40 @@ async function orderIdFor(intent) {
     return findOrderIdByIntent(intent.id);
 }
 
+// What the intent says about itself: true for a test checkout, false for a live
+// one, null for an order opened before checkout/create wrote this field. Null is
+// "not stated", never "live" — an order from before the test checkout existed
+// must not be read as asserting anything.
+function declaredTest(intent) {
+    const stated = intent.metadata && intent.metadata.void_test;
+    if (stated === '1') return true;
+    if (stated === '0') return false;
+    return null;
+}
+
+// A test order is confirmed only by a test-mode intent, and a live order only by
+// a live-mode one. Only an explicit contradiction counts: the intent said which
+// kind it was and Stripe reports the other. That means the keys or the webhook
+// endpoint are crossed, and the safe answer is to touch nothing — stock stays
+// held and the hold expires on its own.
+//
+// Nothing is inferred from silence. An order with no such metadata is confirmed
+// normally, with the email suppressed if Stripe reports test mode.
+function livemodeMismatch(intent) {
+    const declared = declaredTest(intent);
+    if (declared === null) return false;
+    if (typeof intent.livemode !== 'boolean') return false;
+    return declared === intent.livemode;
+}
+
 export async function syncPaymentIntent(intent) {
     if (!intent || !intent.id) return { outcome: 'ignored' };
+
+    if (livemodeMismatch(intent)) {
+        console.error('inventory: livemode mismatch —', intent.id,
+            'livemode', intent.livemode, 'void_test', declaredTest(intent) ? '1' : '0');
+        return { outcome: 'livemode_mismatch' };
+    }
 
     if (intent.status === 'succeeded') {
         const result = await rpc('inventory_confirm_payment', {
@@ -181,7 +220,17 @@ export async function syncPaymentIntent(intent) {
             // Exactly once: only the call that moved the order to paid gets here.
             try {
                 const items = await findOrderItems(result.order.id);
-                await sendOrderConfirmation(result.order, items);
+                if (declaredTest(intent) === true || intent.livemode === false) {
+                    // Nothing was bought and nothing will be shipped, so the
+                    // order is recorded and that is all: no confirmation to the
+                    // customer, nothing handed to fulfilment. Suppressed on
+                    // either signal, so a test payment can never produce a
+                    // purchase confirmation even if the metadata is missing.
+                    console.info('inventory: test order', result.order.order_number,
+                        '— confirmation email and fulfilment suppressed');
+                } else {
+                    await sendOrderConfirmation(result.order, items);
+                }
             } catch (error) {
                 // The payment is real and the order is recorded; an email
                 // failure must not turn into a webhook retry.

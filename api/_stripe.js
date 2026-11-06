@@ -21,6 +21,18 @@ export function stripeConfigured() {
     return Boolean(process.env.STRIPE_SECRET_KEY);
 }
 
+// Whether the configured key is a sandbox key. Read from the key's prefix,
+// which Stripe guarantees — `sk_test_`/`rk_test_` can only ever reach test
+// mode, and a live key can only ever reach live mode. The key itself is never
+// returned, logged or compared beyond this prefix.
+//
+// The test checkout refuses to run unless this is true, so a misconfiguration
+// that pairs the test flow with a live key cannot charge anybody.
+export function stripeTestCredentials() {
+    const key = process.env.STRIPE_SECRET_KEY || '';
+    return key.startsWith('sk_test_') || key.startsWith('rk_test_');
+}
+
 // Stripe takes form-encoded bodies with bracket notation for nested values.
 function encode(value, prefix, out) {
     if (value == null) return;

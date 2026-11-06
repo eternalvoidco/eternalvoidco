@@ -1,4 +1,4 @@
-import { salesOpen } from '../_sales.js';
+import { salesOpen, testCheckoutEnabled, checkoutMode, gateIssues } from '../_sales.js';
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/checkout/create
 //
@@ -15,7 +15,7 @@ import { salesOpen } from '../_sales.js';
 // Nothing here marks anything paid — that is the webhook's job alone.
 // ─────────────────────────────────────────────────────────────────────────────
 import { validateLines, subtotalOf, shippingAmountFor, shippingMethodsFor, taxAmountFor, CURRENCY, lookupVariant } from '../_catalog.js';
-import { createPaymentIntent, cancelPaymentIntent, stripeConfigured } from '../_stripe.js';
+import { createPaymentIntent, cancelPaymentIntent, stripeConfigured, stripeTestCredentials } from '../_stripe.js';
 import { openOrder, attachPaymentIntent, generateOrderNumber, ordersConfigured, describeSupabaseError } from '../_orders.js';
 import { holdSeconds, releaseOrder, sweepExpired } from '../_inventory.js';
 import { resolveUser } from '../_auth.js';
@@ -85,7 +85,9 @@ export default async function handler(request, response) {
         return response.status(405).json({ error: 'method_not_allowed' });
     }
 
-    if (!salesOpen()) return response.status(409).json({ ok: false, error: 'sales_not_open', message: 'Coming soon. Join the newsletter for drop updates.' });
+    if (!salesOpen() && !testCheckoutEnabled()) {
+        return response.status(409).json({ ok: false, error: 'sales_not_open', message: 'Coming soon. Join the newsletter for drop updates.' });
+    }
 
     if (!stripeConfigured()) return response.status(503).json({ error: 'stripe_not_configured' });
     if (!ordersConfigured()) return response.status(503).json({ error: 'orders_not_configured' });
@@ -114,6 +116,30 @@ export default async function handler(request, response) {
     const validated = validateLines(body.items);
     if (!validated.ok) {
         return response.status(409).json({ error: validated.error, issues: validated.issues });
+    }
+
+    // ── the gate, per line ──────────────────────────────────────────────────
+    // The catalogue said these variants exist and what they cost. This says
+    // whether they may be bought, and it is the only check that matters: the
+    // storefront's disabled buttons are a courtesy, this is the rule. A request
+    // naming any other piece is refused here even if it is perfectly formed.
+    const refused = gateIssues(validated.lines);
+    if (refused.length) {
+        return response.status(409).json({ error: 'line_issues', issues: refused });
+    }
+
+    const mode = checkoutMode(validated.lines);
+    if (mode === 'mixed') {
+        return response.status(409).json({ error: 'mixed_test_and_live_cart' });
+    }
+
+    // Test mode is enforced here, not assumed from configuration: a test order
+    // is never opened against a live key, so no test flow can reach a real
+    // card. Checked before anything is written or held.
+    const isTest = mode === 'test';
+    if (isTest && !stripeTestCredentials()) {
+        console.error('checkout/create: test checkout requested but STRIPE_SECRET_KEY is not a test key');
+        return response.status(503).json({ error: 'stripe_test_credentials_required' });
     }
 
     // ── shipping, revalidated ───────────────────────────────────────────────
@@ -211,12 +237,20 @@ export default async function handler(request, response) {
             amount: total,
             currency: CURRENCY,
             payment_method_types: methods,
-            receipt_email: email,
+            // Stripe does not deliver receipts in test mode, and a test
+            // purchase must not produce one by any route, so none is asked for.
+            receipt_email: isTest ? undefined : email,
+            description: isTest ? 'ETERNAL VOID — test checkout (no goods)' : undefined,
             // Only what is needed to find our order again. No addresses, no
             // names — Stripe does not need a copy of the customer record.
+            //
+            // void_test travels with the intent so the webhook can tell what
+            // kind of order it is confirming without a second query, and can
+            // refuse a crossed pair (a test order reached by a live intent).
             metadata: {
                 order_id: order.id,
-                order_number: order.order_number
+                order_number: order.order_number,
+                void_test: isTest ? '1' : '0'
             },
             shipping: {
                 name: `${firstName} ${lastName}`.trim(),
@@ -252,6 +286,7 @@ export default async function handler(request, response) {
 
     return response.status(200).json({
         ok: true,
+        testCheckout: isTest,
         orderNumber: order.order_number,
         clientSecret: intent.client_secret,
         currency: CURRENCY,

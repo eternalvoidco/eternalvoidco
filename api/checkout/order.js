@@ -21,6 +21,7 @@
 import { findOrderForConfirmation, ordersConfigured, describeSupabaseError } from '../_orders.js';
 import { retrievePaymentIntent, stripeConfigured, intentIdFromClientSecret, secretsEqual } from '../_stripe.js';
 import { cancelAndRelease, syncPaymentIntent } from '../_inventory.js';
+import { TEST_PRODUCT_SLUG } from '../_sales.js';
 
 async function release(request, response) {
     if (!stripeConfigured()) return response.status(503).json({ error: 'stripe_not_configured' });
@@ -94,6 +95,13 @@ export default async function handler(request, response) {
         shippingAddress: order.shipping_address,
         createdAt: order.created_at,
         paidAt: order.paid_at,
+        // A test order says so on its own confirmation page, so nobody is left
+        // believing a sandbox payment bought something. True when Stripe
+        // reported the intent as test mode, or when every line is the test
+        // twin — either signal is enough.
+        testCheckout: order.livemode === false
+            || ((order.order_items || []).length > 0
+                && (order.order_items || []).every((item) => item.product_slug === TEST_PRODUCT_SLUG)),
         items: (order.order_items || []).map((item) => ({
             name: item.product_name,
             size: item.size,

@@ -46,6 +46,25 @@ const PRODUCTS = {
         image: '/assets/endzustand-black.png',
         active: true
     },
+    // ── The test twin ───────────────────────────────────────────────────────
+    // Endzustand again, with a slug of its own. Same name, price, image and
+    // size run as the real piece, because nothing about how it is presented
+    // changes — but a separate slug means a separate variant id, and therefore
+    // its own inventory_items rows, its own reservations and its own order
+    // lines. A test purchase can never deduct the production allocation.
+    //
+    // `testOnly` is what the gate reads: this is sellable only while
+    // VOID_TEST_CHECKOUT is on, and the live 'endzustand-tee' above is not
+    // sellable in its place. See api/_sales.js.
+    'endzustand-tee-test': {
+        name: 'Endzustand Tee',
+        sku: 'EV-S1-END-TEST',
+        unitAmount: 20000,
+        sizes: FALLEN_SIZES,
+        image: '/assets/endzustand-black.png',
+        active: true,
+        testOnly: true
+    },
     'insigne-ivoire': {
         name: 'Insigne Ivoire',
         sku: 'EV-S1-OGW',
@@ -103,8 +122,12 @@ const PRODUCTS = {
 
 // The cart stores display names, so the server has to be able to get from a
 // name back to a slug. Built once, not on every request.
+// The test twin shares its name with the real piece, so it is left out: a name
+// resolves to the live slug, never to the test one.
 const SLUG_BY_NAME = new Map(
-    Object.entries(PRODUCTS).map(([slug, product]) => [product.name.toLowerCase(), slug])
+    Object.entries(PRODUCTS)
+        .filter(([, product]) => !product.testOnly)
+        .map(([slug, product]) => [product.name.toLowerCase(), slug])
 );
 
 export function slugForName(name) {
@@ -145,14 +168,17 @@ export function lookupVariant(id) {
         size,
         unitAmount: product.unitAmount,
         currency: CURRENCY,
-        image: product.image
+        image: product.image,
+        testOnly: product.testOnly === true
     };
 }
 
 // Name and size run for a slug, for the inventory payload. Null when unknown.
 export function productInfo(slug) {
     const product = PRODUCTS[slug];
-    return product ? { name: product.name, sizes: product.sizes.slice() } : null;
+    return product
+        ? { name: product.name, sizes: product.sizes.slice(), testOnly: product.testOnly === true }
+        : null;
 }
 
 export const MAX_QTY_PER_LINE = 10;
@@ -253,7 +279,8 @@ export function validateLines(rawLines) {
             image: found.image,
             quantity: qty,
             unitAmount: found.unitAmount,
-            lineAmount: found.unitAmount * qty
+            lineAmount: found.unitAmount * qty,
+            testOnly: found.testOnly
         });
     }
 
