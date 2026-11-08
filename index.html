@@ -22671,7 +22671,8 @@
         // from the grid by its own geometry and its name and price leave it
         // (150–1600), the side compositions arrive and their rules are drawn
         // (600–2000), the piece's facts and its name are written (900–3000),
-        // and the chapter's title, theme and story unfold (1200–6500).
+        // and the chapter's title, theme and story unfold (1150–5350; see the
+        // pace factor in prepareWriters).
         //
         // Everything that moves is a Web Animation on transform or opacity,
         // started by a cue on the clock; the writers draw from the same clock.
@@ -23261,10 +23262,25 @@
                 ]);
                 writers.name.prepare([{ el: el.name, start: from + 350, dur: 1350 }]);
                 const letters = el.text.textContent.length;
+                // The story column is paced to read about 27% faster. One
+                // factor over the whole plan rather than four edited numbers,
+                // so the wait before the first stroke, the two pauses between
+                // title, theme and story, and the hand's own pace all shorten
+                // together: the cadence is the one it always had, played
+                // faster. The per-glyph overlap inside the writer is a share of
+                // each line's duration, so it follows without being touched.
+                //
+                // 0.67, not 0.73, because `from` is the stage's own opening
+                // offset — the card still travelling, the columns still
+                // arriving — and it is shared with the centre name and the left
+                // column, which do not change. Only the story's own share of
+                // the timeline can move, so it moves further to bring the whole
+                // reveal, measured from the stage opening, down by that 27%.
+                const pace = (ms) => Math.round(ms * 0.67);
                 writers.story.prepare([
-                    { el: el.title, start: from + 350, dur: 1150 },
-                    { el: el.theme, start: from + 1450, dur: 1250 },
-                    { el: el.text, start: from + 2600, dur: Math.min(3300, Math.max(2400, letters * 21)) }
+                    { el: el.title, start: from + pace(350), dur: pace(1150) },
+                    { el: el.theme, start: from + pace(1450), dur: pace(1250) },
+                    { el: el.text, start: from + pace(2600), dur: pace(Math.min(3300, Math.max(2400, letters * 21))) }
                 ]);
             }
 
