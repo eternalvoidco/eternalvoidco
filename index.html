@@ -7915,9 +7915,17 @@
             animation: none;
         }
 
-        /* While the guide is leaving, nothing in it can be clicked or
-           tabbed into: control has already gone back to the piece. */
+        /* While the guide is leaving it still catches the pointer, and its
+           own handlers decline to act (closeSizeGuide bails once the exit has
+           started). Nothing in the guide can be clicked, and nothing lands on
+           the piece underneath either — a tap aimed at the guide's Close must
+           not fall through onto whatever the piece has arriving under that
+           point. Keyboard control has already gone back to the piece. */
         .size-guide-overlay.is-nest-exiting {
+            cursor: default;
+        }
+
+        .size-guide-overlay.is-nest-exiting .size-guide-panel {
             pointer-events: none;
         }
 
@@ -19138,10 +19146,55 @@
         const sizeGuideNest = (function () {
             const EASE = {
                 arrive: 'cubic-bezier(0.4, 0, 0.2, 1)',   // --lang-ease-arrive
-                away: 'cubic-bezier(0.4, 0, 0.7, 0.2)'    // --lang-ease-away
+                away: 'cubic-bezier(0.4, 0, 0.7, 0.2)',   // --lang-ease-away
+                // Both from the chapter stage, and used here for what they are
+                // used for there. `mech` decelerates onto a precise stop — the
+                // curve the struck plate and the drawn rules land on. `carry`
+                // is the card's own journey out of the grid: it leaves gently,
+                // travels at an even pace and spends its last third settling,
+                // which is exactly the shape a return needs.
+                mech: 'cubic-bezier(0.45, 0, 0.25, 1)',   // --lang-ease-mech
+                carry: 'cubic-bezier(0.5, 0, 0.2, 1)'
             };
             const OPEN_MS = 470;
-            const CLOSE_MS = 430;
+
+            // ---- closing ----
+            // [delay, duration, easing] per animated property, measured from
+            // the dismissal — the same table the chapter stage keeps, and for
+            // the same reason: a close is not one duration, it is an order.
+            //
+            // The order is the stage's: the content goes at once and early;
+            // the surface that is moving starts after it and runs longest;
+            // the ground it stands on leaves while that surface is still
+            // travelling; and the destination's own detail arrives last,
+            // overlapping the final settle. Nothing ends on the same frame as
+            // anything else, and nothing is still moving when it is taken
+            // down.
+            // The keys are the rec names the open uses, so a close holds and
+            // retargets the very animations the open left running rather than
+            // starting a second set beside them.
+            const CLOSE = {
+                'sga-fade':    [0,   110, EASE.away],
+                'sga-counter': [70,  430, EASE.mech],
+                'sg-surface':  [70,  430, EASE.mech],
+                // Linear, as the stage's letterbox is on the way out: this is
+                // a cover being withdrawn, not a thing arriving, and an eased
+                // curve over so short a window dumps most of the opacity in
+                // two frames and reads as a blink. It stays opaque until 280ms
+                // so that up to there it is the edge doing the revealing.
+                'sg-ink':      [260, 190, 'linear'],
+                // From the first frame: the piece has to be solid underneath
+                // before the edge starts uncovering it.
+                'pd-fade':     [0,   130, EASE.arrive],
+                'pd-move':     [40,  460, EASE.carry]
+            };
+            // Taken from the table rather than written down twice. The stage
+            // adds the same 30ms before it unmounts: at a 28ms frame cadence
+            // "exactly when the last animation ends" means its closing frames
+            // are never drawn at all.
+            const CLOSE_END = Object.keys(CLOSE)
+                .reduce((max, k) => Math.max(max, CLOSE[k][0] + CLOSE[k][1]), 0);
+            const CLOSE_SETTLE = 30;
             // A reversal rejoins the open from wherever the exit had got to,
             // with no head start to wait out.
             const REVERSE_MS = 400;
@@ -19395,23 +19448,47 @@
                     const seeded = 'scale(' + g.seed + ')';
                     const counter = 'scale(' + (1 / g.seed) + ')';
 
-                    // The content quiets first, so the guide is a plain
-                    // surface again before that surface starts to go.
-                    play('sga-fade', p.sga, [{ opacity: 0 }], 90, 0, EASE.away);
-                    play('sga-counter', p.sga, [{ transform: counter }], CLOSE_MS, 0, EASE.away);
+                    // One frame each, from wherever the property stands, so a
+                    // dismissal mid-open rejoins the exit instead of jumping
+                    // to the top of it.
+                    const leave = (key, target, frame) => {
+                        const t = CLOSE[key];
+                        play(key, target, [frame], t[1], t[0], t[2]);
+                    };
 
-                    // The surface retracts along the same path and stays up
-                    // while it does: the piece has to be seen coming out of
-                    // something, so the guide only fades once it is small.
-                    play('sg-surface', p.sg, [{ transform: seeded }], 390, 40, EASE.away);
-                    play('sg-ink', p.sg, [{ opacity: 0 }], 130, 300, EASE.away);
+                    // 1 · The measurements quiet at once, and are gone before
+                    //     the surface carrying them has started to move. This
+                    //     is the one place `away` belongs: it ends at speed,
+                    //     and that never shows on something already invisible.
+                    leave('sga-fade', p.sga, { opacity: 0 });
+                    leave('sga-counter', p.sga, { transform: counter });
 
-                    // Back in well before the guide has gone, then a long,
-                    // decelerating return to exactly where it stood.
-                    play('pd-fade', p.pd, [{ opacity: 1 }], 150, 60, EASE.arrive);
-                    play('pd-move', p.pd, [{ transform: 'none' }], 370, 60, EASE.arrive);
+                    // 2 · The guide retracts. It is the longest thing on the
+                    //     guide's side and the one whose edge does the
+                    //     revealing, so it gets `mech` — all but stopped on
+                    //     its last drawn frame, where `away` was still at
+                    //     two-thirds speed and had to be cut.
+                    leave('sg-surface', p.sg, { transform: seeded });
 
-                    after(me, CLOSE_MS, () => finish(me));
+                    // 3 · It only gives up its ground once it is small and has
+                    //     swept clear of the piece, and it finishes 50ms
+                    //     before the panel comes down — so the last frames are
+                    //     drawn at rest rather than mid-fade.
+                    leave('sg-ink', p.sg, { opacity: 0 });
+
+                    // 4 · The piece is back to full opacity inside the first
+                    //     third, underneath the guide and still receded, so
+                    //     the retracting edge uncovers something already
+                    //     there instead of cross-fading to it.
+                    leave('pd-fade', p.pd, { opacity: 1 });
+
+                    // 5 · ...and it is still travelling after the guide has
+                    //     gone. `carry` spends its last third settling, so the
+                    //     final frame of the close is the piece arriving
+                    //     rather than the guide disappearing.
+                    leave('pd-move', p.pd, { transform: 'none' });
+
+                    after(me, CLOSE_END + CLOSE_SETTLE, () => finish(me));
                     return true;
                 },
 
