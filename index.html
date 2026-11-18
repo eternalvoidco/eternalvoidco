@@ -7924,6 +7924,77 @@
             .size-guide-panel { max-height: min(92vh, 760px); }
         }
 
+        /* ---- Nested handoff: a piece's dialog <-> the guide -------------
+           Opened from an open piece ("Size chart"), the guide is not a
+           second dialog taking the first one's place: the piece's panel
+           recedes and the guide's surface grows over it until the piece
+           is inside it. Closing plays the same path backwards. The
+           timeline that drives all of this is sizeGuideNest() in the
+           script; everything here only gets out of its way.
+
+           The piece's dialog keeps its own ground for the whole
+           interaction, so the guide's near-opaque backdrop stands down —
+           it would otherwise cover the very panel the guide is supposed
+           to be taking in. One backdrop and one scroll lock, start to
+           end. */
+        .size-guide-overlay.is-nesting {
+            background: transparent;
+            opacity: 1;
+            visibility: visible;
+            transition: none;
+        }
+
+        /* The controller owns both surfaces while the handoff runs. The
+           panels' own transitions would otherwise fight the timeline —
+           the piece panel's is a 0.66s spring that overshoots, which is
+           exactly what this movement must not do. */
+        .size-guide-overlay.is-nesting .size-guide-panel {
+            transition: none;
+            transform: none;
+        }
+
+        .product-detail-panel.is-nest-held {
+            transition: none;
+        }
+
+        /* Whatever of the piece the guide is too narrow or too short to
+           cover is not left showing around its edges once the guide is
+           up. The handoff's own animation outranks this while it runs, so
+           the piece still fades as part of the movement rather than
+           jumping — and if the movement is cut short by a resize, this is
+           already the state it was heading for. */
+        body.size-guide-nested .product-detail-panel {
+            opacity: 0;
+        }
+
+        /* The guide's 760ms entrance stagger belongs to opening it cold
+           from the collection. Nested, the content arrives as one quiet
+           reveal at the end of the expansion, so the stagger stands down.
+           The garment trace also has to hand back its dash offset: the
+           rule it comes from leaves the drawing invisible without the
+           animation that resolves it. */
+        .size-guide-overlay.is-nesting .sga-garment {
+            stroke-dasharray: none;
+            stroke-dashoffset: 0;
+        }
+
+        .size-guide-overlay.is-nesting .sga-garment,
+        .size-guide-overlay.is-nesting .sga-seam,
+        .size-guide-overlay.is-nesting .sga-draft [data-dim],
+        .size-guide-overlay.is-nesting .sga-head,
+        .size-guide-overlay.is-nesting .sga-divider,
+        .size-guide-overlay.is-nesting .sga-tabs,
+        .size-guide-overlay.is-nesting .sga-spec > *,
+        .size-guide-overlay.is-nesting .sga-plate-note {
+            animation: none;
+        }
+
+        /* While the guide is leaving, nothing in it can be clicked or
+           tabbed into: control has already gone back to the piece. */
+        .size-guide-overlay.is-nest-exiting {
+            pointer-events: none;
+        }
+
         /* ---- Size guide: The Atelier --------------------------------
            One screen, no scrolling. The garment drawing sits on the left,
            the specification for the chosen size on the right, and on a
@@ -19002,7 +19073,14 @@
                 window.voidFitArchiveSetGuide(guideKey || 'tshirt', opts);
             }
 
-            lastSizeGuideFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            // The control to hand back to. The nested path names it rather
+            // than letting it be read off activeElement: a pointer click
+            // leaves the trigger focused but a programmatic one does not,
+            // and the guide must always return control to whatever opened
+            // it.
+            lastSizeGuideFocus = (opts && opts.returnFocus instanceof HTMLElement)
+                ? opts.returnFocus
+                : (document.activeElement instanceof HTMLElement ? document.activeElement : null);
 
             if (storyOverlay && storyOverlay.classList.contains('open')) {
                 closeStoryOverlay();
@@ -19014,9 +19092,17 @@
 
             closeCartPopup();
 
+            // Opened from an open piece, this is a nested handoff rather
+            // than a second dialog: the piece recedes into the guide and
+            // comes back out of it on close. See sizeGuideNest. The class
+            // work and the measurement both happen below, before anything
+            // is painted, so the guide is never seen at full size first.
+            const nested = Boolean(opts && opts.nestFrom) && sizeGuideNest.available();
+
             sizeGuideOverlay.classList.add('open');
             sizeGuideOverlay.setAttribute('aria-hidden', 'false');
             document.body.classList.add('size-guide-open');
+            if (nested) sizeGuideNest.open();
             trackAnalyticsEvent('open_size_guide', {
                 source: 'collection_size_guide_button'
             });
@@ -19033,10 +19119,17 @@
             // `open` class lands, and a single rAF can run before that style
             // has been recomputed, so .focus() is refused and the document
             // keeps focus on <body>.
+            //
+            // `open` alone is not enough to know the guide still wants focus:
+            // nested, it stays on for the whole visual exit, so a dismissal
+            // inside these two frames would be followed by this stealing
+            // focus back off the trigger it was just handed to.
             if (sizeGuideClose) {
                 window.requestAnimationFrame(() => {
                     window.requestAnimationFrame(() => {
-                        if (sizeGuideOverlay.classList.contains('open')) focusElementSafely(sizeGuideClose);
+                        if (sizeGuideOverlay.classList.contains('open') && !sizeGuideNest.isExiting()) {
+                            focusElementSafely(sizeGuideClose);
+                        }
                     });
                 });
             }
@@ -19081,15 +19174,356 @@
 
         function closeSizeGuide() {
             if (!sizeGuideOverlay || !sizeGuideOverlay.classList.contains('open')) return;
+            // Already on its way out. A second Escape, a second click on
+            // the backdrop or a stray close must not restart the exit or
+            // hand focus back twice.
+            if (sizeGuideNest.isExiting()) return;
 
-            sizeGuideOverlay.classList.remove('open');
             sizeGuideOverlay.setAttribute('aria-hidden', 'true');
-            document.body.classList.remove('size-guide-open');
             setSizeGuideInert(false);
             document.removeEventListener('keydown', sizeGuideTrap, true);
             stopEdgeAmbience();
             focusElementSafely(lastSizeGuideFocus);
+
+            // Nested, the guide stays mounted for its visual exit: the
+            // controller takes `open` and its own classes down once the
+            // movement has finished. Control, though, has already gone
+            // back to the piece above — the guide is inert from here.
+            if (sizeGuideNest.close()) return;
+
+            sizeGuideOverlay.classList.remove('open');
+            document.body.classList.remove('size-guide-open');
         }
+
+        // ---- Nested handoff: a piece's dialog <-> the guide ----------------
+        // Opening the guide from an open piece is one movement, not two
+        // dialogs trading places. The piece's panel recedes a little and the
+        // guide's surface expands from a compact footprint over it, covering
+        // it as it grows: the piece goes *into* the guide. Closing runs the
+        // same path backwards, and the piece is already coming back out
+        // while the guide is still visibly shrinking.
+        //
+        // Both overlays centre their panel on the viewport, so the two share
+        // a centre, and "towards the guide's centre" is a scale about that
+        // shared point rather than a lateral travel — the depth is carried by
+        // scale and by the guide's opaque surface (z-index 2600) painting
+        // over the piece's (2500). The measured delta between the two centres
+        // is applied regardless, so an asymmetric or off-centre layout still
+        // reads correctly.
+        //
+        // One controller owns both panels for the whole interaction. Each
+        // animated property is held and retargeted on interruption — the same
+        // hold/retarget the chapter stage uses — so a reversal mid-flight
+        // continues from the current visual state rather than restarting. A
+        // generation counter makes every callback from an abandoned run a
+        // no-op, so a stale finish can never hide the piece, hand focus to the
+        // wrong layer or leave the page locked.
+        const sizeGuideNest = (function () {
+            const EASE = {
+                arrive: 'cubic-bezier(0.4, 0, 0.2, 1)',   // --lang-ease-arrive
+                away: 'cubic-bezier(0.4, 0, 0.7, 0.2)'    // --lang-ease-away
+            };
+            const OPEN_MS = 470;
+            const CLOSE_MS = 430;
+            // A reversal rejoins the open from wherever the exit had got to,
+            // with no head start to wait out.
+            const REVERSE_MS = 400;
+            // The piece recedes only slightly: the depth comes from the guide
+            // growing over it, not from the piece shrinking away.
+            const RECEDE = 0.945;
+            // Where the guide's surface starts, as a share of the piece's
+            // width. Small enough to read as something inside the piece,
+            // large enough that its edges are a surface and not a dot.
+            const SEED = 0.46;
+
+            const S = { on: false, dir: null, run: 0, geo: null, recs: new Map(), timer: 0 };
+
+            // The house switch, as everywhere else: html.reduce-motion is what
+            // the site's own setting sets.
+            const calm = () => document.documentElement.classList.contains('reduce-motion');
+
+            function parts() {
+                return {
+                    pd: productDetailOverlay && productDetailOverlay.querySelector('.product-detail-panel'),
+                    sg: sizeGuideOverlay && sizeGuideOverlay.querySelector('.size-guide-panel'),
+                    sga: sizeGuideOverlay && sizeGuideOverlay.querySelector('.sga')
+                };
+            }
+
+            // Both panels are read in the same frame, with the guide's own
+            // resting transform already neutralised by .is-nesting, so the
+            // seed scale and the path come from what is really on screen at
+            // this viewport rather than from the stylesheet's maximums.
+            function measure(p) {
+                const pd = p.pd.getBoundingClientRect();
+                const sg = p.sg.getBoundingClientRect();
+                if (!pd.width || !sg.width) return null;
+                return {
+                    seed: Math.min(0.72, Math.max(0.34, (pd.width * SEED) / sg.width)),
+                    dx: (sg.left + sg.width / 2) - (pd.left + pd.width / 2),
+                    dy: (sg.top + sg.height / 2) - (pd.top + pd.height / 2)
+                };
+            }
+
+            // Hold an animation where it stands: its current value is written
+            // inline and the animation let go, so the next one starts from
+            // exactly here instead of snapping to a keyframe.
+            function hold(key) {
+                const r = S.recs.get(key);
+                if (!r || !r.anim) return;
+                try { r.anim.commitStyles(); } catch (e) { /* not rendered */ }
+                r.anim.cancel();
+                r.anim = null;
+            }
+
+            // `frames` with one entry runs from wherever the element is now —
+            // that is what makes a reversal continuous.
+            function play(key, target, frames, dur, delay, ease) {
+                if (!target) return;
+                hold(key);
+                S.recs.set(key, {
+                    target,
+                    anim: target.animate(frames, {
+                        duration: Math.max(1, dur),
+                        delay: delay || 0,
+                        easing: ease || EASE.arrive,
+                        fill: 'both'
+                    })
+                });
+            }
+
+            // Everything the controller wrote is handed back.
+            function clear() {
+                S.recs.forEach((r) => {
+                    if (r.anim) { try { r.anim.cancel(); } catch (e) {} }
+                    r.target.style.removeProperty('transform');
+                    r.target.style.removeProperty('opacity');
+                });
+                S.recs.clear();
+            }
+
+            function after(me, ms, fn) {
+                window.clearTimeout(S.timer);
+                S.timer = window.setTimeout(() => { if (me === S.run) fn(); }, ms);
+            }
+
+            // Re-enable the piece panel's own transitions only once the
+            // cleared transform has been committed, or the spring in that
+            // transition would animate the removal and undo the clean stop.
+            function release(pd) {
+                if (!pd) return;
+                void pd.offsetWidth;
+                pd.classList.remove('is-nest-held');
+            }
+
+            // The open run has landed. Every property is handed back to the
+            // state it is resting in, so no finished animation and no value
+            // committed mid-flight by a hold() is left holding a panel — a
+            // later cancel could otherwise snap the guide back to its seed.
+            function settleOpen(me) {
+                if (me !== S.run) return;
+                const p = parts();
+
+                // The guide and its content rest on the stylesheet:
+                // .is-nesting puts the surface at transform:none and .open
+                // at full opacity, which is exactly where they landed.
+                ['sg-surface', 'sg-ink', 'sga-counter', 'sga-fade'].forEach((key) => {
+                    const r = S.recs.get(key);
+                    if (!r) return;
+                    if (r.anim) { try { r.anim.cancel(); } catch (e) {} }
+                    r.target.style.removeProperty('transform');
+                    r.target.style.removeProperty('opacity');
+                    S.recs.delete(key);
+                });
+
+                // The piece has no resting CSS transform to fall back on —
+                // it is held receded, inside the guide — so its frame is
+                // written plainly here, replacing whatever the animation
+                // had committed. Its opacity does come from the stylesheet
+                // (body.size-guide-nested), so that one is handed back.
+                ['pd-move', 'pd-fade'].forEach((key) => {
+                    const r = S.recs.get(key);
+                    if (r && r.anim) { try { r.anim.cancel(); } catch (e) {} r.anim = null; }
+                    S.recs.delete(key);
+                });
+                if (p.pd) {
+                    const g = S.geo || { dx: 0, dy: 0 };
+                    p.pd.style.transform = 'translate(' + g.dx + 'px, ' + g.dy + 'px) scale(' + RECEDE + ')';
+                    p.pd.style.removeProperty('opacity');
+                    // Still tracked, so the close can hold it and the final
+                    // cleanup can take it off again.
+                    S.recs.set('pd-move', { target: p.pd, anim: null });
+                }
+                S.dir = null;
+            }
+
+            function finish(me) {
+                if (me !== S.run) return;
+                const pd = parts().pd;
+                document.body.classList.remove('size-guide-nested');
+                clear();
+                sizeGuideOverlay.classList.remove('open', 'is-nesting', 'is-nest-exiting');
+                document.body.classList.remove('size-guide-open');
+                release(pd);
+                S.on = false;
+                S.dir = null;
+                S.geo = null;
+            }
+
+            return {
+                // Reduced motion gets the guide's ordinary backdrop and no
+                // choreography at all: the plain path already preserves the
+                // piece's size, image and scroll position behind it, and the
+                // focus handling is the same either way.
+                available() {
+                    return Boolean(!calm() && productDetailOverlay && sizeGuideOverlay &&
+                        productDetailOverlay.classList.contains('open'));
+                },
+
+                isExiting() { return S.on && S.dir === 'out'; },
+
+                open() {
+                    const p = parts();
+                    if (!p.pd || !p.sg || !p.sga) return false;
+
+                    const reversing = S.on;
+                    const me = ++S.run;
+                    S.dir = 'in';
+
+                    sizeGuideOverlay.classList.remove('is-nest-exiting');
+                    sizeGuideOverlay.classList.add('is-nesting');
+                    document.body.classList.add('size-guide-nested');
+                    p.pd.classList.add('is-nest-held');
+
+                    // Re-measuring mid-reversal would read the panels where
+                    // they currently stand, not where they rest, and the path
+                    // would change under the movement. The geometry from the
+                    // run being reversed is still the right one.
+                    if (!reversing || !S.geo) {
+                        const geo = measure(p);
+                        if (!geo) {
+                            sizeGuideOverlay.classList.remove('is-nesting');
+                            document.body.classList.remove('size-guide-nested');
+                            release(p.pd);
+                            S.dir = null;
+                            return false;
+                        }
+                        S.geo = geo;
+                    }
+                    S.on = true;
+
+                    const g = S.geo;
+                    const recede = 'translate(' + g.dx + 'px, ' + g.dy + 'px) scale(' + RECEDE + ')';
+                    const seeded = 'scale(' + g.seed + ')';
+                    const counter = 'scale(' + (1 / g.seed) + ')';
+
+                    if (reversing) {
+                        // Straight back to the open state from wherever the
+                        // exit had got to. No delays: the movement is already
+                        // under way and must not stall.
+                        play('pd-move', p.pd, [{ transform: recede }], 300, 0, EASE.arrive);
+                        play('pd-fade', p.pd, [{ opacity: 0 }], 180, 60, EASE.arrive);
+                        play('sg-surface', p.sg, [{ transform: 'scale(1)' }], 380, 0, EASE.arrive);
+                        play('sg-ink', p.sg, [{ opacity: 1 }], 90, 0, EASE.arrive);
+                        play('sga-counter', p.sga, [{ transform: 'scale(1)' }], 380, 0, EASE.arrive);
+                        play('sga-fade', p.sga, [{ opacity: 1 }], 120, 220, EASE.arrive);
+                        // The reversal is shorter than a cold open — it starts
+                        // part-way there — so it settles on its own end, not
+                        // on OPEN_MS, and nothing it committed mid-flight is
+                        // left sitting under the finished animation.
+                        after(me, REVERSE_MS, () => settleOpen(me));
+                        return true;
+                    }
+
+                    // The piece leaves first and alone for 60ms — the head
+                    // start that makes it the thing being taken in rather
+                    // than the thing being replaced — then keeps receding
+                    // underneath the guide growing over it.
+                    play('pd-move', p.pd, [{ transform: 'none' }, { transform: recede }], 300, 0, EASE.arrive);
+                    // Secondary to the coverage, and late: by the time this
+                    // starts the guide already hides the middle of the piece,
+                    // and this only clears the margins it is too narrow to
+                    // reach.
+                    play('pd-fade', p.pd, [{ opacity: 1 }, { opacity: 0 }], 180, 230, EASE.arrive);
+
+                    // The guide's surface: a compact footprint on the shared
+                    // centre, expanding to its real bounds and decelerating
+                    // into them with no velocity left on the last frame.
+                    play('sg-surface', p.sg, [{ transform: seeded }, { transform: 'scale(1)' }], 410, 60, EASE.arrive);
+                    play('sg-ink', p.sg, [{ opacity: 0 }, { opacity: 1 }], 90, 60, EASE.arrive);
+
+                    // The exact inverse on the content, as the language swap
+                    // does for its labels, so the measurements are never drawn
+                    // stretched by the surface carrying them. It is invisible
+                    // for the part of the expansion where the two do not
+                    // quite cancel.
+                    play('sga-counter', p.sga, [{ transform: counter }, { transform: 'scale(1)' }], 410, 60, EASE.arrive);
+                    // One quiet reveal, once the surface is nearly home.
+                    play('sga-fade', p.sga, [{ opacity: 0 }, { opacity: 1 }], 120, 330, EASE.arrive);
+
+                    after(me, OPEN_MS, () => { if (me === S.run) S.dir = null; });
+                    return true;
+                },
+
+                close() {
+                    if (!S.on) return false;
+                    const p = parts();
+                    const me = ++S.run;
+                    S.dir = 'out';
+                    sizeGuideOverlay.classList.add('is-nest-exiting');
+
+                    if (!p.pd || !p.sg || !p.sga || calm()) { finish(me); return true; }
+
+                    const g = S.geo || { seed: 0.5 };
+                    const seeded = 'scale(' + g.seed + ')';
+                    const counter = 'scale(' + (1 / g.seed) + ')';
+
+                    // The content quiets first, so the guide is a plain
+                    // surface again before that surface starts to go.
+                    play('sga-fade', p.sga, [{ opacity: 0 }], 90, 0, EASE.away);
+                    play('sga-counter', p.sga, [{ transform: counter }], CLOSE_MS, 0, EASE.away);
+
+                    // The surface retracts along the same path and stays up
+                    // while it does: the piece has to be seen coming out of
+                    // something, so the guide only fades once it is small.
+                    play('sg-surface', p.sg, [{ transform: seeded }], 390, 40, EASE.away);
+                    play('sg-ink', p.sg, [{ opacity: 0 }], 130, 300, EASE.away);
+
+                    // Back in well before the guide has gone, then a long,
+                    // decelerating return to exactly where it stood.
+                    play('pd-fade', p.pd, [{ opacity: 1 }], 150, 60, EASE.arrive);
+                    play('pd-move', p.pd, [{ transform: 'none' }], 370, 60, EASE.arrive);
+
+                    after(me, CLOSE_MS, () => finish(me));
+                    return true;
+                },
+
+                // A resize or an orientation change moves both panels, and the
+                // seed scale and path were measured against where they used to
+                // be. Rather than carry stale geometry into the new layout,
+                // the handoff is completed at once and every transform handed
+                // back — the state each direction was heading for is a resting
+                // one, so there is nothing to see but the jump in layout the
+                // visitor asked for.
+                resize() {
+                    if (!S.on) return;
+                    const me = ++S.run;
+                    if (S.dir === 'out') { finish(me); return; }
+                    const p = parts();
+                    if (!p.pd || !p.sg) { finish(me); return; }
+                    // Back to the resting states first, so both panels are
+                    // measured at their natural bounds in the new layout
+                    // rather than through one of our transforms.
+                    clear();
+                    const geo = measure(p);
+                    if (geo) S.geo = geo;
+                    settleOpen(me);
+                }
+            };
+        })();
+
+        window.addEventListener('resize', () => sizeGuideNest.resize());
+        window.addEventListener('orientationchange', () => sizeGuideNest.resize());
 
         // ---- The fit archive ----------------------------------------------
         // One source of truth for the pattern measurements. The selector and
@@ -21207,7 +21641,11 @@
                 // chosen on it. Reading a size here never changes that choice.
                 openSizeGuide(guideKeyForCategory(category), {
                     sizes: sizesFor(pdState.name),
-                    size: pdState.size || ''
+                    size: pdState.size || '',
+                    // Asks for the nested handoff: the guide opens out of
+                    // this piece's panel rather than over it.
+                    nestFrom: productDetailOverlay,
+                    returnFocus: pdSizeChart
                 });
             });
         }
@@ -23519,6 +23957,12 @@
         // toggle behaviour rather than surprising the visitor out of the modal.
         document.addEventListener('keydown', (event) => {
             if (event.key !== 'Escape') return;
+            // The guide sits on top of the piece and owns Escape while it
+            // is up — its own handler, further down, closes it. The piece
+            // stays open behind the guide, so without this the piece's
+            // dialog would close underneath it and the guide would have
+            // nothing to hand control back to.
+            if (sizeGuideOverlay && sizeGuideOverlay.classList.contains('open')) return;
             if (productDetailOverlay && productDetailOverlay.classList.contains('open')) {
                 if (pdZoomScale > 1.001) {
                     resetPdZoom();
