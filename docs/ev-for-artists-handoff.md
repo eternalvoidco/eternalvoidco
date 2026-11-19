@@ -1,10 +1,17 @@
 # EV for Artists — owner handoff
 
-2026-11-19 · Second pass: royalty reconciliation, private intake, launch readiness.
+2026-11-20 · Third pass: staging verification, VAT basis, coverage attestation, carried balances.
 
-**Nothing in this programme is live.** Intake is closed on the server, the commercial terms are
-proposals, and the three legal documents are drafts. This is what has been built, what has been
-proven, and what has to be decided before any of it opens.
+## Status
+
+| | state | what it is waiting on |
+|---|---|---|
+| **Staging verification** | **PART DONE** | Everything that can be proven without live credentials is proven, against real Postgres. Four steps need a staging Supabase and Stripe **test** mode and have not been run: the VAT basis against a real invoice, the historical dry run, the storage/overwrite/public-read checks, and the upload-token expiry. Commands for all four: `docs/ev-for-artists-staging-runbook.md`. |
+| **Public intake** | **CLOSED** | `VOID_ARTIST_INTAKE` is closed and the server refuses every unauthenticated request. Opening needs counsel on three documents, the owner on the rate, and `VOID_ARTIST_IP_SALT` + `CRON_SECRET` set. |
+| **Royalty payouts** | **BLOCKED** | Two hard blocks, neither of which is a bug: **nobody has recorded whether charged amounts include VAT**, and **no dry run has established that any period's refund history was read back from Stripe**. Either one alone stops a payout file being produced. |
+
+**12% of net product sales, quarterly statements, payment within 30 days of quarter end remain
+PROPOSED and unapproved.** They are marked that way on the public page in all four languages.
 
 ---
 
@@ -141,7 +148,8 @@ left for a person. Guessing is how an artist gets paid for a sale that was retur
 | `full_order` | reversal == order total | every line, in full |
 | `full_merchandise` | reversal == merchandise subtotal (shipping retained) | every line, in full |
 | `sole_line` | one line, no shipping, reversal ≤ merchandise | that line |
-| `unique_line_match` | reversal == the line total of exactly one line | that line. **Refused when two lines share a price** |
+| ~~`unique_line_match`~~ | ~~reversal == the line total of exactly one line~~ | **WITHDRAWN in the third pass — §7.2.** It could not tell a full refund of a cheap line from a partial refund of a dear one, and the two pay different artists |
+| `metadata` | the refund itself names the lines and amounts | those lines, after the database re-validates every one against the order |
 | **unallocated** | **anything else** | **none — BLOCKS THE PAYOUT** |
 
 An order containing a line with **no SKU** can never be allocated by rule, and blocks.
@@ -184,7 +192,10 @@ evidence; the payout is a decision accounting makes.
 
 ---
 
-## 3 · Test results
+## 3 · Test results · earlier passes
+
+> Two results below were **superseded** by the third pass and are marked where they appear. The
+> current results are in §8.
 
 Run against **real PostgreSQL** (PGlite/WASM) with the project's own migration files applied
 verbatim. Only the three Supabase roles, `auth.uid()`, and the `pgcrypto` extension line were
@@ -197,11 +208,11 @@ cannot name a CTE. It would have failed on apply.
 
 | # | case | expected | actual |
 |---|---|---|---|
-| 1 | €160 merchandise + €12 shipping + €38 tax | base €160.00, due **€19.20** | ✓ |
+| 1 | €160 merchandise + €12 shipping + €38 tax | base €160.00, due **€19.20** | **conditional — §7.1.** True only under a VAT-*exclusive* basis. Nobody has yet recorded which basis applies, so the period now blocks |
 | 2 | two SKUs, 12% and 8% | **€20.00** (old code: €24.00) | ✓ |
 | 3 | full-order refund delivered 3× | one row, due €0.00 | ✓ |
 | 4 | two partial refunds (€50, €30) on €200 | base €120.00, due **€14.40** | ✓ |
-| 5 | mixed cart: €90 refund matches one line; €70 matches nothing | €90 attributed; €70 unallocated, period **blocked** | ✓ |
+| 5 | mixed cart: €90 refund matches one line; €70 matches nothing | ~~€90 attributed~~; €70 unallocated, period **blocked** | **superseded — §7.2.** The €90 is no longer attributed; it is a guess between two readings that pay different people, and now goes to the worklist |
 | 6 | out-of-order delivery; a refund that fails | stale refused; failed €40 ignored; due **€18.00** | ✓ |
 | 7 | sold Q4, refunded Q1 | Q4 due €24.00; Q1 base €0, carry €200.00, due €0 | ✓ |
 | 8 | dispute opened, then won | reverses to €0, then **restores to €24.00** | ✓ |
@@ -279,62 +290,206 @@ closes in one pass.
 
 ---
 
-## 5 · What must be approved
+## 5 · Before intake can open
 
-### Owner
-- [ ] **12%** of net product sales (currently marked *proposed* on the public page in all four languages)
-- [ ] **Quarterly** statements, paid **within 30 days** of quarter end (both marked *proposed*)
-- [ ] Term, territory, release deadline, sell-off window (Collaboration Agreement §4, §5, §6.4, §13.3)
-- [ ] Minimum payment threshold (§9.3)
-- [ ] Whether exclusivity is ever offered, and at what price (Schedule 2)
-
-### Accounting
-- [ ] **Confirm the discount question is closed.** The export now asserts `subtotal_amount == sum(line_amount)` and blocks the period when it is not. Confirm no discount is ever applied in a way that breaks it.
-- [ ] Invoicing direction — self-billing or artist invoice
-- [ ] EU and non-EU VAT treatment
-- [ ] Currency conversion method and date (all orders are EUR today)
-- [ ] Withholding by artist jurisdiction
-- [ ] **Agree the dispute rule as implemented**: opened reverses, won reinstates, lost stands
-- [ ] **Agree the carry-forward rule**: a quarter whose reversals exceed its sales reports a carry-forward and raises no negative payment. *It is reported but not yet automatically applied to the next quarter* — see Known gaps
-- [ ] Confirm the quarterly statement format matches what `artist_royalty_statement()` produces
-
-### Hungarian counsel — three separate documents
-1. `/legal/ev-for-artists-submission-terms` — public, `noindex` while draft. 7 open items listed in the page.
-2. `/legal/ev-for-artists-privacy-notice` — public, `noindex` while draft. 8 open items listed in the page.
-3. `docs/legal/ev-for-artists-collaboration-agreement.DRAFT.md` — **private, never deployed** (`.vercelignore` excludes `docs/`).
-
-Principal questions: licence form and the written-form requirement under the Hungarian Copyright
-Act (1999. évi LXXVI.), moral rights, design registration, indemnity cap and mutuality, venue,
-e-signature validity, and whether a Hungarian-language version is required and which language
-governs.
-
----
-
-## 6 · Before intake can open
-
-1. Apply the three migrations in order.
+1. Apply the **four** migrations in order.
 2. Set `VOID_ARTIST_IP_SALT` (rate limiting is a no-op without it) and `CRON_SECRET` (the draft sweep cannot authenticate without it).
 3. Confirm the `artist-submissions` bucket is **private** after apply.
 4. Counsel signs off all three drafts; remove the draft banners and the `noindex`.
 5. Owner approves the rate and terms.
 6. Then, and only then, set `VOID_ARTIST_INTAKE=open`.
 
-## 7 · Before any royalty is paid
+## 6 · Before any royalty is paid
 
-1. Enable the refund and dispute events on the Stripe webhook endpoint (the nine listed above).
-2. Run the historical dry run over all trading history; resolve every unmatched payment.
-3. `&apply=1`.
+1. **Record the VAT basis.** The single blocking decision — see §7.1. Until accounting sets it,
+   every period with eligible sales is blocked and no payout file is produced.
+2. Enable the refund and dispute events on the Stripe webhook endpoint (the ten listed above).
+3. Run the historical dry run over all trading history; resolve every unmatched payment, then
+   `&apply=1` — **which is also what attests the coverage.** A period whose window has never been
+   attested cannot be paid, however clean it looks.
 4. **Populate `order_items.sku` for collaboration products** — the column is nullable, and a null SKU silently earns nothing.
 5. Write one `artist_collaborations` row per signed SKU, with the rate the agreement says.
 6. Run the quarter and read `payoutReady`. If it is not `true`, nothing is paid.
-7. Accounting approves and executes. The code does not pay.
+7. Close the previous quarter's carried balances with `{"action":"raiseCarry"}`, and mark this
+   one's as spent with `{"action":"consumeCarry"}` once the payment is made.
+8. Accounting approves and executes. The code does not pay.
+
+Step-by-step commands for all of this: `docs/ev-for-artists-staging-runbook.md`.
 
 ---
 
-## 8 · Known gaps — stated, not hidden
+## 7 · This pass: what changed, and why
 
-- **Not verified against live services.** Everything above was executed against real Postgres, but there are no Supabase or Stripe credentials on this machine. The signed-upload **2-hour expiry** and the **`x-upsert: false` overwrite refusal** are from the documented API contract and the headers this code sends; both need one confirmation against the live project. In the tests, storage was a stub behaving to that contract.
-- **Carry-forward is reported, not applied.** A quarter whose reversals exceed its sales shows `carryForward`, but the next quarter does not automatically deduct it. Accounting must carry it by hand, or it needs a ledger. Flagged for decision.
-- **Wholesale, bundles and marketplaces are out of scope.** The base is written for direct retail. Wholesale sells at a different price to a different buyer and needs its own base, or the artist is paid on the wrong number.
-- **`order_items.sku` is nullable.** Until collaboration products reliably carry one, the reconciliation will flag those orders.
-- **A dispute's reversal is dated when the dispute opened.** If accounting would rather bucket on the date funds were actually withdrawn, that is a one-line change and a decision to make before the first statement.
+### 9.1 · The VAT basis now blocks  ·  the most consequential finding
+
+`api/_catalog.js` says it in its own comment: *"No tax model exists in this project and product
+prices carry no stated tax treatment."* `orders.tax_amount` is always `0`, no invoice exists
+anywhere in the project, and the storefront never tells a customer whether a price includes VAT.
+
+So nobody can say whether `order_items.line_amount` is net of VAT or includes it — and the answer
+moves every royalty by the whole VAT rate:
+
+| reading of a €160 tee | net merchandise | 12% royalty |
+|---|---|---|
+| **exclusive** | €160.00 | **€19.20** |
+| **inclusive**, HU 27% | €125.98 | **€15.12** |
+
+Paying the first when the second is true pays the artist a share of tax remitted to the state.
+The previous export silently assumed exclusive. **It now refuses:** `artist_royalty_settings.vat_basis`
+starts at `unknown`, and every period carrying eligible sales is blocked until accounting records
+an answer with a name against it. An assumption nobody made on purpose is not a basis.
+
+Both figures are now carried separately on every statement and in the CSV — `grossCharged` and
+`grossMerchandise` — so the decision is visible rather than folded into one number.
+
+A **non-EUR order** in a statement that declares EUR also blocks now. All orders are EUR today
+(`CURRENCY = 'eur'`), so this is a tripwire rather than a live condition.
+
+### 9.2 · `unique_line_match` is withdrawn
+
+It allocated a reversal to the one line whose total equalled it. On a mixed cart that is a guess
+wearing a rule's clothes. The test the brief asked for makes it concrete: a cart of a **€160
+collaboration piece** and a **€90 house piece**, with a **€90 refund**. Two readings, identical in
+the amounts, paying different people:
+
+- a full refund of the €90 house piece → the artist loses nothing
+- a partial refund of the €160 collaboration piece → the artist's base drops by €90
+
+Stripe holds no item-level evidence for this integration, so there is no third fact to break the
+tie. It now goes to the manual worklist, and the test asserts that it does.
+
+What replaced it is a **`metadata` rule** that accepts *genuine* item-level evidence: a refund
+carrying `metadata.ev_lines` of the shape `[{"sku":"EV-A","amount":9000}]`. Only refunds ETERNAL
+VOID issues itself can carry that, and the database re-validates every line against the order
+before believing a penny of it. Evidence that overstates a line is refused and the reversal goes to
+the worklist with its reason recorded.
+
+### 9.3 · A status can no longer regress
+
+The existing guard refused a delivery whose source timestamp was older than what had been applied.
+It did not cover the tie: two handlers reading the same object moments apart can carry the same
+event timestamp, and the slower one then overwrote the faster one's newer status.
+
+`order_reversal_rank()` gives the status a direction — `pending(0) < failed/canceled(1) <
+succeeded(2) < reinstated(3)` — and on a tied timestamp a regression is refused. A refund that has
+succeeded cannot become pending again because a slow read finished last. Forward movement on a tie
+is still allowed.
+
+### 9.4 · Payout readiness now needs positive evidence
+
+A period with no recorded reversals used to look clean. It is indistinguishable from a period whose
+reversals were never ingested — and a webhook only ever sees what happens after it is switched on.
+
+`order_reversal_coverage` records that a window's refunds and disputes were actually read back from
+Stripe, written by the historical dry run when it is applied. `order_reversal_coverage_gap()` walks
+the attested windows and reports the first gap. **A period not fully covered cannot be paid**,
+and the gap is named with its start and end. A period with no eligible sales needs no coverage —
+there is nothing a missing reversal could reduce.
+
+### 9.5 · A carried balance is a ledger entry
+
+Carry-forward was reported and then forgotten. `artist_royalty_adjustments` now holds it, with a
+unique key on `(artist, sku, kind, originating period)` — so the database itself refuses to raise
+the same carry twice, however many times a statement is re-run.
+
+The full cycle is tested: **Q4 pays €24.00 → Q1 refunds it with no sales to absorb it, raising a
+€200.00 carry → Q2 sells €300.00 and pays 12% of €100.00, not of €300.00.** Raising twice raises
+nothing; consuming twice consumes nothing; and once consumed, a second look at Q2 no longer deducts
+it.
+
+### 9.6 · Dispute dating  ·  PENDING ACCOUNTING
+
+A dispute moves money twice, on two different dates. Both are now recorded —
+`funds_withdrawn_at` and `funds_reinstated_at` — alongside `refunded_at`, which is what the
+statement currently buckets on.
+
+**Today:** a chargeback is bucketed on the date the dispute opened, which is when the funds left.
+A reinstatement therefore **restates the original quarter** rather than landing in the quarter it
+occurred.
+
+**The alternative:** bucket the reinstatement in the quarter it happened, leaving the closed
+quarter alone.
+
+Both moments are stored either way, so switching the answer later is a query change rather than a
+re-ingestion from Stripe. **Accounting must choose**, and it matters most for a dispute opened in
+one quarter and won in the next.
+
+---
+
+## 8 · Test results · this pass
+
+All four suites run the project's own migration files and the real `artist-submission.js` handler
+against a real PostgreSQL (PGlite). `npm install` once in `tests/royalty-reconciliation/`.
+
+| suite | result | covers |
+|---|---|---|
+| `scenarios.mjs` | **36/36** | the royalty arithmetic, refunds, disputes, out-of-order delivery, quarter boundaries |
+| `backfill.mjs` | **8/8** | the historical dry run, unmatched payments, idempotent apply |
+| `intake.mjs` | **35/35** | the closed gate, admin rehearsal, path scoping, type/size at confirmation, sweep |
+| `staging.mjs` | **34/34** | **new this pass** — the four below |
+
+`staging.mjs` in detail:
+
+- **§1 the invoice fixture.** Unknown basis blocks; `exclusive` gives €19.20; `inclusive` at 27%
+  gives €15.12; shipping never enters the base; an inclusive basis with no rate for the destination
+  blocks that order. **The fixture is not an approved basis** — it prices both readings so the
+  decision can be made against real numbers.
+- **§1b** a non-EUR order blocks.
+- **§2** item-level evidence allocates to the line the evidence names, *not* the line whose amount
+  matches; evidence that overstates a line is refused.
+- **§2b** the concurrency race: an older read is refused on its timestamp; on a **tied** timestamp
+  the status still cannot regress; the persisted state stays `succeeded`; a genuine advance on a
+  tie is accepted.
+- **§3** an unattested period is **not** clean; partial coverage is reported as the gap it is, with
+  its start date; two adjoining attestations close it.
+- **§4** the Q4 → Q1 → Q2 carry cycle, raised once and consumed once.
+
+Two cases in `scenarios.mjs` were rewritten rather than fixed, because the contract changed on
+purpose: the €90 mixed-cart refund that `unique_line_match` used to claim now asserts that it is
+**not** guessed, and the unattributed total rises to €160 accordingly.
+
+### What is still not verified
+
+Four things need live credentials, which this machine has none of — no `.env`, no Supabase or
+Stripe keys, no Vercel CLI, no staging host. Each has an exact command in
+`docs/ev-for-artists-staging-runbook.md`:
+
+| | why it cannot be done here |
+|---|---|
+| the VAT basis against a **real invoice** | no invoice exists in the project, and one real order settles it |
+| the **historical dry run** | needs `STRIPE_SECRET_KEY` with read access to refunds, disputes and charges |
+| **overwrite refusal** and **not-publicly-readable** | needs a live Supabase Storage bucket |
+| **upload-token expiry** | 2 hours is the documented default and **has never been measured**. Runbook §3f is a two-command probe that settles it either way |
+
+---
+
+## 9 · Exactly what is needed, from whom
+
+### From the owner
+- [ ] **12%** of net product sales — still proposed
+- [ ] **Quarterly** statements, **30 days** after quarter end — still proposed
+- [ ] Term, territory, release deadline, sell-off window *(Agreement §4, §5, §6.4, §13.3)*
+- [ ] Minimum payment threshold *(§9.3)*
+- [ ] Whether exclusivity is ever offered, and at what price *(Schedule 2)*
+- [ ] A current **`cégkivonat`** (company registry extract) — closes the registered name, company
+      number, tax number, seat and signing representative in one pass
+
+### From accounting
+- [ ] **The VAT basis.** The single blocking decision. Which reading is right, checked against one
+      real invoice, and the destination rates if `inclusive`
+- [ ] **Dispute dating** — restate the original quarter, or land the reinstatement where it happened
+- [ ] **Carry-forward** — confirm the Q4/Q1/Q2 behaviour as tested is what they want
+- [ ] Invoicing direction — self-billing or artist invoice
+- [ ] EU and non-EU VAT treatment; withholding by artist jurisdiction
+- [ ] Currency conversion method and date, should anything stop being EUR
+- [ ] That the quarterly statement format matches what `artist_royalty_statement()` produces
+
+### From Hungarian counsel — three separate documents
+1. `/legal/ev-for-artists-submission-terms` — public, `noindex` while draft, 7 open items in the page
+2. `/legal/ev-for-artists-privacy-notice` — public, `noindex` while draft, 8 open items in the page
+3. `docs/legal/ev-for-artists-collaboration-agreement.DRAFT.md` — **private, never deployed**
+
+Principal questions: licence form and the written-form requirement under the Hungarian Copyright
+Act (1999. évi LXXVI.), moral rights, design registration, indemnity cap and mutuality, venue,
+e-signature validity, and whether a Hungarian-language version is required and which language
+governs.

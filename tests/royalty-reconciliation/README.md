@@ -9,6 +9,7 @@ npm install
 node scenarios.mjs     # 36 royalty cases
 node backfill.mjs      #  8 historical dry-run cases
 node intake.mjs        # 35 closed-intake cases
+node staging.mjs       # 34 staging-verification cases
 ```
 
 ## What is real and what is stubbed
@@ -31,3 +32,17 @@ signature path. Both need one confirmation against the real project — see
 
 Executing the SQL rather than reading it caught a bug on the first run: `overlaps` is a Postgres
 operator keyword and cannot name a CTE. The migration would have failed on apply.
+
+## staging.mjs
+
+The four things that must be positively established before a royalty is paid:
+
+- **§1** the VAT basis. An unresolved basis blocks; `exclusive` pays €19.20 on a €160 tee,
+  `inclusive` at 27% pays €15.12. The fixture prices both readings so the decision can be made
+  against real numbers — **it is not an approved basis.**
+- **§2** item-level evidence, where it genuinely exists, and the withdrawal of `unique_line_match`:
+  a €90 refund on a cart of €160 + €90 is no longer guessed.
+- **§2b** two concurrent webhook deliveries where the older read finishes writing last — refused on
+  the timestamp, and refused again on a tied timestamp because the status may not regress.
+- **§3** coverage: a period nobody has attested is not clean, however empty it looks.
+- **§4** the carried balance across Q4 → Q1 → Q2, raised once and consumed once.

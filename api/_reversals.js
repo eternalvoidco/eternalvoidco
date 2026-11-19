@@ -68,6 +68,27 @@ function chargeIdOf(object) {
 // Stripe timestamps are seconds.
 const at = (seconds) => new Date((Number(seconds) || 0) * 1000).toISOString();
 
+// Item-level evidence, if a refund carries any. Stripe metadata values are
+// strings, so the lines arrive as JSON in `metadata.ev_lines`. Anything that
+// is not the expected shape is treated as absent rather than guessed at — the
+// database validates it against the order again before using it.
+function parseEvidence(metadata) {
+    const raw = metadata && metadata.ev_lines;
+    if (!raw) return null;
+    try {
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        const lines = Array.isArray(parsed) ? parsed : parsed.lines;
+        if (!Array.isArray(lines) || !lines.length) return null;
+        const clean = lines
+            .filter((l) => l && typeof l.sku === 'string' && Number(l.amount) > 0)
+            .map((l) => ({ sku: l.sku, amount: Math.round(Number(l.amount)) }));
+        return clean.length ? { lines: clean } : null;
+    } catch (error) {
+        console.warn('reversals: unreadable ev_lines metadata, ignoring');
+        return null;
+    }
+}
+
 // Records the reversal and then asks the database to allocate it. The two are
 // separate calls on purpose: recording must succeed even when allocation
 // cannot decide anything, because an unallocated reversal still has to be
@@ -85,7 +106,17 @@ async function land(row, sourceUpdatedAt) {
         p_currency: row.currency,
         p_reason: row.reason,
         p_reversed_at: row.reversedAt,
-        p_source_updated_at: sourceUpdatedAt
+        p_source_updated_at: sourceUpdatedAt,
+        // Item-level evidence, when the refund carries any. Stripe knows
+        // nothing about lines here, so this is only ever present on refunds
+        // ETERNAL VOID issues itself — and it is validated against the order
+        // before a penny of it is believed.
+        p_evidence: row.evidence || null,
+        // Both moments a dispute moves money, kept so the accounting decision
+        // about which one a statement buckets on can be made later without
+        // re-reading anything from Stripe.
+        p_funds_withdrawn_at: row.fundsWithdrawnAt || null,
+        p_funds_reinstated_at: row.fundsReinstatedAt || null
     }, 'record reversal');
 
     if (!recorded || !recorded.ok) {
@@ -141,7 +172,10 @@ export async function syncRefundEvent(event) {
             amount: Number(refund.amount) || 0,
             currency: refund.currency || 'eur',
             reason: refund.reason || refund.failure_reason || null,
-            reversedAt: at(refund.created)
+            reversedAt: at(refund.created),
+            // `{"lines":[{"sku":"…","amount":1234}, …]}` on a refund this
+            // project issued. Anything else is ignored by the allocator.
+            evidence: parseEvidence(refund.metadata)
         }, new Date(Number(event.created || 0) * 1000).toISOString());
         results.push({ id, ...landed });
     }
@@ -170,8 +204,17 @@ export async function syncDisputeEvent(event) {
         amount: Number(dispute.amount) || 0,
         currency: dispute.currency || 'eur',
         reason: dispute.reason || null,
-        // The date the funds moved, which for a dispute is when it opened.
-        reversedAt: at(dispute.created)
+        // PENDING ACCOUNTING (docs/royalty-model.md): a statement buckets a
+        // chargeback on the date the dispute opened, which is when the funds
+        // left. The alternative — bucketing a reinstatement in the quarter it
+        // occurred rather than restating the original one — needs a decision.
+        // Both moments are recorded either way, so changing the answer later
+        // is a query change and not a re-ingestion.
+        reversedAt: at(dispute.created),
+        fundsWithdrawnAt: at(dispute.created),
+        fundsReinstatedAt: disputeStatus(dispute) === 'reinstated'
+            ? at(dispute.status_updated_at || event.created)
+            : null
     }, new Date(Number(event.created || 0) * 1000).toISOString());
 
     return { outcome: 'synced', ...landed };

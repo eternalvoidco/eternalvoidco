@@ -4,7 +4,7 @@
 // discounts, excluding VAT and separately charged shipping, less reversals
 // applied once and bucketed on the date they happened" — and compared with
 // what the statement actually returns.
-import { boot, makeOrder, collab, reversal, statement, eur } from './boot.mjs';
+import { bootReady as boot, makeOrder, collab, reversal, statement, eur } from './boot.mjs';
 
 const Q4 = ['2026-10-01T00:00:00Z', '2027-01-01T00:00:00Z'];
 const Q1 = ['2027-01-01T00:00:00Z', '2027-04-01T00:00:00Z'];
@@ -126,19 +126,24 @@ console.log('\n── 5 · a mixed cart, partially refunded: no evidence, so no 
         shipping: 1000, paidAt: '2026-11-01T10:00:00Z'
     });
 
-    const clear = await reversal(db, { ref: 're_clear', pi: o.pi, amount: 9000, at: '2026-11-05T10:00:00Z' });
-    check('a refund matching exactly one line is attributed to it',
-        clear.allocation.rule, 'unique_line_match');
+    // THE TRAP. A €90 reversal on this cart has two readings that the amounts
+    // cannot tell apart: a full refund of the €90 house piece, or a partial
+    // refund of the €160 collaboration piece. They pay different people.
+    // unique_line_match used to pick the first and call it a rule.
+    const trap = await reversal(db, { ref: 're_trap', pi: o.pi, amount: 9000, at: '2026-11-05T10:00:00Z' });
+    check('a partial on the dearer piece that equals the cheaper one in full is NOT guessed',
+        [trap.allocation.outcome, trap.allocation.reason], ['unallocated', 'ambiguous'],
+        '(unique_line_match withdrawn)');
 
     const murky = await reversal(db, { ref: 're_murky', pi: o.pi, amount: 7000, at: '2026-11-06T10:00:00Z' });
-    check('a refund matching nothing is left unallocated',
+    check('and a refund matching nothing is left unallocated too',
         [murky.allocation.outcome, murky.allocation.reason], ['unallocated', 'ambiguous']);
 
     const s = await statement(db, ...Q4);
-    check('the collaboration piece is untouched by the house-piece refund',
+    check('nothing is deducted from the artist on a guess',
         base(s, 'lena@studio.co'), 16000, `(${eur(16000)})`);
-    check('the unattributed €70 is carried on the face of the statement',
-        s.unattributedTotal, 7000, `(${eur(7000)})`);
+    check('both reversals are carried on the face of the statement',
+        s.unattributedTotal, 16000, `(${eur(16000)} awaiting a person)`);
     check('and the period is NOT payout-ready', s.payoutReady, false);
     check('reconciliation says why', s.reconciliation.status, 'blocked');
 }

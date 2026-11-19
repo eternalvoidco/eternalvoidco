@@ -1,4 +1,4 @@
-import { boot, makeOrder, collab, statement, eur } from './boot.mjs';
+import { bootReady as boot, makeOrder, collab, statement, eur } from './boot.mjs';
 let fails = 0;
 const ok = (n, a, e) => { const p = JSON.stringify(a) === JSON.stringify(e);
   console.log(`  ${p?'PASS':'FAIL'}  ${n}\n          expected ${JSON.stringify(e)}   actual ${JSON.stringify(a)}`);

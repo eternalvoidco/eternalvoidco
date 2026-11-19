@@ -31,7 +31,8 @@ export async function boot() {
         '20260906120000_orders.sql',
         '20261119120000_artist_submissions.sql',
         '20261119160000_royalty_reconciliation.sql',
-        '20261119180000_artist_intake_hardening.sql'
+        '20261119180000_artist_intake_hardening.sql',
+        '20261120090000_royalty_staging_verification.sql'
     ]) {
         try {
             // pgcrypto ships with Supabase and not with bare PGlite. gen_random_uuid()
@@ -95,10 +96,12 @@ export async function collab(db, { email, name, sku, bps = 1200, from = '2026-01
 
 // Mirrors exactly what api/stripe-webhook.js does with a re-read Stripe object.
 export async function reversal(db, { ref, object = 'refund', pi, charge = 'ch_1', kind = 'refund',
-                                     status = 'succeeded', amount, at, updatedAt = null }) {
+                                     status = 'succeeded', amount, at, updatedAt = null,
+                                     evidence = null, withdrawnAt = null, reinstatedAt = null }) {
     const rec = await db.query(
-        `select public.order_reversal_record($1,$2,$3,$4,$5,$6,$7,'eur',null,$8,$9) as r`,
-        [ref, object, pi, charge, kind, status, amount, at, updatedAt || at]
+        `select public.order_reversal_record($1,$2,$3,$4,$5,$6,$7,'eur',null,$8,$9,$10,$11,$12) as r`,
+        [ref, object, pi, charge, kind, status, amount, at, updatedAt || at,
+         evidence ? JSON.stringify(evidence) : null, withdrawnAt, reinstatedAt]
     );
     const out = rec.rows[0].r;
     if (out.ok && out.outcome !== 'stale') {
@@ -112,4 +115,41 @@ export async function statement(db, from, to, artist = null) {
     const { rows } = await db.query(
         `select public.artist_royalty_statement($1,$2,$3) as s`, [from, to, artist]);
     return rows[0].s;
+}
+
+// ── preconditions the statement now demands ─────────────────────────────────
+// Two things must be positively established before any period can be paid:
+// what line_amount is net of, and that the period's reversals were actually
+// read back from Stripe. Both default to "nobody has said", which blocks.
+
+export async function setVatBasis(db, basis, { actor = 'accounting@test', rates = [] } = {}) {
+    await db.query(`select public.artist_royalty_set_vat_basis($1, $2, $3)`,
+        [basis, actor, 'set by the test harness']);
+    for (const r of rates) {
+        await db.query(
+            `insert into public.artist_vat_rates (country, rate_bps, effective_from, effective_to, note)
+             values ($1,$2,$3,$4,$5) on conflict (country, effective_from) do nothing`,
+            [r.country, r.bps, r.from || '2020-01-01', r.to || null, r.note || null]);
+    }
+}
+
+// Stands in for a historical dry run having been run and applied.
+export async function attest(db, from, to, extra = {}) {
+    await db.query(
+        `insert into public.order_reversal_coverage
+            (covers_from, covers_to, attested_by, source, refunds_seen, disputes_seen, matched, unmatched, note)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [from, to, extra.by || 'test@eternalvoid.co', extra.source || 'stripe_backfill',
+         extra.refunds || 0, extra.disputes || 0, extra.matched || 0, extra.unmatched || 0,
+         extra.note || null]);
+}
+
+// A database ready to produce a payable statement: VAT declared exclusive (the
+// simple reading, so arithmetic tests stay about arithmetic) and the whole of
+// 2026-2027 attested.
+export async function bootReady() {
+    const db = await boot();
+    await setVatBasis(db, 'exclusive');
+    await attest(db, '2026-01-01T00:00:00Z', '2028-01-01T00:00:00Z');
+    return db;
 }

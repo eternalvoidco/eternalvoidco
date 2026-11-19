@@ -25,6 +25,21 @@ be written into `artist_collaborations.royalty_bps` (1200 = 12.00%).
 The rate lives per collaboration row rather than in code so a renegotiated or legacy agreement
 reports correctly without anyone editing the export.
 
+## The VAT basis — UNRESOLVED, and blocking
+
+**Nobody has recorded whether `order_items.line_amount` includes VAT.** `api/_catalog.js` says
+so in its own comment, `orders.tax_amount` is always 0, and no invoice exists in the project.
+
+| reading of a €160 tee | net merchandise | 12% royalty |
+|---|---|---|
+| exclusive | €160.00 | €19.20 |
+| inclusive, HU 27% | €125.98 | €15.12 |
+
+`artist_royalty_settings.vat_basis` starts at `unknown` and **every period with eligible sales is
+blocked** until accounting sets it. Under `inclusive`, `artist_vat_rates` supplies the
+destination rate and the VAT fraction is removed from both sales and reversals. Statements carry
+`grossCharged` and `grossMerchandise` separately so the decision is visible.
+
 ## The base
 
 For **direct sales**, the royalty is calculated on the amount actually paid for the collaboration
@@ -50,9 +65,11 @@ merchandise, **after discounts**.
 | Within the agreement window | `paid_at::date` between `effective_from` and `effective_to` | A sale before the agreement starts earns nothing. |
 | Gross merchandise | `sum(order_items.line_amount)` | Tax and shipping are already outside `line_amount`. |
 | Discounts | **n/a — verified absent.** `subtotalOf()` is exactly `sum(lineAmount)`, `taxAmountFor()` is `0`, and there is no coupon/promotion path in the project. Two constraints hold it. | An order where `subtotal_amount` disagrees with the sum of its lines is **unreconcilable** and blocks the payout. It is never inferred. |
+| Net of VAT | `artist_royalty_net_merchandise(line_amount, country, paid_at)` | Identity under `exclusive`; removes the embedded VAT under `inclusive`; **NULL under `unknown`, which is what blocks the period** rather than silently assuming a reading. |
 | Reversals | `order_refunds` + `order_refund_allocations`, bucketed on `refunded_at` | Counted once through allocation rows; `provider_ref` is unique so duplicate deliveries converge. Only `succeeded` counts: `pending` has not moved money, `failed`/`canceled` never did, `reinstated` (dispute won) undoes it. **Unallocated reversals are carried on the statement and block the payout — never dropped.** |
 | Royalty base | `gross − reversals`, floored at zero, **per SKU** | |
-| Carry-forward | `reversals − gross` when positive, per SKU | A quarter whose reversals exceed its sales carries the excess forward as a note rather than inventing a negative payment. |
+| Carried in | `artist_royalty_adjustments`, unconsumed, applying to this period | Reduces the base before the rate, so the artist is made whole on the rate rather than on the cash. Raised once and consumed once, enforced by a unique key. |
+| Carry-forward | `reversals + carried_in − gross` when positive, per SKU | A quarter whose reversals exceed its sales carries the excess forward as a note rather than inventing a negative payment. |
 | Due | `round(base × royalty_bps / 10000)` **per SKU**, summed | The rate is per collaboration row, so two agreements at two rates give two correct figures rather than one blended wrong one. Integer minor units throughout; no floats anywhere. |
 
 The export returns the per-line detail as well as the totals, so a statement can be **checked**
@@ -113,3 +130,36 @@ See `docs/ev-for-artists-handoff.md` for the full test results and the open deci
 3. Currency: all orders are EUR today. If that changes, the conversion date and source need fixing
    in the agreement before, not after.
 4. Is a reversal of a bundled item apportioned the same way as the sale?
+
+
+---
+
+## Allocation rules, as they now stand
+
+Stripe holds **no item-level evidence** for this integration — bare PaymentIntents, no line items.
+
+| rule | condition |
+|---|---|
+| `not_required` | the order holds no collaboration SKU |
+| `metadata` | the refund carries `metadata.ev_lines`, re-validated against the order |
+| `full_order` | reversal == order total |
+| `full_merchandise` | reversal == merchandise subtotal |
+| `sole_line` | one line, no shipping |
+| **unallocated** | **everything else → the manual worklist, and the period blocks** |
+
+`unique_line_match` was withdrawn. On a cart of a €160 piece and a €90 piece, a €90 refund is
+either a full refund of the cheap one or a partial refund of the dear one — identical in the
+amounts, and they pay different artists.
+
+## Coverage — positive evidence, not silence
+
+A period with no recorded reversals is indistinguishable from one whose reversals were never
+ingested. `order_reversal_coverage` records that a window was actually read back from Stripe,
+written by the dry run on `&apply=1`. **A period not fully covered cannot be paid.**
+
+## Dispute dating — PENDING ACCOUNTING
+
+A chargeback is bucketed on `refunded_at` (the date the dispute opened, when funds left), so a
+reinstatement **restates the original quarter**. The alternative is to land it in the quarter it
+occurred. `funds_withdrawn_at` and `funds_reinstated_at` are both recorded, so changing the
+answer is a query change, not a re-ingestion.

@@ -59,7 +59,15 @@ function csv(statement, diagnostic) {
     rows.push(['# period_from', statement.period.from].join(','));
     rows.push(['# period_to', statement.period.to].join(','));
     rows.push(['# reconciliation', statement.reconciliation.status].join(','));
+    rows.push(['# vat_basis', statement.vatBasis || 'unknown'].join(','));
+    rows.push(['# reversal_history_attested',
+               (statement.reconciliation.coverage || {}).covered ? 'yes' : 'NO'].join(','));
     rows.push(['# payout_ready', statement.payoutReady ? 'yes' : 'NO'].join(','));
+    if ((statement.vatBasis || 'unknown') === 'unknown') {
+        rows.push(['# ', quote('VAT BASIS UNRESOLVED. Nobody has recorded whether the charged '
+            + 'amounts include VAT. Under a 27% inclusive reading every royalty below is '
+            + 'overstated by the whole VAT fraction.')].join(','));
+    }
     if (!statement.payoutReady) {
         rows.push(['# ', quote('DIAGNOSTIC ONLY — NOT A PAYMENT INSTRUCTION. '
             + 'This period does not reconcile; the figures below are incomplete. '
@@ -83,19 +91,25 @@ function csv(statement, diagnostic) {
     });
 
     rows.push('');
+    // `charged` and `net_merchandise` are shown side by side so the VAT
+    // decision is visible on the face of the file rather than folded into a
+    // single number nobody can check.
     rows.push(['artist_email', 'credit_name', 'agreement_ref', 'sku', 'rate_pct',
-               'units', 'gross_eur', 'reversals_eur', 'royalty_base_eur',
-               'royalty_due_eur', 'carry_forward_eur'].join(','));
+               'units', 'charged_eur', 'net_merchandise_eur', 'reversals_eur',
+               'carried_in_eur', 'royalty_base_eur', 'royalty_due_eur',
+               'carry_forward_eur'].join(','));
     (statement.artists || []).forEach((a) => {
         (a.perSku || []).forEach((s) => {
             rows.push([a.artistEmail, quote(a.creditName), a.agreementRef, s.sku,
-                       (s.royaltyBps / 100).toFixed(2), s.units, money(s.grossMerchandise),
-                       money(s.reversals), money(s.royaltyBase), money(s.royaltyDue),
+                       (s.royaltyBps / 100).toFixed(2), s.units, money(s.grossCharged),
+                       money(s.grossMerchandise), money(s.reversals), money(s.carriedIn),
+                       money(s.royaltyBase), money(s.royaltyDue),
                        money(s.carryForward)].join(','));
         });
         rows.push([a.artistEmail, quote(a.creditName), a.agreementRef, 'TOTAL', '',
-                   a.units, money(a.grossMerchandise), money(a.reversals),
-                   money(a.royaltyBase), money(a.royaltyDue), money(a.carryForward)].join(','));
+                   a.units, money(a.grossCharged), money(a.grossMerchandise),
+                   money(a.reversals), money(a.carriedIn), money(a.royaltyBase),
+                   money(a.royaltyDue), money(a.carryForward)].join(','));
     });
 
     // What is in the way, named, so the file is also the worklist.
@@ -105,6 +119,21 @@ function csv(statement, diagnostic) {
         rows.push('');
         rows.push(['# unresolved — each of these blocks a payout'].join(','));
         rows.push(['issue', 'reference', 'order_number', 'amount_eur', 'detail'].join(','));
+        (b.vatBasisUnresolved || []).forEach((v) => {
+            rows.push(['vat_basis_unresolved', '', v.order_number, '',
+                       quote('nobody has recorded whether the charged amount includes VAT'
+                             + (v.country ? ` (ships to ${v.country})` : ''))].join(','));
+        });
+        (b.currencyNotEur || []).forEach((c) => {
+            rows.push(['currency_not_eur', '', c.order_number, '', quote(c.currency)].join(','));
+        });
+        if (b.reversalHistoryNotAttested) {
+            rows.push(['reversal_history_not_attested', '', '', '',
+                       quote('no dry run has established that this window\'s refunds and disputes '
+                             + 'were read back from Stripe; gap from '
+                             + b.reversalHistoryNotAttested.gapFrom + ' to '
+                             + b.reversalHistoryNotAttested.gapTo)].join(','));
+        }
         (b.unallocatedReversals || []).forEach((u) => {
             rows.push(['unallocated_reversal', u.provider_ref, u.order_number,
                        money(u.amount), quote(u.allocation_note)].join(','));
@@ -138,8 +167,63 @@ export default async function handler(request, response) {
     if (!gate.ok) return response.status(gate.status).json({ ok: false, error: gate.error });
     if (!artistsConfigured()) return response.status(503).json({ ok: false, error: 'not_configured' });
 
+    // ── accounting's two decisions, and the ledger ──────────────────────────
+    // POST { action: 'vatBasis', basis, note }
+    //      { action: 'raiseCarry',   quarter | from,to }   close a period
+    //      { action: 'consumeCarry', quarter | from,to }   mark a payout made
+    //
+    // raiseCarry and consumeCarry are each idempotent by a database
+    // constraint, not by a check here, so a retried request cannot double a
+    // balance however it arrives.
+    if (request.method === 'POST') {
+        const body = request.body && typeof request.body === 'object' ? request.body : {};
+        const action = String(body.action || '');
+
+        if (action === 'vatBasis') {
+            const basis = String(body.basis || '');
+            try {
+                const out = await rpc('artist_royalty_set_vat_basis', {
+                    p_basis: basis, p_actor: gate.user.email,
+                    p_note: typeof body.note === 'string' ? body.note.slice(0, 2000) : null
+                }, 'set vat basis');
+                if (!out || !out.ok) return response.status(400).json(out || { ok: false });
+                return response.status(200).json(out);
+            } catch (error) {
+                console.error(describeSupabaseError(error, 'royalties: vat basis'));
+                return response.status(502).json({ ok: false, error: 'upstream_failed' });
+            }
+        }
+
+        if (action === 'raiseCarry' || action === 'consumeCarry') {
+            let range = quarterRange(body.quarter);
+            if (!range) {
+                const from = new Date(body.from || '');
+                const to = new Date(body.to || '');
+                if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || to <= from) {
+                    return response.status(400).json({ ok: false, error: 'bad_period' });
+                }
+                range = { from, to };
+            }
+            const fn = action === 'raiseCarry'
+                ? 'artist_royalty_raise_carry' : 'artist_royalty_consume_carry';
+            try {
+                const out = await rpc(fn, {
+                    p_from: range.from.toISOString(),
+                    p_to: range.to.toISOString(),
+                    p_actor: gate.user.email
+                }, action);
+                return response.status(200).json(out);
+            } catch (error) {
+                console.error(describeSupabaseError(error, `royalties: ${action}`));
+                return response.status(502).json({ ok: false, error: 'upstream_failed' });
+            }
+        }
+
+        return response.status(400).json({ ok: false, error: 'unknown_action' });
+    }
+
     if (request.method !== 'GET') {
-        response.setHeader('Allow', 'GET');
+        response.setHeader('Allow', 'GET, POST');
         return response.status(405).json({ ok: false, error: 'method_not_allowed' });
     }
 

@@ -280,6 +280,13 @@
                 // figures mean nothing until it is clean.
                 const blocking = rec.blocking;
                 const unresolved = []
+                    .concat((blocking.vatBasisUnresolved || []).map((v) =>
+                        `${v.order_number}: nobody has recorded whether the charged amount includes VAT`))
+                    .concat((blocking.currencyNotEur || []).map((c) =>
+                        `${c.order_number}: charged in ${String(c.currency).toUpperCase()}, not EUR`))
+                    .concat(blocking.reversalHistoryNotAttested
+                        ? [`the refund and dispute history for this window has never been read back from Stripe — gap from ${blocking.reversalHistoryNotAttested.gapFrom} to ${blocking.reversalHistoryNotAttested.gapTo}. Run the dry run.`]
+                        : [])
                     .concat((blocking.unallocatedReversals || []).map((u) =>
                         `unallocated reversal ${u.provider_ref} on ${u.order_number}, ${eur(u.amount)} — ${escapeHtml(u.allocation_note || '')}`))
                     .concat((blocking.discountAnomalies || []).map((d) =>
@@ -292,7 +299,17 @@
                     .concat((rec.review.refundAndDisputeOnSameCharge || []).map((x) =>
                         `${x.order_number}: charge ${x.charge_id} has both a refund and a dispute`));
 
-                const banner = data.payoutReady
+                // The two assumptions that move every figure, said before any
+                // figure is shown.
+                const basis = data.vatBasis || 'unknown';
+                const facts = `<p class="hint" style="margin:0.6rem 0;">
+                    VAT basis: <b style="color:${basis === 'unknown' ? 'var(--warn)' : 'var(--gold-bright)'};">${escapeHtml(basis)}</b>
+                    ${basis === 'unknown' ? ' — set it with POST /api/artist-royalties {action:"vatBasis"}' : ''}
+                    &nbsp;·&nbsp; reversal history attested:
+                    <b style="color:${(rec.coverage || {}).covered ? 'var(--gold-bright)' : 'var(--warn)'};">${(rec.coverage || {}).covered ? 'yes' : 'no'}</b>
+                  </p>`;
+
+                const banner = facts + (data.payoutReady
                     ? `<p class="pill received" style="display:inline-block;">Reconciles — ${rec.ordersInScope} orders in scope</p>`
                     : `<div style="border:1px solid rgba(232,165,165,0.5);padding:0.9rem 1rem;margin:0.9rem 0;">
                          <p style="margin:0 0 0.5rem;color:var(--warn);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">
@@ -301,7 +318,7 @@
                          <ul style="margin:0;padding-left:1.1rem;font-size:0.84rem;">
                            ${unresolved.map((u) => `<li>${escapeHtml(u)}</li>`).join('')}
                          </ul>
-                       </div>`;
+                       </div>`);
 
                 $('royaltyOut').innerHTML = banner + (!data.artists.length
                     ? '<p class="hint">No eligible sales in that period.</p>'

@@ -181,6 +181,34 @@ export default async function handler(request, response) {
         return response.status(502).json({ ok: false, error: 'upstream_failed' });
     }
 
+    // THE ATTESTATION. Applying the backfill is the only thing that can say
+    // "this window's reversals were actually read back from Stripe". Without
+    // it a period with no recorded refunds is indistinguishable from one whose
+    // refunds were never ingested, and `payoutReady` would be true for both.
+    // Written only on apply, and only for the window actually walked.
+    if (apply) {
+        try {
+            await rpc('order_reversal_coverage_record', {
+                p_from: from.toISOString(),
+                p_to: to.toISOString(),
+                p_by: gate.user.email,
+                p_refunds: collected.rows.filter((r) => r.providerObject === 'refund').length,
+                p_disputes: collected.rows.filter((r) => r.providerObject === 'dispute').length,
+                p_matched: Number(result.wouldInsert || 0) + Number((result.alreadyKnown || []).length),
+                p_unmatched: Number((result.unmatched || []).length) + collected.unresolved.length,
+                p_note: collected.unresolved.length
+                    ? 'some reversals carried no followable payment intent — see withoutPaymentIntent'
+                    : null
+            }, 'record coverage');
+            result.coverageAttested = true;
+        } catch (error) {
+            // The reversals are recorded but the window is not attested, so
+            // the period stays blocked. Visible, and safe in that direction.
+            console.error(describeSupabaseError(error, 'artist-reversals: coverage'));
+            result.coverageAttested = false;
+        }
+    }
+
     return response.status(200).json(Object.assign(result, {
         period: { from: from.toISOString(), to: to.toISOString() },
         fetchedFromStripe: collected.rows.length,
