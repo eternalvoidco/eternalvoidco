@@ -9,7 +9,7 @@ they were not promised.
 - Public page: `/for-artists` §03, and `assets/void-artists-i18n.js` (four languages)
 - Agreement: `docs/legal/ev-for-artists-collaboration-agreement.DRAFT.md` §8–§10
 - Export: `public.artist_royalty_statement()` in
-  `supabase/migrations/20261119120000_artist_submissions.sql`, served by `api/artist-royalties.js`
+  `supabase/migrations/20261119120000_artist_submissions.sql`, served by `api/_artist-royalties.js`
 
 ---
 

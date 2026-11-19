@@ -43,7 +43,7 @@ be read as somebody's work.
 
 ### A security defect found and fixed
 
-`api/artist-submission.js` looked a draft up through `artist_submissions_list` to read its
+`api/_artist-submission.js` looked a draft up through `artist_submissions_list` to read its
 `file_path`. That function **excludes drafts by design**, so the lookup always missed and the code
 always fell through to the path supplied in the request body, checked only against a shape regex.
 A caller holding a valid token for their own draft could point it at a different submission's
@@ -67,7 +67,7 @@ below.
 ### Drafts and their files
 
 A submission is a *draft* between its metadata being recorded and storage confirming the file
-landed. Drafts never appear in the reviewer's queue. `api/artist-drafts-sweep.js` removes drafts
+landed. Drafts never appear in the reviewer's queue. `api/_artist-drafts-sweep.js` removes drafts
 older than 24 hours **together with their objects**, so neither outlives the other — the retention
 promise the Privacy Notice makes. Added to `vercel.json` crons at 04:41 daily, authorised by
 `CRON_SECRET` or by an administrator. **If `CRON_SECRET` is unset the sweep cannot authenticate and
@@ -289,6 +289,21 @@ register supplies the first five in one place. Please paste it, or the five valu
 closes in one pass.
 
 ---
+
+## 4b · One function, five routes
+
+The five EV for Artists endpoints are **one** Vercel function. The Hobby plan allows twelve, and
+adding them as five separate files took the project to sixteen — so every deployment from
+`656a3b1` onward failed to build, and `/for-artists` was 404 on the live site while the homepage
+served from an older deployment.
+
+`api/artists.js` dispatches to five `_`-prefixed modules, which Vercel does not treat as routes.
+`vercel.json` rewrites each public path to it, carrying `_ev_artist_route`. The URLs are
+unchanged: nothing that calls them had to move, and the dispatcher handles both shapes Vercel may
+present (the original path, or the rewrite destination).
+
+**The project is now at exactly twelve of twelve.** The next new endpoint breaks the build again.
+Fold it into an existing function, or move to a plan with a higher limit.
 
 ## 5 · Before intake can open
 
