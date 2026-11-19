@@ -1,0 +1,169 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   EV FOR ARTISTS — programme documents
+   ─────────────────────────────────────────────────────────────────────────────
+   Legal text people are being asked to read before they send unpublished work.
+   The house ground and the house gold, and then nothing: one measure, generous
+   leading, real heading hierarchy, and no motion at all. Anything decorative
+   here would be a cost paid by somebody trying to understand what they are
+   agreeing to.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+    --lg-ground: #030302;
+    --lg-ink: #efece6;
+    --lg-dim: #b5aea2;
+    --lg-faint: #7d776c;
+    --lg-gold: #c7a96c;
+    --lg-gold-bright: #e8d09e;
+    --lg-rule: rgba(255, 255, 255, 0.1);
+    --lg-pad: clamp(1.3rem, 5vw, 3rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--lg-ground); -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    background: var(--lg-ground);
+    color: var(--lg-dim);
+    font-family: 'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    font-size: clamp(0.96rem, 0.3vw + 0.9rem, 1.04rem);
+    line-height: 1.82;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--lg-gold); text-decoration: underline; text-underline-offset: 0.22em; text-decoration-thickness: 1px; }
+a:hover, a:focus-visible { color: var(--lg-gold-bright); }
+:focus-visible { outline: 1px solid var(--lg-gold-bright); outline-offset: 3px; }
+
+.lg-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem var(--lg-pad);
+    border-bottom: 1px solid var(--lg-rule);
+}
+
+.lg-back, .lg-mark {
+    text-decoration: none;
+    font-size: 0.68rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--lg-dim);
+}
+.lg-back:hover { color: var(--lg-ink); }
+.lg-mark { font-family: 'Bodoni Moda', Georgia, serif; font-size: 1rem; letter-spacing: 0.3em; color: var(--lg-ink); }
+.lg-mark sup { font-size: 0.5em; }
+
+.lg-doc {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: clamp(2.4rem, 7vh, 4.5rem) var(--lg-pad) clamp(4rem, 10vh, 7rem);
+}
+
+/* Said once, at the top, in the one colour the page otherwise saves for links:
+   this is not in force yet. */
+.lg-draft {
+    margin: 0 0 clamp(2rem, 5vh, 3rem);
+    padding: 1rem 1.2rem;
+    border: 1px dashed rgba(199, 169, 108, 0.42);
+    background: rgba(199, 169, 108, 0.04);
+    font-size: 0.88rem;
+    color: var(--lg-dim);
+}
+.lg-draft b { color: var(--lg-gold-bright); font-weight: 500; }
+
+.lg-kicker {
+    margin: 0 0 0.5rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--lg-gold);
+}
+
+.lg-doc h1 {
+    margin: 0 0 0.6rem;
+    font-family: 'Bodoni Moda', Didot, Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.1;
+    color: var(--lg-ink);
+}
+
+.lg-version {
+    margin: 0 0 clamp(1.8rem, 4vh, 2.6rem);
+    padding-bottom: clamp(1.4rem, 3vh, 2rem);
+    border-bottom: 1px solid var(--lg-rule);
+    font-size: 0.76rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lg-faint);
+}
+.lg-version b { color: var(--lg-gold-bright); font-weight: 500; }
+
+.lg-lead {
+    font-size: 1.06em;
+    color: var(--lg-ink);
+    margin: 0 0 clamp(2rem, 5vh, 3rem);
+}
+
+.lg-doc h2 {
+    margin: clamp(2.2rem, 5vh, 3.2rem) 0 0.8rem;
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--lg-ink);
+}
+
+.lg-doc p { margin: 0 0 1.1rem; }
+.lg-doc ul, .lg-doc ol { margin: 0 0 1.1rem; padding-left: 1.3rem; }
+.lg-doc li { margin-bottom: 0.6rem; }
+.lg-doc b { color: var(--lg-ink); font-weight: 500; }
+
+/* The one paragraph on the page that has to survive skim-reading. */
+.lg-strong {
+    padding: 1rem 1.2rem;
+    border-left: 2px solid var(--lg-gold);
+    background: rgba(199, 169, 108, 0.04);
+    color: var(--lg-ink);
+}
+
+/* A fact nobody has confirmed yet. Visible as a gap, not disguised as prose. */
+.lg-todo {
+    padding: 0 0.3em;
+    border-bottom: 1px dashed rgba(232, 165, 165, 0.6);
+    color: #e8a5a5;
+    font-style: normal;
+}
+
+.lg-rule { margin: clamp(2.6rem, 6vh, 4rem) 0; border: 0; border-top: 1px solid var(--lg-rule); }
+
+.lg-open { color: var(--lg-gold) !important; }
+.lg-note { font-size: 0.86rem; color: var(--lg-faint); }
+.lg-open-list { font-size: 0.92rem; }
+.lg-open-list b { color: var(--lg-gold-bright); }
+
+.lg-foot {
+    margin-top: clamp(2.6rem, 6vh, 4rem);
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--lg-rule);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.lg-foot a { text-decoration: none; color: var(--lg-dim); }
+.lg-foot a:hover { color: var(--lg-gold-bright); }
+
+.lg-table { width: 100%; border-collapse: collapse; margin: 0 0 1.4rem; font-size: 0.9rem; }
+.lg-table th, .lg-table td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.7rem 0.9rem 0.7rem 0;
+    border-bottom: 1px solid var(--lg-rule);
+}
+.lg-table th { color: var(--lg-ink); font-weight: 500; font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; }

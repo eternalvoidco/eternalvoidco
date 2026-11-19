@@ -1,0 +1,925 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   EV FOR ARTISTS — /for-artists
+   ─────────────────────────────────────────────────────────────────────────────
+   An independent fashion house inviting someone into its workroom. Near-black
+   ground, warm ivory, the house gold. Bodoni Moda for display, Jost for
+   everything that has to be read carefully — which, on this page, is most of
+   it: an artist is being asked to send unpublished work and to read commercial
+   terms, and neither is served by ornament.
+
+   The strongest motion on this page belongs to the entrance (void-passage.js).
+   Everything below it is a restrained rise, once, on first sight.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+    --ar-ground: #030302;
+    --ar-ground-lift: #080706;
+    --ar-ivory: #f3f0ea;
+    --ar-ivory-dim: #b9b2a6;
+    --ar-ivory-faint: #7d776c;
+    --ar-gold: #c7a96c;
+    --ar-gold-bright: #e8d09e;
+    --ar-gold-deep: rgba(199, 169, 108, 0.42);
+    --ar-rule: rgba(255, 255, 255, 0.09);
+
+    --ar-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --ar-ease-arrive: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --ar-pad: clamp(1.4rem, 5vw, 5.5rem);
+    --ar-max: 1240px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+    background: var(--ar-ground);
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--ar-ground);
+    color: var(--ar-ivory-dim);
+    font-family: 'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    font-size: clamp(0.95rem, 0.3vw + 0.88rem, 1.04rem);
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+img { display: block; max-width: 100%; }
+
+a { color: var(--ar-gold); text-decoration: none; }
+a:hover, a:focus-visible { color: var(--ar-gold-bright); }
+
+:focus-visible {
+    outline: 1px solid var(--ar-gold-bright);
+    outline-offset: 3px;
+}
+
+.ar-skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 9500;
+    padding: 0.8rem 1.2rem;
+    background: var(--ar-ground);
+    border: 1px solid var(--ar-gold-deep);
+    color: var(--ar-ivory);
+    font-size: 0.74rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+}
+.ar-skip:focus { left: 1rem; top: 1rem; }
+
+.ar-top-sentinel { position: absolute; top: 0; left: 0; width: 1px; height: 1px; }
+
+/* ── Header ───────────────────────────────────────────────────────────────
+   Transparent over the study, and only takes its backing once the hero has
+   scrolled away — the entrance should open onto the garment, not onto a bar. */
+.ar-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 600;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    padding: clamp(0.85rem, 1.6vw, 1.3rem) var(--ar-pad);
+    background: transparent;
+    transition: background 0.5s ease, border-color 0.5s ease, backdrop-filter 0.5s ease;
+    border-bottom: 1px solid transparent;
+}
+
+.ar-nav.is-backed {
+    background: rgba(3, 3, 2, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom-color: var(--ar-rule);
+}
+
+.ar-nav-start, .ar-nav-end {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.9rem, 2vw, 1.8rem);
+}
+.ar-nav-end { justify-content: flex-end; }
+
+.ar-nav-link {
+    color: var(--ar-ivory-dim);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+}
+.ar-nav-link:hover, .ar-nav-link:focus-visible { color: var(--ar-ivory); }
+
+.ar-nav-mark {
+    width: 30px;
+    height: 26px;
+    color: var(--ar-ivory);
+}
+/* The canonical EV emblem, drawn from its own alpha in house ivory, as the
+   rest of the site renders it. */
+.ar-nav-mark span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: currentColor;
+    -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+    mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+    opacity: 0.88;
+    transition: opacity 0.3s ease;
+}
+.ar-nav-mark:hover span { opacity: 1; }
+
+.ar-nav-program {
+    color: var(--ar-gold);
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* ── Language ─────────────────────────────────────────────────────────── */
+.ar-lang { position: relative; }
+
+.ar-lang-button {
+    padding: 0.35rem 0.5rem;
+    border: 1px solid transparent;
+    background: none;
+    color: var(--ar-ivory-dim);
+    font: inherit;
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+.ar-lang-button:hover, .ar-lang-button[aria-expanded='true'] {
+    color: var(--ar-ivory);
+    border-color: var(--ar-gold-deep);
+}
+
+.ar-lang-list {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 11rem;
+    padding: 0.4rem;
+    background: rgba(6, 6, 5, 0.97);
+    border: 1px solid var(--ar-gold-deep);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.28s ease, transform 0.28s var(--ar-ease), visibility 0.28s;
+}
+.ar-lang.is-open .ar-lang-list { opacity: 1; visibility: visible; transform: none; }
+
+.ar-lang-option {
+    display: flex;
+    gap: 0.7rem;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border: 0;
+    background: none;
+    color: var(--ar-ivory-dim);
+    font: inherit;
+    font-size: 0.78rem;
+    text-align: left;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+.ar-lang-option span { color: var(--ar-gold); letter-spacing: 0.14em; font-size: 0.68rem; min-width: 1.8rem; }
+.ar-lang-option:hover, .ar-lang-option[aria-selected='true'] { color: var(--ar-ivory); background: rgba(199, 169, 108, 0.07); }
+
+/* ═══ The hero ════════════════════════════════════════════════════════════
+   Full viewport, and already in its final layout before the passage panel
+   uncovers it. Nothing here is laid out by script and nothing moves into
+   place: the title is drawn in by a mask over fixed text, and the lines
+   beneath it resolve by opacity alone. Position never changes, so the moment
+   a word becomes readable is the moment it is where it will stay. */
+.ar-hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    align-content: end;
+    padding: calc(var(--ar-pad) + 4rem) var(--ar-pad) clamp(3rem, 8vh, 6rem);
+    overflow: hidden;
+}
+
+.ar-hero-study {
+    position: absolute;
+    inset: 0;
+    /* The poster: the study's own colour and shape at 24px, inlined, so the
+       frame is never empty and never white while the real file is in flight.
+       Bounds are fixed by the hero itself, so nothing reflows when it lands. */
+    background: #040403 url('data:image/webp;base64,UklGRlQBAABXRUJQVlA4IEgBAACQBwCdASoYAA8APpE8mEiloyIhMAgAsBIJaQAAV2W8AAD+8iO//9x//rG///DI//8cR/8R6gAA/vIjv//cf/6xv//wyP//HEf/EeoAAP7yI7//3H/+sb//8Mj//xxH/xHqAAD+8iO//9x//rG///DI//8cR/8R6gAA/vIjv//cf/6xv//wyP//HEf/EeoAAP7yI7//3H/+sb//8Mj//xxH/xHqAAD+8iO//9x//rG///DI//8cR/8R6gAAAA==') center / cover no-repeat;
+}
+
+.ar-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 62% 50%;
+}
+
+/* Reads the study down into the ground at the bottom and into the copy on the
+   left, so type sits on a surface rather than on a photograph. */
+.ar-hero-grade {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to top, rgba(3, 3, 2, 0.97) 0%, rgba(3, 3, 2, 0.72) 22%, rgba(3, 3, 2, 0) 58%),
+        linear-gradient(to right, rgba(3, 3, 2, 0.93) 0%, rgba(3, 3, 2, 0.62) 28%, rgba(3, 3, 2, 0.05) 56%, rgba(3, 3, 2, 0) 100%);
+}
+
+/* The drafting marks, cropped by the frame as they would be by the edge of a
+   worktable. Behind the copy and well under it in weight. */
+.ar-hero-draft {
+    position: absolute;
+    left: calc(var(--ar-pad) * -0.2);
+    bottom: 0;
+    width: clamp(260px, 30vw, 460px);
+    height: auto;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.ar-draft-ink { fill: none; stroke: var(--ar-gold); }
+.ar-draft-rule { stroke-width: 0.6; stroke-opacity: 0.34; }
+.ar-draft-curve { stroke-width: 0.8; stroke-opacity: 0.5; }
+.ar-draft-notch { stroke-width: 0.7; stroke-opacity: 0.42; }
+.ar-draft-dim { stroke-width: 0.6; stroke-opacity: 0.56; }
+.ar-draft-letter,
+.ar-draft-figure {
+    stroke: none;
+    fill: var(--ar-gold);
+    fill-opacity: 0.62;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+}
+.ar-draft-figure { font-size: 9px; fill-opacity: 0.5; }
+
+.ar-hero-copy {
+    position: relative;
+    z-index: 2;
+    max-width: min(46ch, 52vw);
+}
+
+.ar-hero-kicker {
+    margin: 0 0 clamp(0.9rem, 2vh, 1.5rem);
+    color: var(--ar-gold);
+    font-size: 0.64rem;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+}
+
+/* Monumental on desktop, and still with its own margins on a phone. */
+.ar-hero-title {
+    margin: 0 0 clamp(1rem, 2.4vh, 1.6rem);
+    font-family: 'Bodoni Moda', Didot, Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2.9rem, 8.4vw, 9.5rem);
+    line-height: 0.94;
+    letter-spacing: -0.012em;
+    color: var(--ar-ivory);
+    text-wrap: balance;
+}
+
+/* The masked reveal. The span inside is what is clipped; the heading itself
+   never moves, so the text is at its final position on the first frame any
+   part of it is legible. Uncovers from the right, in the same direction as
+   the panel's edge, so the two read as one movement. */
+.ar-mask { display: block; overflow: hidden; }
+.ar-mask-in {
+    display: block;
+    clip-path: inset(0 0 0 0);
+}
+
+html.ar-pre .ar-mask-in { clip-path: inset(0 0 0 100%); }
+html.ar-pre .ar-hero-lede,
+html.ar-pre .ar-hero-body,
+html.ar-pre .ar-hero-actions,
+html.ar-pre .ar-hero-kicker,
+html.ar-pre .ar-hero-draft,
+html.ar-pre .ar-hero-scroll { opacity: 0; }
+
+/* Roman, not italic. The house asks Google Fonts for Bodoni without an italic
+   axis, and this page deliberately makes the identical request so the response
+   is already cached when the passage lands — so a true italic is not among the
+   faces available, and a synthesised one on a Didone is a slant, not a cut. */
+.ar-hero-lede {
+    margin: 0 0 clamp(0.8rem, 1.6vh, 1.2rem);
+    font-family: 'Bodoni Moda', Didot, Georgia, serif;
+    font-size: clamp(1.08rem, 2vw, 1.56rem);
+    line-height: 1.35;
+    letter-spacing: 0.012em;
+    color: var(--ar-ivory);
+}
+
+.ar-hero-body {
+    margin: 0 0 clamp(1.6rem, 3.4vh, 2.4rem);
+    max-width: 44ch;
+    color: var(--ar-ivory-dim);
+}
+
+.ar-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: clamp(0.8rem, 2vw, 1.6rem);
+}
+
+.ar-hero-scroll {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(1rem, 2.4vh, 1.8rem);
+    width: 1px;
+    height: clamp(26px, 5vh, 46px);
+    overflow: hidden;
+}
+.ar-hero-scroll-rule {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(199, 169, 108, 0), var(--ar-gold));
+    animation: arScroll 2.8s var(--ar-ease-arrive) infinite;
+}
+@keyframes arScroll {
+    0% { transform: translateY(-100%); }
+    55%, 100% { transform: translateY(100%); }
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.ar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.95rem 2rem;
+    border: 1px solid var(--ar-gold-deep);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.32s ease, border-color 0.32s ease, background 0.32s ease, box-shadow 0.32s ease;
+}
+
+.ar-btn--primary {
+    background: rgba(199, 169, 108, 0.06);
+    color: var(--ar-gold-bright);
+}
+.ar-btn--primary:hover, .ar-btn--primary:focus-visible {
+    background: rgba(199, 169, 108, 0.13);
+    border-color: var(--ar-gold);
+    box-shadow: 0 0 34px rgba(199, 169, 108, 0.16);
+    color: var(--ar-ivory);
+}
+
+.ar-btn--quiet {
+    padding-left: 0;
+    padding-right: 0;
+    border: 0;
+    border-bottom: 1px solid rgba(199, 169, 108, 0.3);
+    color: var(--ar-ivory-dim);
+}
+.ar-btn--quiet:hover, .ar-btn--quiet:focus-visible {
+    color: var(--ar-ivory);
+    border-bottom-color: var(--ar-gold);
+}
+
+.ar-btn--wide { width: 100%; max-width: 26rem; }
+.ar-btn[disabled] { opacity: 0.45; cursor: default; box-shadow: none; }
+
+/* ═══ Sections ════════════════════════════════════════════════════════════ */
+.ar-section {
+    max-width: var(--ar-max);
+    margin: 0 auto;
+    padding: clamp(4.5rem, 12vh, 9rem) var(--ar-pad);
+    border-top: 1px solid var(--ar-rule);
+}
+.ar-section:first-of-type { border-top: 0; }
+
+.ar-kicker {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin: 0 0 clamp(1.2rem, 3vh, 2rem);
+    color: var(--ar-gold);
+    font-size: 0.64rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+}
+.ar-num {
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: rgba(199, 169, 108, 0.6);
+}
+
+.ar-h2 {
+    margin: 0 0 clamp(1.2rem, 3vh, 1.8rem);
+    max-width: 22ch;
+    font-family: 'Bodoni Moda', Didot, Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.8rem, 4.2vw, 3.3rem);
+    line-height: 1.08;
+    color: var(--ar-ivory);
+    text-wrap: balance;
+}
+
+.ar-lead {
+    max-width: 62ch;
+    margin: 0 0 clamp(2rem, 5vh, 3rem);
+    font-size: clamp(1rem, 0.4vw + 0.94rem, 1.14rem);
+    color: var(--ar-ivory-dim);
+}
+
+.ar-note {
+    max-width: 68ch;
+    margin: clamp(2rem, 4vh, 2.8rem) 0 0;
+    padding-left: 1.2rem;
+    border-left: 1px solid var(--ar-gold-deep);
+    font-size: 0.9rem;
+    color: var(--ar-ivory-faint);
+}
+
+.ar-section h3 {
+    margin: 0 0 0.6rem;
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 0.74rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ar-ivory);
+}
+/* Closes the gap to the heading only. Setting `margin: 0` here also removed
+   the space BELOW the paragraph, which ran two stacked paragraphs together
+   into one block of text wherever a section had more than one thing to say. */
+.ar-section h3 + p { margin-top: 0; }
+
+/* ── Grids ────────────────────────────────────────────────────────────── */
+.ar-grid {
+    display: grid;
+    gap: clamp(1.8rem, 3.5vw, 3rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ar-grid--four { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.ar-grid--two { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.ar-grid p { margin: 0; font-size: 0.94rem; }
+
+.ar-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: clamp(1.8rem, 3.5vw, 3rem);
+    margin: 0 0 clamp(2rem, 4vh, 3rem);
+}
+.ar-cols p { margin: 0 0 0.8rem; font-size: 0.94rem; }
+.ar-cols p:last-child { margin-bottom: 0; }
+
+/* ── The path ─────────────────────────────────────────────────────────── */
+.ar-path {
+    counter-reset: step;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+}
+.ar-path li {
+    counter-increment: step;
+    position: relative;
+    padding: clamp(1.4rem, 3vh, 2rem) 0 clamp(1.4rem, 3vh, 2rem) clamp(3rem, 6vw, 5rem);
+    border-top: 1px solid var(--ar-rule);
+}
+.ar-path li:last-child { border-bottom: 1px solid var(--ar-rule); }
+.ar-path li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: clamp(1.4rem, 3vh, 2rem);
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-size: 0.9rem;
+    color: var(--ar-gold);
+    opacity: 0.66;
+}
+.ar-path p { margin: 0; max-width: 64ch; font-size: 0.94rem; }
+
+/* ── The rate ─────────────────────────────────────────────────────────── */
+/* The figure and what it is a figure OF read as one statement, so the label
+   sits on the numeral's baseline rather than floating beside its box — a
+   Didone at this size has far more glyph than line box. */
+.ar-terms .ar-rate {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    margin: 0 0 clamp(1.6rem, 3.5vh, 2.4rem);
+    padding-bottom: clamp(1.4rem, 3vh, 2rem);
+    border-bottom: 1px solid var(--ar-rule);
+    flex-wrap: wrap;
+}
+.ar-rate-figure {
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    font-family: 'Bodoni Moda', Didot, Georgia, serif;
+    line-height: 0.86;
+    color: var(--ar-gold-bright);
+}
+.ar-rate-num { font-size: clamp(3.4rem, 9vw, 6.4rem); }
+.ar-rate-pct { font-size: clamp(1.4rem, 3vw, 2.2rem); margin-left: 0.12em; }
+.ar-rate-label {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ar-ivory-faint);
+}
+
+.ar-example {
+    margin: 0 0 clamp(2rem, 4vh, 3rem);
+    padding: clamp(1.4rem, 3vw, 2.1rem);
+    border: 1px solid var(--ar-gold-deep);
+    background: rgba(199, 169, 108, 0.035);
+}
+.ar-example-label {
+    margin: 0 0 0.6rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ar-gold);
+}
+.ar-example-body {
+    margin: 0;
+    font-size: clamp(1rem, 1.6vw, 1.22rem);
+    color: var(--ar-ivory);
+}
+.ar-example-body b { font-weight: 500; color: var(--ar-gold-bright); }
+
+.ar-flag {
+    max-width: 72ch;
+    margin: 0;
+    padding: 1rem 1.2rem;
+    border: 1px dashed rgba(199, 169, 108, 0.32);
+    font-size: 0.84rem;
+    color: var(--ar-ivory-faint);
+}
+
+/* ── Plates ───────────────────────────────────────────────────────────── */
+.ar-plate {
+    margin: 0;
+    padding: 0 var(--ar-pad);
+    max-width: var(--ar-max);
+    margin-inline: auto;
+}
+.ar-plate img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--ar-rule);
+}
+.ar-plate--wide { max-width: 1480px; }
+.ar-plate figcaption {
+    margin-top: 0.9rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ar-ivory-faint);
+}
+
+/* ═══ The form ════════════════════════════════════════════════════════════
+   The calmest thing on the page. Nothing animates while someone is typing. */
+.ar-submit { scroll-margin-top: 6rem; }
+
+.ar-form, .ar-gate {
+    max-width: 44rem;
+}
+
+.ar-gate {
+    padding: clamp(1.4rem, 3vw, 2.2rem);
+    border: 1px solid var(--ar-gold-deep);
+    background: rgba(199, 169, 108, 0.04);
+    margin-bottom: clamp(2rem, 4vh, 3rem);
+}
+.ar-gate-title {
+    margin: 0 0 0.6rem;
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+    color: var(--ar-ivory);
+}
+.ar-gate-copy { margin: 0 0 1.4rem; font-size: 0.94rem; max-width: 56ch; }
+.ar-gate-row { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.ar-gate-row .ar-input { flex: 1 1 15rem; }
+
+.ar-field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: clamp(1rem, 2.4vw, 1.8rem);
+}
+
+.ar-field { margin: 0 0 clamp(1.2rem, 2.6vh, 1.8rem); display: block; }
+
+.ar-field-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ar-ivory);
+}
+
+.ar-optional {
+    margin-left: 0.4rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    color: var(--ar-ivory-faint);
+    text-transform: lowercase;
+}
+
+.ar-field-hint {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 0.84rem;
+    color: var(--ar-ivory-faint);
+    max-width: 58ch;
+}
+
+.ar-input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--ar-rule);
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--ar-ivory);
+    font: inherit;
+    font-size: 0.96rem;
+    transition: border-color 0.28s ease, background 0.28s ease;
+}
+.ar-input::placeholder { color: rgba(125, 119, 108, 0.75); }
+.ar-input:hover { border-color: rgba(199, 169, 108, 0.3); }
+.ar-input:focus {
+    outline: none;
+    border-color: var(--ar-gold);
+    background: rgba(199, 169, 108, 0.05);
+}
+.ar-textarea { resize: vertical; min-height: 8rem; line-height: 1.7; }
+
+.ar-field-count {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    color: var(--ar-ivory-faint);
+    text-align: right;
+}
+
+.ar-file {
+    width: 100%;
+    padding: 0.8rem 0;
+    color: var(--ar-ivory-dim);
+    font: inherit;
+    font-size: 0.86rem;
+}
+.ar-file::file-selector-button {
+    margin-right: 1rem;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--ar-gold-deep);
+    background: rgba(199, 169, 108, 0.06);
+    color: var(--ar-gold-bright);
+    font: inherit;
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.28s ease, border-color 0.28s ease;
+}
+.ar-file::file-selector-button:hover {
+    background: rgba(199, 169, 108, 0.13);
+    border-color: var(--ar-gold);
+}
+
+.ar-field-error {
+    display: none;
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    color: #e8a5a5;
+}
+.ar-field-error.is-on { display: block; }
+.ar-input.is-invalid { border-color: rgba(214, 120, 120, 0.7); }
+
+.ar-consents {
+    margin: clamp(1.4rem, 3vh, 2rem) 0;
+    padding: clamp(1.1rem, 2.4vw, 1.6rem);
+    border: 1px solid var(--ar-rule);
+}
+.ar-consents legend { padding: 0 0.6rem; }
+
+.ar-check {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    cursor: pointer;
+}
+.ar-check:last-of-type { margin-bottom: 0; }
+.ar-check input {
+    flex: 0 0 auto;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin-top: 0.3rem;
+    accent-color: var(--ar-gold);
+}
+
+.ar-form-actions { margin: clamp(1.4rem, 3vh, 2rem) 0 1rem; }
+.ar-form-note {
+    max-width: 58ch;
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--ar-ivory-faint);
+}
+
+.ar-form-msg {
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+    min-height: 1.4rem;
+}
+.ar-form-msg.is-error { color: #e8a5a5; }
+.ar-form-msg.is-ok { color: var(--ar-gold-bright); }
+
+.ar-receipt {
+    max-width: 44rem;
+    padding: clamp(1.6rem, 3.4vw, 2.6rem);
+    border: 1px solid var(--ar-gold-deep);
+    background: rgba(199, 169, 108, 0.045);
+}
+.ar-receipt-kicker {
+    margin: 0 0 0.6rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ar-gold);
+}
+.ar-receipt-title {
+    margin: 0 0 1rem;
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-size: clamp(1.3rem, 2.6vw, 1.9rem);
+    color: var(--ar-ivory);
+}
+.ar-receipt-ref { margin: 0 0 1rem; font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ar-ivory-faint); }
+.ar-receipt-ref b { color: var(--ar-gold-bright); letter-spacing: 0.22em; font-weight: 500; }
+.ar-receipt-copy { margin: 0; font-size: 0.92rem; max-width: 54ch; }
+
+/* ── FAQ ──────────────────────────────────────────────────────────────── */
+.ar-faq { border-top: 1px solid var(--ar-rule); max-width: 72ch; }
+.ar-faq-item { border-bottom: 1px solid var(--ar-rule); }
+.ar-faq-item summary {
+    padding: clamp(1rem, 2.4vh, 1.4rem) 2.2rem clamp(1rem, 2.4vh, 1.4rem) 0;
+    position: relative;
+    list-style: none;
+    cursor: pointer;
+    color: var(--ar-ivory);
+    font-size: 0.98rem;
+    transition: color 0.26s ease;
+}
+.ar-faq-item summary::-webkit-details-marker { display: none; }
+.ar-faq-item summary:hover { color: var(--ar-gold-bright); }
+.ar-faq-item summary::after {
+    content: '';
+    position: absolute;
+    right: 0.3rem;
+    top: 50%;
+    width: 11px;
+    height: 1px;
+    background: var(--ar-gold);
+    box-shadow: 0 0 0 0 transparent;
+}
+.ar-faq-item summary::before {
+    content: '';
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    width: 1px;
+    height: 11px;
+    margin-top: -5px;
+    background: var(--ar-gold);
+    transition: transform 0.3s var(--ar-ease), opacity 0.3s ease;
+}
+.ar-faq-item[open] summary::before { transform: scaleY(0); opacity: 0; }
+.ar-faq-item p {
+    margin: 0 0 clamp(1rem, 2.4vh, 1.4rem);
+    max-width: 66ch;
+    font-size: 0.94rem;
+    color: var(--ar-ivory-dim);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+.ar-footer {
+    max-width: var(--ar-max);
+    margin: 0 auto;
+    padding: clamp(3rem, 7vh, 5rem) var(--ar-pad) clamp(3rem, 7vh, 5rem);
+    border-top: 1px solid var(--ar-rule);
+}
+.ar-footer-mark {
+    margin: 0 0 1.4rem;
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.3em;
+    color: var(--ar-ivory);
+}
+.ar-footer-mark sup { font-size: 0.5em; }
+.ar-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem clamp(1.2rem, 3vw, 2.4rem);
+    margin-bottom: 1.6rem;
+}
+.ar-footer-links a {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ar-ivory-dim);
+}
+.ar-footer-links a:hover { color: var(--ar-gold-bright); }
+.ar-footer-fine { margin: 0; max-width: 76ch; font-size: 0.76rem; color: var(--ar-ivory-faint); }
+
+/* ═══ Scroll reveals ══════════════════════════════════════════════════════
+   Restrained, once, and never on the hero — the entrance owns that. A rise of
+   a few pixels and an opacity ramp; nothing that could still be moving when
+   someone starts reading or typing. */
+.ar-reveal {
+    opacity: 1;
+    transform: none;
+}
+html.ar-js .ar-reveal:not(.is-in) {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+}
+html.ar-js .ar-reveal {
+    transition: opacity 0.7s var(--ar-ease-arrive), transform 0.9s var(--ar-ease);
+}
+/* Nothing in the form may be mid-animation while it is being filled in. */
+html.ar-js .ar-submit.is-in,
+html.ar-js .ar-submit.is-in * { transition-duration: 0s; }
+
+/* ═══ Mobile ══════════════════════════════════════════════════════════════
+   The same hero, re-cropped rather than re-designed: the study goes portrait
+   and the copy sits beneath it on the ground it fades into. */
+@media (max-width: 860px) {
+    .ar-hero {
+        min-height: 100svh;
+        padding-bottom: clamp(2.4rem, 6vh, 4rem);
+    }
+    .ar-hero-img { object-position: 50% 42%; }
+    /* Portrait, the copy sits over the chest of the garment rather than beside
+       it, so the ground has to come further up the frame — far enough that the
+       headline is on a surface, not far enough to lose the cloth it is on. */
+    .ar-hero-grade {
+        background:
+            linear-gradient(to top,
+                rgba(3, 3, 2, 0.985) 0%,
+                rgba(3, 3, 2, 0.95) 34%,
+                rgba(3, 3, 2, 0.70) 52%,
+                rgba(3, 3, 2, 0.26) 70%,
+                rgba(3, 3, 2, 0.04) 88%,
+                rgba(3, 3, 2, 0) 100%);
+    }
+    .ar-hero-copy { max-width: none; }
+    .ar-hero-draft { width: 54vw; opacity: 0.34; }
+    .ar-hero-scroll { display: none; }
+    .ar-nav-program { display: none; }
+    .ar-nav { grid-template-columns: 1fr auto 1fr; }
+    .ar-nav-link--section { display: none; }
+}
+
+@media (max-width: 520px) {
+    .ar-hero-title { font-size: clamp(2.5rem, 13vw, 3.6rem); }
+    .ar-hero-actions { flex-direction: column; align-items: stretch; }
+    .ar-hero-actions .ar-btn { width: 100%; }
+    .ar-btn--quiet { padding: 0.6rem 0; }
+    .ar-rate { gap: 0.4rem; }
+}
+
+/* ═══ Reduced motion ══════════════════════════════════════════════════════
+   The house switch. Everything arrives already arrived. */
+html.reduce-motion .ar-mask-in { clip-path: none !important; }
+html.reduce-motion .ar-hero-scroll-rule { animation: none; }
+html.reduce-motion .ar-reveal,
+html.reduce-motion.ar-js .ar-reveal:not(.is-in) {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+}
+html.reduce-motion.ar-pre .ar-hero-lede,
+html.reduce-motion.ar-pre .ar-hero-body,
+html.reduce-motion.ar-pre .ar-hero-actions,
+html.reduce-motion.ar-pre .ar-hero-kicker,
+html.reduce-motion.ar-pre .ar-hero-draft,
+html.reduce-motion.ar-pre .ar-hero-scroll { opacity: 1; }

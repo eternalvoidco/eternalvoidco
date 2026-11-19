@@ -1,0 +1,174 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   THE PASSAGE — the lateral route transition
+   ─────────────────────────────────────────────────────────────────────────────
+   Opening EV for Artists from the header is a door, not a page load. A single
+   near-black panel crosses the viewport right to left, covers the page it is
+   leaving, and the route changes underneath it; on the page it arrives at, the
+   same panel keeps travelling and uncovers the hero from the right.
+
+   One surface, one owner. void-passage.js builds .vp-panel and is the only
+   thing that ever moves it. The html[data-passage] cover below is NOT that
+   surface and is never animated: it is a still placeholder that paints in the
+   frames between the new document's first paint and the script taking over,
+   so there is no flash of an unprepared page. The script replaces it with the
+   panel at the same position and colour in a single frame.
+
+   Loaded in the <head> of every page that takes part, so it is render-blocking
+   and the cover is already painted on the first frame the browser draws.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+    /* The panel's own black. Matched to the site ground on both sides of the
+       passage so no frame of it is brighter or darker than the pages it joins. */
+    --vp-ground: #030302;
+
+    /* Decisive off the mark, settling into the covered position — the beat
+       that has to answer the click. */
+    --vp-ease-cover: cubic-bezier(0.32, 0, 0.24, 1);
+    /* The weight. Gets moving, carries, and spends its last third arriving —
+       the same shape the Collection transit's letterbox and the chapter stage's
+       card take, so the passage belongs to the same house. */
+    --vp-ease-clear: cubic-bezier(0.28, 0.72, 0.22, 1);
+    /* The settle used by anything resolving behind the edge. */
+    --vp-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── The pre-paint cover ──────────────────────────────────────────────────
+   Set by the inline bootstrap in <head> before anything is drawn, cleared by
+   the script one frame later. Fixed, so it covers whatever the document is
+   scrolled to. */
+html[data-passage='in']::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: var(--vp-ground);
+    pointer-events: none;
+}
+
+/* The incoming page must not move while it is still covered: a trackpad flick
+   during the reveal would drag the hero out from under the panel. The script
+   holds the wheel and the touch rather than this setting `overflow: hidden` —
+   taking the scrollbar away and giving it back is a layout shift at each end,
+   which is exactly the jolt the passage exists to avoid. */
+
+/* ── The panel ────────────────────────────────────────────────────────────
+   Exactly the viewport. Its resting place is off to the right; covering is
+   translate(0); clearing carries it off to the left. Nothing else about it
+   changes — transform only, on its own layer. */
+.vp-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: var(--vp-ground);
+    transform: translate3d(100%, 0, 0);
+    will-change: transform;
+    pointer-events: none;
+    /* No paint containment: the edge throws its light onto what it has not
+       covered yet, and the wake lies on what it has just uncovered. Both live
+       outside the panel's own box and would be clipped away by it. */
+}
+
+/* While the panel is up it takes the pointer, so nothing underneath can be
+   clicked through a page that is on its way out or not yet arrived. */
+html.vp-moving .vp-panel {
+    pointer-events: auto;
+}
+
+/* The leading edge: light catching the edge of a dark metal panel. A hairline
+   of antique gold, brightest at the middle of its travel, with a short spill
+   thrown ahead of it onto the page it is about to cover. */
+.vp-lead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    background: linear-gradient(
+        to bottom,
+        rgba(199, 169, 108, 0) 0%,
+        rgba(199, 169, 108, 0.72) 14%,
+        rgba(232, 208, 158, 0.96) 50%,
+        rgba(199, 169, 108, 0.72) 86%,
+        rgba(199, 169, 108, 0) 100%);
+    box-shadow: -10px 0 34px rgba(199, 169, 108, 0.20);
+}
+
+.vp-lead::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 12vw;
+    background: linear-gradient(to left,
+        rgba(126, 101, 59, 0.22),
+        rgba(58, 47, 28, 0.07) 36%,
+        rgba(0, 0, 0, 0) 100%);
+}
+
+/* The revealing edge. On the way out this is the side the hero appears from,
+   so it carries a warmer, softer wash rather than a hairline — the light the
+   panel leaves on what it uncovers. */
+.vp-wake {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 100%;
+    width: 9vw;
+    background: linear-gradient(to right,
+        rgba(142, 115, 68, 0.26),
+        rgba(64, 52, 31, 0.08) 42%,
+        rgba(0, 0, 0, 0) 100%);
+    opacity: 0;
+}
+
+html.vp-clearing .vp-wake { opacity: 1; }
+
+/* ── The link ─────────────────────────────────────────────────────────────
+   The answer to the press, before the panel has moved: the gold already in
+   the header comes up under the word and the rule beneath it draws across.
+   This is the only thing that happens on pointerdown; everything else waits
+   for the activation itself. */
+[data-passage] {
+    position: relative;
+}
+
+[data-passage]::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.34em;
+    height: 1px;
+    background: linear-gradient(to right,
+        rgba(232, 208, 158, 0.95),
+        rgba(199, 169, 108, 0.55));
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.42s var(--vp-ease-settle), opacity 0.2s ease;
+}
+
+[data-passage].is-pressed {
+    color: var(--void-gold-bright, #e8d09e);
+}
+
+[data-passage].is-pressed::after {
+    transform: scaleX(1);
+    opacity: 1;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────
+   The house switch, as everywhere else on the site: the route simply changes.
+   No panel is ever built, and the bootstrap never sets the cover, so there is
+   nothing here to undo. */
+html.reduce-motion .vp-panel,
+html.reduce-motion[data-passage='in']::before {
+    display: none;
+}
+
+html.reduce-motion [data-passage]::after {
+    transition: none;
+}

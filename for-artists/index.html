@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0J10500JCQ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-0J10500JCQ');
+    </script>
+    <script>
+        // Before first paint, so neither the entrance nor the passage plays
+        // for someone who has asked the house for a calmer site.
+        try {
+            if (localStorage.getItem('void-reduce-motion') === '1'
+                && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.documentElement.classList.add('reduce-motion');
+            }
+        } catch (e) { /* storage blocked */ }
+    </script>
+    <script>
+        // THE PASSAGE, first half of the handshake. Arriving through the door
+        // from the header, the page must already be covered on the frame it
+        // first paints — the hero is laid out behind the cover and is uncovered
+        // by the panel, never assembled in front of the visitor. void-passage.js
+        // takes the cover over one frame later; see that file for the rest.
+        try {
+            if (sessionStorage.getItem('void-passage') === 'in') {
+                sessionStorage.removeItem('void-passage');
+                if (!document.documentElement.classList.contains('reduce-motion')) {
+                    document.documentElement.setAttribute('data-passage', 'in');
+                }
+            }
+        } catch (e) { /* storage blocked */ }
+    </script>
+    <script>
+        // The hero's own reveal, armed before first paint so no part of it is
+        // ever drawn in a state the visitor was not meant to see. `ar-js` is
+        // what the scroll reveals hang off, so without script every section is
+        // simply present; `ar-pre` holds the hero's lines back until
+        // void-artists.js has a timeline to run them on.
+        //
+        // The timeout is the safety net: if the script never arrives, the hero
+        // must not stay invisible. It is cleared the moment the real reveal
+        // starts, so it never fights it.
+        (function () {
+            var root = document.documentElement;
+            root.classList.add('ar-js', 'ar-pre');
+            window.__arSafety = window.setTimeout(function () {
+                root.classList.remove('ar-pre');
+                root.removeAttribute('data-passage');
+            }, 4000);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>EV for Artists — An invitation to emerging designers | VOID©</title>
+    <meta name="description" content="EV for Artists. Submit an original garment concept, artwork, or tech pack to ETERNAL VOID. Selected designs may be developed into a limited release, with designer credit and a royalty on sales.">
+    <link rel="canonical" href="https://eternalvoid.co/for-artists">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#030302">
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg?v=20260713-ev">
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico?v=20260713-ev">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png?v=20260713-ev">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="EV for Artists — An invitation to emerging designers | VOID©">
+    <meta property="og:description" content="Submit an original garment concept, artwork, or tech pack to ETERNAL VOID. Selected designs may be developed into a limited release, with designer credit and a royalty on sales.">
+    <meta property="og:url" content="https://eternalvoid.co/for-artists">
+    <meta property="og:image" content="https://eternalvoid.co/assets/artists/atelier-study-1600.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="EV for Artists | VOID©">
+    <meta name="twitter:description" content="An invitation to emerging designers. Designer credit and a royalty on sales.">
+    <meta name="twitter:image" content="https://eternalvoid.co/assets/artists/atelier-study-1600.webp">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- The study is the hero. It is asked for at the highest priority and in
+         the crop this viewport will actually use, so the panel never has to
+         wait on it — and if it is still in flight, the poster underneath it is
+         already the right colour and the right shape. -->
+    <link rel="preload" as="image" href="/assets/artists/atelier-study-1600.webp"
+          imagesrcset="/assets/artists/atelier-study-portrait-900.webp 900w, /assets/artists/atelier-study-1100.webp 1100w, /assets/artists/atelier-study-1600.webp 1600w"
+          imagesizes="100vw" fetchpriority="high">
+    <!-- Byte-identical to the request the main site makes, including the
+         family this page does not use. A stylesheet is render-blocking, so
+         until it answers nothing paints and the passage cannot begin
+         uncovering anything — and the journey this page is built for starts
+         on a page that has already asked for exactly this URL. Matching it
+         turns a cold round trip into a cache hit at the one moment it costs
+         the most. Cormorant is the price; a round trip in the middle of the
+         transition is what it buys off. -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&display=swap" rel="stylesheet">
+    <!-- /assets is served immutable for a year: bump ?v= with every change. -->
+    <link rel="stylesheet" href="/assets/void-passage.css?v=20261119-artists">
+    <link rel="stylesheet" href="/assets/void-artists.css?v=20261119-artists">
+</head>
+<body>
+    <a class="ar-skip" href="#artists" data-i18n="skipLink">Skip to content</a>
+
+    <span class="ar-top-sentinel" id="arTopSentinel" aria-hidden="true"></span>
+
+    <header class="ar-nav" id="arNav">
+        <nav class="ar-nav-start" aria-label="Site" data-i18n-aria-label="navLabel">
+            <a class="ar-nav-link ar-nav-link--back" href="/shop" data-passage><span aria-hidden="true">&larr;</span> <span data-i18n="navCollection">Collection</span></a>
+            <a class="ar-nav-link ar-nav-link--section" href="#submit" data-i18n="navSubmit">Submit</a>
+            <a class="ar-nav-link ar-nav-link--section" href="#terms" data-i18n="navTerms">Terms</a>
+        </nav>
+        <a class="ar-nav-mark" href="/" aria-label="Eternal Void" data-passage><span aria-hidden="true"></span></a>
+        <div class="ar-nav-end">
+            <span class="ar-nav-program" aria-hidden="true">EV for Artists</span>
+            <div class="ar-lang" id="arLang">
+                <button type="button" class="ar-lang-button" id="arLangButton" aria-haspopup="listbox" aria-expanded="false">EN</button>
+                <div class="ar-lang-list" id="arLangList" role="listbox" aria-label="Select language" data-i18n-aria-label="selectLanguage">
+                    <button type="button" class="ar-lang-option" role="option" data-language="en"><span>EN</span> English</button>
+                    <button type="button" class="ar-lang-option" role="option" data-language="fr"><span>FR</span> Français</button>
+                    <button type="button" class="ar-lang-option" role="option" data-language="it"><span>IT</span> Italiano</button>
+                    <button type="button" class="ar-lang-option" role="option" data-language="de"><span>DE</span> Deutsch</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="arMain">
+        <!-- ══ The hero ═══════════════════════════════════════════════════
+             Laid out in its final position from the first byte. Nothing in
+             here moves on arrival: the study is uncovered by the passage
+             panel, the title is drawn in behind the edge by a mask, and the
+             invitation resolves in place. See void-artists.js. -->
+        <section class="ar-hero" id="artists" aria-labelledby="arTitle" tabindex="-1">
+            <div class="ar-hero-study" aria-hidden="true">
+                <img class="ar-hero-img" id="arHeroImg"
+                     src="/assets/artists/atelier-study-1600.webp"
+                     srcset="/assets/artists/atelier-study-portrait-900.webp 900w,
+                             /assets/artists/atelier-study-1100.webp 1100w,
+                             /assets/artists/atelier-study-1600.webp 1600w"
+                     sizes="100vw" alt="" decoding="async" fetchpriority="high"
+                     width="1600" height="1000">
+                <span class="ar-hero-grade"></span>
+            </div>
+
+            <!-- The drafting marks, live rather than baked: gold hairlines,
+                 notches and a dimension run, cropped by the frame as they
+                 would be by the edge of a worktable. -->
+            <svg class="ar-hero-draft" viewBox="0 0 420 300" aria-hidden="true" focusable="false" preserveAspectRatio="xMinYMax meet">
+                <g class="ar-draft-ink">
+                    <path class="ar-draft-rule" d="M-20 54 H250" />
+                    <path class="ar-draft-rule" d="M-20 96 H214" />
+                    <path class="ar-draft-rule" d="M-20 138 H178" />
+                    <path class="ar-draft-curve" d="M8 236 C 62 206, 108 182, 150 136 S 214 74, 262 58" />
+                    <path class="ar-draft-curve" d="M8 272 C 74 248, 126 222, 172 170" />
+                    <path class="ar-draft-notch" d="M44 46 v16 M96 46 v16 M148 46 v16" />
+                    <path class="ar-draft-dim" d="M44 180 H148 M44 174 v12 M148 174 v12" />
+                    <text class="ar-draft-letter" x="20" y="44">A</text>
+                    <text class="ar-draft-letter" x="20" y="86">B</text>
+                    <text class="ar-draft-letter" x="20" y="128">C</text>
+                    <text class="ar-draft-figure" x="86" y="170">62</text>
+                </g>
+            </svg>
+
+            <div class="ar-hero-copy">
+                <p class="ar-hero-kicker" data-i18n="heroKicker">Eternal Void</p>
+                <h1 class="ar-hero-title" id="arTitle">
+                    <span class="ar-mask"><span class="ar-mask-in">EV for Artists</span></span>
+                </h1>
+                <p class="ar-hero-lede" data-i18n="heroLede">An invitation to emerging designers.</p>
+                <p class="ar-hero-body" data-i18n="heroBody">Submit an original garment concept, artwork, or tech pack to ETERNAL VOID. Selected designs may be developed into a limited release, with designer credit and a royalty on sales.</p>
+                <div class="ar-hero-actions">
+                    <a class="ar-btn ar-btn--primary" href="#submit" data-i18n="ctaSubmit">Submit a Design</a>
+                    <a class="ar-btn ar-btn--quiet" href="#terms" data-i18n="ctaTerms">Collaboration Terms</a>
+                </div>
+            </div>
+
+            <span class="ar-hero-scroll" aria-hidden="true"><span class="ar-hero-scroll-rule"></span></span>
+        </section>
+
+        <!-- ══ 01 · What you can submit ════════════════════════════════════ -->
+        <section class="ar-section ar-reveal" id="submit-what" aria-labelledby="arWhatTitle">
+            <p class="ar-kicker"><span class="ar-num">01</span> <span data-i18n="whatKicker">What you can submit</span></p>
+            <h2 class="ar-h2" id="arWhatTitle" data-i18n="whatTitle">A sketch is enough to start.</h2>
+            <p class="ar-lead" data-i18n="whatLead">We read original work from people who make things. You do not need a studio, a label, or a production history — you need a design you own and can describe.</p>
+            <ul class="ar-grid ar-grid--four">
+                <li><h3 data-i18n="whatA">Garment concepts</h3><p data-i18n="whatACopy">A cut, a silhouette, a construction idea. Flats, a sketch, or a photographed toile.</p></li>
+                <li><h3 data-i18n="whatB">Graphics &amp; artwork</h3><p data-i18n="whatBCopy">Front or back placements, all-over compositions, typographic work, drawn or painted originals.</p></li>
+                <li><h3 data-i18n="whatC">Textile prints</h3><p data-i18n="whatCCopy">Repeats, colourways, treatments. A clean tile and a mock-up on a body are plenty.</p></li>
+                <li><h3 data-i18n="whatD">Embroidery &amp; tech packs</h3><p data-i18n="whatDCopy">Stitch artwork, thread calls, or a full pack if you have one. A full tech pack is optional.</p></li>
+            </ul>
+            <p class="ar-note" data-i18n="whatNote">A clear sketch or mock-up and a short description are enough to start. We ask for editable or production source files only once a design progresses — never at intake.</p>
+        </section>
+
+        <!-- ══ A detail moment ═════════════════════════════════════════════ -->
+        <figure class="ar-plate ar-reveal" aria-labelledby="arPlateOneCap">
+            <img src="/assets/artists/atelier-detail-seam-1000.webp" alt="" loading="lazy" decoding="async" width="1000" height="640">
+            <figcaption id="arPlateOneCap" data-i18n="plateOne">Shoulder seam, heavyweight loopback. What a drawing becomes.</figcaption>
+        </figure>
+
+        <!-- ══ 02 · What happens next ══════════════════════════════════════ -->
+        <section class="ar-section ar-reveal" id="process" aria-labelledby="arProcessTitle">
+            <p class="ar-kicker"><span class="ar-num">02</span> <span data-i18n="pathKicker">What happens next</span></p>
+            <h2 class="ar-h2" id="arProcessTitle" data-i18n="pathTitle">From your file to a release.</h2>
+            <ol class="ar-path">
+                <li>
+                    <h3 data-i18n="pathOne">You submit, privately</h3>
+                    <p data-i18n="pathOneCopy">Your files go to private storage. They are not published, not indexed, and not attached to any email. You get a confirmation and a submission reference straight away.</p>
+                </li>
+                <li>
+                    <h3 data-i18n="pathTwo">The atelier reads it</h3>
+                    <p data-i18n="pathTwoCopy">A small internal review team looks at the work. Nothing is shown outside that team, and nothing is used for anything other than deciding whether to talk to you.</p>
+                </li>
+                <li>
+                    <h3 data-i18n="pathThree">A conversation, if shortlisted</h3>
+                    <p data-i18n="pathThreeCopy">If the work is shortlisted we write to you. Shortlisting is a stage of review — it is not an offer and it grants no rights in your design.</p>
+                </li>
+                <li>
+                    <h3 data-i18n="pathFour">A written offer</h3>
+                    <p data-i18n="pathFourCopy">If we want to produce it, you receive a written collaboration agreement naming the design, the products, the channels, the credit and the royalty. Nothing is made until both parties sign it.</p>
+                </li>
+                <li>
+                    <h3 data-i18n="pathFive">Development and release</h3>
+                    <p data-i18n="pathFiveCopy">Sampling, approvals, production, launch. You are credited, and the royalty runs from the first eligible sale.</p>
+                </li>
+            </ol>
+            <p class="ar-note" data-i18n="pathNote">We do not publish a guaranteed response time. Intake is read in batches by a small team, and we would rather say nothing than promise a date we cannot keep. If a design is shortlisted you will hear from us directly; if you have heard nothing, your submission is still on file and you can ask where it stands at any time.</p>
+        </section>
+
+        <!-- ══ 03 · How you are paid ═══════════════════════════════════════
+             Deliberately the quietest layout on the page, and deliberately
+             directly above the form. Figures should be read, not performed. -->
+        <section class="ar-section ar-terms ar-reveal" id="terms" aria-labelledby="arPayTitle">
+            <p class="ar-kicker"><span class="ar-num">03</span> <span data-i18n="payKicker">How you are paid</span></p>
+            <h2 class="ar-h2" id="arPayTitle" data-i18n="payTitle">A royalty on what the piece actually sells for.</h2>
+
+            <div class="ar-rate" role="group" aria-labelledby="arRateLabel">
+                <p class="ar-rate-figure"><span class="ar-rate-num">12</span><span class="ar-rate-pct">%</span></p>
+                <p class="ar-rate-label" id="arRateLabel" data-i18n="rateLabel">of net product sales, proposed</p>
+            </div>
+
+            <p class="ar-lead" data-i18n="payLead">Twelve per cent of net product sales is ETERNAL VOID&rsquo;s proposed opening offer for a selected design. It is our proposal, not an industry benchmark, and the rate in your agreement is the one that counts.</p>
+
+            <div class="ar-cols">
+                <div>
+                    <h3 data-i18n="payBaseTitle">What the royalty is calculated on</h3>
+                    <p data-i18n="payBaseCopy">For direct sales, the royalty is calculated on the amount actually paid for the collaboration merchandise, after discounts. VAT and other sales taxes are excluded, and so is separately charged shipping.</p>
+                    <p data-i18n="payBaseCopyTwo">Refunds and chargebacks reverse the affected merchandise amount once, including partial reversals. A reversal that lands in a later quarter is applied to that quarter.</p>
+                </div>
+                <div>
+                    <h3 data-i18n="payNoDeductTitle">What is not deducted</h3>
+                    <p data-i18n="payNoDeductCopy">Production, sampling, packaging, platform fees, payment fees, marketing and overhead stay outside the royalty calculation. ETERNAL VOID covers these when it runs the release — they are not netted off your royalty.</p>
+                </div>
+            </div>
+
+            <div class="ar-example">
+                <p class="ar-example-label" data-i18n="exampleLabel">An example, in plain language</p>
+                <p class="ar-example-body" data-i18n-html="exampleBody">If an eligible sale generates <b>&euro;160</b> in net product sales, a <b>12%</b> royalty pays the artist <b>&euro;19.20</b>.</p>
+            </div>
+
+            <div class="ar-cols">
+                <div>
+                    <h3 data-i18n="payWhenTitle">When you are paid</h3>
+                    <p data-i18n="payWhenCopy">We propose itemised quarterly statements, paid within 30 days of quarter end. Each statement shows eligible units, discounts, reversals, the royalty base, the rate and the amount due.</p>
+                </div>
+                <div>
+                    <h3 data-i18n="payDevTitle">Development work</h3>
+                    <p data-i18n="payDevCopy">If we ask you for a production-ready tech pack, additional artwork, or substantial revisions after selection, we agree a separate development fee and a scope before that work starts. Development fees are paid whether or not the piece reaches release.</p>
+                </div>
+                <div>
+                    <h3 data-i18n="payScopeTitle">Which sales count</h3>
+                    <p data-i18n="payScopeCopy">The agreement names the SKUs and the channels the royalty applies to. Wholesale, bundles and marketplaces are only used once their terms are set. Restocks, new colourways and any other use are covered in the agreement or by a written amendment.</p>
+                </div>
+            </div>
+
+            <p class="ar-flag" data-i18n="payPending">Proposed terms, pending approval. The rate, the payment terms and the reporting format above are ETERNAL VOID&rsquo;s proposal and are being reviewed by the owner, by accounting and by Hungarian counsel before intake opens. The signed agreement governs.</p>
+        </section>
+
+        <!-- ══ 04 · Credit, 05 · What else, 06 · Ownership, 07 · Withdrawal ═ -->
+        <section class="ar-section ar-reveal" id="rights" aria-labelledby="arRightsTitle">
+            <p class="ar-kicker"><span class="ar-num">04</span> <span data-i18n="rightsKicker">Credit, ownership, withdrawal</span></p>
+            <h2 class="ar-h2" id="arRightsTitle" data-i18n="rightsTitle">Your work stays yours.</h2>
+
+            <div class="ar-grid ar-grid--two">
+                <div>
+                    <h3 data-i18n="creditTitle">How you are credited</h3>
+                    <p data-i18n="creditCopy">The agreement names the credit you are given: the name you want to be known by and where it appears — the product page and the campaign materials we agree. If you prefer a studio name or a pseudonym, that is the name we use.</p>
+                </div>
+                <div>
+                    <h3 data-i18n="ownTitle">Who owns the work</h3>
+                    <p data-i18n="ownCopy">You keep ownership of what you send. The intake terms allow one thing: limited internal review by the people deciding whether to make you an offer. Production, marketing and sale require a separate signed agreement.</p>
+                </div>
+                <div>
+                    <h3 data-i18n="noUseTitle">What submitting does not grant</h3>
+                    <p data-i18n="noUseCopy">Submitting gives ETERNAL VOID no permission to publish your work, manufacture it, use it commercially, or train AI systems on it. There is no submission fee, and there never will be.</p>
+                </div>
+                <div>
+                    <h3 data-i18n="moreTitle">What else could come from it</h3>
+                    <p data-i18n="moreCopy">Selected collaborators may be invited to private previews, to ETERNAL VOID events, or to conversations about future capsules. These are possibilities, not terms — the signed commercial terms and the compensation come first.</p>
+                </div>
+                <div>
+                    <h3 data-i18n="pullTitle">Withdrawing a submission</h3>
+                    <p data-i18n-html="pullCopy">Write to <a href="mailto:artists@eternalvoid.co">artists@eternalvoid.co</a> with your submission reference and ask us to withdraw it. We mark the submission withdrawn, stop reviewing it, and delete the uploaded files. We keep a minimal record that a submission existed and was withdrawn, and the accepted terms version — that record is what protects both of us.</p>
+                </div>
+                <div>
+                    <h3 data-i18n="disputeTitle">Reporting a rights dispute</h3>
+                    <p data-i18n-html="disputeCopy">If you believe work submitted here is yours and was sent by someone else, write to <a href="mailto:legal@eternalvoid.co">legal@eternalvoid.co</a>. Tell us what the work is and what your claim is. We suspend review of the submission while we look into it.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ A second detail moment ══════════════════════════════════════ -->
+        <figure class="ar-plate ar-plate--wide ar-reveal" aria-labelledby="arPlateTwoCap">
+            <img src="/assets/artists/atelier-detail-pocket-1000.webp" alt="" loading="lazy" decoding="async" width="1000" height="560">
+            <figcaption id="arPlateTwoCap" data-i18n="plateTwo">Pouch and hem, topstitched. The part of the drawing nobody sees.</figcaption>
+        </figure>
+
+        <!-- ══ The form ════════════════════════════════════════════════════ -->
+        <section class="ar-section ar-submit ar-reveal" id="submit" aria-labelledby="arFormTitle">
+            <p class="ar-kicker"><span class="ar-num">05</span> <span data-i18n="formKicker">Submit a design</span></p>
+            <h2 class="ar-h2" id="arFormTitle" data-i18n="formTitle">Send it to the atelier.</h2>
+            <p class="ar-lead" data-i18n="formLead">Private intake. Your files go to private storage and are read only by the review team.</p>
+
+            <!-- Intake is closed until the rate, the payouts and the legal
+                 drafts are approved. The form is built, wired and testable;
+                 this is the single switch that opens it. -->
+            <div class="ar-gate" id="arGate" role="status">
+                <p class="ar-gate-title" data-i18n="gateTitle">Intake opens shortly.</p>
+                <p class="ar-gate-copy" data-i18n="gateCopy">EV for Artists is in final review. The submission form below is complete and will accept work as soon as the collaboration terms are approved. Leave your address and we will write to you on the day it opens.</p>
+                <form class="ar-gate-form" id="arGateForm" novalidate>
+                    <label class="ar-field-label" for="arGateEmail" data-i18n="gateEmailLabel">Email address</label>
+                    <div class="ar-gate-row">
+                        <input class="ar-input" type="email" id="arGateEmail" name="email" autocomplete="email" required
+                               placeholder="you@studio.com" data-i18n-placeholder="gateEmailPlaceholder">
+                        <button class="ar-btn ar-btn--primary" type="submit" data-i18n="gateSubmit">Notify me</button>
+                    </div>
+                    <p class="ar-form-msg" id="arGateMsg" role="status" aria-live="polite"></p>
+                </form>
+            </div>
+
+            <form class="ar-form" id="arForm" novalidate aria-describedby="arFormNote" hidden>
+                <div class="ar-field-row">
+                    <p class="ar-field">
+                        <label class="ar-field-label" for="arName" data-i18n="fName">Your name</label>
+                        <input class="ar-input" type="text" id="arName" name="name" maxlength="120" autocomplete="name" required>
+                        <span class="ar-field-error" data-for="arName"></span>
+                    </p>
+                    <p class="ar-field">
+                        <label class="ar-field-label" for="arEmail" data-i18n="fEmail">Email address</label>
+                        <input class="ar-input" type="email" id="arEmail" name="email" maxlength="320" autocomplete="email" required>
+                        <span class="ar-field-error" data-for="arEmail"></span>
+                    </p>
+                </div>
+
+                <div class="ar-field-row">
+                    <p class="ar-field">
+                        <label class="ar-field-label" for="arCountry" data-i18n="fCountry">Country</label>
+                        <input class="ar-input" type="text" id="arCountry" name="country" maxlength="80" autocomplete="country-name" required list="arCountries">
+                        <datalist id="arCountries"></datalist>
+                        <span class="ar-field-error" data-for="arCountry"></span>
+                    </p>
+                    <p class="ar-field">
+                        <label class="ar-field-label" for="arTitleField" data-i18n="fTitle">Design title</label>
+                        <input class="ar-input" type="text" id="arTitleField" name="title" maxlength="140" required>
+                        <span class="ar-field-error" data-for="arTitleField"></span>
+                    </p>
+                </div>
+
+                <p class="ar-field">
+                    <label class="ar-field-label" for="arDesc" data-i18n="fDesc">Describe the design</label>
+                    <span class="ar-field-hint" data-i18n="fDescHint">What it is, what it is made of, and what you would want it to become. A few sentences is enough.</span>
+                    <textarea class="ar-input ar-textarea" id="arDesc" name="description" rows="5" maxlength="2000" required></textarea>
+                    <span class="ar-field-count" id="arDescCount" aria-hidden="true">0 / 2000</span>
+                    <span class="ar-field-error" data-for="arDesc"></span>
+                </p>
+
+                <p class="ar-field">
+                    <label class="ar-field-label" for="arLink"><span data-i18n="fLink">Portfolio link</span> <span class="ar-optional" data-i18n="optional">optional</span></label>
+                    <input class="ar-input" type="url" id="arLink" name="portfolio" maxlength="500" placeholder="https://" inputmode="url">
+                    <span class="ar-field-error" data-for="arLink"></span>
+                </p>
+
+                <p class="ar-field">
+                    <label class="ar-field-label" for="arFile"><span data-i18n="fFile">Attach the work</span> <span class="ar-optional" data-i18n="optional">optional</span></label>
+                    <span class="ar-field-hint" data-i18n="fFileHint">One PDF, JPG or PNG, up to 15 MB. Private — stored where only the review team can reach it, and never attached to an email. Do not send editable or production source files yet.</span>
+                    <input class="ar-file" type="file" id="arFile" name="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                    <span class="ar-field-error" data-for="arFile"></span>
+                </p>
+
+                <fieldset class="ar-consents">
+                    <legend class="ar-field-label" data-i18n="consentLegend">Before you send</legend>
+
+                    <!-- The intake terms get their own control, and it is the
+                         only one that gates the submission. -->
+                    <label class="ar-check">
+                        <input type="checkbox" id="arAcceptTerms" name="acceptTerms" required>
+                        <span data-i18n-html="consentTerms">I confirm this is my own original work and that I have the permissions I need from any co-authors or rights holders, and I accept the <a href="/legal/ev-for-artists-submission-terms" target="_blank" rel="noopener">Submission Terms</a> and the <a href="/legal/ev-for-artists-privacy-notice" target="_blank" rel="noopener">Submission Privacy Notice</a>.</span>
+                    </label>
+                    <span class="ar-field-error" data-for="arAcceptTerms"></span>
+
+                    <!-- Separate, and unchecked. Marketing consent is never a
+                         condition of being read. -->
+                    <label class="ar-check">
+                        <input type="checkbox" id="arAcceptNews" name="acceptNews">
+                        <span data-i18n="consentNews">Send me occasional ETERNAL VOID updates. Optional, and never a condition of review.</span>
+                    </label>
+                </fieldset>
+
+                <p class="ar-form-actions">
+                    <button class="ar-btn ar-btn--primary ar-btn--wide" type="submit" id="arSubmitBtn" data-i18n="formSubmit">Send to the atelier</button>
+                </p>
+                <p class="ar-form-note" id="arFormNote" data-i18n="formNote">No submission fee. You keep ownership of your work. Submitting does not grant permission to publish, manufacture, commercially use, or train AI on it.</p>
+                <p class="ar-form-msg" id="arFormMsg" role="status" aria-live="polite"></p>
+            </form>
+
+            <!-- Shown in place of the form once a submission is saved. -->
+            <div class="ar-receipt" id="arReceipt" hidden role="status" aria-live="polite">
+                <p class="ar-receipt-kicker" data-i18n="receiptKicker">Received</p>
+                <h3 class="ar-receipt-title" data-i18n="receiptTitle">Your design is with the atelier.</h3>
+                <p class="ar-receipt-ref"><span data-i18n="receiptRefLabel">Submission reference</span> <b id="arReceiptRef">—</b></p>
+                <p class="ar-receipt-copy" data-i18n="receiptCopy">Keep this reference. A receipt is on its way to your email address. If you want to withdraw the submission, write to artists@eternalvoid.co quoting the reference.</p>
+            </div>
+        </section>
+
+        <!-- ══ FAQ ═════════════════════════════════════════════════════════ -->
+        <section class="ar-section ar-reveal" id="faq" aria-labelledby="arFaqTitle">
+            <p class="ar-kicker"><span class="ar-num">06</span> <span data-i18n="faqKicker">Questions</span></p>
+            <h2 class="ar-h2" id="arFaqTitle" data-i18n="faqTitle">Before you send unpublished work.</h2>
+            <div class="ar-faq" id="arFaq">
+                <details class="ar-faq-item">
+                    <summary data-i18n="faqQ1">Does submitting cost anything?</summary>
+                    <p data-i18n="faqA1">No. There is no submission fee and no fee at any later stage. If anyone asks you to pay to be considered by ETERNAL VOID, it is not us.</p>
+                </details>
+                <details class="ar-faq-item">
+                    <summary data-i18n="faqQ2">Who actually sees my files?</summary>
+                    <p data-i18n="faqA2">A small internal review team at ETERNAL VOID, and the technical providers that host the storage and send the email. Files sit in private storage and are reached through short-lived authorised links. They are not published, not indexed, not sent as email attachments, and not shared with a manufacturer unless and until you have signed an agreement that names that access.</p>
+                </details>
+                <details class="ar-faq-item">
+                    <summary data-i18n="faqQ3">Can I submit work made with someone else?</summary>
+                    <p data-i18n="faqA3">Yes, if you have your co-authors&rsquo; permission to submit it and to license it, and you tell us who they are. The same applies to any third-party element in the work — a font, a photograph, a sample. If you cannot clear it, leave it out.</p>
+                </details>
+                <details class="ar-faq-item">
+                    <summary data-i18n="faqQ4">What if you make something similar on your own?</summary>
+                    <p data-i18n="faqA4">ETERNAL VOID designs continuously and independently. Submitting does not stop us from developing our own work, including work that resembles yours. What the intake terms do is keep your submission out of production unless we sign an agreement with you for it.</p>
+                </details>
+                <details class="ar-faq-item">
+                    <summary data-i18n="faqQ5">How long do you keep my files?</summary>
+                    <p data-i18n="faqA5">Uploaded files are kept while the submission is under review and for a limited retention period after it is closed, then deleted. The exact period is stated in the Submission Privacy Notice. You can ask us to withdraw and delete earlier at any time.</p>
+                </details>
+                <details class="ar-faq-item">
+                    <summary data-i18n="faqQ6">Do I have to be a professional designer?</summary>
+                    <p data-i18n="faqA6">No. The programme exists for emerging designers and artists. You need to be old enough to enter a contract where you live, and the work needs to be yours.</p>
+                </details>
+            </div>
+            <p class="ar-note" data-i18n-html="faqDocs">The full texts: <a href="/legal/ev-for-artists-submission-terms" target="_blank" rel="noopener">Submission Terms</a>, <a href="/legal/ev-for-artists-privacy-notice" target="_blank" rel="noopener">Submission Privacy Notice</a>, and the house <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+        </section>
+    </main>
+
+    <footer class="ar-footer">
+        <p class="ar-footer-mark">VOID<sup>&copy;</sup></p>
+        <nav class="ar-footer-links" aria-label="Programme documents" data-i18n-aria-label="footerNavLabel">
+            <a href="/legal/ev-for-artists-submission-terms" data-i18n="footTerms">Submission Terms</a>
+            <a href="/legal/ev-for-artists-privacy-notice" data-i18n="footPrivacy">Submission Privacy Notice</a>
+            <a href="mailto:artists@eternalvoid.co" data-i18n="footContact">artists@eternalvoid.co</a>
+            <a href="/shop" data-passage data-i18n="navCollection">Collection</a>
+        </nav>
+        <p class="ar-footer-fine" data-i18n="footFine">EV for Artists is a programme of the company operating ETERNAL VOID. Proposed commercial terms shown on this page are subject to owner approval and legal review, and are superseded by the signed collaboration agreement.</p>
+    </footer>
+
+    <script src="/assets/void-passage.js?v=20261119-artists" defer></script>
+    <script src="/assets/void-artists-i18n.js?v=20261119-artists" defer></script>
+    <script src="/assets/void-artists.js?v=20261119-artists" defer></script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>EV for Artists — Review queue</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg?v=20260713-ev">
+    <style>
+        /* The queue is a working tool, not a showroom. Dense, legible, and
+           quiet enough that the work being reviewed is the thing with colour
+           in it. Same ground and the same gold as the rest of the house, no
+           ornament beyond that. */
+        :root {
+            --g: #050504;
+            --panel: #0c0b0a;
+            --rule: rgba(255, 255, 255, 0.1);
+            --ink: #f1eee8;
+            --dim: #a39d92;
+            --faint: #6f6a60;
+            --gold: #c7a96c;
+            --gold-bright: #e8d09e;
+            --warn: #e8a5a5;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; background: var(--g); color: var(--dim);
+            font: 400 14px/1.65 'Jost', 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--gold); }
+        header {
+            display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
+            padding: 1.2rem 1.6rem; border-bottom: 1px solid var(--rule);
+        }
+        .mark { font-family: Georgia, serif; font-size: 1.1rem; letter-spacing: 0.3em; color: var(--ink); }
+        .mark span { display: block; font-family: inherit; font-size: 0.56rem; letter-spacing: 0.3em; color: var(--gold); margin-top: 6px; }
+        main { padding: 1.6rem; max-width: 1400px; margin: 0 auto; }
+        button, select, input, textarea {
+            font: inherit; color: var(--ink); background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--rule); padding: 0.5rem 0.75rem;
+        }
+        button { cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
+        button:hover { border-color: var(--gold); color: var(--gold-bright); }
+        button[disabled] { opacity: 0.4; cursor: default; }
+        .primary { border-color: rgba(199, 169, 108, 0.5); color: var(--gold-bright); background: rgba(199, 169, 108, 0.07); }
+
+        .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.4rem; }
+        .tabs button.on { border-color: var(--gold); color: var(--gold-bright); background: rgba(199, 169, 108, 0.1); }
+        .tabs .n { color: var(--faint); margin-left: 0.5rem; font-size: 0.8em; }
+
+        .card {
+            border: 1px solid var(--rule); background: var(--panel);
+            padding: 1.1rem 1.2rem; margin-bottom: 1rem;
+        }
+        .card h2 { margin: 0 0 0.3rem; font-size: 1.05rem; font-weight: 500; color: var(--ink); }
+        .meta { font-size: 0.8rem; color: var(--faint); margin-bottom: 0.9rem; letter-spacing: 0.04em; }
+        .meta b { color: var(--gold-bright); font-weight: 500; letter-spacing: 0.14em; }
+        .desc { white-space: pre-wrap; margin: 0 0 1rem; max-width: 80ch; color: var(--dim); }
+        .row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+        .pill {
+            font-size: 0.64rem; letter-spacing: 0.18em; text-transform: uppercase;
+            border: 1px solid var(--rule); padding: 0.26rem 0.6rem; color: var(--faint);
+        }
+        .pill.received { color: var(--gold-bright); border-color: rgba(199, 169, 108, 0.45); }
+        .pill.shortlisted { color: #a8d8b0; border-color: rgba(168, 216, 176, 0.4); }
+        .pill.declined, .pill.withdrawn { color: var(--warn); border-color: rgba(232, 165, 165, 0.3); }
+
+        /* Private, and labelled as private every time it is on screen. */
+        .notes { margin-top: 0.9rem; }
+        .notes label { display: block; font-size: 0.64rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warn); margin-bottom: 0.4rem; }
+        .notes textarea { width: 100%; min-height: 4.5rem; resize: vertical; }
+
+        .msg { min-height: 1.4rem; font-size: 0.86rem; margin: 0.6rem 0 0; }
+        .msg.err { color: var(--warn); }
+        .msg.ok { color: var(--gold-bright); }
+        .gate { max-width: 24rem; margin: 5rem auto; text-align: left; }
+        .gate input { width: 100%; margin-bottom: 0.7rem; }
+        .hint { font-size: 0.78rem; color: var(--faint); }
+        .royalty { border: 1px solid rgba(199, 169, 108, 0.35); padding: 1.1rem 1.2rem; margin-bottom: 1.6rem; }
+        .royalty h3 { margin: 0 0 0.5rem; font-size: 0.7rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); }
+        table { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-size: 0.84rem; }
+        th, td { text-align: left; padding: 0.45rem 0.6rem 0.45rem 0; border-bottom: 1px solid var(--rule); }
+        th { color: var(--faint); font-weight: 500; font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; }
+        td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="mark">VOID<span>EV for Artists — review queue</span></div>
+        <div class="row">
+            <span class="hint" id="who"></span>
+            <button id="signOut" hidden>Sign out</button>
+        </div>
+    </header>
+
+    <div class="gate" id="gate" hidden>
+        <p class="hint">Reviewer access. The same allowlist as the inventory dashboard.</p>
+        <input type="email" id="email" placeholder="you@eternalvoid.co" autocomplete="email">
+        <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+        <button class="primary" id="signIn">Sign in</button>
+        <p class="msg" id="gateMsg"></p>
+    </div>
+
+    <main id="app" hidden>
+        <section class="royalty">
+            <h3>Royalty statement</h3>
+            <p class="hint">A statement for accounting to check, never a payment. Scoped to the SKUs named in signed agreements; reversals are applied once and bucketed on the date of the reversal.</p>
+            <div class="row" style="margin-top:0.8rem;">
+                <input id="quarter" placeholder="2026Q4" size="8">
+                <button id="runRoyalty">Run</button>
+                <button id="csvRoyalty">Download CSV</button>
+            </div>
+            <div id="royaltyOut"></div>
+            <p class="msg" id="royaltyMsg"></p>
+        </section>
+
+        <div class="tabs" id="tabs"></div>
+        <p class="msg" id="listMsg"></p>
+        <div id="list"></div>
+    </main>
+
+    <script type="module">
+        import { getSession, signIn, signOut } from '/assets/supabase-client.js';
+
+        const $ = (id) => document.getElementById(id);
+        const STATUSES = ['received', 'under_review', 'shortlisted', 'declined', 'withdrawn'];
+        const LABEL = {
+            '': 'All', received: 'Received', under_review: 'Under review',
+            shortlisted: 'Shortlisted', declined: 'Declined', withdrawn: 'Withdrawn'
+        };
+
+        let token = null;
+        let filter = '';
+
+        const say = (node, text, kind) => {
+            node.textContent = text || '';
+            node.className = 'msg' + (kind ? ' ' + kind : '');
+        };
+
+        // Identity is proved with the session token and resolved server-side.
+        // Nothing in a request body is ever taken as a role.
+        async function api(path, options = {}) {
+            const res = await fetch('/api/' + path, {
+                method: options.method || 'GET',
+                cache: 'no-store',
+                headers: Object.assign(
+                    { Authorization: `Bearer ${token}` },
+                    options.body ? { 'Content-Type': 'application/json' } : {}
+                ),
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+            if (options.raw) return res;
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'request_failed');
+            return data;
+        }
+
+        function pill(status) {
+            return `<span class="pill ${status}">${LABEL[status] || status}</span>`;
+        }
+
+        function escapeHtml(v) {
+            return String(v == null ? '' : v)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function card(row) {
+            const el = document.createElement('article');
+            el.className = 'card';
+            el.innerHTML = `
+                <h2>${escapeHtml(row.title)}</h2>
+                <p class="meta">
+                    <b>${escapeHtml(row.reference)}</b> &middot;
+                    ${escapeHtml(row.name)} &middot;
+                    <a href="mailto:${escapeHtml(row.email)}">${escapeHtml(row.email)}</a> &middot;
+                    ${escapeHtml(row.country)} &middot;
+                    ${new Date(row.created_at).toLocaleString()} &middot;
+                    terms ${escapeHtml(row.terms_version)}
+                    ${row.marketing_opt_in ? ' &middot; opted into updates' : ''}
+                </p>
+                <p class="desc">${escapeHtml(row.description)}</p>
+                <div class="row">
+                    ${pill(row.status)}
+                    ${row.portfolio_url ? `<a href="${escapeHtml(row.portfolio_url)}" target="_blank" rel="noopener noreferrer">Portfolio &rarr;</a>` : ''}
+                    ${row.file_state === 'stored'
+                        ? `<button data-file="${escapeHtml(row.reference)}">Open ${escapeHtml(row.file_name || 'file')}</button>`
+                        : `<span class="hint">${row.file_state === 'deleted' ? 'files deleted' : 'no attachment'}</span>`}
+                </div>
+                <div class="notes">
+                    <label for="n-${row.reference}">Private reviewer note — never shown to the artist</label>
+                    <textarea id="n-${row.reference}">${escapeHtml(row.reviewer_notes || '')}</textarea>
+                </div>
+                <div class="row" style="margin-top:0.7rem;">
+                    ${STATUSES.filter((s) => s !== row.status)
+                        .map((s) => `<button data-move="${escapeHtml(row.reference)}" data-to="${s}">${LABEL[s]}</button>`)
+                        .join('')}
+                </div>
+                <p class="msg" data-msg="${escapeHtml(row.reference)}"></p>`;
+            return el;
+        }
+
+        async function load() {
+            say($('listMsg'), 'Loading…');
+            try {
+                const data = await api('artist-submissions?status=' + encodeURIComponent(filter));
+                const counts = data.counts || {};
+                $('tabs').innerHTML = ['', ...STATUSES].map((s) =>
+                    `<button data-tab="${s}" class="${s === filter ? 'on' : ''}">${LABEL[s]}<span class="n">${
+                        s === '' ? Object.values(counts).reduce((a, b) => a + b, 0) : (counts[s] || 0)}</span></button>`
+                ).join('');
+                const list = $('list');
+                list.innerHTML = '';
+                if (!data.rows.length) {
+                    list.innerHTML = '<p class="hint">Nothing here.</p>';
+                } else {
+                    data.rows.forEach((row) => list.appendChild(card(row)));
+                }
+                say($('listMsg'), '');
+            } catch (error) {
+                say($('listMsg'), 'Could not load the queue: ' + error.message, 'err');
+            }
+        }
+
+        document.addEventListener('click', async (event) => {
+            const tab = event.target.closest('[data-tab]');
+            if (tab) { filter = tab.dataset.tab; load(); return; }
+
+            // A file is reached through a link that is minted now, checked
+            // against the allowlist now, and dead in five minutes.
+            const file = event.target.closest('[data-file]');
+            if (file) {
+                const msg = document.querySelector(`[data-msg="${file.dataset.file}"]`);
+                try {
+                    const data = await api('artist-submissions?file=' + encodeURIComponent(file.dataset.file));
+                    window.open(data.url, '_blank', 'noopener');
+                    say(msg, 'Link opened. It expires in five minutes.', 'ok');
+                } catch (error) {
+                    say(msg, 'Could not open that file: ' + error.message, 'err');
+                }
+                return;
+            }
+
+            const move = event.target.closest('[data-move]');
+            if (move) {
+                const reference = move.dataset.move;
+                const msg = document.querySelector(`[data-msg="${reference}"]`);
+                const note = document.getElementById('n-' + reference);
+                if (move.dataset.to === 'withdrawn'
+                    && !window.confirm('Withdraw ' + reference + '? This deletes the uploaded file. The submission record and the accepted terms version are kept.')) return;
+                move.disabled = true;
+                say(msg, 'Saving…');
+                try {
+                    const out = await api('artist-submissions', {
+                        method: 'PATCH',
+                        body: { reference, status: move.dataset.to, note: note ? note.value : '' }
+                    });
+                    say(msg, out.submission && out.submission.filesDeleted === false
+                        ? 'Status saved, but the file could not be deleted — try withdrawing again.'
+                        : 'Saved.', 'ok');
+                    load();
+                } catch (error) {
+                    move.disabled = false;
+                    say(msg, 'Could not save: ' + error.message, 'err');
+                }
+            }
+        });
+
+        // ── Royalties ────────────────────────────────────────────────────
+        $('runRoyalty').addEventListener('click', async () => {
+            const q = $('quarter').value.trim();
+            say($('royaltyMsg'), 'Running…');
+            try {
+                const data = await api('artist-royalties?quarter=' + encodeURIComponent(q));
+                const eur = (m) => '€' + (Number(m || 0) / 100).toFixed(2);
+                $('royaltyOut').innerHTML = !data.artists.length
+                    ? '<p class="hint">No eligible sales in that period.</p>'
+                    : `<table><thead><tr>
+                        <th>Artist</th><th>Agreement</th><th class="num">Units</th>
+                        <th class="num">Gross</th><th class="num">Discounts</th>
+                        <th class="num">Reversals</th><th class="num">Base</th>
+                        <th class="num">Rate</th><th class="num">Due</th><th class="num">Carried</th>
+                       </tr></thead><tbody>${data.artists.map((a) => `<tr>
+                        <td>${escapeHtml(a.creditName)}<br><span class="hint">${escapeHtml(a.artistEmail)}</span></td>
+                        <td>${escapeHtml(a.agreementRef)}</td>
+                        <td class="num">${a.units}</td>
+                        <td class="num">${eur(a.grossMerchandise)}</td>
+                        <td class="num">${eur(a.discounts)}</td>
+                        <td class="num">${eur(a.reversals)}</td>
+                        <td class="num">${eur(a.royaltyBase)}</td>
+                        <td class="num">${(a.royaltyBps / 100).toFixed(2)}%</td>
+                        <td class="num">${eur(a.royaltyDue)}</td>
+                        <td class="num">${a.carryForward ? eur(a.carryForward) : '—'}</td>
+                       </tr>`).join('')}</tbody></table>
+                       <p class="hint" style="margin-top:0.8rem;">${escapeHtml(data.basis.approval)}</p>`;
+                say($('royaltyMsg'), '');
+            } catch (error) {
+                say($('royaltyMsg'), 'Could not run that: ' + error.message, 'err');
+            }
+        });
+
+        $('csvRoyalty').addEventListener('click', async () => {
+            const q = $('quarter').value.trim();
+            try {
+                const res = await api('artist-royalties?format=csv&quarter=' + encodeURIComponent(q), { raw: true });
+                if (!res.ok) throw new Error(String(res.status));
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ev-artists-royalties-${q || 'period'}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                say($('royaltyMsg'), 'Could not download: ' + error.message, 'err');
+            }
+        });
+
+        // ── Session ──────────────────────────────────────────────────────
+        async function boot() {
+            const session = await getSession().catch(() => null);
+            token = session ? session.access_token : null;
+            $('gate').hidden = Boolean(token);
+            $('app').hidden = !token;
+            $('signOut').hidden = !token;
+            $('who').textContent = session ? session.user.email : '';
+            if (token) {
+                const now = new Date();
+                $('quarter').value = `${now.getUTCFullYear()}Q${Math.floor(now.getUTCMonth() / 3) + 1}`;
+                load();
+            }
+        }
+
+        $('signIn').addEventListener('click', async () => {
+            say($('gateMsg'), 'Signing in…');
+            try {
+                await signIn($('email').value.trim(), $('password').value);
+                say($('gateMsg'), '');
+                boot();
+            } catch (error) {
+                say($('gateMsg'), 'Could not sign in.', 'err');
+            }
+        });
+
+        $('signOut').addEventListener('click', async () => {
+            await signOut().catch(() => {});
+            location.reload();
+        });
+
+        boot();
+    </script>
+</body>
+</html>

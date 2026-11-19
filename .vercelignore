@@ -1,0 +1,21 @@
+# Kept in the repository, never deployed.
+#
+# docs/ holds working notes and the EV for Artists programme drafts, including
+# the private Collaboration Agreement. That one must not be reachable at a
+# public URL — it is a contract template under review, not a published policy.
+# The two documents an artist actually has to read before submitting
+# (Submission Terms, Submission Privacy Notice) are real pages under /legal
+# and ARE deployed.
+docs/
+
+# Database migrations. Applied with the Supabase CLI, never served.
+supabase/
+
+# Source renders and project files for motion work. Large, and nothing serves
+# them.
+assets/After Effects Assets/
+enter-the-void.mov
+
+# mobile-app/ and void-native/ are deliberately left in: mobile-app deploys
+# from its own Vercel project rooted at that directory, and an ignore rule
+# here is not worth the risk of reaching it.

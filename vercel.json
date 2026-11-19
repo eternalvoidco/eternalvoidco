@@ -14,9 +14,13 @@
     { "source": "/story", "destination": "/index.html" },
     { "source": "/newsletter", "destination": "/index.html" },
     { "source": "/contact", "destination": "/index.html" },
+    { "source": "/for-artists", "destination": "/for-artists/index.html" },
+    { "source": "/legal/ev-for-artists-submission-terms", "destination": "/legal/ev-for-artists-submission-terms/index.html" },
+    { "source": "/legal/ev-for-artists-privacy-notice", "destination": "/legal/ev-for-artists-privacy-notice/index.html" },
     { "source": "/checkout", "destination": "/checkout/index.html" },
     { "source": "/checkout/success", "destination": "/checkout/success/index.html" },
-    { "source": "/admin/inventory", "destination": "/admin/inventory/index.html" }
+    { "source": "/admin/inventory", "destination": "/admin/inventory/index.html" },
+    { "source": "/admin/artists", "destination": "/admin/artists/index.html" }
   ],
   "headers": [
     {
