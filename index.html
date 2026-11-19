@@ -7887,9 +7887,18 @@
            cover is not left showing around its edges once the guide is
            up. The handoff's own animation outranks this while it runs, so
            the piece still fades as part of the movement rather than
-           jumping — and if the movement is cut short by a resize, this is
-           already the state it was heading for. */
-        body.size-guide-nested .product-detail-panel {
+           jumping — and when the movement ends or is cut short, this is
+           already the state it was heading for.
+
+           Written through .product-detail-overlay.open rather than against
+           the panel alone: that is the rule holding the piece at opacity 1,
+           and a shorter selector loses to it. Underspecified, this one never
+           applied at all, and the piece was left relying on a finished
+           animation to stay hidden — so the moment anything handed those
+           animations back (reopening the guide out of its own exit, or a
+           resize) the piece reappeared at full opacity behind a guide that
+           was still up. */
+        body.size-guide-nested .product-detail-overlay.open .product-detail-panel {
             opacity: 0;
         }
 
@@ -7918,15 +7927,83 @@
         /* While the guide is leaving it still catches the pointer, and its
            own handlers decline to act (closeSizeGuide bails once the exit has
            started). Nothing in the guide can be clicked, and nothing lands on
-           the piece underneath either — a tap aimed at the guide's Close must
-           not fall through onto whatever the piece has arriving under that
-           point. Keyboard control has already gone back to the piece. */
+           the piece underneath either: the piece stays inert behind the guide
+           for the whole exit, so a tap aimed at the guide's Close cannot fall
+           through onto whatever the shutter has just uncovered under that
+           point. Both are handed back together when the movement ends. */
         .size-guide-overlay.is-nest-exiting {
             cursor: default;
         }
 
         .size-guide-overlay.is-nest-exiting .size-guide-panel {
             pointer-events: none;
+        }
+
+        /* ---- The shutter -------------------------------------------------
+           Closing, the guide does not shrink and the piece does not travel.
+           The piece is put back at its full size, in its own place, behind
+           the guide before any of it can be seen; then a clip closes in on
+           the guide from its four edges and takes the frame, its surface and
+           the ground it stands on down together. What the moving edge uncovers
+           is a piece already standing still, which is the whole point: a fixed
+           point on the garment is in its final place on the first frame it is
+           visible. sizeGuideNest drives the clip; this supplies the cover.
+
+           The cover is the piece's own backdrop, not the guide's near-black —
+           the guide's would be a second veil of a different colour going up
+           over the piece at the very moment the piece arrives. Repeating the
+           one already there means putting it up changes nothing, and what the
+           shutter uncovers is the ground that was always underneath.
+
+           Opaque, where the piece's own is rgba(…, 0.96): behind the piece
+           everything is hidden and the page is black, so 0.96 over black and
+           1 over black paint the same colour — but 0.96 over a piece standing
+           at full opacity leaves it faintly legible through the cover, which
+           is the one thing this must not do.
+
+           No fade on the overlay: the edge is what reveals, and an opacity
+           ramp across it would read as a dissolve rather than a shutter. */
+        .size-guide-overlay.is-nest-shutter {
+            background:
+                radial-gradient(circle at 18% 14%, rgba(199, 169, 108, 0.16), transparent 46%),
+                radial-gradient(circle at 82% 86%, rgba(199, 169, 108, 0.12), transparent 48%),
+                rgb(2, 2, 2);
+            opacity: 1;
+            visibility: visible;
+            transition: none;
+            will-change: clip-path;
+        }
+
+        /* The edge the shutter closes on. It sits above the panel and its
+           insets are driven in lockstep with the clip, on the same curve over
+           the same share of the same box, so the hairline is always exactly
+           on the boundary between what is still covered and what has been
+           given back. It is lit as the movement starts and put out before the
+           rectangle collapses, so nothing flashes at the centre on the last
+           frame.
+
+           Resting opacity is 0 and nothing but the close ever raises it, so
+           an open guide carries no extra furniture. */
+        .sg-shutter-edge {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            border: 1px solid rgba(199, 169, 108, 0.55);
+            box-shadow: 0 0 20px 1px rgba(199, 169, 108, 0.09);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Taking the panel down at the end of the shutter must not itself be
+           animated. `open` leaving restores the overlay's own near-opaque
+           backdrop and its 0.26s fade, and `is-nesting` leaving hands the
+           panel back its 0.5s rise: between them the piece that has just been
+           uncovered gets veiled and faded back in over the next third of a
+           second. For the one frame in which the guide's resting state is
+           written, every transition on both is off. */
+        .size-guide-overlay.is-nest-settling,
+        .size-guide-overlay.is-nest-settling .size-guide-panel {
+            transition: none;
         }
 
         /* ---- Size guide: The Atelier --------------------------------
@@ -14484,6 +14561,12 @@
     </div>
 
     <div class="size-guide-overlay" id="sizeGuideOverlay" aria-hidden="true">
+        <!-- The shutter's edge: a hairline that rides the clip as the guide
+             retracts on close, so what closes in over the piece reads as the
+             guide's own frame coming in rather than a rectangle of darkness.
+             Resting it is invisible and out of the way; sizeGuideNest is the
+             only thing that ever lights it. -->
+        <span class="sg-shutter-edge" id="sizeGuideShutterEdge" aria-hidden="true"></span>
         <section class="size-guide-panel" role="dialog" aria-modal="true" aria-labelledby="sizeGuideTitle">
             <span class="panel-frame" aria-hidden="true"></span>
             <div class="sga" id="voidFitArchive">
@@ -19097,6 +19180,10 @@
             }
         }
 
+        // The close button, Escape and the backdrop all come through here, so
+        // all three run the one sequence and all three are equally safe to
+        // repeat: the second of them finds the exit already under way and
+        // declines.
         function closeSizeGuide() {
             if (!sizeGuideOverlay || !sizeGuideOverlay.classList.contains('open')) return;
             // Already on its way out. A second Escape, a second click on
@@ -19104,29 +19191,49 @@
             // hand focus back twice.
             if (sizeGuideNest.isExiting()) return;
 
+            stopEdgeAmbience();
+
+            // Nested, the guide stays mounted for its visible exit and the
+            // controller owns the whole handback: it takes `open` and its own
+            // classes down, and calls releaseSizeGuide below, once the shutter
+            // has finished. Until then the guide is still the dialog and the
+            // piece behind it is still inert — the one thing a visitor can do
+            // during the exit is dismiss it again, which does nothing.
+            if (sizeGuideNest.close()) return;
+
+            releaseSizeGuide();
+            sizeGuideOverlay.classList.remove('open');
+            document.body.classList.remove('size-guide-open');
+        }
+
+        // The guide stops being a dialog: the rest of the document becomes
+        // reachable again and the control that opened the guide takes focus
+        // back. preventScroll inside focusElementSafely is what keeps the
+        // piece where the visitor left it — the trigger sits well down a panel
+        // that scrolls, and focusing it plainly would drag the piece to it.
+        function releaseSizeGuide() {
             sizeGuideOverlay.setAttribute('aria-hidden', 'true');
             setSizeGuideInert(false);
             document.removeEventListener('keydown', sizeGuideTrap, true);
-            stopEdgeAmbience();
             focusElementSafely(lastSizeGuideFocus);
-
-            // Nested, the guide stays mounted for its visual exit: the
-            // controller takes `open` and its own classes down once the
-            // movement has finished. Control, though, has already gone
-            // back to the piece above — the guide is inert from here.
-            if (sizeGuideNest.close()) return;
-
-            sizeGuideOverlay.classList.remove('open');
-            document.body.classList.remove('size-guide-open');
         }
 
         // ---- Nested handoff: a piece's dialog <-> the guide ----------------
         // Opening the guide from an open piece is one movement, not two
         // dialogs trading places. The piece's panel recedes a little and the
         // guide's surface expands from a compact footprint over it, covering
-        // it as it grows: the piece goes *into* the guide. Closing runs the
-        // same path backwards, and the piece is already coming back out
-        // while the guide is still visibly shrinking.
+        // it as it grows: the piece goes *into* the guide.
+        //
+        // Closing is not that path backwards. Running it in reverse meant the
+        // piece travelling and growing into place at the same time as the
+        // guide uncovered it, so the garment was never still on any frame the
+        // visitor could see it — and the handoff at the end, where the guide
+        // was finally taken down, put the overlay's own backdrop back up over
+        // the piece and faded it out, blacking out the piece a third of a
+        // second after the movement had apparently finished. So the close is
+        // its own sequence: the piece is set down at full size in its final
+        // place while it is still completely covered, and a shutter closes in
+        // on the guide and uncovers it, already still.
         //
         // Both overlays centre their panel on the viewport, so the two share
         // a centre, and "towards the guide's centre" is a scale about that
@@ -19163,31 +19270,46 @@
             // the dismissal — the same table the chapter stage keeps, and for
             // the same reason: a close is not one duration, it is an order.
             //
-            // The order is the stage's: the content goes at once and early;
-            // the surface that is moving starts after it and runs longest;
-            // the ground it stands on leaves while that surface is still
-            // travelling; and the destination's own detail arrives last,
-            // overlapping the final settle. Nothing ends on the same frame as
-            // anything else, and nothing is still moving when it is taken
-            // down.
+            // The close is not the open run backwards. Opening, the piece goes
+            // into the guide and the guide grows over it; closing, nothing
+            // travels at all. The piece is set down in its final place before
+            // the first frame is drawn and never moves again, and one shutter
+            // closes in over it and uncovers it. The only long movement in the
+            // table is that shutter, which is what makes the reveal readable:
+            // everything else is finished inside the first third.
+            //
             // The keys are the rec names the open uses, so a close holds and
             // retargets the very animations the open left running rather than
             // starting a second set beside them.
             const CLOSE = {
-                'sga-fade':    [0,   110, EASE.away],
-                'sga-counter': [70,  430, EASE.mech],
-                'sg-surface':  [70,  430, EASE.mech],
-                // Linear, as the stage's letterbox is on the way out: this is
-                // a cover being withdrawn, not a thing arriving, and an eased
-                // curve over so short a window dumps most of the opacity in
-                // two frames and reads as a blink. It stays opaque until 280ms
-                // so that up to there it is the edge doing the revealing.
-                'sg-ink':      [260, 190, 'linear'],
-                // From the first frame: the piece has to be solid underneath
-                // before the edge starts uncovering it.
-                'pd-fade':     [0,   130, EASE.arrive],
-                'pd-move':     [40,  460, EASE.carry]
+                // The measurements quiet as the frame starts to move. This is
+                // the one place `away` belongs: it ends at speed, and that
+                // never shows on something already invisible.
+                'sga-fade':    [0,   160, EASE.away],
+                // Nothing here moves on a close that follows a settled open —
+                // all three are already at rest. They are in the table for a
+                // dismissal that interrupts the opening: whatever the surface
+                // and its counter-scale had reached is brought to full size
+                // quickly, so the shutter is always closing on a panel at its
+                // real bounds carrying text at its real size.
+                'sga-counter': [0,   150, EASE.arrive],
+                'sg-surface':  [0,   150, EASE.arrive],
+                'sg-ink':      [0,   90,  EASE.arrive],
+                // The frame itself, and the only thing that reveals: a clip
+                // closing in from the four edges over a piece that is already
+                // standing still. `mech` for the reason the struck plate and
+                // the drawn rules take it on the chapter stage — it decelerates
+                // onto a precise stop with no velocity left on the last drawn
+                // frame, which is what a cover being withdrawn needs and what
+                // `away`, still at two-thirds speed when it is cut, cannot do.
+                'sg-shutter':  [0,   420, EASE.mech]
             };
+
+            // The shutter's two ends. Closed is a rectangle of no area on the
+            // shared centre, so the last frame has nothing left to take down
+            // rather than a sliver to blink out.
+            const CLIP_OPEN = 'inset(0% 0% 0% 0%)';
+            const CLIP_SHUT = 'inset(50% 50% 50% 50%)';
             // Taken from the table rather than written down twice. The stage
             // adds the same 30ms before it unmounts: at a 28ms frame cadence
             // "exactly when the last animation ends" means its closing frames
@@ -19216,8 +19338,22 @@
                 return {
                     pd: productDetailOverlay && productDetailOverlay.querySelector('.product-detail-panel'),
                     sg: sizeGuideOverlay && sizeGuideOverlay.querySelector('.size-guide-panel'),
-                    sga: sizeGuideOverlay && sizeGuideOverlay.querySelector('.sga')
+                    sga: sizeGuideOverlay && sizeGuideOverlay.querySelector('.sga'),
+                    edge: sizeGuideOverlay && sizeGuideOverlay.querySelector('.sg-shutter-edge')
                 };
+            }
+
+            // Where the shutter's hairline stands when the clip is `p` of the
+            // way in. Both are shares of the overlay's border box — the clip
+            // because clip-path resolves against it, the hairline because an
+            // out-of-flow child of this grid resolves against it too — so the
+            // same number puts them on the same pixel without either having to
+            // be measured. Should that ever stop holding, the hairline lands
+            // outside the clip and is simply not drawn: the shutter is still
+            // correct, it has only lost its edge.
+            function edgeAt(p) {
+                const share = (p * 100) + '%';
+                return { top: share, right: share, bottom: share, left: share };
             }
 
             // Both panels are read in the same frame, with the guide's own
@@ -19262,14 +19398,29 @@
                 });
             }
 
+            // Every property the controller animates, so a hold() that
+            // committed one inline can always be undone by name.
+            const WROTE = ['transform', 'opacity', 'clip-path', 'top', 'right', 'bottom', 'left'];
+
+            function unwrite(el) {
+                WROTE.forEach((prop) => el.style.removeProperty(prop));
+            }
+
             // Everything the controller wrote is handed back.
             function clear() {
                 S.recs.forEach((r) => {
                     if (r.anim) { try { r.anim.cancel(); } catch (e) {} }
-                    r.target.style.removeProperty('transform');
-                    r.target.style.removeProperty('opacity');
+                    unwrite(r.target);
                 });
                 S.recs.clear();
+            }
+
+            // Where the shutter stands. An exit that interrupts a reversal
+            // continues from the clip actually on screen rather than throwing
+            // it back open first.
+            function clipNow() {
+                const v = getComputedStyle(sizeGuideOverlay).clipPath;
+                return (v && v !== 'none') ? v : CLIP_OPEN;
             }
 
             function after(me, ms, fn) {
@@ -19297,14 +19448,18 @@
                 // The guide and its content rest on the stylesheet:
                 // .is-nesting puts the surface at transform:none and .open
                 // at full opacity, which is exactly where they landed.
-                ['sg-surface', 'sg-ink', 'sga-counter', 'sga-fade'].forEach((key) => {
+                ['sg-surface', 'sg-ink', 'sga-counter', 'sga-fade',
+                 'sg-shutter', 'sg-edge', 'sg-edge-ink'].forEach((key) => {
                     const r = S.recs.get(key);
                     if (!r) return;
                     if (r.anim) { try { r.anim.cancel(); } catch (e) {} }
-                    r.target.style.removeProperty('transform');
-                    r.target.style.removeProperty('opacity');
+                    unwrite(r.target);
                     S.recs.delete(key);
                 });
+
+                // The shutter is fully open again, so its cover can come down
+                // with nothing of the piece showing around the guide.
+                sizeGuideOverlay.classList.remove('is-nest-shutter');
 
                 // The piece has no resting CSS transform to fall back on —
                 // it is held receded, inside the guide — so its frame is
@@ -19332,9 +19487,34 @@
                 const pd = parts().pd;
                 document.body.classList.remove('size-guide-nested');
                 clear();
-                sizeGuideOverlay.classList.remove('open', 'is-nesting', 'is-nest-exiting');
+
+                // The guide's resting state is written in one frame with every
+                // transition on it switched off. Left on, `open` leaving puts
+                // the overlay's own near-opaque backdrop up over the piece the
+                // shutter has just uncovered and fades it out over 0.26s,
+                // while the panel takes its 0.5s rise back — a blackout and a
+                // fade-up arriving after the movement has visibly finished.
+                sizeGuideOverlay.classList.add('is-nest-settling');
+                sizeGuideOverlay.classList.remove('open', 'is-nesting', 'is-nest-exiting', 'is-nest-shutter');
+                sizeGuideOverlay.style.removeProperty('clip-path');
+                if (parts().edge) unwrite(parts().edge);
                 document.body.classList.remove('size-guide-open');
                 release(pd);
+
+                // Only now is the page handed back. The piece has been inert
+                // behind the guide for the whole exit — nothing in it could be
+                // clicked or tabbed into through a guide that was still on its
+                // way out — and focus returns to the control that opened the
+                // guide once there is nothing left to see.
+                releaseSizeGuide();
+
+                // Committed before the transitions come back, so re-enabling
+                // them finds every value already at rest and starts nothing.
+                void sizeGuideOverlay.offsetWidth;
+                window.requestAnimationFrame(() => {
+                    sizeGuideOverlay.classList.remove('is-nest-settling');
+                });
+
                 S.on = false;
                 S.dir = null;
                 S.geo = null;
@@ -19360,9 +19540,24 @@
                     const me = ++S.run;
                     S.dir = 'in';
 
-                    sizeGuideOverlay.classList.remove('is-nest-exiting');
+                    // Reversing, the piece is standing at full size and full
+                    // opacity behind a half-closed shutter. body.size-guide-
+                    // nested below would put it straight to opacity 0 under
+                    // the uncovered part, so where it actually stands is
+                    // written down first and animated away from there.
+                    const pdOpacity = reversing && p.pd ? getComputedStyle(p.pd).opacity : null;
+
+                    sizeGuideOverlay.classList.remove('is-nest-exiting', 'is-nest-settling');
                     sizeGuideOverlay.classList.add('is-nesting');
+                    // A cold open starts with no shutter at all; a reversal
+                    // keeps its cover until the clip is fully open again.
+                    if (!reversing) {
+                        sizeGuideOverlay.classList.remove('is-nest-shutter');
+                        sizeGuideOverlay.style.removeProperty('clip-path');
+                        if (p.edge) unwrite(p.edge);
+                    }
                     document.body.classList.add('size-guide-nested');
+                    if (pdOpacity !== null) p.pd.style.opacity = pdOpacity;
                     p.pd.classList.add('is-nest-held');
 
                     // Re-measuring mid-reversal would read the panels where
@@ -19397,6 +19592,15 @@
                         play('sg-ink', p.sg, [{ opacity: 1 }], 90, 0, EASE.arrive);
                         play('sga-counter', p.sga, [{ transform: 'scale(1)' }], 380, 0, EASE.arrive);
                         play('sga-fade', p.sga, [{ opacity: 1 }], 120, 220, EASE.arrive);
+                        // The shutter opens again from wherever it had closed
+                        // to, and keeps its cover for the whole way: taking
+                        // that down early would show the piece at full size
+                        // around a guide that is on its way back.
+                        play('sg-shutter', sizeGuideOverlay, [{ clipPath: CLIP_OPEN }], 300, 0, EASE.arrive);
+                        if (p.edge) {
+                            play('sg-edge', p.edge, [edgeAt(0)], 300, 0, EASE.arrive);
+                            play('sg-edge-ink', p.edge, [{ opacity: 0 }], 140, 0, 'linear');
+                        }
                         // The reversal is shorter than a cold open — it starts
                         // part-way there — so it settles on its own end, not
                         // on OPEN_MS, and nothing it committed mid-flight is
@@ -19444,9 +19648,29 @@
 
                     if (!p.pd || !p.sg || !p.sga || calm()) { finish(me); return true; }
 
-                    const g = S.geo || { seed: 0.5 };
-                    const seeded = 'scale(' + g.seed + ')';
-                    const counter = 'scale(' + (1 / g.seed) + ')';
+                    // 1 · The piece is set down where it belongs before a
+                    //     single frame of the close is drawn: its own resting
+                    //     frame, full size, full opacity, still carrying the
+                    //     image, the chosen size and the scroll position it
+                    //     has had all along — it was never unmounted. Nothing
+                    //     here is animated, and nothing below moves it again.
+                    //     The reveal is a cover travelling over a piece that
+                    //     is already standing still.
+                    hold('pd-move');
+                    hold('pd-fade');
+                    S.recs.delete('pd-move');
+                    S.recs.delete('pd-fade');
+                    document.body.classList.remove('size-guide-nested');
+                    p.pd.style.removeProperty('transform');
+                    p.pd.style.removeProperty('opacity');
+
+                    // 2 · ...and the cover goes up in the same frame, before
+                    //     the browser paints any of it. The guide is narrower
+                    //     and shorter than the piece, so without this the
+                    //     margins of a full-size piece would appear around it
+                    //     at once. Being the piece's own backdrop repeated,
+                    //     putting it up is invisible.
+                    sizeGuideOverlay.classList.add('is-nest-shutter');
 
                     // One frame each, from wherever the property stands, so a
                     // dismissal mid-open rejoins the exit instead of jumping
@@ -19456,37 +19680,43 @@
                         play(key, target, [frame], t[1], t[0], t[2]);
                     };
 
-                    // 1 · The measurements quiet at once, and are gone before
-                    //     the surface carrying them has started to move. This
-                    //     is the one place `away` belongs: it ends at speed,
-                    //     and that never shows on something already invisible.
+                    // 3 · The measurements quiet as the frame starts moving,
+                    //     at the size they were drawn at — a surface that is
+                    //     no longer scaling cannot stretch the text on its way
+                    //     out, so the table stays crisp until it is gone.
                     leave('sga-fade', p.sga, { opacity: 0 });
-                    leave('sga-counter', p.sga, { transform: counter });
+                    leave('sga-counter', p.sga, { transform: 'scale(1)' });
 
-                    // 2 · The guide retracts. It is the longest thing on the
-                    //     guide's side and the one whose edge does the
-                    //     revealing, so it gets `mech` — all but stopped on
-                    //     its last drawn frame, where `away` was still at
-                    //     two-thirds speed and had to be cut.
-                    leave('sg-surface', p.sg, { transform: seeded });
+                    // 4 · Both no-ops after a settled open; they only have
+                    //     work to do when the dismissal caught the opening
+                    //     part-way and the surface is still growing.
+                    leave('sg-surface', p.sg, { transform: 'scale(1)' });
+                    leave('sg-ink', p.sg, { opacity: 1 });
 
-                    // 3 · It only gives up its ground once it is small and has
-                    //     swept clear of the piece, and it finishes 50ms
-                    //     before the panel comes down — so the last frames are
-                    //     drawn at rest rather than mid-fade.
-                    leave('sg-ink', p.sg, { opacity: 0 });
+                    // 5 · The shutter. The guide's frame retracts inward from
+                    //     the four edges and uncovers the piece as it goes,
+                    //     and it is the last thing still moving — the final
+                    //     frame of the close is the guide finishing rather
+                    //     than anything arriving.
+                    const shut = CLOSE['sg-shutter'];
+                    play('sg-shutter', sizeGuideOverlay,
+                        [{ clipPath: clipNow() }, { clipPath: CLIP_SHUT }],
+                        shut[1], shut[0], shut[2]);
 
-                    // 4 · The piece is back to full opacity inside the first
-                    //     third, underneath the guide and still receded, so
-                    //     the retracting edge uncovers something already
-                    //     there instead of cross-fading to it.
-                    leave('pd-fade', p.pd, { opacity: 1 });
-
-                    // 5 · ...and it is still travelling after the guide has
-                    //     gone. `carry` spends its last third settling, so the
-                    //     final frame of the close is the piece arriving
-                    //     rather than the guide disappearing.
-                    leave('pd-move', p.pd, { transform: 'none' });
+                    // ...with the hairline on its boundary, moving on the same
+                    // curve over the same distance so the two never part. Its
+                    // own light is a separate, linear ramp: up as the movement
+                    // starts, and out before the rectangle collapses, so the
+                    // last frame is the piece and not a spark at its centre.
+                    if (p.edge) {
+                        play('sg-edge', p.edge, [edgeAt(0), edgeAt(0.5)], shut[1], shut[0], shut[2]);
+                        play('sg-edge-ink', p.edge, [
+                            { opacity: 0 },
+                            { opacity: 1, offset: 0.2 },
+                            { opacity: 1, offset: 0.74 },
+                            { opacity: 0 }
+                        ], shut[1], shut[0], 'linear');
+                    }
 
                     after(me, CLOSE_END + CLOSE_SETTLE, () => finish(me));
                     return true;
