@@ -21,6 +21,7 @@
 import { verifyWebhook, readRawBody, retrievePaymentIntent } from './_stripe.js';
 import { eventSeen, recordEvent, ordersConfigured, describeSupabaseError } from './_orders.js';
 import { syncPaymentIntent } from './_inventory.js';
+import { syncRefundEvent, syncDisputeEvent } from './_reversals.js';
 
 // Vercel would otherwise parse the body and destroy the exact bytes the
 // signature was computed over.
@@ -32,6 +33,29 @@ const HANDLED = new Set([
     'payment_intent.processing',
     'payment_intent.payment_failed',
     'payment_intent.canceled'
+]);
+
+// Money going back out. Every one of these is handled by re-reading the object
+// and recording where it now stands, so the set can be generous: overlapping
+// events about the same refund converge rather than accumulate.
+//
+// `charge.refunded` is what a refund issued from the Stripe Dashboard emits,
+// and it carries the Charge with every refund on it — which is also how a
+// second partial refund arrives.
+const REFUNDS = new Set([
+    'charge.refunded',
+    'refund.created',
+    'refund.updated',
+    'refund.failed',
+    'charge.refund.updated'
+]);
+
+const DISPUTES = new Set([
+    'charge.dispute.created',
+    'charge.dispute.updated',
+    'charge.dispute.closed',
+    'charge.dispute.funds_withdrawn',
+    'charge.dispute.funds_reinstated'
 ]);
 
 export default async function handler(request, response) {
@@ -61,19 +85,45 @@ export default async function handler(request, response) {
     }
 
     const event = verified.event;
-    if (!HANDLED.has(event.type)) {
+    const isRefund = REFUNDS.has(event.type);
+    const isDispute = DISPUTES.has(event.type);
+
+    if (!HANDLED.has(event.type) && !isRefund && !isDispute) {
         // Acknowledged so Stripe stops retrying something we do not act on.
         return response.status(200).json({ received: true, ignored: event.type });
     }
 
     const object = event.data && event.data.object;
-    if (!object || !object.id) return response.status(200).json({ received: true, ignored: 'no_intent' });
+    if (!object || !object.id) return response.status(200).json({ received: true, ignored: 'no_object' });
 
     try {
         if (await eventSeen(event.id)) return response.status(200).json({ received: true, duplicate: true });
     } catch (error) {
         // Not fatal: processing is idempotent without the ledger.
         console.error(describeSupabaseError(error, 'stripe-webhook: ledger read'));
+    }
+
+    // ── Money going back out ────────────────────────────────────────────────
+    // Recorded for the royalty statement, which must subtract a reversal from
+    // an artist's base. The object is re-read from Stripe first, so the status
+    // acted on is the real one however the events were ordered.
+    if (isRefund || isDispute) {
+        let outcome;
+        try {
+            outcome = isRefund ? await syncRefundEvent(event) : await syncDisputeEvent(event);
+        } catch (error) {
+            console.error(describeSupabaseError(error, `stripe-webhook: ${event.type}`));
+            return response.status(500).json({ error: 'processing_failed' });
+        }
+        try {
+            await recordEvent(event.id, event.type);
+        } catch (error) {
+            console.error(describeSupabaseError(error, 'stripe-webhook: ledger write'));
+        }
+        // A reversal against an order we do not hold is recorded in the log and
+        // answered 200: a retry cannot conjure the order, and the reconciliation
+        // report is where an unmatched payment is meant to surface.
+        return response.status(200).json({ received: true, outcome: outcome.outcome });
     }
 
     let result;

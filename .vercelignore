@@ -19,3 +19,7 @@ enter-the-void.mov
 # mobile-app/ and void-native/ are deliberately left in: mobile-app deploys
 # from its own Vercel project rooted at that directory, and an ignore rule
 # here is not worth the risk of reaching it.
+
+# Executable tests. They apply the migrations and import the API handlers, so
+# they belong in the repository — but nothing serves them.
+tests/

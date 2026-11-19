@@ -37,6 +37,7 @@ import {
     generateReference, callerHash, storagePath, signUpload, statObject, removeObject,
     sendEmail, receiptHtml, atelierHtml, rpc, describeSupabaseError
 } from './_artists.js';
+import { requireAdmin } from './_auth.js';
 
 const ATELIER_TO = process.env.VOID_ARTIST_NOTIFY_TO || 'artists@eternalvoid.co';
 
@@ -56,10 +57,25 @@ export default async function handler(request, response) {
     if (!artistsConfigured()) {
         return bad(response, 503, 'Submissions are not available right now.');
     }
-    // Gated until the rate, the payouts and the legal drafts are approved.
-    // Nothing is recorded while this is closed.
+    // ── The gate ────────────────────────────────────────────────────────────
+    // Closed until the rate, the payouts and the legal drafts are approved,
+    // and closed on the SERVER: ?intake=preview on the page only un-hides the
+    // form, and has no bearing on anything below. An unauthenticated caller
+    // posting straight to this endpoint while the gate is shut cannot create a
+    // draft, cannot be issued an upload URL and cannot finalise anything.
+    //
+    // The one way through a closed gate is an administrator — the same
+    // allowlist the inventory dashboard uses — so the whole path can be
+    // exercised against real storage before it opens. Those submissions are
+    // flagged `is_preview` and kept out of the reviewer's queue, so a
+    // rehearsal can never be read as somebody's work.
+    let preview = false;
     if (!intakeOpen()) {
-        return bad(response, 503, 'EV for Artists is not open for submissions yet.', { closed: true });
+        const gate = await requireAdmin(request);
+        if (!gate.ok) {
+            return bad(response, 503, 'EV for Artists is not open for submissions yet.', { closed: true });
+        }
+        preview = true;
     }
 
     const body = request.body && typeof request.body === 'object' ? request.body : {};
@@ -70,22 +86,30 @@ export default async function handler(request, response) {
         const token = str(body.token, 80);
         if (!reference || !token) return bad(response, 400, 'Missing submission reference.');
 
-        let found;
+        // The path comes from the draft this token belongs to, never from the
+        // request. A token is only ever good for its own draft's object, so a
+        // confirm call cannot be pointed at a different submission's file.
+        let draft;
         try {
-            found = await rpc('artist_submissions_list', { p_status: null, p_limit: 500, p_offset: 0 });
+            draft = await rpc('artist_submission_draft_path', {
+                p_reference: reference, p_token: token
+            }, 'draft path');
         } catch (error) {
             console.error(describeSupabaseError(error, 'artists: confirm lookup'));
             return bad(response, 502, 'We could not confirm the upload. Please try again.');
         }
+        if (!draft || !draft.ok) {
+            return bad(response, 404, 'We could not confirm the upload. Please try again.');
+        }
+        // Confirmed already — the first call landed and its response was lost.
+        // Saying so is what makes a client retry safe.
+        if (draft.already) {
+            return response.status(200).json({ ok: true, reference, alreadyConfirmed: true });
+        }
 
-        // The path is read back from the row rather than taken from the
-        // request, so a confirm call cannot point at somebody else's object.
-        const row = (found && found.rows ? found.rows : []).find((r) => r.reference === reference);
-        // A draft is not in that list by design, so ask for its path directly.
-        let path = row && row.file_path;
-        if (!path) path = str(body.path, 300);
+        const path = draft.path;
         if (!path || !/^\d{4}\/\d{2}\/EVA-\d{2}-[0-9A-Z]{6}\.(pdf|jpg|png)$/.test(path)) {
-            return bad(response, 400, 'Missing submission reference.');
+            return bad(response, 409, 'We could not confirm the upload. Please try again.');
         }
 
         let stat;
@@ -96,9 +120,18 @@ export default async function handler(request, response) {
             return bad(response, 502, 'We could not confirm the upload. Please try again.');
         }
         if (!stat) return bad(response, 409, 'The upload did not finish. Please try again.');
+
+        // What actually landed, checked before any reviewer can be given a
+        // link to it — not what the browser said it was going to send. The
+        // bucket enforces both as well; this is the layer that can explain
+        // itself to the artist.
         if (stat.size > MAX_BYTES) {
             try { await removeObject(path); } catch (e) { /* swept later */ }
             return bad(response, 413, 'That file is over 15 MB. Please send a smaller one.');
+        }
+        if (stat.mimeType && !TYPES[stat.mimeType]) {
+            try { await removeObject(path); } catch (e) { /* swept later */ }
+            return bad(response, 415, 'PDF, JPG or PNG only.');
         }
 
         let saved;
@@ -200,7 +233,10 @@ export default async function handler(request, response) {
             p_marketing: marketing,
             p_file_name: fileName || null, p_file_size: hasFile ? fileSize : null,
             p_file_type: fileType || null, p_file_path: path,
-            p_confirm_token: token, p_ip_hash: ipHash
+            p_confirm_token: token, p_ip_hash: ipHash,
+            // A rehearsal by an administrator through a closed gate. Kept out
+            // of the reviewer's queue and purgeable as a group.
+            p_is_preview: preview
         });
     } catch (error) {
         console.error(describeSupabaseError(error, 'artists: create'));

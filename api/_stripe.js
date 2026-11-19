@@ -90,6 +90,45 @@ export function cancelPaymentIntent(id, reason = 'abandoned') {
     });
 }
 
+// ── Reversals ────────────────────────────────────────────────────────────────
+// Read back rather than trusted from the event, exactly as the PaymentIntent
+// path does. A refund's status moves — pending to succeeded, or to failed —
+// and a dispute's moves more than once, so the event that woke us is only a
+// signal that something changed; this is what it changed to.
+export function retrieveRefund(id) {
+    return call(`/refunds/${encodeURIComponent(id)}`, { method: 'GET' });
+}
+
+export function retrieveDispute(id) {
+    return call(`/disputes/${encodeURIComponent(id)}`, { method: 'GET' });
+}
+
+// A Charge carries the payment_intent a refund has to be matched back to. Only
+// fetched when the refund object itself does not name one.
+export function retrieveCharge(id) {
+    return call(`/charges/${encodeURIComponent(id)}`, { method: 'GET' });
+}
+
+// Every refund in a window, for the historical dry run. Stripe pages at 100;
+// the caller follows `starting_after`.
+export function listRefunds({ createdGte, createdLt, startingAfter, limit = 100 }) {
+    const q = new URLSearchParams();
+    q.set('limit', String(limit));
+    if (createdGte) q.set('created[gte]', String(Math.floor(createdGte / 1000)));
+    if (createdLt) q.set('created[lt]', String(Math.floor(createdLt / 1000)));
+    if (startingAfter) q.set('starting_after', startingAfter);
+    return call(`/refunds?${q.toString()}`, { method: 'GET' });
+}
+
+export function listDisputes({ createdGte, createdLt, startingAfter, limit = 100 }) {
+    const q = new URLSearchParams();
+    q.set('limit', String(limit));
+    if (createdGte) q.set('created[gte]', String(Math.floor(createdGte / 1000)));
+    if (createdLt) q.set('created[lt]', String(Math.floor(createdLt / 1000)));
+    if (startingAfter) q.set('starting_after', startingAfter);
+    return call(`/disputes?${q.toString()}`, { method: 'GET' });
+}
+
 // A PaymentIntent client secret is `<intent id>_secret_<random>`.
 export function intentIdFromClientSecret(secret) {
     const match = /^(pi_[A-Za-z0-9]+)_secret_[A-Za-z0-9]+$/.exec(String(secret || ''));

@@ -274,7 +274,36 @@
             try {
                 const data = await api('artist-royalties?quarter=' + encodeURIComponent(q));
                 const eur = (m) => '€' + (Number(m || 0) / 100).toFixed(2);
-                $('royaltyOut').innerHTML = !data.artists.length
+                const rec = data.reconciliation;
+
+                // The state of the period, before the figures, because the
+                // figures mean nothing until it is clean.
+                const blocking = rec.blocking;
+                const unresolved = []
+                    .concat((blocking.unallocatedReversals || []).map((u) =>
+                        `unallocated reversal ${u.provider_ref} on ${u.order_number}, ${eur(u.amount)} — ${escapeHtml(u.allocation_note || '')}`))
+                    .concat((blocking.discountAnomalies || []).map((d) =>
+                        `${d.order_number}: subtotal ${eur(d.subtotal_amount)} disagrees with its lines ${eur(d.lines_total)}`))
+                    .concat((blocking.linesWithoutSku || []).map((o) => `${o}: a line has no SKU`))
+                    .concat((blocking.overAllocated || []).map((v) =>
+                        `${v.provider_ref}: allocated ${eur(v.allocated)} against a reversal of ${eur(v.amount)}`))
+                    .concat((rec.review.pendingReversals || []).map((p) =>
+                        `${p.provider_ref} on ${p.order_number} is still pending, ${eur(p.amount)}`))
+                    .concat((rec.review.refundAndDisputeOnSameCharge || []).map((x) =>
+                        `${x.order_number}: charge ${x.charge_id} has both a refund and a dispute`));
+
+                const banner = data.payoutReady
+                    ? `<p class="pill received" style="display:inline-block;">Reconciles — ${rec.ordersInScope} orders in scope</p>`
+                    : `<div style="border:1px solid rgba(232,165,165,0.5);padding:0.9rem 1rem;margin:0.9rem 0;">
+                         <p style="margin:0 0 0.5rem;color:var(--warn);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">
+                           ${rec.status === 'blocked' ? 'Blocked' : 'Needs review'} — not payable
+                         </p>
+                         <ul style="margin:0;padding-left:1.1rem;font-size:0.84rem;">
+                           ${unresolved.map((u) => `<li>${escapeHtml(u)}</li>`).join('')}
+                         </ul>
+                       </div>`;
+
+                $('royaltyOut').innerHTML = banner + (!data.artists.length
                     ? '<p class="hint">No eligible sales in that period.</p>'
                     : `<table><thead><tr>
                         <th>Artist</th><th>Agreement</th><th class="num">Units</th>
@@ -293,23 +322,39 @@
                         <td class="num">${eur(a.royaltyDue)}</td>
                         <td class="num">${a.carryForward ? eur(a.carryForward) : '—'}</td>
                        </tr>`).join('')}</tbody></table>
-                       <p class="hint" style="margin-top:0.8rem;">${escapeHtml(data.basis.approval)}</p>`;
-                say($('royaltyMsg'), '');
+                       <p class="hint" style="margin-top:0.8rem;">${escapeHtml(data.basis.approval)}</p>`);
+                say($('royaltyMsg'), data.payoutReady
+                    ? ''
+                    : 'This period does not reconcile, so the CSV button returns a diagnostic file, not a payout file.',
+                    data.payoutReady ? '' : 'err');
             } catch (error) {
                 say($('royaltyMsg'), 'Could not run that: ' + error.message, 'err');
             }
         });
 
+        // A period that does not reconcile produces no payout file. The server
+        // refuses it with 409 and names what is in the way; the diagnostic
+        // version of the same period is fetched instead, so accounting always
+        // has something to investigate with and never something to pay from.
         $('csvRoyalty').addEventListener('click', async () => {
             const q = $('quarter').value.trim();
             try {
-                const res = await api('artist-royalties?format=csv&quarter=' + encodeURIComponent(q), { raw: true });
+                let res = await api('artist-royalties?format=csv&quarter=' + encodeURIComponent(q), { raw: true });
+                if (res.status === 409) {
+                    const why = await res.json().catch(() => ({}));
+                    say($('royaltyMsg'), `Not payable — ${why.blockingCount} blocking, ${why.reviewCount} to review. `
+                        + 'Downloading the diagnostic file instead.', 'err');
+                    res = await api('artist-royalties?format=csv&diagnostic=1&quarter=' + encodeURIComponent(q), { raw: true });
+                }
                 if (!res.ok) throw new Error(String(res.status));
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `ev-artists-royalties-${q || 'period'}.csv`;
+                // The file says on its own name whether it may be paid from.
+                a.download = String(res.headers.get('content-disposition') || '').includes('DIAGNOSTIC')
+                    ? `ev-artists-royalties-${q || 'period'}-DIAGNOSTIC-DO-NOT-PAY.csv`
+                    : `ev-artists-royalties-${q || 'period'}.csv`;
                 a.click();
                 URL.revokeObjectURL(url);
             } catch (error) {

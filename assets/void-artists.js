@@ -249,14 +249,35 @@
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // Intake is closed until the rate, the payouts and the legal drafts are
-    // approved. `?intake=preview` opens the real form against the real
-    // endpoint so it can be exercised end to end before that happens —
-    // nothing about the request differs, only who can reach the form.
-    function intakeOpen() {
-        if (window.VOID_ARTISTS_INTAKE_OPEN === true) return true;
+    // approved. `?intake=preview` only un-hides the form — the gate itself is
+    // on the server, and the server lets exactly one kind of caller through a
+    // closed one: an administrator on the existing allowlist, whose submission
+    // is flagged as a rehearsal. So the query string reveals the form to
+    // anyone; it admits nobody.
+    function previewRequested() {
         try {
             return new URLSearchParams(location.search).get('intake') === 'preview';
         } catch (e) { return false; }
+    }
+
+    function intakeOpen() {
+        return window.VOID_ARTISTS_INTAKE_OPEN === true || previewRequested();
+    }
+
+    // The signed-in session, when there is one, so an administrator
+    // rehearsing through a closed gate is recognised. Loaded only on the
+    // preview path: an artist submitting to an open gate needs no account and
+    // is never asked for one.
+    var sessionToken = null;
+    function warmSession() {
+        if (!previewRequested()) return Promise.resolve(null);
+        return import('/assets/supabase-client.js')
+            .then(function (mod) { return mod.getSession(); })
+            .then(function (session) {
+                sessionToken = session ? session.access_token : null;
+                return sessionToken;
+            })
+            .catch(function () { return null; });
     }
 
     var form = $('arForm');
@@ -265,6 +286,7 @@
     if (form && gate && intakeOpen()) {
         gate.hidden = true;
         form.hidden = false;
+        warmSession();
     }
 
     function setError(input, message) {
@@ -414,9 +436,11 @@
             }
 
             function post(payload) {
+                var headers = { 'Content-Type': 'application/json' };
+                if (sessionToken) headers.Authorization = 'Bearer ' + sessionToken;
                 return fetch('/api/artist-submission', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(payload)
                 }).then(function (response) {
                     return response.json()

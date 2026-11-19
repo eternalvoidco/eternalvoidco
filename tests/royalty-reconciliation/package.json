@@ -1,0 +1,12 @@
+{
+  "name": "ev-royalty-reconciliation-tests",
+  "version": "1.0.0",
+  "description": "Royalty reconciliation and intake tests against real Postgres (PGlite).",
+  "main": "index.js",
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.17"
+  },
+  "private": true
+}

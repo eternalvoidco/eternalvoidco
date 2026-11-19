@@ -57,6 +57,7 @@
     }
   ],
   "crons": [
-    { "path": "/api/inventory?sweep=1", "schedule": "17 4 * * *" }
+    { "path": "/api/inventory?sweep=1", "schedule": "17 4 * * *" },
+    { "path": "/api/artist-drafts-sweep", "schedule": "41 4 * * *" }
   ]
 }

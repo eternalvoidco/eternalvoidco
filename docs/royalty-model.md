@@ -49,14 +49,14 @@ merchandise, **after discounts**.
 | Paid only | `orders.payment_status = 'paid'` and `paid_at` within the period | |
 | Within the agreement window | `paid_at::date` between `effective_from` and `effective_to` | A sale before the agreement starts earns nothing. |
 | Gross merchandise | `sum(order_items.line_amount)` | Tax and shipping are already outside `line_amount`. |
-| Discounts | `greatest(sum(line_amount) − orders.subtotal_amount, 0)`, allocated pro rata on `line_amount` | **Confirm with accounting.** See open question 1. |
-| Reversals | `order_refunds`, bucketed on `refunded_at` | Applied once; `provider_ref` is unique, so a duplicated webhook event reverses the amount once. Partial amounts honoured. A reversal landing in a later quarter is reported in that quarter. |
-| Royalty base | `gross − discounts − reversals`, floored at zero | |
-| Carry-forward | `reversals − (gross − discounts)` when positive | A quarter whose reversals exceed its sales carries the excess forward as a note rather than inventing a negative payment. |
-| Due | `round(base × royalty_bps / 10000)` | Integer minor units throughout. No floats anywhere in the chain. |
+| Discounts | **n/a — verified absent.** `subtotalOf()` is exactly `sum(lineAmount)`, `taxAmountFor()` is `0`, and there is no coupon/promotion path in the project. Two constraints hold it. | An order where `subtotal_amount` disagrees with the sum of its lines is **unreconcilable** and blocks the payout. It is never inferred. |
+| Reversals | `order_refunds` + `order_refund_allocations`, bucketed on `refunded_at` | Counted once through allocation rows; `provider_ref` is unique so duplicate deliveries converge. Only `succeeded` counts: `pending` has not moved money, `failed`/`canceled` never did, `reinstated` (dispute won) undoes it. **Unallocated reversals are carried on the statement and block the payout — never dropped.** |
+| Royalty base | `gross − reversals`, floored at zero, **per SKU** | |
+| Carry-forward | `reversals − gross` when positive, per SKU | A quarter whose reversals exceed its sales carries the excess forward as a note rather than inventing a negative payment. |
+| Due | `round(base × royalty_bps / 10000)` **per SKU**, summed | The rate is per collaboration row, so two agreements at two rates give two correct figures rather than one blended wrong one. Integer minor units throughout; no floats anywhere. |
 
 The export returns the per-line detail as well as the totals, so a statement can be **checked**
-rather than believed. CSV at `/api/artist-royalties?format=csv&quarter=2026Q4`.
+rather than believed. CSV at `/api/artist-royalties?format=csv&quarter=2026Q4` — **refused with 409 for any period that does not reconcile**; `&diagnostic=1` returns the same figures with every unresolved item listed, named `…-DIAGNOSTIC-DO-NOT-PAY.csv`.
 
 ## Statements and payment
 
@@ -85,23 +85,25 @@ Not an advance, not recoupable, payable whether or not the piece reaches release
 
 ## Launch dependencies — none of these are optional
 
-1. **`order_refunds` is not written yet.** `api/stripe-webhook.js` does not populate it. Until it
-   handles `charge.refunded` and `charge.dispute.closed` (writing `provider_ref`, `order_item_id`,
-   `amount`, `refunded_at`), the export reports **zero reversals** and **must not be used to pay
-   anybody**. This is the single biggest blocker.
-2. **Discount allocation needs confirming.** The schema has no discount column. The export infers an
-   order-level discount from `sum(line_amount) − orders.subtotal_amount`. Accounting must confirm
-   that is how discounts actually land today, and whether item-level discounts are ever written into
-   `unit_amount` instead — in which case they are already in the base and must not be deducted
-   twice.
-3. **`order_items.sku` must be populated** for collaboration products. It is nullable today. A null
-   SKU silently earns nothing.
-4. **Owner approves the 12%**, the quarterly cadence and the 30-day term.
-5. **Accounting confirms** invoicing direction (self-billing vs artist invoice), EU and non-EU VAT
-   treatment, currency conversion method and date, and withholding by jurisdiction.
-6. **Counsel reviews** the agreement, the Submission Terms and the Privacy Notice.
-7. **Reconciliation test** against representative data before the first statement: discounted sales,
-   partial refunds, a duplicated payment event, and an adjustment landing in a later quarter.
+1. **Enable the refund and dispute events** on the Stripe webhook endpoint:
+   `charge.refunded`, `refund.created`, `refund.updated`, `refund.failed`,
+   `charge.refund.updated`, and the five `charge.dispute.*`. The ingestion is written and tested
+   (`api/_reversals.js`); until the events are switched on it receives nothing.
+2. **Run the historical dry run.** A webhook only catches what happens next.
+   `GET /api/artist-reversals?from=…&to=…` reports what it would record and every payment it could
+   not match to an order. Resolve those, then `&apply=1`. **No real period can reconcile before
+   this.**
+3. **Populate `order_items.sku`** for collaboration products. The column is nullable, and a null
+   SKU silently earns nothing — the reconciliation flags such orders rather than guessing.
+4. **One `artist_collaborations` row per signed SKU**, carrying the rate that agreement says.
+5. **Owner approves** 12%, the quarterly cadence and the 30-day term.
+6. **Accounting confirms** invoicing direction, EU and non-EU VAT, currency conversion, withholding,
+   the dispute rule, and how carry-forward is applied.
+7. **Counsel reviews** all three documents.
+8. **Read `payoutReady`.** A period that is not `clean` produces no payout file — the export
+   refuses with 409 and returns a diagnostic worklist instead.
+
+See `docs/ev-for-artists-handoff.md` for the full test results and the open decisions.
 
 ## Open questions for accounting
 
