@@ -10,6 +10,11 @@
     { "source": "/index.html", "destination": "/", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/api/artist-submission", "destination": "/api/artists?_ev_artist_route=/api/artist-submission" },
+    { "source": "/api/artist-submissions", "destination": "/api/artists?_ev_artist_route=/api/artist-submissions" },
+    { "source": "/api/artist-royalties", "destination": "/api/artists?_ev_artist_route=/api/artist-royalties" },
+    { "source": "/api/artist-reversals", "destination": "/api/artists?_ev_artist_route=/api/artist-reversals" },
+    { "source": "/api/artist-drafts-sweep", "destination": "/api/artists?_ev_artist_route=/api/artist-drafts-sweep" },
     { "source": "/shop", "destination": "/index.html" },
     { "source": "/story", "destination": "/index.html" },
     { "source": "/newsletter", "destination": "/index.html" },

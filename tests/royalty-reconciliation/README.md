@@ -1,7 +1,7 @@
 # Royalty reconciliation and intake — executable tests
 
 These run the project's **own migration files** against a real PostgreSQL (PGlite, WASM), and the
-**real `api/artist-submission.js` handler**, so the figures below are produced by the code that
+**real `api/_artist-submission.js` handler**, so the figures below are produced by the code that
 ships rather than by a model of it.
 
 ```
@@ -17,7 +17,7 @@ node staging.mjs       # 34 staging-verification cases
 **Real:** every migration in `supabase/migrations/`, applied in order, unedited except for the
 `create extension pgcrypto` line — `gen_random_uuid()` is core Postgres 13+, so dropping it changes
 nothing under test. The three Supabase roles and `auth.uid()` are created in a short prelude.
-`artist-submission.js` is imported as written.
+`_artist-submission.js` is imported as written.
 
 **Stubbed:** Supabase Storage (an in-memory bucket that refuses to overwrite, as `x-upsert: false`
 makes the real one do), `requireAdmin` (driven by a global so each case chooses the caller), and

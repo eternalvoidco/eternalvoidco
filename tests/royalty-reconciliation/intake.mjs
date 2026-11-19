@@ -1,6 +1,6 @@
 // The closed intake, exercised through the real handler.
 //
-// api/artist-submission.js is imported as written. Its two outside
+// api/_artist-submission.js is imported as written. Its two outside
 // dependencies are stubbed at the module boundary: Supabase RPC is pointed at
 // the real migrations running in PGlite, and Storage is a small in-memory
 // bucket that behaves the way the real one is configured to (private, one
@@ -40,7 +40,7 @@ globalThis.__rpc = async (name, args) => {
 };
 
 // Rewrite the two helper modules so the handler keeps its own logic but talks
-// to the stubs. Nothing in artist-submission.js itself is touched.
+// to the stubs. Nothing in _artist-submission.js itself is touched.
 const artistsSrc = fs.readFileSync(API + '_artists.js', 'utf8');
 const stubbed = artistsSrc
     .replace(/^import crypto from 'node:crypto';$/m, "import crypto from 'node:crypto';")
@@ -84,10 +84,10 @@ export async function requireAdmin() {
 }
 `);
 
-let handlerSrc = fs.readFileSync(API + 'artist-submission.js', 'utf8');
-fs.writeFileSync(path.join(WORK, 'artist-submission.js'), handlerSrc);
+let handlerSrc = fs.readFileSync(API + '_artist-submission.js', 'utf8');
+fs.writeFileSync(path.join(WORK, '_artist-submission.js'), handlerSrc);
 
-const { default: handler } = await import(pathToFileURL(path.join(WORK, 'artist-submission.js')).href);
+const { default: handler } = await import(pathToFileURL(path.join(WORK, '_artist-submission.js')).href);
 
 // ── a tiny request/response pair ────────────────────────────────────────────
 function call(body, { admin = null } = {}) {
