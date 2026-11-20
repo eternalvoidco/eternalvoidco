@@ -41,6 +41,12 @@
             var v = t(el.dataset.i18nHtml);
             if (v) el.innerHTML = v;
         });
+        // Alt text is content, not decoration: these two plates describe the
+        // garment, so they translate with everything else.
+        document.querySelectorAll('[data-i18n-alt]').forEach(function (el) {
+            var v = t(el.dataset.i18nAlt);
+            if (v) el.alt = v;
+        });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
             var v = t(el.dataset.i18nPlaceholder);
             if (v) el.placeholder = v;

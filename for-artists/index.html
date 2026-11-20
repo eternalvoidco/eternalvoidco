@@ -189,8 +189,15 @@
 
         <!-- ══ A detail moment ═════════════════════════════════════════════ -->
         <figure class="ar-plate ar-reveal" aria-labelledby="arPlateOneCap">
-            <img src="/assets/artists/atelier-detail-seam-1000.webp" alt="" loading="lazy" decoding="async" width="1000" height="640">
-            <figcaption id="arPlateOneCap" data-i18n="plateOne">Shoulder seam, heavyweight loopback. What a drawing becomes.</figcaption>
+            <picture>
+                    <!-- Art-directed, not merely resized. The phone gets its own
+                         composition at 760px, which on a 345px plate is a genuine
+                         2x; the desktop file draws the garment at exactly 1:1 from
+                         the 1672x941 original, so the embroidery is never enlarged. -->
+                    <source media="(max-width: 860px)" srcset="/assets/artists/endzustand-front-760.webp" width="760" height="486">
+                    <img src="/assets/artists/endzustand-front-1120.webp" alt="" data-i18n-alt="plateOneAlt" loading="lazy" decoding="async" width="1120" height="716">
+                </picture>
+            <figcaption id="arPlateOneCap" data-i18n="plateOne">Embroidered VOID signature. Endzustand Tee.</figcaption>
         </figure>
 
         <!-- ══ 02 · What happens next ══════════════════════════════════════ -->
@@ -306,8 +313,11 @@
 
         <!-- ══ A second detail moment ══════════════════════════════════════ -->
         <figure class="ar-plate ar-plate--wide ar-reveal" aria-labelledby="arPlateTwoCap">
-            <img src="/assets/artists/atelier-detail-pocket-1000.webp" alt="" loading="lazy" decoding="async" width="1000" height="560">
-            <figcaption id="arPlateTwoCap" data-i18n="plateTwo">Pouch and hem, topstitched. The part of the drawing nobody sees.</figcaption>
+            <picture>
+                    <source media="(max-width: 860px)" srcset="/assets/artists/endzustand-back-760.webp" width="760" height="426">
+                    <img src="/assets/artists/endzustand-back-1320.webp" alt="" data-i18n-alt="plateTwoAlt" loading="lazy" decoding="async" width="1320" height="740">
+                </picture>
+            <figcaption id="arPlateTwoCap" data-i18n="plateTwo">Reverse artwork. Endzustand Tee.</figcaption>
         </figure>
 
         <!-- ══ The form ════════════════════════════════════════════════════ -->

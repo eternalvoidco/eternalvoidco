@@ -41,8 +41,16 @@ window.VOID_ARTISTS_I18N = {
         whatDCopy: 'Stitch artwork, thread calls, or a full pack if you have one. A full tech pack is optional.',
         whatNote: 'A clear sketch or mock-up and a short description are enough to start. We ask for editable or production source files only once a design progresses — never at intake.',
 
-        plateOne: 'Shoulder seam, heavyweight loopback. What a drawing becomes.',
-        plateTwo: 'Pouch and hem, topstitched. The part of the drawing nobody sees.',
+        plateOne: 'Gestickte VOID-Signatur. Endzustand Tee.',
+        plateTwo: 'Artwork auf der Rückseite. Endzustand Tee.',
+        plateOneAlt: 'Das Endzustand Tee von vorn: gerippter Rundhalsausschnitt und die weiß gestickte VOID-Signatur auf der Brust.',
+        plateTwoAlt: 'Das Endzustand Tee von hinten: das Artwork auf der Rückseite, eine Mondsichel über einer verhüllten Gestalt, weiß auf Schwarz gedruckt.',
+        plateOneAlt: 'La T-shirt Endzustand di fronte: girocollo a costine e la firma VOID ricamata in bianco sul petto.',
+        plateTwoAlt: 'La T-shirt Endzustand di spalle: l’artwork sul retro, una falce di luna sopra una figura drappeggiata, stampata in bianco su nero.',
+        plateOneAlt: 'Le t-shirt Endzustand de face : col rond côtelé et la signature VOID brodée en blanc sur la poitrine.',
+        plateTwoAlt: 'Le t-shirt Endzustand de dos : le graphisme au revers, un croissant de lune au-dessus d’une figure drapée, imprimé en blanc sur noir.',
+        plateOneAlt: 'The Endzustand Tee from the front: ribbed crew neck and the VOID signature embroidered in white at the chest.',
+        plateTwoAlt: 'The Endzustand Tee from the back: the reverse artwork, a crescent moon over a draped figure, printed in white on black.',
 
         pathKicker: 'What happens next',
         pathTitle: 'From your file to a release.',
