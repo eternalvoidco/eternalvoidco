@@ -41,16 +41,51 @@ window.VOID_ARTISTS_I18N = {
         whatDCopy: 'Stitch artwork, thread calls, or a full pack if you have one. A full tech pack is optional.',
         whatNote: 'A clear sketch or mock-up and a short description are enough to start. We ask for editable or production source files only once a design progresses — never at intake.',
 
-        plateOne: 'Gestickte VOID-Signatur. Endzustand Tee.',
-        plateTwo: 'Artwork auf der Rückseite. Endzustand Tee.',
-        plateOneAlt: 'Das Endzustand Tee von vorn: gerippter Rundhalsausschnitt und die weiß gestickte VOID-Signatur auf der Brust.',
-        plateTwoAlt: 'Das Endzustand Tee von hinten: das Artwork auf der Rückseite, eine Mondsichel über einer verhüllten Gestalt, weiß auf Schwarz gedruckt.',
-        plateOneAlt: 'La T-shirt Endzustand di fronte: girocollo a costine e la firma VOID ricamata in bianco sul petto.',
-        plateTwoAlt: 'La T-shirt Endzustand di spalle: l’artwork sul retro, una falce di luna sopra una figura drappeggiata, stampata in bianco su nero.',
-        plateOneAlt: 'Le t-shirt Endzustand de face : col rond côtelé et la signature VOID brodée en blanc sur la poitrine.',
-        plateTwoAlt: 'Le t-shirt Endzustand de dos : le graphisme au revers, un croissant de lune au-dessus d’une figure drapée, imprimé en blanc sur noir.',
-        plateOneAlt: 'The Endzustand Tee from the front: ribbed crew neck and the VOID signature embroidered in white at the chest.',
-        plateTwoAlt: 'The Endzustand Tee from the back: the reverse artwork, a crescent moon over a draped figure, printed in white on black.',
+        comingSoon: 'Coming Soon',
+
+        atelierKicker: 'Inside the atelier',
+        atelierTitle: 'What a drawing becomes.',
+        atelierLead: 'Three chapters from the house’s own work, and three studies still on the table. This is the level a selected submission is developed to.',
+
+        chFallenCopy: 'A small VOID signature at the chest. On the reverse, a fractured crescent frames a figure in shadow.',
+        chFallenBackCap: 'Reverse artwork. Endzustand Tee.',
+        chFallenBackAlt: 'The Endzustand Tee from the back: a fractured crescent moon framing a draped figure in shadow, printed in white on black cotton.',
+        chFallenFrontCap: 'Embroidered VOID signature. Endzustand Tee.',
+        chFallenFrontAlt: 'The Endzustand Tee from the front: ribbed crew neck and the VOID signature embroidered in white at the chest.',
+
+        chSigilCopy: 'Black VOID embroidery sits against white cotton. Turn the piece and a dark figure hangs just above its own shadow.',
+        chSigilBackCap: 'Back artwork. Levitate Tee.',
+        chSigilBackAlt: 'The Levitate Tee from the back: a black silhouette of a figure printed on white cotton, hanging just above its own shadow.',
+        chSigilFrontCap: 'Embroidered VOID signature. Levitate Tee.',
+        chSigilFrontAlt: 'The Levitate Tee from the front: white cotton in close-up, with the VOID signature embroidered in black at the chest.',
+
+        chEternalCopy: 'One oblique repeat, three readings. The pattern shifts with the colour of the cloth.',
+        chEternalIvoire: 'Pale gold on ivory.',
+        chEternalNoir: 'Antique gold on black.',
+        chEternalAzure: 'Soft blue on ivory.',
+        chEternalIvoireAlt: 'Insigne Ivoire in close-up: the oblique VOID repeat in pale gold on ivory jersey, across the shoulder and the ribbed neckline.',
+        chEternalNoirAlt: 'Insigne Noir in close-up: the oblique VOID repeat in antique gold on black jersey, across the shoulder and the ribbed neckline.',
+        chEternalAzureAlt: 'Insigne Azure in close-up: the oblique VOID repeat in soft blue on ivory jersey, across the shoulder and the ribbed neckline.',
+
+        studiesKicker: 'Atelier studies',
+        studiesTitle: 'Three concepts, still on the table.',
+        studiesLead: 'Design concepts, not releases. They are here because they show how far a drawing is taken before anyone decides whether to make it.',
+
+        studyGothicCopy: 'Antique-gold linework crosses the shoulder and returns at the hem. At the neckline, a black woven VOID label is finished with fine gold stitching.',
+        studyGothicFrontCap: 'Full front. Gilded Gothic study.',
+        studyGothicFrontAlt: 'The Gilded Gothic study, the whole tee seen from the front: antique-gold linework across the chest and shoulders and returning at the hem, with the collar, both sleeve ends and the bottom hem in frame.',
+        studyGothicSleeveCap: 'Shoulder, sleeve and woven label.',
+        studyGothicSleeveAlt: 'The Gilded Gothic study in close-up: gold linework running over the shoulder and down the sleeve, the sleeve stitching, and a black woven VOID label at the neckline finished in fine gold thread.',
+
+        studyIndigoCopy: 'Indigo linework turns from the shoulder onto the sleeve. A handwritten VOID signature sits just above the double-stitched cuff.',
+        studyIndigoCap: 'Shoulder to cuff. Indigo Porcelain study.',
+        studyIndigoAlt: 'The Indigo Porcelain study in close-up: indigo linework turning from the shoulder of a white tee onto the sleeve, with a handwritten VOID signature just above the double-stitched cuff.',
+
+        studyCurrentCopy: 'Sapphire currents sweep across black cotton. At the sleeve, the print curves around a handwritten VOID signature just above the cuff.',
+        studyCurrentFrontCap: 'Full front. Engraved Current study.',
+        studyCurrentFrontAlt: 'The Engraved Current study, the whole tee seen from the front: sapphire currents sweeping across black cotton, with the collar, both sleeve ends and the bottom hem in frame.',
+        studyCurrentSleeveCap: 'Sleeve, signature and cuff.',
+        studyCurrentSleeveAlt: 'The Engraved Current study in close-up: the sapphire print curving around the sleeve of a black tee, a handwritten VOID signature just above the cuff, and the cuff stitching and cotton weave visible.',
 
         pathKicker: 'What happens next',
         pathTitle: 'From your file to a release.',
@@ -193,8 +228,51 @@ window.VOID_ARTISTS_I18N = {
         whatDCopy: 'Visuels de broderie, références de fils, ou un dossier complet si vous en avez un. Le dossier technique complet reste facultatif.',
         whatNote: 'Un croquis ou un aperçu clair et une courte description suffisent pour commencer. Nous ne demandons les fichiers sources, éditables ou de production, que lorsqu’une création avance — jamais à la réception.',
 
-        plateOne: 'Couture d’épaule, molleton lourd. Ce que devient un dessin.',
-        plateTwo: 'Poche et bas de corps, surpiqués. La part du dessin que personne ne voit.',
+        comingSoon: 'Bientôt',
+
+        atelierKicker: 'Dans l’atelier',
+        atelierTitle: 'Ce que devient un dessin.',
+        atelierLead: 'Trois chapitres du travail de la maison, et trois études encore sur la table. C’est le niveau auquel une proposition retenue est développée.',
+
+        chFallenCopy: 'Une petite signature VOID sur la poitrine. Au dos, un croissant fracturé encadre une figure dans l’ombre.',
+        chFallenBackCap: 'Graphisme au dos. Endzustand Tee.',
+        chFallenBackAlt: 'Le t-shirt Endzustand de dos : un croissant de lune fracturé encadrant une figure drapée dans l’ombre, imprimé en blanc sur coton noir.',
+        chFallenFrontCap: 'Signature VOID brodée. Endzustand Tee.',
+        chFallenFrontAlt: 'Le t-shirt Endzustand de face : col rond côtelé et la signature VOID brodée en blanc sur la poitrine.',
+
+        chSigilCopy: 'La broderie VOID noire se pose sur le coton blanc. Retournez la pièce et une figure sombre flotte juste au-dessus de son ombre.',
+        chSigilBackCap: 'Graphisme au dos. Levitate Tee.',
+        chSigilBackAlt: 'Le t-shirt Levitate de dos : la silhouette noire d’une figure imprimée sur coton blanc, suspendue juste au-dessus de sa propre ombre.',
+        chSigilFrontCap: 'Signature VOID brodée. Levitate Tee.',
+        chSigilFrontAlt: 'Le t-shirt Levitate de face : coton blanc en gros plan, avec la signature VOID brodée en noir sur la poitrine.',
+
+        chEternalCopy: 'Un seul motif oblique, trois lectures. Le dessin change avec la couleur du tissu.',
+        chEternalIvoire: 'Or pâle sur ivoire.',
+        chEternalNoir: 'Or ancien sur noir.',
+        chEternalAzure: 'Bleu doux sur ivoire.',
+        chEternalIvoireAlt: 'Insigne Ivoire en gros plan : le motif VOID oblique en or pâle sur jersey ivoire, sur l’épaule et l’encolure côtelée.',
+        chEternalNoirAlt: 'Insigne Noir en gros plan : le motif VOID oblique en or ancien sur jersey noir, sur l’épaule et l’encolure côtelée.',
+        chEternalAzureAlt: 'Insigne Azure en gros plan : le motif VOID oblique en bleu doux sur jersey ivoire, sur l’épaule et l’encolure côtelée.',
+
+        studiesKicker: 'Études d’atelier',
+        studiesTitle: 'Trois concepts, encore sur la table.',
+        studiesLead: 'Des concepts, pas des sorties. Ils sont ici parce qu’ils montrent jusqu’où un dessin est mené avant que quiconque décide de le produire.',
+
+        studyGothicCopy: 'Un tracé or ancien traverse l’épaule et revient à l’ourlet. À l’encolure, une étiquette tissée VOID noire est finie d’une fine couture dorée.',
+        studyGothicFrontCap: 'Face complète. Étude Gilded Gothic.',
+        studyGothicFrontAlt: 'L’étude Gilded Gothic, le t-shirt entier vu de face : un tracé or ancien sur la poitrine et les épaules, revenant à l’ourlet, avec le col, les deux bas de manches et l’ourlet inférieur dans le cadre.',
+        studyGothicSleeveCap: 'Épaule, manche et étiquette tissée.',
+        studyGothicSleeveAlt: 'L’étude Gilded Gothic en gros plan : le tracé doré passant sur l’épaule et descendant la manche, la couture de manche, et une étiquette tissée VOID noire à l’encolure finie d’un fil doré fin.',
+
+        studyIndigoCopy: 'Le tracé indigo passe de l’épaule à la manche. Une signature VOID manuscrite se tient juste au-dessus du poignet surpiqué.',
+        studyIndigoCap: 'De l’épaule au poignet. Étude Indigo Porcelain.',
+        studyIndigoAlt: 'L’étude Indigo Porcelain en gros plan : un tracé indigo passant de l’épaule d’un t-shirt blanc à la manche, avec une signature VOID manuscrite juste au-dessus du poignet surpiqué.',
+
+        studyCurrentCopy: 'Des courants saphir balaient le coton noir. À la manche, l’impression contourne une signature VOID manuscrite juste au-dessus du poignet.',
+        studyCurrentFrontCap: 'Face complète. Étude Engraved Current.',
+        studyCurrentFrontAlt: 'L’étude Engraved Current, le t-shirt entier vu de face : des courants saphir balayant le coton noir, avec le col, les deux bas de manches et l’ourlet inférieur dans le cadre.',
+        studyCurrentSleeveCap: 'Manche, signature et poignet.',
+        studyCurrentSleeveAlt: 'L’étude Engraved Current en gros plan : l’impression saphir épousant la manche d’un t-shirt noir, une signature VOID manuscrite juste au-dessus du poignet, la couture du poignet et la trame du coton visibles.',
 
         pathKicker: 'La suite',
         pathTitle: 'De votre fichier à une sortie.',
@@ -337,8 +415,51 @@ window.VOID_ARTISTS_I18N = {
         whatDCopy: 'Artwork per ricamo, codici filo, o un pacchetto completo se ce l’hai. Il tech pack completo è facoltativo.',
         whatNote: 'Uno schizzo o un mock-up chiaro e una breve descrizione bastano per cominciare. I file sorgente, editabili o di produzione, li chiediamo solo quando un progetto avanza — mai in fase di invio.',
 
-        plateOne: 'Cucitura di spalla, felpa pesante. Ciò che un disegno diventa.',
-        plateTwo: 'Tasca e fondo, impunturati. La parte del disegno che nessuno vede.',
+        comingSoon: 'In Arrivo',
+
+        atelierKicker: 'Dentro l’atelier',
+        atelierTitle: 'Ciò che un disegno diventa.',
+        atelierLead: 'Tre capitoli del lavoro della maison e tre studi ancora sul tavolo. È il livello a cui viene sviluppata una proposta selezionata.',
+
+        chFallenCopy: 'Una piccola firma VOID sul petto. Sul retro, una falce spezzata incornicia una figura nell’ombra.',
+        chFallenBackCap: 'Artwork sul retro. Endzustand Tee.',
+        chFallenBackAlt: 'La T-shirt Endzustand di spalle: una falce di luna spezzata che incornicia una figura drappeggiata nell’ombra, stampata in bianco su cotone nero.',
+        chFallenFrontCap: 'Firma VOID ricamata. Endzustand Tee.',
+        chFallenFrontAlt: 'La T-shirt Endzustand di fronte: girocollo a costine e la firma VOID ricamata in bianco sul petto.',
+
+        chSigilCopy: 'Il ricamo VOID nero si posa sul cotone bianco. Gira il capo e una figura scura resta sospesa appena sopra la propria ombra.',
+        chSigilBackCap: 'Artwork sul retro. Levitate Tee.',
+        chSigilBackAlt: 'La T-shirt Levitate di spalle: la sagoma nera di una figura stampata su cotone bianco, sospesa appena sopra la propria ombra.',
+        chSigilFrontCap: 'Firma VOID ricamata. Levitate Tee.',
+        chSigilFrontAlt: 'La T-shirt Levitate di fronte: cotone bianco in primo piano, con la firma VOID ricamata in nero sul petto.',
+
+        chEternalCopy: 'Un solo motivo obliquo, tre letture. Il disegno cambia con il colore del tessuto.',
+        chEternalIvoire: 'Oro pallido su avorio.',
+        chEternalNoir: 'Oro antico su nero.',
+        chEternalAzure: 'Azzurro tenue su avorio.',
+        chEternalIvoireAlt: 'Insigne Ivoire in primo piano: il motivo VOID obliquo in oro pallido su jersey avorio, sulla spalla e sul collo a costine.',
+        chEternalNoirAlt: 'Insigne Noir in primo piano: il motivo VOID obliquo in oro antico su jersey nero, sulla spalla e sul collo a costine.',
+        chEternalAzureAlt: 'Insigne Azure in primo piano: il motivo VOID obliquo in azzurro tenue su jersey avorio, sulla spalla e sul collo a costine.',
+
+        studiesKicker: 'Studi d’atelier',
+        studiesTitle: 'Tre concept, ancora sul tavolo.',
+        studiesLead: 'Concept, non uscite. Sono qui perché mostrano fino a che punto un disegno viene portato prima che qualcuno decida se produrlo.',
+
+        studyGothicCopy: 'Un tratto in oro antico attraversa la spalla e ritorna all’orlo. Allo scollo, un’etichetta tessuta VOID nera è rifinita con una fine impuntura dorata.',
+        studyGothicFrontCap: 'Fronte completo. Studio Gilded Gothic.',
+        studyGothicFrontAlt: 'Lo studio Gilded Gothic, la T-shirt intera vista di fronte: tratto in oro antico sul petto e sulle spalle che ritorna all’orlo, con il collo, i fondi di entrambe le maniche e l’orlo inferiore nell’inquadratura.',
+        studyGothicSleeveCap: 'Spalla, manica ed etichetta tessuta.',
+        studyGothicSleeveAlt: 'Lo studio Gilded Gothic in primo piano: il tratto dorato che passa sulla spalla e scende lungo la manica, la cucitura della manica e un’etichetta tessuta VOID nera allo scollo rifinita con filo dorato sottile.',
+
+        studyIndigoCopy: 'Il tratto indaco passa dalla spalla alla manica. Una firma VOID scritta a mano sta appena sopra il polsino a doppia impuntura.',
+        studyIndigoCap: 'Dalla spalla al polsino. Studio Indigo Porcelain.',
+        studyIndigoAlt: 'Lo studio Indigo Porcelain in primo piano: tratto indaco che passa dalla spalla di una T-shirt bianca alla manica, con una firma VOID scritta a mano appena sopra il polsino a doppia impuntura.',
+
+        studyCurrentCopy: 'Correnti zaffiro attraversano il cotone nero. Sulla manica, la stampa curva attorno a una firma VOID scritta a mano appena sopra il polsino.',
+        studyCurrentFrontCap: 'Fronte completo. Studio Engraved Current.',
+        studyCurrentFrontAlt: 'Lo studio Engraved Current, la T-shirt intera vista di fronte: correnti zaffiro che attraversano il cotone nero, con il collo, i fondi di entrambe le maniche e l’orlo inferiore nell’inquadratura.',
+        studyCurrentSleeveCap: 'Manica, firma e polsino.',
+        studyCurrentSleeveAlt: 'Lo studio Engraved Current in primo piano: la stampa zaffiro che segue la manica di una T-shirt nera, una firma VOID scritta a mano appena sopra il polsino, con la cucitura del polsino e la trama del cotone visibili.',
 
         pathKicker: 'Cosa succede dopo',
         pathTitle: 'Dal tuo file a un’uscita.',
@@ -481,8 +602,51 @@ window.VOID_ARTISTS_I18N = {
         whatDCopy: 'Stickvorlagen, Garnangaben oder ein vollständiges Paket, falls vorhanden. Ein vollständiges Tech Pack ist optional.',
         whatNote: 'Eine klare Skizze oder ein Mock-up und eine kurze Beschreibung genügen für den Anfang. Bearbeitbare oder produktionsfertige Quelldateien fragen wir erst an, wenn ein Entwurf weitergeht — nie bei der Einreichung.',
 
-        plateOne: 'Schulternaht, schwerer Loopback. Was aus einer Zeichnung wird.',
-        plateTwo: 'Tasche und Saum, abgesteppt. Der Teil der Zeichnung, den niemand sieht.',
+        comingSoon: 'Bald verfügbar',
+
+        atelierKicker: 'Im Atelier',
+        atelierTitle: 'Was aus einer Zeichnung wird.',
+        atelierLead: 'Drei Kapitel aus der eigenen Arbeit des Hauses und drei Studien, die noch auf dem Tisch liegen. Auf dieses Niveau wird eine ausgewählte Einreichung entwickelt.',
+
+        chFallenCopy: 'Eine kleine VOID-Signatur auf der Brust. Auf der Rückseite rahmt eine gebrochene Mondsichel eine Gestalt im Schatten.',
+        chFallenBackCap: 'Artwork auf der Rückseite. Endzustand Tee.',
+        chFallenBackAlt: 'Das Endzustand Tee von hinten: eine gebrochene Mondsichel, die eine verhüllte Gestalt im Schatten rahmt, weiß auf schwarze Baumwolle gedruckt.',
+        chFallenFrontCap: 'Gestickte VOID-Signatur. Endzustand Tee.',
+        chFallenFrontAlt: 'Das Endzustand Tee von vorn: gerippter Rundhalsausschnitt und die weiß gestickte VOID-Signatur auf der Brust.',
+
+        chSigilCopy: 'Schwarze VOID-Stickerei auf weißer Baumwolle. Dreht man das Stück, schwebt eine dunkle Gestalt knapp über ihrem eigenen Schatten.',
+        chSigilBackCap: 'Artwork auf der Rückseite. Levitate Tee.',
+        chSigilBackAlt: 'Das Levitate Tee von hinten: die schwarze Silhouette einer Gestalt, auf weiße Baumwolle gedruckt, knapp über ihrem eigenen Schatten schwebend.',
+        chSigilFrontCap: 'Gestickte VOID-Signatur. Levitate Tee.',
+        chSigilFrontAlt: 'Das Levitate Tee von vorn: weiße Baumwolle in Nahaufnahme, mit der schwarz gestickten VOID-Signatur auf der Brust.',
+
+        chEternalCopy: 'Ein schräger Rapport, drei Lesarten. Das Muster verschiebt sich mit der Farbe des Stoffs.',
+        chEternalIvoire: 'Blassgold auf Elfenbein.',
+        chEternalNoir: 'Antikgold auf Schwarz.',
+        chEternalAzure: 'Sanftes Blau auf Elfenbein.',
+        chEternalIvoireAlt: 'Insigne Ivoire in Nahaufnahme: der schräge VOID-Rapport in Blassgold auf elfenbeinfarbenem Jersey, über Schulter und geripptem Halsausschnitt.',
+        chEternalNoirAlt: 'Insigne Noir in Nahaufnahme: der schräge VOID-Rapport in Antikgold auf schwarzem Jersey, über Schulter und geripptem Halsausschnitt.',
+        chEternalAzureAlt: 'Insigne Azure in Nahaufnahme: der schräge VOID-Rapport in sanftem Blau auf elfenbeinfarbenem Jersey, über Schulter und geripptem Halsausschnitt.',
+
+        studiesKicker: 'Atelierstudien',
+        studiesTitle: 'Drei Entwürfe, noch auf dem Tisch.',
+        studiesLead: 'Entwürfe, keine Releases. Sie stehen hier, weil sie zeigen, wie weit eine Zeichnung geführt wird, bevor jemand entscheidet, ob sie gemacht wird.',
+
+        studyGothicCopy: 'Antikgoldene Linienführung zieht über die Schulter und kehrt am Saum zurück. Am Halsausschnitt ist ein schwarzes gewebtes VOID-Label mit feiner Goldnaht gefasst.',
+        studyGothicFrontCap: 'Vorderansicht komplett. Studie Gilded Gothic.',
+        studyGothicFrontAlt: 'Die Studie Gilded Gothic, das ganze Shirt von vorn: antikgoldene Linienführung über Brust und Schultern, die am Saum zurückkehrt, mit Kragen, beiden Ärmelabschlüssen und dem unteren Saum im Bild.',
+        studyGothicSleeveCap: 'Schulter, Ärmel und gewebtes Label.',
+        studyGothicSleeveAlt: 'Die Studie Gilded Gothic in Nahaufnahme: die goldene Linienführung über die Schulter und den Ärmel hinab, die Ärmelnaht und ein schwarzes gewebtes VOID-Label am Halsausschnitt, mit feinem Goldfaden gefasst.',
+
+        studyIndigoCopy: 'Indigofarbene Linien führen von der Schulter auf den Ärmel. Eine handgeschriebene VOID-Signatur sitzt knapp über der doppelt abgesteppten Manschette.',
+        studyIndigoCap: 'Von der Schulter zur Manschette. Studie Indigo Porcelain.',
+        studyIndigoAlt: 'Die Studie Indigo Porcelain in Nahaufnahme: indigofarbene Linien, die von der Schulter eines weißen Shirts auf den Ärmel führen, mit einer handgeschriebenen VOID-Signatur knapp über der doppelt abgesteppten Manschette.',
+
+        studyCurrentCopy: 'Saphirblaue Strömungen ziehen über schwarze Baumwolle. Am Ärmel legt sich der Druck um eine handgeschriebene VOID-Signatur knapp über der Manschette.',
+        studyCurrentFrontCap: 'Vorderansicht komplett. Studie Engraved Current.',
+        studyCurrentFrontAlt: 'Die Studie Engraved Current, das ganze Shirt von vorn: saphirblaue Strömungen über schwarzer Baumwolle, mit Kragen, beiden Ärmelabschlüssen und dem unteren Saum im Bild.',
+        studyCurrentSleeveCap: 'Ärmel, Signatur und Manschette.',
+        studyCurrentSleeveAlt: 'Die Studie Engraved Current in Nahaufnahme: der saphirblaue Druck, der sich um den Ärmel eines schwarzen Shirts legt, eine handgeschriebene VOID-Signatur knapp über der Manschette, Manschettennaht und Baumwollstruktur sichtbar.',
 
         pathKicker: 'Wie es weitergeht',
         pathTitle: 'Von deiner Datei zu einer Veröffentlichung.',

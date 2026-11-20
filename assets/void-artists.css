@@ -34,6 +34,9 @@
 html {
     background: var(--ar-ground);
     -webkit-text-size-adjust: 100%;
+    /* The header is fixed, so every fragment destination owes it clearance.
+       Scripting refines this; without scripting it is the whole answer. */
+    scroll-padding-top: clamp(4.6rem, 10vh, 6.6rem);
 }
 
 body {
@@ -395,6 +398,75 @@ html.ar-pre .ar-hero-scroll { opacity: 0; }
 
 .ar-btn--wide { width: 100%; max-width: 26rem; }
 .ar-btn[disabled] { opacity: 0.45; cursor: default; box-shadow: none; }
+/* ── The press answer ─────────────────────────────────────────────────────
+   What a Collection link does when it is pressed, done by a link that stays
+   on this page. The passage lights its link on pointerdown and holds it lit
+   while the door opens; these hold while the page travels, so the answer and
+   the movement read as one event. In both cases the light comes up fast —
+   it has to beat the movement — and goes down slowly.
+
+   The two voices are deliberately unlike. The primary button answers with
+   its whole edge and a little warmth behind it; the quiet link answers with
+   a hairline and nothing else. */
+.ar-btn--primary { position: relative; }
+.ar-btn--primary::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 1px solid var(--ar-gold-bright);
+    opacity: 0;
+    transition: opacity 0.46s var(--ar-ease);
+    pointer-events: none;
+}
+.ar-btn--primary.is-descending {
+    background: rgba(199, 169, 108, 0.15);
+    border-color: var(--ar-gold);
+    color: var(--ar-ivory);
+    box-shadow: 0 0 38px rgba(199, 169, 108, 0.19);
+}
+.ar-btn--primary.is-descending::after {
+    opacity: 1;
+    transition-duration: 0.11s;
+}
+
+/* The same hairline the passage draws under a Collection link, including the
+   direction it draws in. */
+.ar-btn--quiet { position: relative; }
+.ar-btn--quiet::after,
+a.ar-descent:not(.ar-btn)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg,
+        rgba(232, 208, 158, 0.95),
+        rgba(199, 169, 108, 0.55));
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.44s var(--ar-ease), opacity 0.22s ease;
+}
+.ar-btn--quiet.is-descending {
+    color: var(--ar-ivory);
+}
+.ar-btn--quiet.is-descending::after,
+a.ar-descent:not(.ar-btn).is-descending::after {
+    transform: scaleX(1);
+    opacity: 1;
+    transition-duration: 0.16s, 0.1s;
+}
+
+/* Every other fragment link on the page: a fine underline, nothing more. */
+a.ar-descent:not(.ar-btn) { position: relative; }
+
+/* A destination is given focus on arrival so the keyboard and a screen
+   reader follow the page. That is not a focus the eye needs drawn to a box
+   around a whole section — the ring belongs on the things you tab to. */
+[tabindex="-1"]:focus { outline: none; }
+
 
 /* ═══ Sections ════════════════════════════════════════════════════════════ */
 .ar-section {
@@ -569,27 +641,6 @@ html.ar-pre .ar-hero-scroll { opacity: 0; }
     padding: 1rem 1.2rem;
     border: 1px dashed rgba(199, 169, 108, 0.32);
     font-size: 0.84rem;
-    color: var(--ar-ivory-faint);
-}
-
-/* ── Plates ───────────────────────────────────────────────────────────── */
-.ar-plate {
-    margin: 0;
-    padding: 0 var(--ar-pad);
-    max-width: var(--ar-max);
-    margin-inline: auto;
-}
-.ar-plate img {
-    width: 100%;
-    height: auto;
-    border: 1px solid var(--ar-rule);
-}
-.ar-plate--wide { max-width: 1480px; }
-.ar-plate figcaption {
-    margin-top: 0.9rem;
-    font-size: 0.74rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
     color: var(--ar-ivory-faint);
 }
 
@@ -850,6 +901,223 @@ html.ar-pre .ar-hero-scroll { opacity: 0; }
 .ar-footer-links a:hover { color: var(--ar-gold-bright); }
 .ar-footer-fine { margin: 0; max-width: 76ch; font-size: 0.76rem; color: var(--ar-ivory-faint); }
 
+
+/* ═══ Inside the Atelier ══════════════════════════════════════════════════
+   The editorial. Four things carry it and none of them is decoration: the
+   scale a garment is given, where it sits against the column, how much air
+   is left around it, and how little is said. Copy is kept to a sentence or
+   two per chapter because the photographs are the argument.
+
+   Scale is varied on purpose. A chapter that paired two equal images would
+   read as a contact sheet; one that gave every garment a full-bleed plate
+   would read as a lookbook with no opinion. So each chapter has a weight
+   order — one image is the subject and the other answers it — and the
+   chapters do not repeat each other's arrangement. */
+.ar-atelier {
+    padding-bottom: clamp(1.6rem, 4vh, 3rem);
+}
+.ar-atelier-lead {
+    max-width: 44rem;
+}
+
+.ar-chapter {
+    max-width: var(--ar-max);
+    margin: 0 auto;
+    padding: clamp(2.8rem, 8vh, 6rem) var(--ar-pad);
+}
+
+.ar-chapter-head {
+    max-width: 44rem;
+    margin: 0 0 clamp(1.8rem, 4.5vh, 3rem);
+}
+.ar-chapter-index {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    margin: 0 0 0.7rem;
+    color: var(--ar-gold);
+    font-size: 0.62rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+}
+.ar-chapter-name {
+    margin: 0 0 0.9rem;
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+    line-height: 1.12;
+    letter-spacing: 0.005em;
+    color: var(--ar-ivory);
+}
+.ar-chapter-copy {
+    margin: 0;
+    max-width: 36rem;
+    color: var(--ar-ivory-dim);
+}
+
+/* The catalogue's own status, said the way the boutique says it. The three
+   Insigne colourways are a preview there and must not read as a shelf here. */
+.ar-chapter-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.62rem;
+    margin: 1.1rem 0 0;
+    color: var(--ar-gold);
+    font-size: 0.6rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+}
+.ar-chapter-status::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ar-gold);
+    opacity: 0.8;
+}
+
+/* ── Shots ────────────────────────────────────────────────────────────────
+   One rule for every photograph in the editorial: the whole frame, at the
+   ratio it was composed in. No object-fit anywhere — the frames were cut in
+   the studio, and a second crop here would undo that. */
+.ar-shot {
+    margin: 0;
+}
+.ar-shot img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--ar-rule);
+}
+.ar-shot figcaption {
+    margin-top: 0.85rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ar-ivory-faint);
+    line-height: 1.7;
+}
+.ar-shot-name {
+    color: var(--ar-gold);
+    font-weight: 500;
+}
+
+/* Chapter I — the reverse carries the chapter and the chest detail answers
+   it from below, at a third of the width and dropped to the baseline so the
+   two are not read as a pair of equals. */
+.ar-pair {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(1.4rem, 3vw, 2.6rem);
+    align-items: end;
+}
+.ar-shot--major { grid-column: 1 / span 8; }
+.ar-shot--minor { grid-column: 9 / span 4; }
+
+/* Chapter II — the back artwork leads at full column width, then the front
+   detail and the sentence share the row beneath it. */
+.ar-stack {
+    display: grid;
+    gap: clamp(1.8rem, 4.5vh, 3.2rem);
+}
+.ar-aside {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(1.6rem, 4vw, 3.4rem);
+    align-items: center;
+}
+.ar-aside .ar-chapter-copy {
+    max-width: 26rem;
+}
+
+/* Chapter III — one repeat read three ways, so the three are given exactly
+   the same width and the eye is left to compare the cloth. */
+.ar-trio {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1rem, 2.4vw, 1.9rem);
+}
+
+/* ── Atelier Studies ──────────────────────────────────────────────────────
+   Concepts, not releases, and the page has to say so rather than imply it.
+   They sit apart from the numbered chapters: no index, a rule above each,
+   and a quieter heading. */
+.ar-studies {
+    max-width: var(--ar-max);
+    margin: 0 auto;
+    padding: clamp(3.2rem, 9vh, 6.5rem) var(--ar-pad) clamp(1rem, 3vh, 2rem);
+    border-top: 1px solid var(--ar-rule);
+}
+.ar-studies-head {
+    max-width: 44rem;
+    margin: 0 0 clamp(0.6rem, 2vh, 1.4rem);
+}
+.ar-studies-title {
+    margin: 0.7rem 0 0.9rem;
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.55rem, 3vw, 2.15rem);
+    line-height: 1.14;
+    color: var(--ar-ivory);
+}
+
+.ar-study {
+    padding: clamp(2.4rem, 6.5vh, 4.6rem) 0;
+    border-top: 1px solid var(--ar-rule);
+}
+.ar-study-head {
+    max-width: 40rem;
+    margin: 0 0 clamp(1.5rem, 3.5vh, 2.4rem);
+}
+.ar-study-name {
+    margin: 0 0 0.75rem;
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.25rem, 2.2vw, 1.62rem);
+    line-height: 1.2;
+    color: var(--ar-ivory);
+}
+.ar-study-copy {
+    margin: 0;
+    color: var(--ar-ivory-dim);
+}
+.ar-study-plates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1rem, 2.6vw, 2.1rem);
+    align-items: start;
+}
+
+/* Engraved Current reverses on desktop so the sequence does not become a
+   rhythm: the sleeve is met first and the garment it belongs to follows.
+   The markup order is the mobile order, where the full front must lead. */
+.ar-study--flip .ar-study-plates > :first-child { order: 2; }
+.ar-study--flip .ar-study-plates > :last-child { order: 1; }
+
+/* Indigo Porcelain is a single frame, and a single 4:5 frame run the width
+   of the column would dwarf the paired studies on either side of it. It
+   takes half the row instead, with its sentence beside it. */
+.ar-study--solo .ar-study-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(1.6rem, 5vw, 4.2rem);
+    align-items: center;
+}
+.ar-study--solo .ar-study-head {
+    margin-bottom: 0;
+}
+.ar-study--solo .ar-study-plates {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 30rem;
+}
+
+.ar-atelier-cta {
+    max-width: var(--ar-max);
+    margin: 0 auto;
+    padding: clamp(2.4rem, 7vh, 4.5rem) var(--ar-pad) clamp(4rem, 11vh, 7.5rem);
+    display: flex;
+    justify-content: center;
+}
+
 /* ═══ Scroll reveals ══════════════════════════════════════════════════════
    Restrained, once, and never on the hero — the entrance owns that. A rise of
    a few pixels and an opacity ramp; nothing that could still be moving when
@@ -865,6 +1133,15 @@ html.ar-js .ar-reveal:not(.is-in) {
 html.ar-js .ar-reveal {
     transition: opacity 0.7s var(--ar-ease-arrive), transform 0.9s var(--ar-ease);
 }
+/* The editorial is long and is meant to be read straight down. Its reveals
+   are held to roughly half the page's default so nothing is still arriving
+   under the eye. */
+html.ar-js .ar-chapter.ar-reveal,
+html.ar-js .ar-studies.ar-reveal,
+html.ar-js .ar-atelier.ar-reveal {
+    transition-duration: 0.44s, 0.54s;
+}
+
 /* Nothing in the form may be mid-animation while it is being filled in. */
 html.ar-js .ar-submit.is-in,
 html.ar-js .ar-submit.is-in * { transition-duration: 0s; }
@@ -901,6 +1178,26 @@ html.ar-js .ar-submit.is-in * { transition-duration: 0s; }
     .ar-hero-copy { max-width: none; }
     .ar-hero-draft { width: 54vw; opacity: 0.34; }
     .ar-hero-scroll { display: none; }
+
+    /* The editorial goes to one column. Every chapter keeps the order it is
+       written in, which is the order that reads: the subject first, then
+       what answers it — including Engraved Current, where the markup leads
+       with the full front and the desktop reversal is simply dropped. */
+    .ar-pair,
+    .ar-aside,
+    .ar-trio,
+    .ar-study-plates,
+    .ar-study--solo .ar-study-body { grid-template-columns: minmax(0, 1fr); }
+    .ar-shot--major,
+    .ar-shot--minor { grid-column: 1 / -1; }
+    .ar-study--flip .ar-study-plates > :first-child,
+    .ar-study--flip .ar-study-plates > :last-child { order: 0; }
+    .ar-study--solo .ar-study-plates { max-width: none; }
+    .ar-study--solo .ar-study-head { margin-bottom: clamp(1.5rem, 3.5vh, 2.4rem); }
+    /* A 4:5 frame is tall on a phone; two of them in a row would be most of
+       a screen each. Held in so a study is still one glance. */
+    .ar-study-plates .ar-shot img { max-height: 76vh; width: auto; margin-inline: auto; }
+    .ar-atelier-cta .ar-btn { width: 100%; }
 }
 
 /* Between square and 5:4 the viewport still overflows the frame far enough

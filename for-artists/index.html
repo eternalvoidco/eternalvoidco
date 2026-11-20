@@ -91,8 +91,8 @@
          transition is what it buys off. -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&display=swap" rel="stylesheet">
     <!-- /assets is served immutable for a year: bump ?v= with every change. -->
-    <link rel="stylesheet" href="/assets/void-passage.css?v=20261119-artists">
-    <link rel="stylesheet" href="/assets/void-artists.css?v=20261119-artists">
+    <link rel="stylesheet" href="/assets/void-passage.css?v=20261120-atelier">
+    <link rel="stylesheet" href="/assets/void-artists.css?v=20261120-atelier">
 </head>
 <body>
     <a class="ar-skip" href="#artists" data-i18n="skipLink">Skip to content</a>
@@ -163,7 +163,7 @@
                 <p class="ar-hero-lede" data-i18n="heroLede">An invitation to emerging designers.</p>
                 <p class="ar-hero-body" data-i18n="heroBody">Submit an original garment concept, artwork, or tech pack to ETERNAL VOID. Selected designs may be developed into a limited release, with designer credit and a royalty on sales.</p>
                 <div class="ar-hero-actions">
-                    <a class="ar-btn ar-btn--primary" href="#submit" data-i18n="ctaSubmit">Submit a Design</a>
+                    <a class="ar-btn ar-btn--primary" href="#submit" data-descent="primary" data-i18n="ctaSubmit">Submit a Design</a>
                     <a class="ar-btn ar-btn--quiet" href="#terms" data-i18n="ctaTerms">Collaboration Terms</a>
                 </div>
             </div>
@@ -185,21 +185,238 @@
             <p class="ar-note" data-i18n="whatNote">A clear sketch or mock-up and a short description are enough to start. We ask for editable or production source files only once a design progresses — never at intake.</p>
         </section>
 
-        <!-- ══ A detail moment ═════════════════════════════════════════════ -->
-        <figure class="ar-plate ar-reveal" aria-labelledby="arPlateOneCap">
-            <img src="/assets/artists/endzustand-front-1672.webp"
-                     srcset="/assets/artists/endzustand-front-900.webp 900w,
-                             /assets/artists/endzustand-front-1300.webp 1300w,
-                             /assets/artists/endzustand-front-1672.webp 1672w"
-                     sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 90vw, 1100px"
-                     alt="" data-i18n-alt="plateOneAlt" loading="lazy" decoding="async"
-                     width="1672" height="941">
-            <figcaption id="arPlateOneCap" data-i18n="plateOne">Embroidered VOID signature. Endzustand Tee.</figcaption>
-        </figure>
+        <!-- ══ 02 · Inside the Atelier ══════════════════════════════════════
+             The evidence. Everything above this point is a promise about what
+             happens to a submission; this is what the house actually does with
+             a drawing once it has one. Three chapters of released and
+             previewed work, then three studies that are concepts and are
+             labelled as concepts, so nothing here can be mistaken for a shelf.
 
-        <!-- ══ 02 · What happens next ══════════════════════════════════════ -->
+             Every photograph is shown whole, at the ratio it was composed in.
+             There is no object-fit in this section at all. -->
+        <section class="ar-section ar-atelier ar-reveal" id="atelier" aria-labelledby="arAtelierTitle">
+            <p class="ar-kicker"><span class="ar-num">02</span> <span data-i18n="atelierKicker">Inside the atelier</span></p>
+            <h2 class="ar-h2" id="arAtelierTitle" data-i18n="atelierTitle">What a drawing becomes.</h2>
+            <p class="ar-lead ar-atelier-lead" data-i18n="atelierLead">Three chapters from the house&rsquo;s own work, and three studies still on the table. This is the level a selected submission is developed to.</p>
+        </section>
+
+        <!-- ── Chapter I · The Fallen ─────────────────────────────────────── -->
+        <section class="ar-chapter ar-reveal" id="chapter-fallen" aria-labelledby="arFallenName">
+            <header class="ar-chapter-head">
+                <p class="ar-chapter-index"><span>Chapter</span> <span class="ar-num">I</span></p>
+                <h3 class="ar-chapter-name" id="arFallenName">The Fallen</h3>
+                <p class="ar-chapter-copy" data-i18n="chFallenCopy">A small VOID signature at the chest. On the reverse, a fractured crescent frames a figure in shadow.</p>
+            </header>
+            <div class="ar-pair">
+                <figure class="ar-shot ar-shot--major">
+                    <img src="/assets/artists/endzustand-back-1672.webp"
+                         srcset="/assets/artists/endzustand-back-900.webp 900w,
+                                 /assets/artists/endzustand-back-1300.webp 1300w,
+                                 /assets/artists/endzustand-back-1672.webp 1672w"
+                         sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 56vw, 700px"
+                         alt="" data-i18n-alt="chFallenBackAlt" loading="lazy" decoding="async"
+                         width="1672" height="941">
+                    <figcaption data-i18n="chFallenBackCap">Reverse artwork. Endzustand Tee.</figcaption>
+                </figure>
+                <figure class="ar-shot ar-shot--minor">
+                    <img src="/assets/artists/endzustand-front-1300.webp"
+                         srcset="/assets/artists/endzustand-front-900.webp 900w,
+                                 /assets/artists/endzustand-front-1300.webp 1300w,
+                                 /assets/artists/endzustand-front-1672.webp 1672w"
+                         sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 27vw, 330px"
+                         alt="" data-i18n-alt="chFallenFrontAlt" loading="lazy" decoding="async"
+                         width="1672" height="941">
+                    <figcaption data-i18n="chFallenFrontCap">Embroidered VOID signature. Endzustand Tee.</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- ── Chapter II · The Sigil ──────────────────────────────────────
+             The back artwork leads at full width; the front detail and the
+             sentence that explains the pair share the row beneath it. -->
+        <section class="ar-chapter ar-reveal" id="chapter-sigil" aria-labelledby="arSigilName">
+            <header class="ar-chapter-head">
+                <p class="ar-chapter-index"><span>Chapter</span> <span class="ar-num">II</span></p>
+                <h3 class="ar-chapter-name" id="arSigilName">The Sigil</h3>
+            </header>
+            <div class="ar-stack">
+                <figure class="ar-shot ar-shot--wide">
+                    <img src="/assets/artists/levitate-back-1672.webp"
+                         srcset="/assets/artists/levitate-back-900.webp 900w,
+                                 /assets/artists/levitate-back-1300.webp 1300w,
+                                 /assets/artists/levitate-back-1672.webp 1672w"
+                         sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 90vw, 1064px"
+                         alt="" data-i18n-alt="chSigilBackAlt" loading="lazy" decoding="async"
+                         width="1672" height="941">
+                    <figcaption data-i18n="chSigilBackCap">Back artwork. Levitate Tee.</figcaption>
+                </figure>
+                <div class="ar-aside">
+                    <figure class="ar-shot">
+                        <img src="/assets/artists/levitate-front-1300.webp"
+                             srcset="/assets/artists/levitate-front-900.webp 900w,
+                                     /assets/artists/levitate-front-1300.webp 1300w,
+                                     /assets/artists/levitate-front-1672.webp 1672w"
+                             sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 50vw, 590px"
+                             alt="" data-i18n-alt="chSigilFrontAlt" loading="lazy" decoding="async"
+                             width="1672" height="941">
+                        <figcaption data-i18n="chSigilFrontCap">Embroidered VOID signature. Levitate Tee.</figcaption>
+                    </figure>
+                    <p class="ar-chapter-copy" data-i18n="chSigilCopy">Black VOID embroidery sits against white cotton. Turn the piece and a dark figure hangs just above its own shadow.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Chapter III · The Eternal ───────────────────────────────────
+             One repeat in three cloths, so the three are given exactly the
+             same width. The status is the catalogue's: these are a preview,
+             not stock, and the boutique says so in the same words. -->
+        <section class="ar-chapter ar-reveal" id="chapter-eternal" aria-labelledby="arEternalName">
+            <header class="ar-chapter-head">
+                <p class="ar-chapter-index"><span>Chapter</span> <span class="ar-num">III</span></p>
+                <h3 class="ar-chapter-name" id="arEternalName">The Eternal</h3>
+                <p class="ar-chapter-copy" data-i18n="chEternalCopy">One oblique repeat, three readings. The pattern shifts with the colour of the cloth.</p>
+                <p class="ar-chapter-status" data-i18n="comingSoon">Coming Soon</p>
+            </header>
+            <div class="ar-trio">
+                <figure class="ar-shot">
+                    <img src="/assets/artists/insigne-ivoire-1300.webp"
+                         srcset="/assets/artists/insigne-ivoire-900.webp 900w,
+                                 /assets/artists/insigne-ivoire-1300.webp 1300w,
+                                 /assets/artists/insigne-ivoire-1672.webp 1672w"
+                         sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 29vw, 335px"
+                         alt="" data-i18n-alt="chEternalIvoireAlt" loading="lazy" decoding="async"
+                         width="1672" height="941">
+                    <figcaption><b class="ar-shot-name">Ivoire</b> &middot; <span data-i18n="chEternalIvoire">Pale gold on ivory.</span></figcaption>
+                </figure>
+                <figure class="ar-shot">
+                    <img src="/assets/artists/insigne-noir-1300.webp"
+                         srcset="/assets/artists/insigne-noir-900.webp 900w,
+                                 /assets/artists/insigne-noir-1300.webp 1300w,
+                                 /assets/artists/insigne-noir-1672.webp 1672w"
+                         sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 29vw, 335px"
+                         alt="" data-i18n-alt="chEternalNoirAlt" loading="lazy" decoding="async"
+                         width="1672" height="941">
+                    <figcaption><b class="ar-shot-name">Noir</b> &middot; <span data-i18n="chEternalNoir">Antique gold on black.</span></figcaption>
+                </figure>
+                <figure class="ar-shot">
+                    <img src="/assets/artists/insigne-azure-1300.webp"
+                         srcset="/assets/artists/insigne-azure-900.webp 900w,
+                                 /assets/artists/insigne-azure-1300.webp 1300w,
+                                 /assets/artists/insigne-azure-1672.webp 1672w"
+                         sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 29vw, 335px"
+                         alt="" data-i18n-alt="chEternalAzureAlt" loading="lazy" decoding="async"
+                         width="1672" height="941">
+                    <figcaption><b class="ar-shot-name">Azure</b> &middot; <span data-i18n="chEternalAzure">Soft blue on ivory.</span></figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- ── Atelier Studies ─────────────────────────────────────────────
+             Concepts. Nothing here has a price, a size run or a date, and the
+             heading says so before the first photograph rather than after the
+             last one. -->
+        <section class="ar-studies ar-reveal" id="atelier-studies" aria-labelledby="arStudiesTitle">
+            <header class="ar-studies-head">
+                <p class="ar-kicker"><span data-i18n="studiesKicker">Atelier studies</span></p>
+                <h3 class="ar-studies-title" id="arStudiesTitle" data-i18n="studiesTitle">Three concepts, still on the table.</h3>
+                <p class="ar-study-copy" data-i18n="studiesLead">Design concepts, not releases. They are here because they show how far a drawing is taken before anyone decides whether to make it.</p>
+            </header>
+
+            <article class="ar-study" aria-labelledby="arStudyGothic">
+                <div class="ar-study-body">
+                    <header class="ar-study-head">
+                        <h4 class="ar-study-name" id="arStudyGothic">Gilded Gothic</h4>
+                        <p class="ar-study-copy" data-i18n="studyGothicCopy">Antique-gold linework crosses the shoulder and returns at the hem. At the neckline, a black woven VOID label is finished with fine gold stitching.</p>
+                    </header>
+                    <div class="ar-study-plates">
+                        <figure class="ar-shot">
+                            <img src="/assets/artists/study-gothic-front-1122.webp"
+                                 srcset="/assets/artists/study-gothic-front-600.webp 600w,
+                                         /assets/artists/study-gothic-front-860.webp 860w,
+                                         /assets/artists/study-gothic-front-1122.webp 1122w"
+                                 sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 45vw, 510px"
+                                 alt="" data-i18n-alt="studyGothicFrontAlt" loading="lazy" decoding="async"
+                                 width="1122" height="1402">
+                            <figcaption data-i18n="studyGothicFrontCap">Full front. Gilded Gothic study.</figcaption>
+                        </figure>
+                        <figure class="ar-shot">
+                            <img src="/assets/artists/study-gothic-sleeve-1122.webp"
+                                 srcset="/assets/artists/study-gothic-sleeve-600.webp 600w,
+                                         /assets/artists/study-gothic-sleeve-860.webp 860w,
+                                         /assets/artists/study-gothic-sleeve-1122.webp 1122w"
+                                 sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 45vw, 510px"
+                                 alt="" data-i18n-alt="studyGothicSleeveAlt" loading="lazy" decoding="async"
+                                 width="1122" height="1402">
+                            <figcaption data-i18n="studyGothicSleeveCap">Shoulder, sleeve and woven label.</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </article>
+
+            <article class="ar-study ar-study--solo" aria-labelledby="arStudyIndigo">
+                <div class="ar-study-body">
+                    <header class="ar-study-head">
+                        <h4 class="ar-study-name" id="arStudyIndigo">Indigo Porcelain</h4>
+                        <p class="ar-study-copy" data-i18n="studyIndigoCopy">Indigo linework turns from the shoulder onto the sleeve. A handwritten VOID signature sits just above the double-stitched cuff.</p>
+                    </header>
+                    <div class="ar-study-plates">
+                        <figure class="ar-shot">
+                            <img src="/assets/artists/study-indigo-sleeve-1122.webp"
+                                 srcset="/assets/artists/study-indigo-sleeve-600.webp 600w,
+                                         /assets/artists/study-indigo-sleeve-860.webp 860w,
+                                         /assets/artists/study-indigo-sleeve-1122.webp 1122w"
+                                 sizes="(max-width: 860px) calc(100vw - 2.8rem), 480px"
+                                 alt="" data-i18n-alt="studyIndigoAlt" loading="lazy" decoding="async"
+                                 width="1122" height="1402">
+                            <figcaption data-i18n="studyIndigoCap">Shoulder to cuff. Indigo Porcelain study.</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </article>
+
+            <article class="ar-study ar-study--flip" aria-labelledby="arStudyCurrent">
+                <div class="ar-study-body">
+                    <header class="ar-study-head">
+                        <h4 class="ar-study-name" id="arStudyCurrent">Engraved Current</h4>
+                        <p class="ar-study-copy" data-i18n="studyCurrentCopy">Sapphire currents sweep across black cotton. At the sleeve, the print curves around a handwritten VOID signature just above the cuff.</p>
+                    </header>
+                    <!-- The full front is written first because that is the
+                         order a phone reads; the desktop reversal is a CSS
+                         `order`, so the markup never stops leading with it. -->
+                    <div class="ar-study-plates">
+                        <figure class="ar-shot">
+                            <img src="/assets/artists/study-current-front-1122.webp"
+                                 srcset="/assets/artists/study-current-front-600.webp 600w,
+                                         /assets/artists/study-current-front-860.webp 860w,
+                                         /assets/artists/study-current-front-1122.webp 1122w"
+                                 sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 45vw, 510px"
+                                 alt="" data-i18n-alt="studyCurrentFrontAlt" loading="lazy" decoding="async"
+                                 width="1122" height="1402">
+                            <figcaption data-i18n="studyCurrentFrontCap">Full front. Engraved Current study.</figcaption>
+                        </figure>
+                        <figure class="ar-shot">
+                            <img src="/assets/artists/study-current-sleeve-1122.webp"
+                                 srcset="/assets/artists/study-current-sleeve-600.webp 600w,
+                                         /assets/artists/study-current-sleeve-860.webp 860w,
+                                         /assets/artists/study-current-sleeve-1122.webp 1122w"
+                                 sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 45vw, 510px"
+                                 alt="" data-i18n-alt="studyCurrentSleeveAlt" loading="lazy" decoding="async"
+                                 width="1122" height="1402">
+                            <figcaption data-i18n="studyCurrentSleeveCap">Sleeve, signature and cuff.</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <div class="ar-atelier-cta ar-reveal">
+            <a class="ar-btn ar-btn--primary" href="#submit" data-descent="primary" data-i18n="ctaSubmit">Submit a Design</a>
+        </div>
+
+
+        <!-- ══ 03 · What happens next ══════════════════════════════════════ -->
         <section class="ar-section ar-reveal" id="process" aria-labelledby="arProcessTitle">
-            <p class="ar-kicker"><span class="ar-num">02</span> <span data-i18n="pathKicker">What happens next</span></p>
+            <p class="ar-kicker"><span class="ar-num">03</span> <span data-i18n="pathKicker">What happens next</span></p>
             <h2 class="ar-h2" id="arProcessTitle" data-i18n="pathTitle">From your file to a release.</h2>
             <ol class="ar-path">
                 <li>
@@ -230,7 +447,7 @@
              Deliberately the quietest layout on the page, and deliberately
              directly above the form. Figures should be read, not performed. -->
         <section class="ar-section ar-terms ar-reveal" id="terms" aria-labelledby="arPayTitle">
-            <p class="ar-kicker"><span class="ar-num">03</span> <span data-i18n="payKicker">How you are paid</span></p>
+            <p class="ar-kicker"><span class="ar-num">04</span> <span data-i18n="payKicker">How you are paid</span></p>
             <h2 class="ar-h2" id="arPayTitle" data-i18n="payTitle">A royalty on what the piece actually sells for.</h2>
 
             <div class="ar-rate" role="group" aria-labelledby="arRateLabel">
@@ -277,7 +494,7 @@
 
         <!-- ══ 04 · Credit, 05 · What else, 06 · Ownership, 07 · Withdrawal ═ -->
         <section class="ar-section ar-reveal" id="rights" aria-labelledby="arRightsTitle">
-            <p class="ar-kicker"><span class="ar-num">04</span> <span data-i18n="rightsKicker">Credit, ownership, withdrawal</span></p>
+            <p class="ar-kicker"><span class="ar-num">05</span> <span data-i18n="rightsKicker">Credit, ownership, withdrawal</span></p>
             <h2 class="ar-h2" id="arRightsTitle" data-i18n="rightsTitle">Your work stays yours.</h2>
 
             <div class="ar-grid ar-grid--two">
@@ -308,21 +525,9 @@
             </div>
         </section>
 
-        <!-- ══ A second detail moment ══════════════════════════════════════ -->
-        <figure class="ar-plate ar-plate--wide ar-reveal" aria-labelledby="arPlateTwoCap">
-            <img src="/assets/artists/endzustand-back-1672.webp"
-                     srcset="/assets/artists/endzustand-back-900.webp 900w,
-                             /assets/artists/endzustand-back-1300.webp 1300w,
-                             /assets/artists/endzustand-back-1672.webp 1672w"
-                     sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 90vw, 1300px"
-                     alt="" data-i18n-alt="plateTwoAlt" loading="lazy" decoding="async"
-                     width="1672" height="941">
-            <figcaption id="arPlateTwoCap" data-i18n="plateTwo">Reverse artwork. Endzustand Tee.</figcaption>
-        </figure>
-
         <!-- ══ The form ════════════════════════════════════════════════════ -->
         <section class="ar-section ar-submit ar-reveal" id="submit" aria-labelledby="arFormTitle">
-            <p class="ar-kicker"><span class="ar-num">05</span> <span data-i18n="formKicker">Submit a design</span></p>
+            <p class="ar-kicker"><span class="ar-num">06</span> <span data-i18n="formKicker">Submit a design</span></p>
             <h2 class="ar-h2" id="arFormTitle" data-i18n="formTitle">Send it to the atelier.</h2>
             <p class="ar-lead" data-i18n="formLead">Private intake. Your files go to private storage and are read only by the review team.</p>
 
@@ -429,7 +634,7 @@
 
         <!-- ══ FAQ ═════════════════════════════════════════════════════════ -->
         <section class="ar-section ar-reveal" id="faq" aria-labelledby="arFaqTitle">
-            <p class="ar-kicker"><span class="ar-num">06</span> <span data-i18n="faqKicker">Questions</span></p>
+            <p class="ar-kicker"><span class="ar-num">07</span> <span data-i18n="faqKicker">Questions</span></p>
             <h2 class="ar-h2" id="arFaqTitle" data-i18n="faqTitle">Before you send unpublished work.</h2>
             <div class="ar-faq" id="arFaq">
                 <details class="ar-faq-item">
@@ -472,8 +677,9 @@
         <p class="ar-footer-fine" data-i18n="footFine">EV for Artists is a programme of the company operating ETERNAL VOID. Proposed commercial terms shown on this page are subject to owner approval and legal review, and are superseded by the signed collaboration agreement.</p>
     </footer>
 
-    <script src="/assets/void-passage.js?v=20261119-artists" defer></script>
-    <script src="/assets/void-artists-i18n.js?v=20261119-artists" defer></script>
-    <script src="/assets/void-artists.js?v=20261119-artists" defer></script>
+    <script src="/assets/void-passage.js?v=20261120-atelier" defer></script>
+    <script src="/assets/void-artists-i18n.js?v=20261120-atelier" defer></script>
+    <script src="/assets/void-descent.js?v=20261120-atelier" defer></script>
+    <script src="/assets/void-artists.js?v=20261120-atelier" defer></script>
 </body>
 </html>
