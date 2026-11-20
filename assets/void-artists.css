@@ -214,17 +214,17 @@ a:hover, a:focus-visible { color: var(--ar-gold-bright); }
 .ar-hero-study {
     position: absolute;
     inset: 0;
-    /* The poster: the study's own colour and shape at 24px, inlined, so the
+    /* The poster: the hero's own colour and shape at 27px, inlined, so the
        frame is never empty and never white while the real file is in flight.
        Bounds are fixed by the hero itself, so nothing reflows when it lands. */
-    background: #040403 url('data:image/webp;base64,UklGRlQBAABXRUJQVlA4IEgBAACQBwCdASoYAA8APpE8mEiloyIhMAgAsBIJaQAAV2W8AAD+8iO//9x//rG///DI//8cR/8R6gAA/vIjv//cf/6xv//wyP//HEf/EeoAAP7yI7//3H/+sb//8Mj//xxH/xHqAAD+8iO//9x//rG///DI//8cR/8R6gAA/vIjv//cf/6xv//wyP//HEf/EeoAAP7yI7//3H/+sb//8Mj//xxH/xHqAAD+8iO//9x//rG///DI//8cR/8R6gAAAA==') center / cover no-repeat;
+    background: #040403 url('data:image/webp;base64,UklGRkICAABXRUJQVlA4WAoAAAAgAAAAGgAACwAASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZWUDggVAAAANADAJ0BKhsADAA+lTyaSCWjIqEwCACwEolpAABcG4ucgb2xZ6/AAAD++9yx+/HPEFiHAaYHnhG67UwalzRzq/bzP3M4kA6H5BvOyNFTc1Ph0OOAAA==') center / cover no-repeat;
 }
 
 .ar-hero-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: 62% 50%;
+    object-position: 55% 50%;
 }
 
 /* Reads the study down into the ground at the bottom and into the copy on the
@@ -872,12 +872,19 @@ html.ar-js .ar-submit.is-in * { transition-duration: 0s; }
 /* ═══ Mobile ══════════════════════════════════════════════════════════════
    The same hero, re-cropped rather than re-designed: the study goes portrait
    and the copy sits beneath it on the ground it fades into. */
-@media (max-width: 860px) {
+/* Which treatment the hero needs is decided by the viewport's aspect against
+   the frame's 2.25:1, not by width: a 912×1368 tablet crops exactly as hard
+   as a phone does, and at the desktop window the emblem leaves the frame on
+   the right. So every viewport no wider than it is tall takes the portrait
+   crop, whatever its width. */
+@media (max-width: 860px), (max-aspect-ratio: 1/1) {
     .ar-hero {
         min-height: 100svh;
         padding-bottom: clamp(2.4rem, 6vh, 4rem);
     }
-    .ar-hero-img { object-position: 50% 42%; }
+    /* A tall viewport against a 2.25:1 frame crops hard horizontally, so the
+       window is walked right until the emblem is centred in it. */
+    .ar-hero-img { object-position: 76% 50%; }
     /* Portrait, the copy sits over the chest of the garment rather than beside
        it, so the ground has to come further up the frame — far enough that the
        headline is on a surface, not far enough to lose the cloth it is on. */
@@ -894,6 +901,17 @@ html.ar-js .ar-submit.is-in * { transition-duration: 0s; }
     .ar-hero-copy { max-width: none; }
     .ar-hero-draft { width: 54vw; opacity: 0.34; }
     .ar-hero-scroll { display: none; }
+}
+
+/* Between square and 5:4 the viewport still overflows the frame far enough
+   that the desktop window runs the emblem off the right edge — a 1280×1024
+   monitor loses its right arm — but the copy keeps its own column, so the
+   window is walked right only as far as that column allows. */
+@media (min-width: 861px) and (min-aspect-ratio: 51/50) and (max-aspect-ratio: 5/4) {
+    .ar-hero-img { object-position: 68% 50%; }
+}
+
+@media (max-width: 860px) {
     .ar-nav-program { display: none; }
     .ar-nav { grid-template-columns: 1fr auto 1fr; }
     .ar-nav-link--section { display: none; }

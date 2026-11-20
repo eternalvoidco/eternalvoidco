@@ -67,20 +67,20 @@
     <meta property="og:title" content="EV for Artists — An invitation to emerging designers | VOID©">
     <meta property="og:description" content="Submit an original garment concept, artwork, or tech pack to ETERNAL VOID. Selected designs may be developed into a limited release, with designer credit and a royalty on sales.">
     <meta property="og:url" content="https://eternalvoid.co/for-artists">
-    <meta property="og:image" content="https://eternalvoid.co/assets/artists/atelier-study-1600.webp">
+    <meta property="og:image" content="https://eternalvoid.co/assets/artists/hero-monogram-1881.webp">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="EV for Artists | VOID©">
     <meta name="twitter:description" content="An invitation to emerging designers. Designer credit and a royalty on sales.">
-    <meta name="twitter:image" content="https://eternalvoid.co/assets/artists/atelier-study-1600.webp">
+    <meta name="twitter:image" content="https://eternalvoid.co/assets/artists/hero-monogram-1881.webp">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- The study is the hero. It is asked for at the highest priority and in
          the crop this viewport will actually use, so the panel never has to
          wait on it — and if it is still in flight, the poster underneath it is
          already the right colour and the right shape. -->
-    <link rel="preload" as="image" href="/assets/artists/atelier-study-1600.webp"
-          imagesrcset="/assets/artists/atelier-study-portrait-900.webp 900w, /assets/artists/atelier-study-1100.webp 1100w, /assets/artists/atelier-study-1600.webp 1600w"
-          imagesizes="100vw" fetchpriority="high">
+    <link rel="preload" as="image" href="/assets/artists/hero-monogram-1881.webp"
+          imagesrcset="/assets/artists/hero-monogram-1200.webp 1200w, /assets/artists/hero-monogram-1500.webp 1500w, /assets/artists/hero-monogram-1881.webp 1881w"
+          imagesizes="(min-aspect-ratio: 9/4) 100vw, 225vh" fetchpriority="high">
     <!-- Byte-identical to the request the main site makes, including the
          family this page does not use. A stylesheet is render-blocking, so
          until it answers nothing paints and the passage cannot begin
@@ -129,12 +129,10 @@
         <section class="ar-hero" id="artists" aria-labelledby="arTitle" tabindex="-1">
             <div class="ar-hero-study" aria-hidden="true">
                 <img class="ar-hero-img" id="arHeroImg"
-                     src="/assets/artists/atelier-study-1600.webp"
-                     srcset="/assets/artists/atelier-study-portrait-900.webp 900w,
-                             /assets/artists/atelier-study-1100.webp 1100w,
-                             /assets/artists/atelier-study-1600.webp 1600w"
-                     sizes="100vw" alt="" decoding="async" fetchpriority="high"
-                     width="1600" height="1000">
+                     src="/assets/artists/hero-monogram-1881.webp"
+                     srcset="/assets/artists/hero-monogram-1200.webp 1200w, /assets/artists/hero-monogram-1500.webp 1500w, /assets/artists/hero-monogram-1881.webp 1881w"
+                     sizes="(min-aspect-ratio: 9/4) 100vw, 225vh" alt="" decoding="async" fetchpriority="high"
+                     width="1881" height="836">
                 <span class="ar-hero-grade"></span>
             </div>
 
@@ -189,14 +187,13 @@
 
         <!-- ══ A detail moment ═════════════════════════════════════════════ -->
         <figure class="ar-plate ar-reveal" aria-labelledby="arPlateOneCap">
-            <picture>
-                    <!-- Art-directed, not merely resized. The phone gets its own
-                         composition at 760px, which on a 345px plate is a genuine
-                         2x; the desktop file draws the garment at exactly 1:1 from
-                         the 1672x941 original, so the embroidery is never enlarged. -->
-                    <source media="(max-width: 860px)" srcset="/assets/artists/endzustand-front-760.webp" width="760" height="486">
-                    <img src="/assets/artists/endzustand-front-1120.webp" alt="" data-i18n-alt="plateOneAlt" loading="lazy" decoding="async" width="1120" height="716">
-                </picture>
+            <img src="/assets/artists/endzustand-front-1672.webp"
+                     srcset="/assets/artists/endzustand-front-900.webp 900w,
+                             /assets/artists/endzustand-front-1300.webp 1300w,
+                             /assets/artists/endzustand-front-1672.webp 1672w"
+                     sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 90vw, 1100px"
+                     alt="" data-i18n-alt="plateOneAlt" loading="lazy" decoding="async"
+                     width="1672" height="941">
             <figcaption id="arPlateOneCap" data-i18n="plateOne">Embroidered VOID signature. Endzustand Tee.</figcaption>
         </figure>
 
@@ -313,10 +310,13 @@
 
         <!-- ══ A second detail moment ══════════════════════════════════════ -->
         <figure class="ar-plate ar-plate--wide ar-reveal" aria-labelledby="arPlateTwoCap">
-            <picture>
-                    <source media="(max-width: 860px)" srcset="/assets/artists/endzustand-back-760.webp" width="760" height="426">
-                    <img src="/assets/artists/endzustand-back-1320.webp" alt="" data-i18n-alt="plateTwoAlt" loading="lazy" decoding="async" width="1320" height="740">
-                </picture>
+            <img src="/assets/artists/endzustand-back-1672.webp"
+                     srcset="/assets/artists/endzustand-back-900.webp 900w,
+                             /assets/artists/endzustand-back-1300.webp 1300w,
+                             /assets/artists/endzustand-back-1672.webp 1672w"
+                     sizes="(max-width: 860px) calc(100vw - 2.8rem), (max-width: 1240px) 90vw, 1300px"
+                     alt="" data-i18n-alt="plateTwoAlt" loading="lazy" decoding="async"
+                     width="1672" height="941">
             <figcaption id="arPlateTwoCap" data-i18n="plateTwo">Reverse artwork. Endzustand Tee.</figcaption>
         </figure>
 
