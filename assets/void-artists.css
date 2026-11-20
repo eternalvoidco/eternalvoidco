@@ -294,6 +294,45 @@ a:hover, a:focus-visible { color: var(--ar-gold-bright); }
     text-wrap: balance;
 }
 
+/* The canonical EV emblem in place of the two typed letters — the same file
+   the header mark and the rest of the site draw from, so it is the same
+   interlocked shape with the same curved lower junction, and the same alpha
+   masking, so the background stays transparent and the ivory artwork takes
+   the house gold rather than being a second, differently-coloured asset.
+
+   Everything is in em, so the heading's own clamp() carries the mark down to
+   the phone with the type and nothing has to be restated at a breakpoint.
+   The numbers come out of the file: it is 594×500, and the ink inside it
+   occupies 566×454 sitting 27px clear of the bottom edge. Bodoni Moda's cap
+   height is 0.752em, so a box of 0.752 ÷ (454/500) = 0.8285em makes the ink
+   exactly as tall as the "E" it replaces, and 0.8285 × (594/500) wide keeps
+   the file's proportions under mask-size: contain, which never distorts. An empty
+   inline-block rests its bottom edge on the baseline, so lowering it by the
+   file's own bottom padding — 27/500 of the box — puts the foot of the ink
+   on the baseline of "for". */
+.ar-title-ev {
+    display: inline-block;
+    width: 0.9843em;
+    height: 0.8285em;
+    vertical-align: -0.0447em;
+    background: var(--ar-gold);
+    -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+    mask: url('/assets/ev-emblem.png') center / contain no-repeat;
+}
+
+/* Read aloud, never drawn. */
+.ar-vh {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* The masked reveal. The span inside is what is clipped; the heading itself
    never moves, so the text is at its final position on the first frame any
    part of it is legible. Uncovers from the right, in the same direction as

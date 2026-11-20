@@ -1,0 +1,53 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   THE HOUSE SCROLLBAR
+   ─────────────────────────────────────────────────────────────────────────────
+   The homepage has drawn its own scrollbar since the beginning — a slim
+   muted-gold thumb on a near-black track — while every other page was left
+   with whatever the operating system paints, which on Windows is a wide grey
+   bar that has nothing to do with the house. This is that homepage rule,
+   lifted verbatim from the inline <style> in index.html so the two cannot
+   disagree about a colour, and linked from the rest of the site.
+
+   The homepage keeps its own inline copy: it is render-blocking there for a
+   reason, and the scrollbar is painted before any stylesheet of ours has
+   been fetched. Any change here belongs in that block too.
+
+   Appearance only. The homepage's html rule also carries
+   `scrollbar-gutter: stable`, which reserves the gutter so locking body
+   scroll for a modal cannot shift the page sideways — that is layout, not
+   appearance, and it is left where it is needed rather than spread to pages
+   that have no modal.
+
+   The selectors are deliberately unprefixed, as on the homepage: they reach
+   the document's scrollbar and any inner scroller that has not asked for
+   something of its own. A page that styles a particular container's
+   scrollbar is more specific and still wins.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Firefox and the standard property. */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(199, 169, 108, 0.5) #060606;
+}
+
+/* WebKit and Blink. 10px overall, of which 2px each side is track showing
+   through the thumb's border — which is what makes the thumb read as slim
+   without making the hit area too small to grab. */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #060606;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(199, 169, 108, 0.62), rgba(126, 98, 48, 0.62));
+    border: 2px solid #060606;
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(216, 192, 138, 0.85), rgba(150, 120, 60, 0.85));
+}
