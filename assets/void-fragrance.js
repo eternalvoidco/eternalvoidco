@@ -381,18 +381,130 @@
         });
     }
 
-    // ── Old addresses ────────────────────────────────────────────────────────
-    // The page used to be a sequence of passages with their own anchors. The
-    // three movements keep theirs (#opening, #heart, #base); the others all
-    // meant "the product", which is now simply the top of the page.
-    const LEGACY = ['prologue', 'announcement', 'unveiling'];
-    function legacyHash() {
-        if (!LEGACY.includes(location.hash.slice(1))) return;
-        try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) { /* ignore */ }
-        window.scrollTo({ top: 0, behavior: 'instant' });
+    // ── Sections as paths ────────────────────────────────────────────────────
+    // /fragrance/scent, not /fragrance#scent: a copied link, a new tab, a
+    // refresh and a shared URL all arrive at the same place. Each path has
+    // its own rewrite in vercel.json, so anything else under /fragrance/ is
+    // an ordinary 404. Element ids are untouched — they are what the scroll
+    // lands on. The header clearance is html's scroll-padding-top, and the
+    // glide is html's scroll-behavior, which the house reduce-motion switch
+    // already turns off; a landing on arrival or through history is instant.
+    const BASE = '/fragrance';
+    const SECTIONS = { scent: 'scent', details: 'details', notify: 'ntForm' };
+    // Old fragments, from links and bookmarks: [slug, element to land on].
+    // The three movements of the scent land on their own note; the passages
+    // the page used to have all meant the product, which is the top.
+    const LEGACY = {
+        '#scent': ['scent'], '#opening': ['scent', 'opening'], '#heart': ['scent', 'heart'], '#base': ['scent', 'base'],
+        '#details': ['details'], '#ntForm': ['notify'],
+        '#neant': [''], '#prologue': [''], '#announcement': [''], '#unveiling': ['']
+    };
+    const norm = (p) => String(p || '/').replace(/\/+$/, '') || '/';
+    const pathOf = (slug) => (slug ? `${BASE}/${slug}` : BASE);
+    function slugOf(pathname) {
+        const p = norm(pathname);
+        if (p === BASE) return '';
+        if (!p.startsWith(`${BASE}/`)) return null;
+        const s = p.slice(BASE.length + 1);
+        return Object.prototype.hasOwnProperty.call(SECTIONS, s) ? s : null;
     }
-    legacyHash();
-    window.addEventListener('hashchange', legacyHash);
+    try { history.scrollRestoration = 'manual'; } catch (e) { /* older browser */ }
+
+    // Where the visitor was on the entry being left, so Back returns there.
+    function remember() {
+        try { history.replaceState({ ...(history.state || {}), ntY: window.scrollY }, ''); } catch (e) { /* ignore */ }
+    }
+    window.addEventListener('pagehide', remember);
+
+    function place(slug, behavior, at) {
+        const el = $(at || SECTIONS[slug]);
+        if (!el) return;
+        // The form sits in the hero, so it is centred rather than topped.
+        el.scrollIntoView({ block: slug === 'notify' && !at ? 'center' : 'start', behavior });
+    }
+
+    // A press: the address bar takes the path at once, and only if it does
+    // not already say it — one destination, one history entry.
+    function go(slug) {
+        const path = pathOf(slug);
+        if (norm(location.pathname) !== path || location.hash) {
+            remember();
+            try { history.pushState({ ntSection: slug }, '', path + location.search); } catch (e) { /* ignore */ }
+        }
+    }
+
+    function upgradeLegacy() {
+        const hit = Object.prototype.hasOwnProperty.call(LEGACY, location.hash) ? LEGACY[location.hash] : null;
+        if (!hit) return null;
+        try { history.replaceState({ ntSection: hit[0] }, '', pathOf(hit[0]) + location.search); } catch (e) { /* ignore */ }
+        return hit;
+    }
+
+    // Arriving: instant, then corrected after load and after the webfonts —
+    // unless the visitor has already started scrolling for themselves.
+    let tookWheel = false;
+    ['wheel', 'touchstart', 'keydown'].forEach((name) => window.addEventListener(name, () => { tookWheel = true; }, { passive: true, once: true }));
+    function arrive(slug, at) {
+        if (!slug && !at) {
+            const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
+            const y = history.state && history.state.ntY;
+            if ((nav.type === 'reload' || nav.type === 'back_forward') && typeof y === 'number') window.scrollTo({ top: y, behavior: 'instant' });
+            else window.scrollTo({ top: 0, behavior: 'instant' });
+            return;
+        }
+        place(slug, 'instant', at);
+        const again = () => { if (!tookWheel) place(slug, 'instant', at); };
+        if (document.readyState === 'complete') setTimeout(again, 60);
+        else window.addEventListener('load', () => setTimeout(again, 60));
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(again);
+    }
+
+    (function enter() {
+        const legacy = upgradeLegacy();
+        if (legacy) { arrive(legacy[0], legacy[1]); return; }
+        const slug = slugOf(location.pathname);
+        if (slug) arrive(slug);
+        else if (slug === '' && history.state && typeof history.state.ntY === 'number') arrive('');
+    })();
+
+    window.addEventListener('hashchange', () => {
+        const legacy = upgradeLegacy();
+        if (legacy) { if (legacy[0] || legacy[1]) place(legacy[0], 'instant', legacy[1]); else window.scrollTo({ top: 0, behavior: 'instant' }); }
+    });
+
+    window.addEventListener('popstate', () => {
+        const slug = slugOf(location.pathname);
+        if (slug === null) return;
+        if (slug) { place(slug, 'instant'); return; }
+        const y = history.state && history.state.ntY;
+        window.scrollTo({ top: typeof y === 'number' ? y : 0, behavior: 'instant' });
+    });
+
+    // Section links and the skip link. A modified click (new tab, new
+    // window) is the browser's: the href is the clean path. The skip link
+    // moves focus to the content and leaves the address bar alone.
+    document.addEventListener('click', (event) => {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const a = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        if (!a || (a.target && a.target !== '_self')) return;
+        if (a.hasAttribute('data-skip')) {
+            const target = $(a.getAttribute('href').slice(1));
+            if (!target) return;
+            event.preventDefault();
+            target.scrollIntoView({ block: 'start' });
+            try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+            return;
+        }
+        let url;
+        try { url = new URL(a.getAttribute('href'), location.href); } catch (e) { return; }
+        if (url.origin !== location.origin) return;
+        const slug = slugOf(url.pathname);
+        if (!slug) return;
+        event.preventDefault();
+        go(slug);
+        if (slug === 'notify') jumpToForm();
+        else place(slug);
+    });
 
     // ── Header backing ───────────────────────────────────────────────────────
     const nav = $('ntNav');
@@ -463,7 +575,8 @@
             try { input.focus({ preventScroll: true }); } catch (err) { input.focus(); }
         }
     }
-    document.querySelectorAll('[data-jump-form]').forEach((a) => a.addEventListener('click', jumpToForm));
+    // The [data-jump-form] links reach jumpToForm through the section click
+    // handler above, which also gives the address bar /fragrance/notify.
 
     // ── The phone dock ───────────────────────────────────────────────────────
     // Shown only while neither the form nor the footer is on screen, so it is

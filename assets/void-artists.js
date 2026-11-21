@@ -34,16 +34,14 @@
     // ══ Intake state ══════════════════════════════════════════════════════
     // One flag decides every primary action on the page — the header link,
     // the hero, the action after the editorial, and the heading of the
-    // section they all lead to. Closed, they offer the notification form and
-    // land on it; open, they offer the submission and land on the first
-    // field of the form. The markup is written closed, so a visitor without
-    // script is never sent to a form that is not there.
+    // section they all lead to. All of them link to /for-artists/submit.
+    // Closed, they offer the notification form and that path lands on it;
+    // open, they offer the submission and it lands on the form's first field
+    // (see the route table at the end of this section). The markup is
+    // written closed, so a visitor without script is never sent to a form
+    // that is not there.
     var OPEN = intakeOpen();
-    var INTAKE_TARGET = OPEN ? '#arForm' : '#arGate';
     root.setAttribute('data-intake', OPEN ? 'open' : 'closed');
-    document.querySelectorAll('[data-intake-cta]').forEach(function (el) {
-        el.setAttribute('href', INTAKE_TARGET);
-    });
 
     function applyLanguage() {
         root.lang = lang;
@@ -313,6 +311,31 @@
         gate.hidden = true;
         form.hidden = false;
         warmSession();
+    }
+
+    // ══ Section paths ═════════════════════════════════════════════════════
+    // Handed to the descent once the gate or the form is laid out, so a
+    // direct arrival measures the page it will actually land on. Each path
+    // here has its own rewrite in vercel.json; nothing else under
+    // /for-artists/ is served. The legacy fragments are the ones earlier
+    // versions of this page put in the address bar or in links.
+    if (window.voidDescent && typeof window.voidDescent.routes === 'function') {
+        window.voidDescent.routes({
+            base: '/for-artists',
+            sections: {
+                terms: 'terms',
+                submit: OPEN ? 'arForm' : 'arGate'
+            },
+            legacy: {
+                '#terms': 'terms',
+                '#rights': 'terms',
+                '#submit': 'submit',
+                '#arGate': 'submit',
+                '#arForm': 'submit',
+                '#submit-what': 'submit',
+                '#artists': ''
+            }
+        });
     }
 
     function setError(input, message) {

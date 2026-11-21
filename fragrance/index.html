@@ -51,7 +51,7 @@
     <link rel="stylesheet" href="/assets/void-scrollbar.css?v=20261120-scrollbar">
 </head>
 <body>
-    <a class="nt-skip" href="#neant" data-i18n="skipLink">Skip to content</a>
+    <a class="nt-skip" href="#neant" data-skip data-i18n="skipLink">Skip to content</a>
 
     <!-- A sentinel at the very top: the header gains its backing once this
          has scrolled away (IntersectionObserver, no scroll listener). -->
@@ -60,8 +60,8 @@
     <header class="nt-nav" id="ntNav">
         <nav class="nt-nav-start" aria-label="Site" data-i18n-aria-label="navLabel">
             <a class="nt-nav-link nt-nav-link--back" href="/shop"><span aria-hidden="true">←</span> <span data-i18n="navShop">Shop</span></a>
-            <a class="nt-nav-link nt-nav-link--section" href="#scent" data-i18n="navScent">The Scent</a>
-            <a class="nt-nav-link nt-nav-link--section" href="#details" data-i18n="navDetails">Details</a>
+            <a class="nt-nav-link nt-nav-link--section" href="/fragrance/scent" data-i18n="navScent">The Scent</a>
+            <a class="nt-nav-link nt-nav-link--section" href="/fragrance/details" data-i18n="navDetails">Details</a>
         </nav>
         <a class="nt-nav-mark" href="/" aria-label="Eternal Void"><span aria-hidden="true"></span></a>
         <a class="nt-bag" id="ntBag" href="/checkout" aria-label="Bag">
@@ -133,7 +133,7 @@
                     </form>
 
                     <div class="nt-hero-links nt-enter" style="--i: 5">
-                        <a class="nt-link" href="#scent"><span data-i18n="discover">Discover the Fragrance</span> <span aria-hidden="true">↓</span></a>
+                        <a class="nt-link" href="/fragrance/scent"><span data-i18n="discover">Discover the Fragrance</span> <span aria-hidden="true">↓</span></a>
                         <a class="nt-link" href="/shop"><span data-i18n="shopCollection">Shop the Collection</span> <span aria-hidden="true">→</span></a>
                     </div>
                 </div>
@@ -216,7 +216,7 @@
                 <aside class="nt-reserve" aria-labelledby="ntReserveTitle">
                     <h3 class="nt-reserve-title" id="ntReserveTitle" data-i18n="reserveTitle">Be first to receive it</h3>
                     <p class="nt-reserve-copy" data-i18n="reserveCopy">Size, price and release date have not yet been announced. Join the list and the unveiling will reach you first.</p>
-                    <a class="nt-button" href="#ntForm" data-jump-form><span data-i18n="submit">Receive the unveiling</span></a>
+                    <a class="nt-button" href="/fragrance/notify" data-jump-form><span data-i18n="submit">Receive the unveiling</span></a>
                 </aside>
             </div>
         </section>
@@ -278,9 +278,9 @@
          and steps aside whenever the form or the footer is on screen. -->
     <div class="nt-dock" id="ntDock">
         <p class="nt-dock-name"><span class="nt-dock-title">Néant</span> <span class="nt-dock-status" data-i18n="comingSoon">Coming Soon</span></p>
-        <a class="nt-button nt-button--dock" href="#ntForm" data-jump-form><span data-i18n="submit">Receive the unveiling</span></a>
+        <a class="nt-button nt-button--dock" href="/fragrance/notify" data-jump-form><span data-i18n="submit">Receive the unveiling</span></a>
     </div>
 
-    <script src="/assets/void-fragrance.js?v=20261025-store" defer></script>
+    <script src="/assets/void-fragrance.js?v=20261121-paths" defer></script>
 </body>
 </html>

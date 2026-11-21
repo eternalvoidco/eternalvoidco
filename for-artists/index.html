@@ -97,7 +97,7 @@
     <link rel="stylesheet" href="/assets/void-scrollbar.css?v=20261120-scrollbar">
 </head>
 <body>
-    <a class="ar-skip" href="#artists" data-i18n="skipLink">Skip to content</a>
+    <a class="ar-skip" href="#artists" data-skip data-i18n="skipLink">Skip to content</a>
 
     <span class="ar-top-sentinel" id="arTopSentinel" aria-hidden="true"></span>
 
@@ -105,12 +105,13 @@
          is written closed — the state the server is in until the terms are
          approved, and the state a visitor without script must see — and
          void-artists.js turns each [data-intake-cta] to the open label and
-         the form's first field when the flag says intake is open. -->
+         the open label when the flag says intake is open. Every one links to
+         /for-artists/submit; where that path lands follows the same flag. -->
     <header class="ar-nav" id="arNav">
         <nav class="ar-nav-start" aria-label="Site" data-i18n-aria-label="navLabel">
             <a class="ar-nav-link ar-nav-link--back" href="/shop" data-passage><span aria-hidden="true">&larr;</span> <span data-i18n="navCollection">Collection</span></a>
-            <a class="ar-nav-link ar-nav-link--section" href="#arGate" data-descent="primary" data-intake-cta data-i18n-intake="navPrimary">Notify me</a>
-            <a class="ar-nav-link ar-nav-link--section" href="#terms" data-i18n="navTerms">Terms</a>
+            <a class="ar-nav-link ar-nav-link--section" href="/for-artists/submit" data-descent="primary" data-intake-cta data-i18n-intake="navPrimary">Notify me</a>
+            <a class="ar-nav-link ar-nav-link--section" href="/for-artists/terms" data-i18n="navTerms">Terms</a>
         </nav>
         <a class="ar-nav-mark" href="/" aria-label="Eternal Void" data-passage><span aria-hidden="true"></span></a>
         <div class="ar-nav-end">
@@ -178,8 +179,8 @@
                 <p class="ar-hero-lede" data-i18n="heroLede">An invitation to emerging designers.</p>
                 <p class="ar-hero-body" data-i18n="heroBody">Bring an original garment idea, artwork, or textile print to ETERNAL VOID. Selected designs may become a limited release with designer credit.</p>
                 <div class="ar-hero-actions">
-                    <a class="ar-btn ar-btn--primary" href="#arGate" data-descent="primary" data-intake-cta data-i18n-intake="ctaPrimary">Notify me when submissions open</a>
-                    <a class="ar-btn ar-btn--quiet" href="#terms" data-i18n="ctaTerms">Collaboration Terms</a>
+                    <a class="ar-btn ar-btn--primary" href="/for-artists/submit" data-descent="primary" data-intake-cta data-i18n-intake="ctaPrimary">Notify me when submissions open</a>
+                    <a class="ar-btn ar-btn--quiet" href="/for-artists/terms" data-i18n="ctaTerms">Collaboration Terms</a>
                 </div>
             </div>
 
@@ -445,7 +446,7 @@
         </section>
 
         <div class="ar-atelier-cta ar-reveal">
-            <a class="ar-btn ar-btn--primary" href="#arGate" data-descent="primary" data-intake-cta data-i18n-intake="ctaPrimary">Notify me when submissions open</a>
+            <a class="ar-btn ar-btn--primary" href="/for-artists/submit" data-descent="primary" data-intake-cta data-i18n-intake="ctaPrimary">Notify me when submissions open</a>
         </div>
 
 
@@ -743,7 +744,7 @@
 
     <script src="/assets/void-passage.js?v=20261120-atelier" defer></script>
     <script src="/assets/void-artists-i18n.js?v=20261121-lab" defer></script>
-    <script src="/assets/void-descent.js?v=20261120-atelier" defer></script>
-    <script src="/assets/void-artists.js?v=20261121-lab" defer></script>
+    <script src="/assets/void-descent.js?v=20261121-paths" defer></script>
+    <script src="/assets/void-artists.js?v=20261121-paths" defer></script>
 </body>
 </html>

@@ -166,22 +166,63 @@
         window[fn]('keydown', interrupted, true);
     }
 
-    // Arrival. The URL is made to say where we are, as a real anchor would,
-    // and the destination takes focus so the keyboard and a screen reader
-    // follow the page. The section takes it, never a field: on a phone,
-    // focusing an input here would raise the keyboard before the visitor has
-    // asked for it, and the form is to be read before it is filled in.
-    /* The hash is pushed before the page moves, not after it arrives.
-       Chrome records a history entry's scroll position at the moment the
-       entry is superseded — so a hash pushed on arrival makes the departure
-       entry remember the destination, and Back does nothing at all. Pushed
-       at the press, while the page is still where the visitor pressed from,
-       the browser's own restoration returns them there. It is also what a
-       real anchor does: the URL names where you asked to go, from the
-       moment you ask. */
-    function announce(el) {
-        if (!el.id || location.hash === '#' + el.id) return;
-        try { history.pushState(null, '', '#' + el.id); }
+    // ── Sections as paths ────────────────────────────────────────────────────
+    /* Destinations are real paths under the page — /for-artists/terms, not
+       /for-artists#terms — so a copied link, a new tab, a refresh and a
+       shared URL all arrive at the same place. Vercel rewrites each
+       registered path to this document; the table itself is handed over by
+       the page script (void-artists.js), because one destination depends on
+       whether intake is open. Element ids are untouched: they are what the
+       scroll and the focus land on. */
+    var R = { base: '', sections: {}, legacy: {}, ready: false };
+
+    function norm(p) {
+        p = String(p || '/').replace(/\/+$/, '');
+        return p || '/';
+    }
+    function pathOf(slug) { return slug ? R.base + '/' + slug : R.base; }
+    function has(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
+
+    // '' for the page itself, the slug for a registered section, and null
+    // for anything else — which is left entirely to the browser.
+    function slugOf(pathname) {
+        if (!R.ready) return null;
+        var p = norm(pathname);
+        if (p === R.base) return '';
+        if (p.indexOf(R.base + '/') !== 0) return null;
+        var s = p.slice(R.base.length + 1);
+        return has(R.sections, s) ? s : null;
+    }
+    function nodeOf(slug) { return slug ? document.getElementById(R.sections[slug]) : null; }
+
+    /* Where the visitor was on the entry they are leaving, kept in that
+       entry's own state so Back can return them to it. Scroll restoration is
+       manual (see routes()), so this is the only record there is. */
+    function remember() {
+        try {
+            var s = history.state && typeof history.state === 'object' ? history.state : {};
+            var next = {};
+            for (var k in s) if (has(s, k)) next[k] = s[k];
+            next.arY = window.scrollY || window.pageYOffset;
+            history.replaceState(next, '');
+        } catch (e) { /* history blocked */ }
+    }
+
+    // Arrival. The URL is made to say where we are, and the destination
+    // takes focus so the keyboard and a screen reader follow the page. The
+    // section takes it, never a field: on a phone, focusing an input here
+    // would raise the keyboard before the visitor has asked for it, and the
+    // form is to be read before it is filled in.
+    /* The path is pushed at the press, before the page moves — the URL names
+       where you asked to go from the moment you ask, and the entry being
+       left still holds where you pressed from. A press for the place the
+       address bar already names adds nothing: one destination, one entry,
+       however many times it is asked for. */
+    function announce(slug) {
+        var path = pathOf(slug);
+        if (norm(location.pathname) === path && !location.hash) return;
+        remember();
+        try { history.pushState({ arSection: slug }, '', path + location.search); }
         catch (e) { /* history blocked; the scroll still happens */ }
     }
 
@@ -190,7 +231,7 @@
         try { el.focus({ preventScroll: true }); } catch (e) { /* older browser */ }
     }
 
-    function travel(el, kind) {
+    function travel(el, kind, slug) {
         var p = PROFILE[kind] || PROFILE.quiet;
         var from = window.scrollY || window.pageYOffset;
         var to = destinationOf(el);
@@ -200,7 +241,7 @@
         // restart the journey or re-ease what is already decelerating.
         if (S.raf && S.el === el && Math.abs(S.to - to) < 2) return;
 
-        announce(el);
+        if (typeof slug === 'string') announce(slug);
 
         if (calm() || gap < 2) {
             halt();
@@ -247,21 +288,38 @@
     }
 
     // ── The link ─────────────────────────────────────────────────────────────
-    // Only same-document fragments, and only ones that resolve to something
-    // on this page. Everything else — the legal documents, the mail link,
-    // Collection, the form's own controls — is left entirely alone.
+    // Two kinds, and nothing else. A link to a registered section path
+    // (/for-artists/terms) travels and takes the address bar with it. A
+    // same-page fragment (the skip link) moves the view and the focus and
+    // leaves the URL alone. Everything else — the legal documents, the mail
+    // link, Collection, the form's own controls — is left entirely alone.
+    function kindOf(el) { return el.dataset.descent === 'primary' ? 'primary' : 'quiet'; }
+
+    function routeLink(el) {
+        if (!el || el.target && el.target !== '_self') return null;
+        if (el.hasAttribute('download')) return null;
+        var href = el.getAttribute('href') || '';
+        if (!href || href.charAt(0) === '#') return null;
+        var url;
+        try { url = new URL(href, location.href); } catch (e) { return null; }
+        if (url.origin !== location.origin) return null;
+        var slug = slugOf(url.pathname);
+        if (!slug) return null;
+        var node = nodeOf(slug);
+        return node ? { el: el, node: node, kind: kindOf(el), slug: slug } : null;
+    }
+
     function fragment(el) {
         if (!el || el.target && el.target !== '_self') return null;
         var href = el.getAttribute('href') || '';
         if (href.charAt(0) !== '#' || href === '#') return null;
-        var id = href.slice(1);
-        var node = document.getElementById(id);
-        return node ? { el: el, node: node, kind: el.dataset.descent === 'primary' ? 'primary' : 'quiet' } : null;
+        var node = document.getElementById(href.slice(1));
+        return node ? { el: el, node: node, kind: kindOf(el), skip: el.hasAttribute('data-skip') } : null;
     }
 
     function hit(event) {
-        var el = event.target instanceof Element ? event.target.closest('a[href^="#"]') : null;
-        return fragment(el);
+        var el = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        return routeLink(el) || fragment(el);
     }
 
     function plain(event) {
@@ -273,7 +331,7 @@
     // event exists, and before anything has moved.
     document.addEventListener('pointerdown', function (event) {
         var h = hit(event);
-        if (h && plain(event)) light(h.el);
+        if (h && !h.skip && plain(event)) light(h.el);
     });
 
     ['pointerup', 'pointercancel'].forEach(function (name) {
@@ -282,73 +340,163 @@
         }, true);
     });
 
+    // A modified click (new tab, new window) is the browser's: the href is
+    // the clean path, and the new tab arrives through the entry below.
     document.addEventListener('click', function (event) {
         var h = hit(event);
         if (!h || event.defaultPrevented || !plain(event)) return;
         event.preventDefault();
+        if (h.skip) {
+            // The skip link: focus moves to the content, the view follows,
+            // and the address bar is not touched — no #artists left behind.
+            halt();
+            window.scrollTo(0, destinationOf(h.node));
+            land(h.node);
+            return;
+        }
         light(h.el);                        // keyboard activation has no press
-        travel(h.node, h.kind);
+        travel(h.node, h.kind, h.slug);     // a fragment link passes no slug
     });
 
-    // ── Arriving on a fragment ───────────────────────────────────────────────
-    // A typed, bookmarked or shared URL is a request to be somewhere, not to
-    // watch a journey there: the correction is immediate. Without it the
-    // browser leaves the heading underneath the fixed header. The same is
-    // true of a hash the visitor edits by hand, and of back and forward,
-    // where the page has already been seen.
-    function settleOnHash(animate) {
+    // ── Arriving ─────────────────────────────────────────────────────────────
+    // A typed, bookmarked, shared or refreshed URL is a request to be
+    // somewhere, not to watch a journey there: the landing is immediate. It
+    // is made once as soon as this runs (stylesheets have loaded and every
+    // image reserves its own box, so the offsets are already close), then
+    // corrected after load and again when the webfonts have settled — a late
+    // font reflows every paragraph above the destination. The corrections
+    // stop the moment the visitor scrolls for themselves.
+    var tookWheel = false;
+    function wheelTaken() { tookWheel = true; }
+    ['wheel', 'touchstart'].forEach(function (name) {
+        window.addEventListener(name, wheelTaken, { passive: true, once: true });
+    });
+    window.addEventListener('keydown', function (event) {
+        if (/^(Arrow|Page|Home|End| )/.test(event.key)) tookWheel = true;
+    }, true);
+
+    function placeAt(node, focus) {
+        halt();
+        window.scrollTo(0, destinationOf(node));
+        if (focus) land(node);
+    }
+
+    // `getY` is asked again on every correction, so a destination measured
+    // after the fonts have landed is measured on the final layout.
+    function settle(getY, focusNode) {
+        var first = getY();
+        if (typeof first !== 'number') return;
+        halt();
+        window.scrollTo(0, first);
+        if (focusNode) land(focusNode);
+        function again() {
+            if (tookWheel || S.raf) return;
+            var y = getY();
+            if (typeof y === 'number') window.scrollTo(0, y);
+        }
+        if (document.readyState === 'complete') window.setTimeout(again, 60);
+        else window.addEventListener('load', function () { window.setTimeout(again, 60); });
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(again);
+    }
+
+    // A recognised old fragment — /for-artists#terms from a bookmark or an
+    // old email — is upgraded in place to its path, query string kept, and
+    // answered as if the path had been asked for. Returns the slug, or null.
+    function upgradeLegacy() {
+        var hash = location.hash;
+        if (!hash || !has(R.legacy, hash)) return null;
+        var slug = R.legacy[hash];
+        try { history.replaceState({ arSection: slug }, '', pathOf(slug) + location.search); }
+        catch (e) { /* history blocked */ }
+        return slug;
+    }
+
+    // Any other fragment that names something on the page: corrected for
+    // the fixed header, as the browser's own jump would leave it underneath.
+    function settleOnHash() {
         var id = location.hash.slice(1);
         if (!id) return;
         var node = document.getElementById(id);
-        if (!node) return;
-        if (animate && !calm()) { travel(node, 'quiet'); return; }
-        halt();
-        window.scrollTo(0, destinationOf(node));
+        if (node) settle(function () { return destinationOf(node); });
     }
 
-    window.addEventListener('hashchange', function () {
-        // A hash we set ourselves on landing must not bounce the page again.
-        if (S.raf) return;
-        settleOnHash(false);
-    });
+    function sectionY(slug) {
+        return function () { var n = nodeOf(slug); return n ? destinationOf(n) : null; };
+    }
 
-    window.addEventListener('popstate', function () {
-        // Any descent in flight is abandoned; where the page goes next is
-        // the browser's to decide, and for a fragment entry it restores the
-        // scroll it recorded. Only a hash it cannot place is corrected here.
-        halt();
-        if (location.hash) settleOnHash(false);
-    });
-
-    if (location.hash) {
-        // After layout, and after the fonts have settled the line boxes —
-        // the offset is only right once the document has stopped growing.
-        window.addEventListener('load', function () {
-            window.setTimeout(function () { settleOnHash(false); }, 60);
-        });
-        // A webfont landing late reflows every paragraph on the page, which
-        // on a narrow screen moves a destination near the bottom by
-        // thousands of pixels. Settle again once the text has stopped
-        // changing shape.
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(function () { settleOnHash(false); });
+    function enter() {
+        var legacy = upgradeLegacy();
+        var slug = legacy !== null ? legacy : slugOf(location.pathname);
+        if (slug) { settle(sectionY(slug), nodeOf(slug)); return; }
+        if (slug === '') {
+            // The page itself. A reload or a return through history comes
+            // back to where this entry was left; a fresh arrival is the top,
+            // which is where the browser already is.
+            var st = history.state;
+            var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
+            var back = nav.type === 'reload' || nav.type === 'back_forward';
+            if (legacy === '' && !back) { window.scrollTo(0, 0); return; }
+            if (back && st && typeof st.arY === 'number') {
+                var y = st.arY;
+                settle(function () { return y; });
+            }
+            return;
         }
-        settleOnHash(false);
+        if (location.hash) settleOnHash();
     }
+
+    // Back and Forward. Scroll restoration is manual, so each entry is put
+    // back explicitly: a section entry at its section, the page entry where
+    // it was left. Any descent in flight is abandoned first.
+    window.addEventListener('popstate', function () {
+        halt();
+        unlight();
+        var slug = slugOf(location.pathname);
+        if (slug === null) return;
+        if (slug) { var n = nodeOf(slug); if (n) placeAt(n, true); return; }
+        var st = history.state;
+        window.scrollTo(0, st && typeof st.arY === 'number' ? st.arY : 0);
+    });
+
+    // A fragment typed into the address bar by hand gets the same answer as
+    // one arriving from outside.
+    window.addEventListener('hashchange', function () {
+        if (S.raf) return;
+        var slug = upgradeLegacy();
+        if (slug) { var n = nodeOf(slug); if (n) placeAt(n, true); return; }
+        if (slug === '') { window.scrollTo(0, 0); return; }
+        settleOnHash();
+    });
+
+    // A reload keeps history.state, so the entry carries where it was left.
+    window.addEventListener('pagehide', remember);
 
     // Mark the links this file owns, so the stylesheet can answer a press on
-    // one without having to guess from the href which anchors are in-page and
-    // which lead off it. A fragment that resolves to nothing is left plain —
-    // it will behave as the browser's own anchor and should not look as
-    // though something is going to happen.
+    // one without having to guess from the href which links stay on the page
+    // and which lead off it.
     function mark() {
-        var links = document.querySelectorAll('a[href^="#"]');
+        var links = document.querySelectorAll('a[href]');
         Array.prototype.forEach.call(links, function (el) {
-            if (fragment(el)) el.classList.add('ar-descent');
+            var h = routeLink(el) || fragment(el);
+            if (h && !h.skip) el.classList.add('ar-descent');
         });
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mark);
-    else mark();
 
-    window.voidDescent = { to: travel, stop: halt, mark: mark };
+    /* Called once by the page with its table:
+         base      '/for-artists'
+         sections  { slug: element id }  — the registered paths
+         legacy    { '#fragment': slug } — '' for the page itself
+       Every slug here needs a matching rewrite in vercel.json; a path that
+       is not registered in both is an ordinary 404. */
+    function routes(cfg) {
+        R.base = norm(cfg.base);
+        R.sections = cfg.sections || {};
+        R.legacy = cfg.legacy || {};
+        R.ready = true;
+        try { history.scrollRestoration = 'manual'; } catch (e) { /* older browser */ }
+        mark();
+        enter();
+    }
+
+    window.voidDescent = { to: travel, stop: halt, mark: mark, routes: routes };
 })();
