@@ -92,7 +92,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&display=swap" rel="stylesheet">
     <!-- /assets is served immutable for a year: bump ?v= with every change. -->
     <link rel="stylesheet" href="/assets/void-passage.css?v=20261120-atelier">
-    <link rel="stylesheet" href="/assets/void-artists.css?v=20261120-emblem">
+    <link rel="stylesheet" href="/assets/void-artists.css?v=20261121-evgap">
     <!-- The house scrollbar, as the homepage draws it. -->
     <link rel="stylesheet" href="/assets/void-scrollbar.css?v=20261120-scrollbar">
 </head>
@@ -164,8 +164,11 @@
                          empty and drawn from the emblem's own alpha; the letters are
                          kept beside it for the accessible name, which stays
                          "EV for Artists". Both sit inside .ar-mask-in, so the
-                         heading's reveal uncovers the mark and "for" on one pass. -->
-                    <span class="ar-mask"><span class="ar-mask-in"><span class="ar-title-ev" aria-hidden="true"></span><span class="ar-vh">EV</span> for Artists</span></span>
+                         heading's reveal uncovers the mark and "for" on one pass.
+                         The word space lives inside the hidden "EV&nbsp;", so the
+                         accessible name keeps it but the layout does not: the gap
+                         to "for" is set once, by .ar-title-ev's margin. -->
+                    <span class="ar-mask"><span class="ar-mask-in"><span class="ar-title-ev" aria-hidden="true"></span><span class="ar-vh">EV&nbsp;</span>for Artists</span></span>
                 </h1>
                 <p class="ar-hero-lede" data-i18n="heroLede">An invitation to emerging designers.</p>
                 <p class="ar-hero-body" data-i18n="heroBody">Submit an original garment concept, artwork, or tech pack to ETERNAL VOID. Selected designs may be developed into a limited release, with designer credit and a royalty on sales.</p>

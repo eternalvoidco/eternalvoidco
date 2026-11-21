@@ -309,12 +309,20 @@ a:hover, a:focus-visible { color: var(--ar-gold-bright); }
    the file's proportions under mask-size: contain, which never distorts. An empty
    inline-block rests its bottom edge on the baseline, so lowering it by the
    file's own bottom padding — 27/500 of the box — puts the foot of the ink
-   on the baseline of "for". */
+   on the baseline of "for".
+
+   The gap to "for" is this one margin, in em so it scales with the heading.
+   There is no word space in the flow (the markup keeps it inside the hidden
+   "EV"), so the visible gap — gold edge to the ink of the "f" — is the margin
+   plus two clearances that are already there: the file's 13/594 of empty
+   alpha right of the ink (0.0216em) and Bodoni Moda's left side bearing on
+   "f" (0.0248em). 0.15em of visible gap: about 23px at the 152px cap. */
 .ar-title-ev {
     display: inline-block;
     width: 0.9843em;
     height: 0.8285em;
     vertical-align: -0.0447em;
+    margin-inline-end: calc(0.15em - 0.0216em - 0.0248em);
     background: var(--ar-gold);
     -webkit-mask: url('/assets/ev-emblem.png') center / contain no-repeat;
     mask: url('/assets/ev-emblem.png') center / contain no-repeat;
