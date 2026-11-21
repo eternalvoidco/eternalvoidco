@@ -36,6 +36,13 @@
         } catch (e) { /* storage blocked */ }
     </script>
     <script>
+        // THE INTAKE SWITCH, page side. Set to true in the same deploy that
+        // sets VOID_ARTIST_INTAKE=open on the server — the server refuses
+        // every submission until then, whatever this says, and this decides
+        // whether the page shows the form or the notification signup.
+        window.VOID_ARTISTS_INTAKE_OPEN = false;
+    </script>
+    <script>
         // The hero's own reveal, armed before first paint so no part of it is
         // ever drawn in a state the visitor was not meant to see. `ar-js` is
         // what the scroll reveals hang off, so without script every section is
@@ -92,7 +99,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&display=swap" rel="stylesheet">
     <!-- /assets is served immutable for a year: bump ?v= with every change. -->
     <link rel="stylesheet" href="/assets/void-passage.css?v=20261120-atelier">
-    <link rel="stylesheet" href="/assets/void-artists.css?v=20261121-lab">
+    <link rel="stylesheet" href="/assets/void-artists.css?v=20261121-signup">
     <!-- The house scrollbar, as the homepage draws it. -->
     <link rel="stylesheet" href="/assets/void-scrollbar.css?v=20261120-scrollbar">
 </head>
@@ -544,35 +551,31 @@
         </section>
 
         <!-- ══ 05 · The form ══════════════════════════════════════════════
-             The list of what can be sent sits beside the intake, where it is
-             used. The kicker, the heading and every primary button that leads
-             here say the same thing as the state intake is in. -->
+             Closed, the section reads in the order a visitor acts on it: the
+             heading, one line, the email field and its button, and only then
+             what can be sent. Every closed-state Notify me lands on the
+             heading with the field and the button on the same screen. Open,
+             the form takes the first column and the list sits beside it. The
+             kicker, the heading and every primary button that leads here say
+             the same thing as the state intake is in. -->
         <section class="ar-section ar-submit ar-reveal" id="submit" aria-labelledby="arFormTitle">
-            <p class="ar-kicker"><span class="ar-num">05</span> <span data-i18n-intake="formKicker">Submissions open soon</span></p>
-            <h2 class="ar-h2" id="arFormTitle" data-i18n-intake="formTitle">Be the first to know.</h2>
-            <p class="ar-lead" data-i18n="formLead">Private intake. Your files go to private storage and are read only by the review team.</p>
+            <!-- The closed-state landing: kicker and heading together, so
+                 neither is left half under the header. -->
+            <header class="ar-submit-head" id="arSubmitHead">
+                <p class="ar-kicker"><span class="ar-num">05</span> <span data-i18n-intake="formKicker">Submissions open soon</span></p>
+                <h2 class="ar-h2" id="arFormTitle" data-i18n-intake="formTitle">Be the first to know.</h2>
+            </header>
 
             <div class="ar-submit-grid">
-                <aside class="ar-guide" aria-labelledby="arGuideTitle">
-                    <h3 class="ar-guide-title" id="arGuideTitle" data-i18n="whatKicker">What you can submit</h3>
-                    <ul class="ar-guide-list">
-                        <li><h4 data-i18n="whatA">Garment concepts</h4><p data-i18n="whatACopy">A cut, a silhouette, a construction idea. Flats, a sketch, or a photographed toile.</p></li>
-                        <li><h4 data-i18n="whatB">Graphics &amp; artwork</h4><p data-i18n="whatBCopy">Front or back placements, all-over compositions, typographic work, drawn or painted originals.</p></li>
-                        <li><h4 data-i18n="whatC">Textile prints</h4><p data-i18n="whatCCopy">Repeats, colourways, treatments. A clean tile and a mock-up on a body are plenty.</p></li>
-                        <li><h4 data-i18n="whatD">Embroidery &amp; tech packs</h4><p data-i18n="whatDCopy">Stitch artwork, thread calls, or a full tech pack if you have one. Not needed to submit; a selected designer provides one to qualify for the proposed royalty.</p></li>
-                    </ul>
-                    <p class="ar-guide-note" data-i18n="whatNote">A clear sketch or mock-up and a short description are enough to start. We ask for editable source files only once a design progresses — never at intake.</p>
-                </aside>
-
                 <div class="ar-submit-main">
                     <!-- Intake is closed until the rate, the payouts and the legal
-                         drafts are approved. The form is built, wired and testable;
-                         the flag in void-artists.js is the single switch that opens
-                         it, and the server holds its own gate. -->
-                    <div class="ar-gate" id="arGate" role="status">
-                        <p class="ar-gate-title" data-i18n="gateTitle">Notify me when submissions open</p>
-                        <p class="ar-gate-copy" data-i18n="gateCopy">EV for Artists is in final review and opens once the collaboration terms are approved. Leave your address and we will write to you on the day submissions open.</p>
-                        <form class="ar-gate-form" id="arGateForm" novalidate>
+                         drafts are approved. The form is built, wired and testable.
+                         Opening it takes two switches together: VOID_ARTIST_INTAKE
+                         on the server, and VOID_ARTISTS_INTAKE_OPEN in this page's
+                         head. -->
+                    <div class="ar-gate" id="arGate">
+                        <form class="ar-gate-form" id="arGateForm" novalidate aria-describedby="arGateCopy">
+                            <p class="ar-gate-copy" id="arGateCopy" data-i18n="gateCopy">Leave your email and we’ll let you know when artist submissions open.</p>
                             <label class="ar-field-label" for="arGateEmail" data-i18n="gateEmailLabel">Email address</label>
                             <div class="ar-gate-row">
                                 <input class="ar-input" type="email" id="arGateEmail" name="email" autocomplete="email" required
@@ -584,6 +587,8 @@
                     </div>
 
                     <form class="ar-form" id="arForm" novalidate aria-describedby="arFormNote" hidden>
+                        <!-- Where files are actually chosen, so it is said here. -->
+                        <p class="ar-form-lead" data-i18n="formLead">Private intake. Your files go to private storage and are read only by the review team.</p>
                         <div class="ar-field-row">
                             <p class="ar-field">
                                 <label class="ar-field-label" for="arName" data-i18n="fName">Your name</label>
@@ -682,6 +687,17 @@
                         <p class="ar-receipt-copy" data-i18n="receiptCopy">Keep this reference. A receipt is on its way to your email address. If you want to withdraw the submission, write to artists@eternalvoid.co quoting the reference.</p>
                     </div>
                 </div>
+
+                <aside class="ar-guide" aria-labelledby="arGuideTitle">
+                    <h3 class="ar-guide-title" id="arGuideTitle" data-i18n="whatKicker">What you can submit</h3>
+                    <ul class="ar-guide-list">
+                        <li><h4 data-i18n="whatA">Garment concepts</h4><p data-i18n="whatACopy">A cut, a silhouette, a construction idea. Flats, a sketch, or a photographed toile.</p></li>
+                        <li><h4 data-i18n="whatB">Graphics &amp; artwork</h4><p data-i18n="whatBCopy">Front or back placements, all-over compositions, typographic work, drawn or painted originals.</p></li>
+                        <li><h4 data-i18n="whatC">Textile prints</h4><p data-i18n="whatCCopy">Repeats, colourways, treatments. A clean tile and a mock-up on a body are plenty.</p></li>
+                        <li><h4 data-i18n="whatD">Embroidery &amp; tech packs</h4><p data-i18n="whatDCopy">Stitch artwork, thread calls, or a full tech pack if you have one. Not needed to submit; a selected designer provides one to qualify for the proposed royalty.</p></li>
+                    </ul>
+                    <p class="ar-guide-note" data-i18n="whatNote">A clear sketch or mock-up and a short description are enough to start. We ask for editable source files only once a design progresses — never at intake.</p>
+                </aside>
             </div>
         </section>
 
@@ -743,8 +759,8 @@
     </footer>
 
     <script src="/assets/void-passage.js?v=20261120-atelier" defer></script>
-    <script src="/assets/void-artists-i18n.js?v=20261121-lab" defer></script>
+    <script src="/assets/void-artists-i18n.js?v=20261121-signup" defer></script>
     <script src="/assets/void-descent.js?v=20261121-paths" defer></script>
-    <script src="/assets/void-artists.js?v=20261121-paths" defer></script>
+    <script src="/assets/void-artists.js?v=20261121-signup" defer></script>
 </body>
 </html>

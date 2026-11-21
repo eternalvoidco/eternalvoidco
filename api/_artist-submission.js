@@ -283,7 +283,7 @@ async function notify(reference, fields) {
         to: row.email,
         subject: `EV for Artists — ${reference}`,
         replyTo: 'artists@eternalvoid.co',
-        html: receiptHtml({ name: row.name || '', reference, title: row.title || '' })
+        html: receiptHtml({ name: row.name || '', reference, title: row.title || '', termsVersion: row.terms_version || TERMS_VERSION })
     });
 
     out.atelier = await sendEmail({

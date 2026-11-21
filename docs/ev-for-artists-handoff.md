@@ -7,7 +7,7 @@
 | | state | what it is waiting on |
 |---|---|---|
 | **Staging verification** | **PART DONE** | Everything that can be proven without live credentials is proven, against real Postgres. Four steps need a staging Supabase and Stripe **test** mode and have not been run: the VAT basis against a real invoice, the historical dry run, the storage/overwrite/public-read checks, and the upload-token expiry. Commands for all four: `docs/ev-for-artists-staging-runbook.md`. |
-| **Public intake** | **CLOSED** | `VOID_ARTIST_INTAKE` is closed and the server refuses every unauthenticated request. Opening needs counsel on three documents, the owner on the rate, and `VOID_ARTIST_IP_SALT` + `CRON_SECRET` set. |
+| **Public intake** | **CLOSED** | `VOID_ARTIST_INTAKE` is closed and the server refuses every unauthenticated request. Opening takes two switches in one deploy: `VOID_ARTIST_INTAKE=open` on the server and `window.VOID_ARTISTS_INTAKE_OPEN = true` in the head of `for-artists/index.html` — the page shows the notification signup until the second is flipped. Opening needs counsel on three documents, the owner on the rate, and `VOID_ARTIST_IP_SALT` + `CRON_SECRET` set. |
 | **Royalty payouts** | **BLOCKED** | Two hard blocks, neither of which is a bug: **nobody has recorded whether charged amounts include VAT**, and **no dry run has established that any period's refund history was read back from Stripe**. Either one alone stops a payout file being produced. |
 
 **12% of net profit from sales of the covered products (changed from net product sales on

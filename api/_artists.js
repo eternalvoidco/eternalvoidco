@@ -216,7 +216,9 @@ const P = (text) => `<tr><td style="padding-bottom:16px;font-family:Helvetica,Ar
 
 // What the artist gets. The reference, what happens next, and how to withdraw.
 // No link to the file and no copy of the work.
-export function receiptHtml({ name, reference, title }) {
+// The receipt quotes the version of the Submission Terms the artist accepted,
+// as clause 11 of those terms says it does.
+export function receiptHtml({ name, reference, title, termsVersion }) {
     return SHELL(`
         <tr><td style="padding-bottom:10px;font-family:Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#c7a96c;">Received</td></tr>
         <tr><td style="padding-bottom:22px;font-family:Georgia,serif;font-size:25px;line-height:1.25;color:#f3f0ea;">Your design is with the atelier.</td></tr>
@@ -231,6 +233,7 @@ export function receiptHtml({ name, reference, title }) {
         ${P('You keep ownership of your work. Submitting does not give us permission to publish it, manufacture it, use it commercially, or train AI on it. Production would require a separate agreement signed by both of us.')}
         ${P('To withdraw, reply to this message quoting the reference. We will stop reviewing it and delete the uploaded files.')}
         <tr><td style="padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-family:Helvetica,Arial,sans-serif;font-size:11px;line-height:1.7;color:#6f675b;">
+          ${termsVersion ? `You accepted the Submission Terms, version ${escapeHtml(termsVersion)}.<br>` : ''}
           <a href="https://eternalvoid.co/legal/ev-for-artists-submission-terms" style="color:#8f8778;">Submission Terms</a> &middot;
           <a href="https://eternalvoid.co/legal/ev-for-artists-privacy-notice" style="color:#8f8778;">Privacy Notice</a> &middot;
           <a href="mailto:artists@eternalvoid.co" style="color:#8f8778;">artists@eternalvoid.co</a>

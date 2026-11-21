@@ -738,12 +738,31 @@ a.ar-descent:not(.ar-btn) { position: relative; }
     max-width: 44rem;
 }
 
-/* What can be sent, beside the intake it is sent through. */
+/* Open: the form first, and what can be sent beside it. */
 .ar-submit-grid {
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: clamp(2rem, 5vw, 5rem);
     align-items: start;
+}
+/* Closed (and without script, which is closed): one column, in the order a
+   visitor acts — the signup straight under the heading, then the list, laid
+   out across the width since there is no form for it to sit beside. */
+html:not([data-intake="open"]) .ar-submit-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2.4rem, 6vh, 4rem);
+}
+html:not([data-intake="open"]) .ar-guide-list {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.4rem clamp(1.6rem, 3.5vw, 3rem);
+}
+html:not([data-intake="open"]) .ar-guide-note { max-width: 68ch; }
+
+.ar-form-lead {
+    margin: 0 0 clamp(1.4rem, 3vh, 2rem);
+    max-width: 58ch;
+    font-size: 0.94rem;
+    color: var(--ar-ivory-dim);
 }
 .ar-guide {
     padding-top: clamp(1.2rem, 2.6vh, 1.6rem);
@@ -812,10 +831,9 @@ a.ar-descent:not(.ar-btn) { position: relative; }
 .ar-techpack-note { margin: 0; font-size: 0.82rem; color: var(--ar-ivory-faint); max-width: 60ch; }
 
 .ar-gate {
-    padding: clamp(1.4rem, 3vw, 2.2rem);
+    padding: clamp(1.2rem, 3vw, 2.2rem);
     border: 1px solid var(--ar-gold-deep);
     background: rgba(199, 169, 108, 0.04);
-    margin-bottom: clamp(2rem, 4vh, 3rem);
 }
 .ar-gate-title {
     margin: 0 0 0.6rem;
@@ -823,7 +841,7 @@ a.ar-descent:not(.ar-btn) { position: relative; }
     font-size: clamp(1.2rem, 2.4vw, 1.6rem);
     color: var(--ar-ivory);
 }
-.ar-gate-copy { margin: 0 0 1.4rem; font-size: 0.94rem; max-width: 56ch; }
+.ar-gate-copy { margin: 0 0 1.2rem; font-size: 0.98rem; color: var(--ar-ivory); max-width: 56ch; }
 .ar-gate-row { display: flex; flex-wrap: wrap; gap: 0.8rem; }
 .ar-gate-row .ar-input { flex: 1 1 15rem; }
 

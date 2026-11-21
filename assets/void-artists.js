@@ -324,7 +324,9 @@
             base: '/for-artists',
             sections: {
                 terms: 'terms',
-                submit: OPEN ? 'arForm' : 'arGate'
+                // Closed, the kicker and heading: the line, the email field
+                // and its button follow on the same screen, phone included.
+                submit: OPEN ? 'arForm' : 'arSubmitHead'
             },
             legacy: {
                 '#terms': 'terms',
