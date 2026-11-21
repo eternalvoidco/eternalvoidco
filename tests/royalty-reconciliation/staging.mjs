@@ -43,6 +43,8 @@ console.log('\n── 1 · the VAT basis: the invoice fixture ──');
 {
     const db = await boot();                 // basis deliberately left 'unknown'
     await attest(db, ...Q4);
+    // Costs attested complete (none recorded) — this case is about another blocker.
+    await db.query(`select public.artist_royalty_costs_attest(null, '2026-01-01T00:00:00Z', '2028-01-01T00:00:00Z', 'test@eternalvoid.co', null)`);
     await collab(db, { email: 'lena@studio.co', name: 'Lena', sku: 'EV-COL-TEE-L' });
     await makeOrder(db, {
         items: [{ sku: 'EV-COL-TEE-L', name: 'Collab Tee', unit: 16000, qty: 1 }],
@@ -172,6 +174,8 @@ console.log('\n── 3 · payout readiness needs positive evidence of coverage 
     const db = await boot();
     await setVatBasis(db, 'exclusive');
     await collab(db, { email: 'lena@studio.co', name: 'Lena', sku: 'EV-S' });
+    // Costs attested complete (none recorded) — this case is about another blocker.
+    await db.query(`select public.artist_royalty_costs_attest(null, '2026-01-01T00:00:00Z', '2028-01-01T00:00:00Z', 'test@eternalvoid.co', null)`);
     await makeOrder(db, {
         items: [{ sku: 'EV-S', name: 'S', unit: 20000, qty: 1 }], paidAt: '2026-11-05T10:00:00Z'
     });

@@ -844,6 +844,7 @@ html:not([data-intake="open"]) .ar-guide-note { max-width: 68ch; }
 .ar-gate-copy { margin: 0 0 1.2rem; font-size: 0.98rem; color: var(--ar-ivory); max-width: 56ch; }
 .ar-gate-row { display: flex; flex-wrap: wrap; gap: 0.8rem; }
 .ar-gate-row .ar-input { flex: 1 1 15rem; }
+.ar-gate-news { margin: 1rem 0 0; font-size: 0.84rem; color: var(--ar-ivory-dim); }
 
 .ar-field-row {
     display: grid;

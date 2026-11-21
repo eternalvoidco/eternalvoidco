@@ -282,6 +282,8 @@
                 // figures mean nothing until it is clean.
                 const blocking = rec.blocking;
                 const unresolved = []
+                    .concat((data.costsUnattested || []).map((code) =>
+                        `${code}: documented costs for this period are not attested as complete — POST {action:"attestCosts"}`))
                     .concat((blocking.vatBasisUnresolved || []).map((v) =>
                         `${v.order_number}: nobody has recorded whether the charged amount includes VAT`))
                     .concat((blocking.currencyNotEur || []).map((c) =>
@@ -315,7 +317,7 @@
                     ? `<p class="pill received" style="display:inline-block;">Reconciles — ${rec.ordersInScope} orders in scope</p>`
                     : `<div style="border:1px solid rgba(232,165,165,0.5);padding:0.9rem 1rem;margin:0.9rem 0;">
                          <p style="margin:0 0 0.5rem;color:var(--warn);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">
-                           ${rec.status === 'blocked' ? 'Blocked' : 'Needs review'} — not payable
+                           ${rec.status === 'clean' ? 'Costs not attested' : rec.status === 'blocked' ? 'Blocked' : 'Needs review'} — not payable
                          </p>
                          <ul style="margin:0;padding-left:1.1rem;font-size:0.84rem;">
                            ${unresolved.map((u) => `<li>${escapeHtml(u)}</li>`).join('')}
@@ -325,22 +327,22 @@
                 $('royaltyOut').innerHTML = banner + (!data.artists.length
                     ? '<p class="hint">No eligible sales in that period.</p>'
                     : `<table><thead><tr>
-                        <th>Artist</th><th>Agreement</th><th class="num">Units</th>
-                        <th class="num">Gross</th><th class="num">Discounts</th>
-                        <th class="num">Reversals</th><th class="num">Base</th>
-                        <th class="num">Rate</th><th class="num">Due</th><th class="num">Carried</th>
-                       </tr></thead><tbody>${data.artists.map((a) => `<tr>
-                        <td>${escapeHtml(a.creditName)}<br><span class="hint">${escapeHtml(a.artistEmail)}</span></td>
-                        <td>${escapeHtml(a.agreementRef)}</td>
-                        <td class="num">${a.units}</td>
-                        <td class="num">${eur(a.grossMerchandise)}</td>
-                        <td class="num">${eur(a.discounts)}</td>
-                        <td class="num">${eur(a.reversals)}</td>
-                        <td class="num">${eur(a.royaltyBase)}</td>
-                        <td class="num">${(a.royaltyBps / 100).toFixed(2)}%</td>
-                        <td class="num">${eur(a.royaltyDue)}</td>
-                        <td class="num">${a.carryForward ? eur(a.carryForward) : '—'}</td>
-                       </tr>`).join('')}</tbody></table>
+                        <th>Artist</th><th>Design</th><th class="num">Units</th>
+                        <th class="num">Sales</th><th class="num">Deductions</th>
+                        <th class="num">Profit</th><th class="num">Carried in</th>
+                        <th class="num">Rate</th><th class="num">Royalty</th><th class="num">Carry fwd</th>
+                       </tr></thead><tbody>${data.artists.map((a) => (a.perSku || []).map((s) => `<tr>
+                        <td>${escapeHtml(a.creditName || '')}<br><span class="hint">${escapeHtml(a.artistEmail)}</span></td>
+                        <td>${escapeHtml(s.sku)}${s.costsAttested ? '' : '<br><span class="hint" style="color:var(--warn);">costs not attested</span>'}</td>
+                        <td class="num">${s.units}</td>
+                        <td class="num">${eur(s.sales)}</td>
+                        <td class="num">${eur(s.deductions)}</td>
+                        <td class="num">${eur(s.profit)}</td>
+                        <td class="num">${s.carriedIn ? eur(s.carriedIn) : '—'}</td>
+                        <td class="num">${(s.royaltyBps / 100).toFixed(2)}%</td>
+                        <td class="num">${eur(s.royaltyDue)}</td>
+                        <td class="num">${s.carryForward ? eur(s.carryForward) : '—'}</td>
+                       </tr>`).join('')).join('')}</tbody></table>
                        <p class="hint" style="margin-top:0.8rem;">${escapeHtml(data.basis.approval)}</p>`);
                 say($('royaltyMsg'), data.payoutReady
                     ? ''

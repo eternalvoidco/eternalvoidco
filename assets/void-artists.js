@@ -533,9 +533,8 @@
     }
 
     // ══ The waiting list ══════════════════════════════════════════════════
-    // While intake is closed. Goes to the newsletter the house already runs,
-    // with its own source, so the consent record and the unsubscribe path are
-    // the ones already in place.
+    // While intake is closed. A signup for the opening announcement only
+    // (/api/artist-opening). The newsletter is a separate, unticked box.
     (function gateForm() {
         var gateForm = $('arGateForm');
         if (!gateForm) return;
@@ -551,10 +550,13 @@
 
             sending = true;
             say(msg, t('sending'), null);
-            fetch('/api/newsletter', {
+            // The opening announcement, and the newsletter only if its own
+            // unticked box was ticked.
+            var news = $('arGateNews');
+            fetch('/api/artist-opening', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: value, interest: 'ev-for-artists' })
+                body: JSON.stringify({ email: value, locale: lang, newsletter: Boolean(news && news.checked) })
             })
                 .then(function (response) { return response.ok; })
                 .then(function (ok) {

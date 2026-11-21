@@ -16,15 +16,16 @@ Version 2026-11-19 · Prepared for owner approval and Hungarian legal review.
 
 ## Facts still needed before this can be used
 
-Not one of these is recorded anywhere in the project. All are required.
+Items 1–5 were supplied by the owner on 2026-11-21. The signing method in item 5 waits for a
+current company extract (cégkivonat).
 
 | # | Fact | Where it is needed |
 |---|------|--------------------|
-| 1 | Registered legal name of the Hungarian Kft. | Parties |
-| 2 | Company registration number (cégjegyzékszám) | Parties |
-| 3 | Tax number (adószám), and EU VAT number if different | Parties, §9 |
-| 4 | Registered seat (székhely) | Parties, §16 |
-| 5 | Name and title of the representative who signs | Signature block |
+| 1 | ~~Registered legal name~~ — PLAST-TECH-TEAM Korlátolt Felelősségű Társaság (PLAST-TECH-TEAM Kft.) | Parties |
+| 2 | ~~Company registration number~~ — 13-09-118057 | Parties |
+| 3 | ~~Tax number and EU VAT number~~ — 14208878-2-13; EU VAT HU14208878 (owner-supplied) | Parties, §9 |
+| 4 | ~~Registered seat~~ — 2143 Kistarcsa, Dózsa György utca 40., Hungary | Parties, §16 |
+| 5 | Representative: Szeder Mihály, ügyvezető. **Signing method (önálló or együttes cégjegyzés) and its exact wording: pending a current company extract.** | Signature block |
 | 6 | Bank details / payment rail for artist payouts | §9 |
 | 7 | Chosen venue for disputes | §16 |
 | 8 | Whether e-signature (and which provider) is acceptable | §17 |
@@ -33,9 +34,11 @@ Not one of these is recorded anywhere in the project. All are required.
 
 ## Parties
 
-**(1)** ____________________ Kft., a company registered in Hungary under company registration
-number ____________________, tax number ____________________, with its registered seat at
-____________________ ("**ETERNAL VOID**"); and
+**(1)** PLAST-TECH-TEAM Korlátolt Felelősségű Társaság (PLAST-TECH-TEAM Kft.), a company
+registered in Hungary under company registration number 13-09-118057, tax number 14208878-2-13,
+EU VAT number HU14208878, with its registered seat at 2143 Kistarcsa, Dózsa György utca 40.,
+Hungary, represented by Szeder Mihály, ügyvezető *[signing method to be confirmed against a
+current company extract]*, trading as ETERNAL VOID ("**ETERNAL VOID**"); and
 
 **(2)** ____________________ of ____________________ ("**the Artist**").
 
@@ -141,48 +144,58 @@ Agreement.
 
 ## 8 · Royalty
 
-> **Drafting note, 2026-11-21 — not agreement text.** The public offer changed: the proposed royalty is now 12% of the **net profit** from sales of the covered products, and only a selected designer who provides a complete, production-ready tech pack qualifies for it. This section still defines **Net Product Sales** and states that costs are not deducted (§8.4), and §11 still promises a separate development fee for a production-ready tech pack. Both contradict the public offer. Counsel and the owner must redraft §8 around a defined net-profit calculation and decide what, if anything, §11 still pays for, before this agreement is used.
+8.1 ETERNAL VOID pays the Artist **____ %** of the **Net Profit** from sales of the Design in
+Schedule 1 — that Design only, and no other product.
 
-8.1 ETERNAL VOID pays the Artist **____ %** of Net Product Sales of the products in Schedule 1.
+> *The public programme page proposes **12%** as ETERNAL VOID's opening offer, pending owner
+> approval. Whatever rate is signed here is also the rate that must be written into
+> `artist_collaborations.royalty_bps`, because the royalty statement reads that column and
+> nothing else.*
 
-> *The public programme page proposes **12%** as ETERNAL VOID's opening offer. It is a proposal,
-> not a benchmark, and it is pending owner approval. Whatever rate is signed here is also the rate
-> that must be written into `artist_collaborations.royalty_bps`, because the royalty export reads
-> that column and nothing else.*
+8.2 **Eligibility.** A sketch is enough to apply. The royalty is payable only where the Artist,
+having been selected, has provided a full, production-ready tech pack for the Design and has signed
+this agreement.
 
-8.2 **Net Product Sales** means, for direct sales, the amount actually paid by the customer for the
-collaboration merchandise, after discounts, **excluding**:
+8.3 **Net Sales** means the amount actually paid by customers for units of the Design, after
+discounts and after refunds and chargebacks, **excluding**:
 
    (a) VAT and other sales taxes; and
    (b) shipping charged separately to the customer.
 
-8.3 **Reversals.** Refunds and chargebacks reverse the affected merchandise amount **once**,
-including partial reversals. A reversal is applied in the quarter in which it occurs, which may be
-later than the quarter of the sale.
+A refund or chargeback is applied once, including a partial one, in the quarter in which it occurs,
+which may be later than the quarter of the sale.
 
-8.4 **No other deductions.** Production, sampling, packaging, platform fees, payment processing
-fees, marketing, fulfilment and overhead are **not** deducted from Net Product Sales. ETERNAL VOID
-bears these when it runs the release.
+8.4 **Deductible Costs** means documented manufacturing, printing, packaging and
+payment-processing costs attributable to the units of the Design sold in the quarter. Each cost is
+deducted once, is supported by an invoice, receipt or payment processor report, and is shown on the
+statement with that document's reference.
 
-8.5 **Worked example.** An eligible sale generating **€160** in Net Product Sales pays the Artist
-**€19.20** at 12%.
+8.5 **Not deducted.** Sampling, marketing and general overhead are borne by ETERNAL VOID and are
+never deducted.
 
-8.6 Where a product in Schedule 1 is sold as part of a bundle with non-collaboration items, the
-royalty is calculated on the collaboration item's share of the bundle price, allocated pro rata to
-list price. *(Only applies once bundles are permitted under §3.2.)*
+8.6 **Net Profit** means Net Sales less Deductible Costs.
+
+8.7 **Worked example.** €1,000 of Net Sales less €400 of Deductible Costs gives €600 of Net
+Profit, and a 12% royalty of **€72**.
+
+8.8 Where a product in Schedule 1 is sold as part of a bundle with non-collaboration items, Net
+Sales for the Design are its share of the bundle price, allocated pro rata to list price.
+*(Only applies once bundles are permitted under §3.2.)*
 
 ## 9 · Statements and payment
 
 9.1 Within **30 days of the end of each calendar quarter**, ETERNAL VOID provides an itemised
-statement showing, per SKU: eligible units, gross merchandise, discounts applied, reversals, the
-royalty base, the rate, and the amount due.
+statement showing, for the Design: units sold, Net Sales (with refunds and chargebacks), each
+Deductible Cost by category with its document reference, Net Profit, any balance carried in, the
+rate, and the amount due.
 
 9.2 Payment within the same 30 days, in EUR, to the account the Artist nominates.
 
 9.3 Amounts under €____ carry forward to the next statement.
 
-9.4 Where reversals in a quarter exceed Net Product Sales in that quarter, the excess carries
-forward against the next quarter. No negative payment is ever raised.
+9.4 Where refunds, chargebacks and Deductible Costs in a quarter together exceed the Design's
+sales in that quarter, the excess carries forward once against the next quarter. No negative
+payment is ever raised.
 
 9.5 The Artist is responsible for their own taxes. ETERNAL VOID will apply any withholding it is
 legally obliged to apply and will provide a certificate.
@@ -201,9 +214,9 @@ shortfall and the reasonable cost of the review.
 
 ## 11 · Development fees
 
-11.1 If ETERNAL VOID asks the Artist, after selection, for a production-ready tech pack, additional
-artwork, or substantial revisions, the Parties agree a **written scope and fee before that work
-starts**.
+11.1 The tech pack in §8.2 is the condition for the royalty and is not separately paid. If
+ETERNAL VOID asks the Artist, after selection, for additional artwork or substantial revisions, the
+Parties agree a **written scope and fee before that work starts**.
 
 11.2 Development fees are **not** advances against royalties and are **not** recoupable, unless
 expressly stated otherwise in the written scope.
@@ -292,7 +305,7 @@ Act's written-form requirement for a licence is satisfied by the chosen e-signat
 
 ## Signatures
 
-For ____________________ Kft. ____________________  Name/title: ____________  Date: __________
+For PLAST-TECH-TEAM Kft. ____________________  Name/title: Szeder Mihály, ügyvezető *[signing method pending a current company extract]*  Date: __________
 
 The Artist ____________________  Name: ____________  Date: __________
 

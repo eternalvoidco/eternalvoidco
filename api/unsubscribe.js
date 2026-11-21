@@ -16,6 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { EMAIL_RE, newsletterConfigured, unsubscribe, sendEmail } from './_newsletter.js';
 import { describeSupabaseError } from './_orders.js';
+import { unsubscribeOpening, isOpeningToken } from './_artist-opening.js';
 
 const DONE = 'You have been unsubscribed from VOID emails.';
 
@@ -67,13 +68,35 @@ export default async function handler(request, response) {
         return response.status(400).json({ message: 'Please enter a valid email address.' });
     }
 
+    const source = queryToken ? 'one_click' : token ? 'email_link' : 'unsubscribe_page';
+
+    // A link from the EV for Artists opening list leaves that list only. The
+    // newsletter, if this address is on it, is a separate consent and keeps
+    // its own link.
+    if (token && isOpeningToken(token)) {
+        let opening;
+        try {
+            opening = await unsubscribeOpening({ token, source });
+        } catch (error) {
+            console.error(describeSupabaseError(error, 'unsubscribe: artist opening'));
+            return response.status(502).json({ message: 'Unable to process unsubscribe request right now.' });
+        }
+        if (!opening || !opening.ok || opening.outcome === 'not_found') {
+            return response.status(404).json({ message: 'This unsubscribe link is not valid. Enter your email address below instead.' });
+        }
+        return response.status(200).json({ message: 'You have been removed from the EV for Artists opening list.' });
+    }
+
     let result;
     try {
         result = await unsubscribe({
             token,
             email: token ? null : email,
-            source: queryToken ? 'one_click' : token ? 'email_link' : 'unsubscribe_page'
+            source
         });
+        // The page form is "stop emailing this address", so it reaches the
+        // opening list too.
+        if (!token) await unsubscribeOpening({ email, source });
     } catch (error) {
         console.error(describeSupabaseError(error, 'unsubscribe'));
         return response.status(502).json({ message: 'Unable to process unsubscribe request right now.' });

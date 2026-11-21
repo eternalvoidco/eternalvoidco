@@ -10,6 +10,7 @@ node scenarios.mjs     # 36 royalty cases
 node backfill.mjs      #  8 historical dry-run cases
 node intake.mjs        # 35 closed-intake cases
 node staging.mjs       # 34 staging-verification cases
+node net-profit.mjs    # 24 net-profit cases, including the €72 example
 ```
 
 ## What is real and what is stubbed

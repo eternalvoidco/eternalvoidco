@@ -43,9 +43,9 @@ export function unsubscribeHeaders(token) {
 
 // Things a visitor can ask to hear about that are not in the catalogue, so
 // can never be quoted, held or sold. NÉANT is announced but not on sale;
-// ev-for-artists is the "tell me when submissions open" list on
-// /for-artists — without it here the signup was saved with no interest at
-// all, and nobody could have found those addresses on the day intake opens.
+// ev-for-artists is recorded when someone on /for-artists also ticks the
+// separate newsletter box. The opening announcement itself is its own list
+// (artist_opening_list, api/_artist-opening.js), not the newsletter.
 export const UPCOMING_INTERESTS = Object.freeze({ neant: 'NÉANT', 'ev-for-artists': 'EV for Artists' });
 
 // Only a design that exists in the catalogue, or an announced piece above, is

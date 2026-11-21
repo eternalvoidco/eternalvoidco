@@ -3,6 +3,7 @@ import submissions from './_artist-submissions.js';
 import royalties from './_artist-royalties.js';
 import reversals from './_artist-reversals.js';
 import sweep from './_artist-drafts-sweep.js';
+import opening from './_artist-opening.js';
 
 const handlers = new Map([
     ['/api/artist-submission', submit],
@@ -10,6 +11,7 @@ const handlers = new Map([
     ['/api/artist-royalties', royalties],
     ['/api/artist-reversals', reversals],
     ['/api/artist-drafts-sweep', sweep],
+    ['/api/artist-opening', opening],
 ]);
 
 export default function handler(request, response) {

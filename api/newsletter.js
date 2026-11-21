@@ -44,24 +44,6 @@ function welcomeHtml(unsubscribeUrl) {
             `;
 }
 
-// The confirmation for the /for-artists opening list. It says what the
-// visitor asked for — to hear when submissions open — and nothing the
-// general welcome promises about drops and preorders.
-function artistsHtml(unsubscribeUrl) {
-    return `
-                <div style="margin:0;background:#000;color:#f5f2ec;font-family:Arial,Helvetica,sans-serif;padding:28px 16px;line-height:1.7;">
-                    <div style="max-width:620px;margin:0 auto;border-top:1px solid rgba(199,169,108,0.58);border-bottom:1px solid rgba(255,255,255,0.08);background:#000;padding:34px 26px;">
-                        <div style="color:#c7a96c;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:14px;">EV for Artists</div>
-                        <h1 style="color:#f8f1e4;font-family:Georgia,serif;font-size:25px;font-weight:400;line-height:1.25;margin:0 0 16px;">We will write when submissions open.</h1>
-                        <p style="color:#bdb5a8;font-size:13px;line-height:1.8;margin:0 0 18px;">Thank you. Your address is on the list for the day EV for Artists opens to submissions. A sketch is enough to start.</p>
-                        <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0 16px;"></div>
-                        <p style="color:#8f8778;font-size:11px;line-height:1.6;margin:0 0 8px;"><a href="https://eternalvoid.co/for-artists" style="color:#c7a96c;text-decoration:none;">eternalvoid.co/for-artists</a> &middot; <a href="mailto:artists@eternalvoid.co" style="color:#8f8778;text-decoration:none;">artists@eternalvoid.co</a></p>
-                        <p style="color:#6f675b;font-size:10px;line-height:1.6;margin:0;">No longer want these emails? <a href="${unsubscribeUrl}" style="color:#8f8778;text-decoration:underline;">Unsubscribe</a>. Read our <a href="https://eternalvoid.co/privacy-policy.html" style="color:#8f8778;text-decoration:underline;">Privacy Policy</a>.</p>
-                    </div>
-                </div>
-            `;
-}
-
 export default async function handler(request, response) {
     if (request.method !== 'POST') {
         response.setHeader('Allow', 'POST');
@@ -91,13 +73,12 @@ export default async function handler(request, response) {
 
     let sent = true;
     if (saved.sendWelcome) {
-        const artists = interest === 'ev-for-artists';
         sent = await sendEmail({
-            from: artists ? 'EV for Artists <artists@eternalvoid.co>' : 'VOID <support@eternalvoid.co>',
+            from: 'VOID <support@eternalvoid.co>',
             to: email,
-            subject: artists ? 'EV for Artists — we will write when submissions open' : 'Thank you for signing up to VOID',
+            subject: 'Thank you for signing up to VOID',
             headers: unsubscribeHeaders(saved.token),
-            html: artists ? artistsHtml(unsubscribePageUrl(saved.token)) : welcomeHtml(unsubscribePageUrl(saved.token))
+            html: welcomeHtml(unsubscribePageUrl(saved.token))
         });
         if (sent) await markWelcomeSent(saved.token);
     }

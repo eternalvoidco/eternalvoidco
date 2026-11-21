@@ -12,8 +12,8 @@
 
 **12% of net profit from sales of the covered products (changed from net product sales on
 2026-11-21; complete tech pack required), quarterly statements, payment within 30 days of quarter end remain
-PROPOSED and unapproved.** Net profit is not yet defined, and the statement engine still computes on
-net product sales — see the note at the top of docs/royalty-model.md. They are marked that way on the public page in all four languages.
+PROPOSED and unapproved.** The owner defined net profit on 2026-11-21 and the statement engine now
+computes it — see the note at the top of docs/royalty-model.md. They are marked that way on the public page in all four languages.
 
 ---
 
@@ -483,7 +483,7 @@ Stripe keys, no Vercel CLI, no staging host. Each has an exact command in
 ## 9 · Exactly what is needed, from whom
 
 ### From the owner
-- [ ] **12%** of net profit from sales of the covered products — still proposed; **define net profit** (costs deducted, allocation, evidence) and update the statement engine
+- [ ] **12%** of net profit from sales of the artist's design — still proposed. Definition set 2026-11-21 and implemented; accounting to confirm refunded-unit costs and cost carry-forward
 - [ ] Whether additional development work after selection is paid, and how (Agreement §11 still promises a fee for a tech pack, which is now the royalty condition)
 - [ ] **Quarterly** statements, **30 days** after quarter end — still proposed
 - [ ] Term, territory, release deadline, sell-off window *(Agreement §4, §5, §6.4, §13.3)*

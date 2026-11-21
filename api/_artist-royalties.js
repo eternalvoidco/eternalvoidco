@@ -91,25 +91,41 @@ function csv(statement, diagnostic) {
     });
 
     rows.push('');
-    // `charged` and `net_merchandise` are shown side by side so the VAT
-    // decision is visible on the face of the file rather than folded into a
-    // single number nobody can check.
-    rows.push(['artist_email', 'credit_name', 'agreement_ref', 'sku', 'rate_pct',
-               'units', 'charged_eur', 'net_merchandise_eur', 'reversals_eur',
-               'carried_in_eur', 'royalty_base_eur', 'royalty_due_eur',
-               'carry_forward_eur'].join(','));
+    // Every documented cost deducted, with the document it came from.
+    rows.push(['artist_email', 'sku', 'category', 'basis', 'evidence_ref', 'attributable_on',
+               'order_number', 'units', 'unit_cost_eur', 'deduction_eur'].join(','));
+    (statement.costLines || []).forEach((k) => {
+        rows.push([k.artistEmail, k.sku, k.category, k.basis, quote(k.evidenceRef), k.attributableOn,
+                   k.orderNumber || '', k.units == null ? '' : k.units,
+                   k.unitAmount == null ? '' : money(k.unitAmount), money(k.amount)].join(','));
+    });
+
+    rows.push('');
+    // The statement an artist reads: sales, deductions, profit, royalty —
+    // with `charged` beside `net_merchandise` so the VAT decision is visible
+    // on the face of the file rather than folded into one number.
+    const head = ['artist_email', 'credit_name', 'agreement_ref', 'sku', 'rate_pct', 'units',
+                  'charged_eur', 'net_merchandise_eur', 'reversals_eur', 'sales_eur',
+                  'manufacturing_eur', 'printing_eur', 'packaging_eur', 'payment_processing_eur',
+                  'deductions_eur', 'profit_eur', 'carried_in_eur', 'royalty_base_eur',
+                  'royalty_due_eur', 'carry_forward_eur', 'costs_attested'];
+    rows.push(head.join(','));
     (statement.artists || []).forEach((a) => {
         (a.perSku || []).forEach((s) => {
+            const c = s.deductionsByCategory || {};
             rows.push([a.artistEmail, quote(a.creditName), a.agreementRef, s.sku,
                        (s.royaltyBps / 100).toFixed(2), s.units, money(s.grossCharged),
-                       money(s.grossMerchandise), money(s.reversals), money(s.carriedIn),
-                       money(s.royaltyBase), money(s.royaltyDue),
-                       money(s.carryForward)].join(','));
+                       money(s.grossMerchandise), money(s.reversals), money(s.sales),
+                       money(c.manufacturing), money(c.printing), money(c.packaging),
+                       money(c.paymentProcessing), money(s.deductions), money(s.profit),
+                       money(s.carriedIn), money(s.royaltyBase), money(s.royaltyDue),
+                       money(s.carryForward), s.costsAttested ? 'yes' : 'NO'].join(','));
         });
         rows.push([a.artistEmail, quote(a.creditName), a.agreementRef, 'TOTAL', '',
                    a.units, money(a.grossCharged), money(a.grossMerchandise),
-                   money(a.reversals), money(a.carriedIn), money(a.royaltyBase),
-                   money(a.royaltyDue), money(a.carryForward)].join(','));
+                   money(a.reversals), money(a.sales), '', '', '', '', money(a.deductions),
+                   money(a.profit), money(a.carriedIn), money(a.royaltyBase),
+                   money(a.royaltyDue), money(a.carryForward), a.costsAttested ? 'yes' : 'NO'].join(','));
     });
 
     // What is in the way, named, so the file is also the worklist.
@@ -123,6 +139,10 @@ function csv(statement, diagnostic) {
             rows.push(['vat_basis_unresolved', '', v.order_number, '',
                        quote('nobody has recorded whether the charged amount includes VAT'
                              + (v.country ? ` (ships to ${v.country})` : ''))].join(','));
+        });
+        (statement.costsUnattested || []).forEach((code) => {
+            rows.push(['costs_not_attested', code, '', '',
+                       quote('nobody has attested that this design\'s documented costs for the whole period are recorded')].join(','));
         });
         (b.currencyNotEur || []).forEach((c) => {
             rows.push(['currency_not_eur', '', c.order_number, '', quote(c.currency)].join(','));
@@ -219,6 +239,49 @@ export default async function handler(request, response) {
             }
         }
 
+        // { action: 'recordCost', sku, category, basis, amountMinor, from, to?, evidenceRef, note? }
+        // { action: 'attestCosts', sku?, quarter | from,to, note? }
+        // Recording refuses a duplicate document, an overlapping per-unit
+        // rate and any category ETERNAL VOID bears itself, in the database.
+        if (action === 'recordCost') {
+            try {
+                const out = await rpc('artist_royalty_cost_record', {
+                    p_sku: String(body.sku || ''), p_category: String(body.category || ''),
+                    p_basis: String(body.basis || ''), p_amount: Number.parseInt(body.amountMinor, 10),
+                    p_applies_from: String(body.from || ''), p_applies_to: body.to ? String(body.to) : null,
+                    p_evidence_ref: String(body.evidenceRef || ''), p_actor: gate.user.email,
+                    p_note: typeof body.note === 'string' ? body.note.slice(0, 2000) : null
+                }, 'record cost');
+                return response.status(out && out.ok ? 200 : 400).json(out || { ok: false });
+            } catch (error) {
+                console.error(describeSupabaseError(error, 'royalties: record cost'));
+                return response.status(502).json({ ok: false, error: 'upstream_failed' });
+            }
+        }
+        if (action === 'attestCosts') {
+            let range = quarterRange(body.quarter);
+            if (!range) {
+                const from = new Date(body.from || '');
+                const to = new Date(body.to || '');
+                if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || to <= from) {
+                    return response.status(400).json({ ok: false, error: 'bad_period' });
+                }
+                range = { from, to };
+            }
+            try {
+                const out = await rpc('artist_royalty_costs_attest', {
+                    p_sku: body.sku ? String(body.sku) : null,
+                    p_from: range.from.toISOString(), p_to: range.to.toISOString(),
+                    p_actor: gate.user.email,
+                    p_note: typeof body.note === 'string' ? body.note.slice(0, 2000) : null
+                }, 'attest costs');
+                return response.status(out && out.ok ? 200 : 400).json(out || { ok: false });
+            } catch (error) {
+                console.error(describeSupabaseError(error, 'royalties: attest costs'));
+                return response.status(502).json({ ok: false, error: 'upstream_failed' });
+            }
+        }
+
         return response.status(400).json({ ok: false, error: 'unknown_action' });
     }
 
@@ -258,10 +321,12 @@ export default async function handler(request, response) {
     // Said on every statement, because a number without its basis invites
     // somebody to pay from it.
     statement.basis = {
-        royaltyBase: 'the amount actually paid for the collaboration merchandise — sum(order_items.line_amount), which in this codebase IS orders.subtotal_amount; no discount path exists and an order where the two disagree blocks the period rather than being inferred',
+        royalty: 'royalty_bps (12% proposed) of the net profit from sales of the artist\'s specific design (SKU)',
+        sales: 'the amount actually paid for the design after discounts — sum(order_items.line_amount), which in this codebase IS orders.subtotal_amount — net of VAT under the recorded basis, less refunds and chargebacks',
         excluded: ['VAT and other sales taxes (orders.tax_amount)', 'separately charged shipping (orders.shipping_amount)'],
-        notDeducted: ['production', 'sampling', 'packaging', 'platform fees',
-                      'payment fees', 'marketing', 'overhead'],
+        deducted: ['documented manufacturing, printing, packaging and payment-processing costs attributable to the units sold, each counted once'],
+        notDeducted: ['sampling', 'marketing', 'general overhead — ETERNAL VOID bears these'],
+        carry: 'when reversals and deductions exceed sales, the excess is carried forward once against the same design\'s next period',
         reversals: 'refunds and chargebacks counted once through their allocation rows, only where the money actually moved, bucketed on the date it moved; a dispute won is reinstated and does not reduce a royalty',
         scope: 'SKUs named in artist_collaborations, direct channel, within the agreement window',
         approval: 'statement only — accounting approves and executes payment, and confirms invoicing, currency conversion and any withholding'

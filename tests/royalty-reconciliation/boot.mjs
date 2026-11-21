@@ -32,7 +32,8 @@ export async function boot() {
         '20261119120000_artist_submissions.sql',
         '20261119160000_royalty_reconciliation.sql',
         '20261119180000_artist_intake_hardening.sql',
-        '20261120090000_royalty_staging_verification.sql'
+        '20261120090000_royalty_staging_verification.sql',
+        '20261121120000_royalty_net_profit.sql'
     ]) {
         try {
             // pgcrypto ships with Supabase and not with bare PGlite. gen_random_uuid()
@@ -145,11 +146,13 @@ export async function attest(db, from, to, extra = {}) {
 }
 
 // A database ready to produce a payable statement: VAT declared exclusive (the
-// simple reading, so arithmetic tests stay about arithmetic) and the whole of
-// 2026-2027 attested.
+// simple reading, so arithmetic tests stay about arithmetic), the whole of
+// 2026-2027 attested for reversals, and every design's costs attested as
+// complete for the same window (with none recorded, so deductions are zero).
 export async function bootReady() {
     const db = await boot();
     await setVatBasis(db, 'exclusive');
     await attest(db, '2026-01-01T00:00:00Z', '2028-01-01T00:00:00Z');
+    await db.query(`select public.artist_royalty_costs_attest(null, '2026-01-01T00:00:00Z', '2028-01-01T00:00:00Z', 'test@eternalvoid.co', 'no costs in these fixtures')`);
     return db;
 }
