@@ -26,7 +26,10 @@
     --ar-ease-arrive: cubic-bezier(0.4, 0, 0.2, 1);
 
     --ar-pad: clamp(1.4rem, 5vw, 5.5rem);
-    --ar-max: 1240px;
+    /* 1460 less the 88px gutters each side: a featured spread reaches about
+       1,285px on a large desktop. Copy never runs that wide — every block of
+       text carries its own measure in ch or rem. */
+    --ar-max: 1460px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -210,7 +213,10 @@ a:hover, a:focus-visible { color: var(--ar-gold-bright); }
     min-height: 100svh;
     display: grid;
     align-content: end;
-    padding: calc(var(--ar-pad) + 4rem) var(--ar-pad) clamp(3rem, 8vh, 6rem);
+    /* Top clearance is the fixed header and a breath, no more: the drafting
+       marks are in the copy's flow now, and the space above the heading is
+       theirs. */
+    padding: clamp(4.6rem, 10vh, 6.6rem) var(--ar-pad) clamp(3rem, 8vh, 6rem);
     overflow: hidden;
 }
 
@@ -240,14 +246,19 @@ a:hover, a:focus-visible { color: var(--ar-gold-bright); }
         linear-gradient(to right, rgba(3, 3, 2, 0.93) 0%, rgba(3, 3, 2, 0.62) 28%, rgba(3, 3, 2, 0.05) 56%, rgba(3, 3, 2, 0) 100%);
 }
 
-/* The drafting marks, cropped by the frame as they would be by the edge of a
-   worktable. Behind the copy and well under it in weight. */
+/* The drafting marks, in the open space above the heading. They are the
+   first thing in the copy's own flow, so whatever the viewport, they end
+   where the kicker begins and can never sit under a line of text or a
+   button. Pulled left into the gutter so the rules still run off the edge of
+   the frame, as they would off the edge of a worktable. Sized by height,
+   because it is the height above the heading that is free. */
 .ar-hero-draft {
-    position: absolute;
-    left: calc(var(--ar-pad) * -0.2);
-    bottom: 0;
-    width: clamp(260px, 30vw, 460px);
-    height: auto;
+    display: block;
+    height: clamp(60px, 12vh, 170px);
+    width: auto;
+    aspect-ratio: 420 / 300;
+    margin: 0 0 clamp(0.6rem, 2.2vh, 1.6rem) calc(var(--ar-pad) * -0.55);
+    overflow: visible;
     opacity: 0.5;
     pointer-events: none;
 }
@@ -378,11 +389,16 @@ html.ar-pre .ar-hero-scroll { opacity: 0; }
     color: var(--ar-ivory-dim);
 }
 
+/* The actions take the width they need rather than the copy's measure, so
+   the longer closed-intake label and the terms link stay on one row and on
+   the first screen. */
 .ar-hero-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: clamp(0.8rem, 2vw, 1.6rem);
+    width: max-content;
+    max-width: calc(100vw - 2 * var(--ar-pad));
 }
 
 .ar-hero-scroll {
@@ -637,8 +653,8 @@ a.ar-descent:not(.ar-btn) { position: relative; }
    Didone at this size has far more glyph than line box. */
 .ar-terms .ar-rate {
     display: flex;
-    align-items: baseline;
-    gap: 0.8rem;
+    align-items: flex-end;
+    gap: 0.9rem 1.2rem;
     margin: 0 0 clamp(1.6rem, 3.5vh, 2.4rem);
     padding-bottom: clamp(1.4rem, 3vh, 2rem);
     border-bottom: 1px solid var(--ar-rule);
@@ -654,12 +670,35 @@ a.ar-descent:not(.ar-btn) { position: relative; }
 }
 .ar-rate-num { font-size: clamp(3.4rem, 9vw, 6.4rem); }
 .ar-rate-pct { font-size: clamp(1.4rem, 3vw, 2.2rem); margin-left: 0.12em; }
+/* The rate is never shown without what it is a rate of and what earns it. */
+.ar-rate-text { padding-bottom: 0.35rem; }
 .ar-rate-label {
-    margin: 0;
-    font-size: 0.72rem;
+    margin: 0 0 0.35rem;
+    font-size: 0.74rem;
     letter-spacing: 0.24em;
     text-transform: uppercase;
-    color: var(--ar-ivory-faint);
+    color: var(--ar-ivory);
+}
+.ar-rate-condition {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--ar-gold);
+}
+
+.ar-cols--three { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+/* Secondary terms: closed by default, each one a native disclosure. */
+.ar-terms-more {
+    margin: 0 0 0.4rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ar-gold);
+}
+.ar-disclosures {
+    max-width: 72ch;
+    margin: 0 0 clamp(2rem, 4vh, 3rem);
+    border-top: 1px solid var(--ar-rule);
 }
 
 .ar-example {
@@ -698,6 +737,79 @@ a.ar-descent:not(.ar-btn) { position: relative; }
 .ar-form, .ar-gate {
     max-width: 44rem;
 }
+
+/* What can be sent, beside the intake it is sent through. */
+.ar-submit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+}
+.ar-guide {
+    padding-top: clamp(1.2rem, 2.6vh, 1.6rem);
+    border-top: 1px solid var(--ar-rule);
+}
+.ar-section .ar-guide-title { margin-bottom: 1.2rem; }
+.ar-guide-list {
+    display: grid;
+    gap: 1.2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ar-guide-list h4 {
+    margin: 0 0 0.25rem;
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-weight: 400;
+    font-size: 1.06rem;
+    color: var(--ar-ivory);
+}
+.ar-guide-list p { margin: 0; font-size: 0.9rem; max-width: 46ch; }
+.ar-guide-note {
+    margin: 1.6rem 0 0;
+    padding-left: 1rem;
+    border-left: 1px solid var(--ar-gold-deep);
+    font-size: 0.84rem;
+    color: var(--ar-ivory-faint);
+    max-width: 46ch;
+}
+
+/* The tech pack, explained at the upload. */
+.ar-techpack {
+    margin-top: 0.9rem;
+    padding: clamp(0.95rem, 2vw, 1.2rem) clamp(1rem, 2.2vw, 1.3rem);
+    border: 1px solid var(--ar-rule);
+    background: rgba(255, 255, 255, 0.018);
+}
+.ar-techpack-title {
+    margin: 0 0 0.6rem;
+    font-size: 0.64rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ar-gold);
+}
+.ar-techpack-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.25rem 1.4rem;
+    margin: 0 0 0.8rem;
+    padding: 0;
+    list-style: none;
+    font-size: 0.88rem;
+    color: var(--ar-ivory-dim);
+}
+.ar-techpack-list li { position: relative; padding-left: 1rem; }
+.ar-techpack-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.85em;
+    width: 0.45rem;
+    height: 1px;
+    background: var(--ar-gold);
+}
+.ar-techpack-note { margin: 0; font-size: 0.82rem; color: var(--ar-ivory-faint); max-width: 60ch; }
 
 .ar-gate {
     padding: clamp(1.4rem, 3vw, 2.2rem);
@@ -912,7 +1024,7 @@ a.ar-descent:not(.ar-btn) { position: relative; }
 }
 .ar-faq-item[open] summary::before { transform: scaleY(0); opacity: 0; }
 .ar-faq-item p {
-    margin: 0 0 clamp(1rem, 2.4vh, 1.4rem);
+    margin: 0 0 clamp(0.8rem, 2vh, 1.2rem);
     max-width: 66ch;
     font-size: 0.94rem;
     color: var(--ar-ivory-dim);
@@ -960,11 +1072,52 @@ a.ar-descent:not(.ar-btn) { position: relative; }
    would read as a lookbook with no opinion. So each chapter has a weight
    order — one image is the subject and the other answers it — and the
    chapters do not repeat each other's arrangement. */
-.ar-atelier {
-    padding-bottom: clamp(1.6rem, 4vh, 3rem);
+/* ── 01 · The short version ───────────────────────────────────────────────
+   Kept short on purpose: on a typical desktop the first photograph of the
+   editorial has to be on the first screen after the hero, and everything
+   between them is spent on what an artist decides on. */
+.ar-intro {
+    padding-top: clamp(3rem, 8vh, 6rem);
+    padding-bottom: clamp(1.4rem, 3.4vh, 2.4rem);
 }
+.ar-intro .ar-kicker,
+.ar-atelier .ar-kicker { margin-bottom: clamp(0.8rem, 2vh, 1.2rem); }
+.ar-intro-head,
+.ar-atelier-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: clamp(1rem, 4vw, 4rem);
+    align-items: end;
+}
+.ar-intro-head { margin: 0 0 clamp(1.2rem, 2.8vh, 2rem); }
+.ar-intro-head .ar-h2,
+.ar-atelier-head .ar-h2 { margin: 0; }
+/* Two lines beside the heading on a desktop, not three: the column is the
+   measure, and the height saved is what brings the first photograph up. */
+.ar-intro-copy,
 .ar-atelier-lead {
-    max-width: 44rem;
+    margin: 0;
+    max-width: 60ch;
+    font-size: clamp(1rem, 0.4vw + 0.94rem, 1.12rem);
+    color: var(--ar-ivory-dim);
+}
+
+.ar-brief {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.2rem, 3.5vw, 3rem);
+    margin: 0;
+    padding: clamp(1.2rem, 2.8vh, 1.8rem) 0 0;
+    border-top: 1px solid var(--ar-rule);
+    list-style: none;
+}
+.ar-brief p { margin: 0; font-size: 0.92rem; max-width: 48ch; }
+.ar-brief b { font-weight: 500; color: var(--ar-ivory); }
+
+/* ── 02 · Inside the Atelier ── */
+.ar-atelier {
+    padding-top: clamp(1.4rem, 3.4vh, 2.4rem);
+    padding-bottom: clamp(1.1rem, 2.6vh, 1.8rem);
 }
 
 .ar-chapter {
@@ -1002,25 +1155,25 @@ a.ar-descent:not(.ar-btn) { position: relative; }
     color: var(--ar-ivory-dim);
 }
 
-/* The catalogue's own status, said the way the boutique says it. The three
-   Insigne colourways are a preview there and must not read as a shelf here. */
-.ar-chapter-status {
-    display: inline-flex;
+/* The catalogue's own status, said the way the boutique says it, under each
+   colourway. The three are a preview there and must not read as a shelf
+   here. */
+.ar-shot-status {
+    display: flex;
     align-items: center;
-    gap: 0.62rem;
-    margin: 1.1rem 0 0;
+    gap: 0.55rem;
+    margin-top: 0.35rem;
     color: var(--ar-gold);
-    font-size: 0.6rem;
-    letter-spacing: 0.34em;
-    text-transform: uppercase;
+    font-size: 0.66rem;
+    letter-spacing: 0.26em;
 }
-.ar-chapter-status::before {
+.ar-shot-status::before {
     content: '';
     width: 5px;
     height: 5px;
     border-radius: 50%;
     background: var(--ar-gold);
-    opacity: 0.8;
+    opacity: 0.85;
 }
 
 /* ── Shots ────────────────────────────────────────────────────────────────
@@ -1035,30 +1188,40 @@ a.ar-descent:not(.ar-btn) { position: relative; }
     height: auto;
     border: 1px solid var(--ar-rule);
 }
+/* Captions are read, not glanced at: larger than a credit line and in the
+   page's reading ivory rather than its faintest grey. */
 .ar-shot figcaption {
-    margin-top: 0.85rem;
-    font-size: 0.68rem;
-    letter-spacing: 0.14em;
+    margin-top: 0.9rem;
+    font-size: 0.76rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ar-ivory-faint);
+    color: var(--ar-ivory-dim);
     line-height: 1.7;
 }
 .ar-shot-name {
-    color: var(--ar-gold);
+    display: block;
+    margin-bottom: 0.1rem;
+    color: var(--ar-gold-bright);
     font-weight: 500;
 }
 
-/* Chapter I — the reverse carries the chapter and the chest detail answers
-   it from below, at a third of the width and dropped to the baseline so the
-   two are not read as a pair of equals. */
-.ar-pair {
+/* Chapter I — the reverse crescent leads at two thirds of the spread and is
+   the first photograph after the hero. The chapter's words open the narrow
+   column beside it and the chest signature answers from its foot, so the
+   two garments are never read as a pair of equals. */
+.ar-chapter--fallen { padding-top: 0; }
+.ar-spread {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: clamp(1.4rem, 3vw, 2.6rem);
-    align-items: end;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+        "major head"
+        "major minor";
+    gap: clamp(1.2rem, 3vh, 2rem) clamp(1.4rem, 3vw, 2.8rem);
 }
-.ar-shot--major { grid-column: 1 / span 8; }
-.ar-shot--minor { grid-column: 9 / span 4; }
+.ar-spread .ar-chapter-head { grid-area: head; margin: 0; }
+.ar-spread .ar-shot--major { grid-area: major; }
+.ar-spread .ar-shot--minor { grid-area: minor; align-self: end; }
 
 /* Chapter II — the back artwork leads at full column width, then the front
    detail and the sentence share the row beneath it. */
@@ -1084,27 +1247,58 @@ a.ar-descent:not(.ar-btn) { position: relative; }
     gap: clamp(1rem, 2.4vw, 1.9rem);
 }
 
-/* ── Atelier Studies ──────────────────────────────────────────────────────
+/* ── VOID Lab ─────────────────────────────────────────────────────────────
    Concepts, not releases, and the page has to say so rather than imply it.
-   They sit apart from the numbered chapters: no index, a rule above each,
-   and a quieter heading. */
-.ar-studies {
+   The heading is the supplied artwork itself: the file, on the black ground,
+   in its own colours and proportions. Its visible edge is aligned with the
+   concept titles and photographs below, not its file edge — the artwork
+   sits inside transparent margins, and those are taken back with negative
+   margins measured from its alpha: in a 2172×724 file the ink begins 85px
+   from the left, 170px from the top, and ends 157px above the bottom. Each
+   is written as a fraction of the rendered width, so the alignment holds at
+   every size the clamp can produce.
+
+   Sized well under the hero: its letters stand at about half the height of
+   the hero title's capitals on desktop, and a little above a chapter name. */
+.ar-lab {
     max-width: var(--ar-max);
     margin: 0 auto;
     padding: clamp(3.2rem, 9vh, 6.5rem) var(--ar-pad) clamp(1rem, 3vh, 2rem);
     border-top: 1px solid var(--ar-rule);
 }
-.ar-studies-head {
+.ar-lab-head {
     max-width: 44rem;
-    margin: 0 0 clamp(0.6rem, 2vh, 1.4rem);
+    margin: 0 0 clamp(1.4rem, 3.4vh, 2.4rem);
 }
-.ar-studies-title {
-    margin: 0.7rem 0 0.9rem;
-    font-family: 'Bodoni Moda', Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(1.55rem, 3vw, 2.15rem);
-    line-height: 1.14;
-    color: var(--ar-ivory);
+.ar-lab-title {
+    margin: 0;
+    line-height: 0;
+}
+.ar-lab-logo {
+    --lab-w: clamp(176px, 25vw, 370px);
+    display: block;
+    width: var(--lab-w);
+    max-width: none;
+    height: auto;
+    margin: calc(var(--lab-w) * -0.0783) 0 calc(var(--lab-w) * -0.0723) calc(var(--lab-w) * -0.0391);
+}
+.ar-lab-lead {
+    margin: clamp(1rem, 2.4vh, 1.4rem) 0 0;
+    max-width: 44ch;
+    font-size: clamp(1rem, 0.4vw + 0.94rem, 1.12rem);
+    color: var(--ar-ivory-dim);
+}
+
+/* Every study names itself a concept before its title. */
+.ar-study-tag {
+    display: inline-block;
+    margin: 0 0 0.7rem;
+    padding: 0.18rem 0.6rem;
+    border: 1px solid var(--ar-gold-deep);
+    color: var(--ar-gold);
+    font-size: 0.6rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
 }
 
 .ar-study {
@@ -1184,7 +1378,7 @@ html.ar-js .ar-reveal {
    are held to roughly half the page's default so nothing is still arriving
    under the eye. */
 html.ar-js .ar-chapter.ar-reveal,
-html.ar-js .ar-studies.ar-reveal,
+html.ar-js .ar-lab.ar-reveal,
 html.ar-js .ar-atelier.ar-reveal {
     transition-duration: 0.44s, 0.54s;
 }
@@ -1223,20 +1417,29 @@ html.ar-js .ar-submit.is-in * { transition-duration: 0s; }
                 rgba(3, 3, 2, 0) 100%);
     }
     .ar-hero-copy { max-width: none; }
-    .ar-hero-draft { width: 54vw; opacity: 0.34; }
+    .ar-hero-draft { height: clamp(64px, 10vh, 110px); opacity: 0.38; }
     .ar-hero-scroll { display: none; }
 
+    .ar-intro-head,
+    .ar-atelier-head,
+    .ar-brief,
+    .ar-submit-grid { grid-template-columns: minmax(0, 1fr); }
+    .ar-intro-head,
+    .ar-atelier-head { gap: 0.9rem; }
+
     /* The editorial goes to one column. Every chapter keeps the order it is
-       written in, which is the order that reads: the subject first, then
-       what answers it — including Engraved Current, where the markup leads
-       with the full front and the desktop reversal is simply dropped. */
-    .ar-pair,
+       written in, which is the order that reads: the words, the subject,
+       then what answers it — including Engraved Current, where the markup
+       leads with the full front and the desktop reversal is simply dropped. */
     .ar-aside,
     .ar-trio,
     .ar-study-plates,
     .ar-study--solo .ar-study-body { grid-template-columns: minmax(0, 1fr); }
-    .ar-shot--major,
-    .ar-shot--minor { grid-column: 1 / -1; }
+    .ar-spread {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
+        grid-template-areas: "head" "major" "minor";
+    }
     .ar-study--flip .ar-study-plates > :first-child,
     .ar-study--flip .ar-study-plates > :last-child { order: 0; }
     .ar-study--solo .ar-study-plates { max-width: none; }
@@ -1263,8 +1466,12 @@ html.ar-js .ar-submit.is-in * { transition-duration: 0s; }
 
 @media (max-width: 520px) {
     .ar-hero-title { font-size: clamp(2.5rem, 13vw, 3.6rem); }
-    .ar-hero-actions { flex-direction: column; align-items: stretch; }
+    .ar-hero-actions { flex-direction: column; align-items: stretch; width: auto; max-width: none; }
     .ar-hero-actions .ar-btn { width: 100%; }
+    /* The closed-intake label is the longest the button carries; tighter
+       tracking keeps it to one line on a phone in English. */
+    .ar-hero-actions .ar-btn--primary,
+    .ar-atelier-cta .ar-btn--primary { padding-inline: 1rem; letter-spacing: 0.17em; }
     .ar-btn--quiet { padding: 0.6rem 0; }
     .ar-rate { gap: 0.4rem; }
 }

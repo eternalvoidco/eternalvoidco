@@ -1,5 +1,7 @@
 # EV for Artists — the royalty model
 
+> **Superseded basis — 2026-11-21.** The public offer is now a proposed 12% of the **net profit** from sales of the products covered by the signed collaboration agreement, earned by a selected designer who provides a complete, production-ready tech pack. Everything below still describes the earlier **net product sales** basis, and so does the statement engine (`supabase/migrations/*royalty*`, `api/_artist-royalties.js`). Net profit is not yet defined — which costs are deducted, how they are allocated to a design, how they are evidenced — and that is an owner and accounting decision. Do not produce a payout under this model until it is made.
+
 Version 2026-11-19 · **Proposed, pending owner approval, accounting confirmation and legal review.**
 
 One definition, written once, used in three places: the public page, the collaboration agreement,

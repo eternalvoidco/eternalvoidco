@@ -10,8 +10,10 @@
 | **Public intake** | **CLOSED** | `VOID_ARTIST_INTAKE` is closed and the server refuses every unauthenticated request. Opening needs counsel on three documents, the owner on the rate, and `VOID_ARTIST_IP_SALT` + `CRON_SECRET` set. |
 | **Royalty payouts** | **BLOCKED** | Two hard blocks, neither of which is a bug: **nobody has recorded whether charged amounts include VAT**, and **no dry run has established that any period's refund history was read back from Stripe**. Either one alone stops a payout file being produced. |
 
-**12% of net product sales, quarterly statements, payment within 30 days of quarter end remain
-PROPOSED and unapproved.** They are marked that way on the public page in all four languages.
+**12% of net profit from sales of the covered products (changed from net product sales on
+2026-11-21; complete tech pack required), quarterly statements, payment within 30 days of quarter end remain
+PROPOSED and unapproved.** Net profit is not yet defined, and the statement engine still computes on
+net product sales — see the note at the top of docs/royalty-model.md. They are marked that way on the public page in all four languages.
 
 ---
 
@@ -481,7 +483,8 @@ Stripe keys, no Vercel CLI, no staging host. Each has an exact command in
 ## 9 · Exactly what is needed, from whom
 
 ### From the owner
-- [ ] **12%** of net product sales — still proposed
+- [ ] **12%** of net profit from sales of the covered products — still proposed; **define net profit** (costs deducted, allocation, evidence) and update the statement engine
+- [ ] Whether additional development work after selection is paid, and how (Agreement §11 still promises a fee for a tech pack, which is now the royalty condition)
 - [ ] **Quarterly** statements, **30 days** after quarter end — still proposed
 - [ ] Term, territory, release deadline, sell-off window *(Agreement §4, §5, §6.4, §13.3)*
 - [ ] Minimum payment threshold *(§9.3)*

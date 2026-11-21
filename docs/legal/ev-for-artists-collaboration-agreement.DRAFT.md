@@ -141,6 +141,8 @@ Agreement.
 
 ## 8 · Royalty
 
+> **Drafting note, 2026-11-21 — not agreement text.** The public offer changed: the proposed royalty is now 12% of the **net profit** from sales of the covered products, and only a selected designer who provides a complete, production-ready tech pack qualifies for it. This section still defines **Net Product Sales** and states that costs are not deducted (§8.4), and §11 still promises a separate development fee for a production-ready tech pack. Both contradict the public offer. Counsel and the owner must redraft §8 around a defined net-profit calculation and decide what, if anything, §11 still pays for, before this agreement is used.
+
 8.1 ETERNAL VOID pays the Artist **____ %** of Net Product Sales of the products in Schedule 1.
 
 > *The public programme page proposes **12%** as ETERNAL VOID's opening offer. It is a proposal,

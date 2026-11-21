@@ -29,7 +29,10 @@ export const TYPES = {
 // The version of the Submission Terms this deployment serves. Recorded against
 // every submission, from here rather than from the browser: what matters is
 // what we published, not what a client claimed to have seen.
-export const TERMS_VERSION = process.env.VOID_ARTIST_TERMS_VERSION || '2026-11-19';
+// 2026-11-21 added the tech-pack condition and the net-profit basis to clause
+// 7. The 2026-11-19 text stays readable, unchanged, at
+// /legal/ev-for-artists-submission-terms/2026-11-19 for anyone who accepted it.
+export const TERMS_VERSION = process.env.VOID_ARTIST_TERMS_VERSION || '2026-11-21';
 
 // Until the owner has approved the rate and the terms, and counsel has
 // reviewed the drafts, the public endpoint refuses to record anything. The

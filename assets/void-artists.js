@@ -31,18 +31,38 @@
         return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || '';
     }
 
+    // ══ Intake state ══════════════════════════════════════════════════════
+    // One flag decides every primary action on the page — the header link,
+    // the hero, the action after the editorial, and the heading of the
+    // section they all lead to. Closed, they offer the notification form and
+    // land on it; open, they offer the submission and land on the first
+    // field of the form. The markup is written closed, so a visitor without
+    // script is never sent to a form that is not there.
+    var OPEN = intakeOpen();
+    var INTAKE_TARGET = OPEN ? '#arForm' : '#arGate';
+    root.setAttribute('data-intake', OPEN ? 'open' : 'closed');
+    document.querySelectorAll('[data-intake-cta]').forEach(function (el) {
+        el.setAttribute('href', INTAKE_TARGET);
+    });
+
     function applyLanguage() {
         root.lang = lang;
         document.querySelectorAll('[data-i18n]').forEach(function (el) {
             var v = t(el.dataset.i18n);
             if (v) el.textContent = v;
         });
+        document.querySelectorAll('[data-i18n-intake]').forEach(function (el) {
+            var v = t(el.dataset.i18nIntake + (OPEN ? 'Open' : 'Closed'));
+            if (v) el.textContent = v;
+        });
         document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
             var v = t(el.dataset.i18nHtml);
             if (v) el.innerHTML = v;
         });
-        // Alt text is content, not decoration: these two plates describe the
-        // garment, so they translate with everything else.
+        // Alt text is content, not decoration: these plates describe the
+        // garment, so they translate with everything else. The VOID Lab
+        // artwork is the one image that does not: its alt is the brand name,
+        // the same in every language, and carries no data-i18n-alt.
         document.querySelectorAll('[data-i18n-alt]').forEach(function (el) {
             var v = t(el.dataset.i18nAlt);
             if (v) el.alt = v;
@@ -289,7 +309,7 @@
     var form = $('arForm');
     var gate = $('arGate');
 
-    if (form && gate && intakeOpen()) {
+    if (form && gate && OPEN) {
         gate.hidden = true;
         form.hidden = false;
         warmSession();

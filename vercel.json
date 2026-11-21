@@ -21,6 +21,7 @@
     { "source": "/contact", "destination": "/index.html" },
     { "source": "/for-artists", "destination": "/for-artists/index.html" },
     { "source": "/legal/ev-for-artists-submission-terms", "destination": "/legal/ev-for-artists-submission-terms/index.html" },
+    { "source": "/legal/ev-for-artists-submission-terms/2026-11-19", "destination": "/legal/ev-for-artists-submission-terms/2026-11-19/index.html" },
     { "source": "/legal/ev-for-artists-privacy-notice", "destination": "/legal/ev-for-artists-privacy-notice/index.html" },
     { "source": "/checkout", "destination": "/checkout/index.html" },
     { "source": "/checkout/success", "destination": "/checkout/success/index.html" },
