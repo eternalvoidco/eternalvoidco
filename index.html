@@ -11534,10 +11534,19 @@
             width: 100%;
             height: 100%;
             display: block;
+            overflow: visible;
         }
 
-        .cart-fab.opened .cart-fab-icon {
-            transform: rotate(-12deg) scale(1.06);
+        /* The VOID cart mark (viewBox 980 × 639). White at rest; the gold
+           layers above it are clipped to the artwork and driven by script. */
+        .cart-fab-icon.void-cart {
+            width: 50px;
+            height: 32.6px;
+            transition: none;
+        }
+
+        .void-cart .vc-base {
+            fill: var(--void-white);
         }
 
         .cart-fab.bump {
@@ -12379,6 +12388,11 @@
                 height: 76px;
             }
 
+            .cart-fab-icon.void-cart {
+                width: 46px;
+                height: 30px;
+            }
+
             .size-popup {
                 width: min(390px, 100%);
             }
@@ -12623,6 +12637,11 @@
                 bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
             }
 
+            .cart-fab-icon.void-cart {
+                width: 42px;
+                height: 27.4px;
+            }
+
             .cart-popup-title {
                 font-size: 0.95rem;
             }
@@ -12663,6 +12682,11 @@
             .cart-fab {
                 width: 54px;
                 height: 54px;
+            }
+
+            .cart-fab-icon.void-cart {
+                width: 36px;
+                height: 23.5px;
             }
         }
 
@@ -15697,10 +15721,71 @@
     <!-- THE VOID CONCIERGE (presented feature) · persona: OBSIDIAN -->
 
     <button class="cart-fab" id="cartFab" type="button" aria-label="Open cart" data-i18n-aria-label="openCart">
-        <span class="cart-fab-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
-                <path d="M7.5 9V7.75C7.5 5.4 9.4 3.5 11.75 3.5C14.1 3.5 16 5.4 16 7.75V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                <path d="M5 9.5H18.5L17.35 20H6.15L5 9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        <span class="cart-fab-icon void-cart" aria-hidden="true">
+            <!-- ETERNAL VOID cart: the V runs into the handle, VOID is the basket,
+                 rail and wheels below. Redrawn as vectors from
+                 assets/Shopping Cart (glow removed). Two clip masks: the whole
+                 cart (hover sweep, open state) and the four letterforms only
+                 (the click ignition). States are driven by the script after
+                 the cart code, keyed to #cartPopup's real open/closed class. -->
+            <svg viewBox="262 205 980 639" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+                <defs>
+                    <path id="vcHandle" d="M274 209L361 209A57 57 0 0 1 411.7 240.1L550.9 512.3L637.8 338.5L699.8 338.5L553.5 631L364.5 253L294 253A28 28 0 0 1 266 225L266 217A8 8 0 0 1 274 209Z"/>
+                    <path id="vcO" d="M731 338.7A150 150 0 1 1 613.7 560.5L645.7 500A100 100 0 1 0 699 399.2Z"/>
+                    <path id="vcI" d="M921.5 338.5H975V636H921.5Z"/>
+                    <path id="vcD" d="M1011.5 338.5H1089C1175.3 338.5 1237.8 401 1237.8 487.3C1237.8 573.5 1175.3 636 1089 636H1011.5ZM1061.5 388.5V586H1089C1146.3 586 1187.8 544.5 1187.8 487.3C1187.8 430 1146.3 388.5 1089 388.5Z"/>
+                    <path id="vcRail" d="M546 616C520 621 478 640 462 664C447 686 440 704 439 716Q439 731 453 731L1000 731A77 41 0 0 0 1077 690L500.5 690C502 672 540 642 552.5 636L553.5 631Z"/>
+                    <path id="vcWheels" d="M499 791a48.5 48.5 0 1 0 97 0a48.5 48.5 0 1 0 -97 0ZM902 791a48.5 48.5 0 1 0 97 0a48.5 48.5 0 1 0 -97 0Z"/>
+                    <path id="vcV" d="M407.3 338.5L462.1 338.5L550.9 512.3L637.8 338.5L699.8 338.5L553.5 631Z"/>
+                    <clipPath id="vcClipCart"><use href="#vcHandle"/><use href="#vcO"/><use href="#vcI"/><use href="#vcD"/><use href="#vcRail"/><use href="#vcWheels"/></clipPath>
+                    <clipPath id="vcClipLetters"><use href="#vcV"/><use href="#vcO"/><use href="#vcI"/><use href="#vcD"/></clipPath>
+                    <linearGradient id="vcGoldHover" gradientUnits="userSpaceOnUse" x1="266" y1="209" x2="1150" y2="840">
+                        <stop offset="0" stop-color="#e7d4a6"/><stop offset="0.46" style="stop-color: var(--void-gold, #c7a96c)"/><stop offset="1" stop-color="#9c7c46"/>
+                    </linearGradient>
+                    <linearGradient id="vcGoldQuiet" gradientUnits="userSpaceOnUse" x1="266" y1="209" x2="1150" y2="840">
+                        <stop offset="0" style="stop-color: var(--void-gold, #c7a96c)"/><stop offset="0.85" style="stop-color: var(--void-gold-deep, #8f6f3d)"/>
+                    </linearGradient>
+                    <linearGradient id="vcGoldBright" gradientUnits="userSpaceOnUse" x1="0" y1="338" x2="0" y2="636">
+                        <stop offset="0" style="stop-color: var(--void-gold-bright, #f2e2bd)"/><stop offset="0.4" style="stop-color: var(--void-gold-bright, #f2e2bd)"/><stop offset="1" style="stop-color: var(--void-gold-soft, #d8c08a)"/>
+                    </linearGradient>
+                    <radialGradient id="vcSpark"><stop offset="0" stop-color="#fffaf0"/><stop offset="0.45" style="stop-color: var(--void-gold-bright, #f2e2bd)"/><stop offset="1" style="stop-color: var(--void-gold-bright, #f2e2bd)" stop-opacity="0"/></radialGradient>
+                </defs>
+                <g class="vc-base"><use href="#vcHandle"/><use href="#vcO"/><use href="#vcI"/><use href="#vcD"/><use href="#vcRail"/><use href="#vcWheels"/></g>
+                <g class="vc-gold" clip-path="url(#vcClipCart)">
+                    <g class="vc-hover" opacity="0">
+                        <circle class="vc-wave" cx="262" cy="231" r="0" fill="url(#vcGoldHover)"/>
+                        <circle class="vc-feather" cx="262" cy="231" r="0" fill="none" style="stroke: var(--void-gold-bright, #f2e2bd)" stroke-width="26" opacity="0"/>
+                        <circle class="vc-ring" cx="262" cy="231" r="0" fill="none" stroke="#fbf1da" stroke-width="12" opacity="0"/>
+                        <circle class="vc-bead" cx="0" cy="0" r="0" fill="url(#vcSpark)" opacity="0"/>
+                        <circle class="vc-bead" cx="0" cy="0" r="0" fill="url(#vcSpark)" opacity="0"/>
+                        <circle class="vc-pin" cx="272" cy="231" r="0" fill="url(#vcSpark)" opacity="0"/>
+                        <circle class="vc-glint" cx="1192" cy="598" r="0" fill="url(#vcSpark)" opacity="0"/>
+                    </g>
+                    <rect class="vc-quiet" x="262" y="205" width="980" height="639" fill="url(#vcGoldQuiet)" opacity="0"/>
+                    <g class="vc-lit" clip-path="url(#vcClipLetters)" opacity="0" fill="none" stroke-linecap="round">
+                        <g stroke="url(#vcGoldBright)">
+                            <path class="vc-seg" data-seg="0" pathLength="1" stroke-width="76" d="M556 630L430 326"/>
+                            <path class="vc-seg" data-seg="0" pathLength="1" stroke-width="76" d="M553 630L675 326"/>
+                            <path class="vc-seg" data-seg="1" pathLength="1" stroke-width="64" d="M686.3 377.6A125 125 0 1 1 624.3 520.4"/>
+                            <path class="vc-seg" data-seg="2" pathLength="1" stroke-width="70" d="M948.3 646V328"/>
+                            <path class="vc-seg" data-seg="3" pathLength="1" stroke-width="64" d="M1036.5 363.5H1089A124 124 0 0 1 1089 611H1036.5V356"/>
+                        </g>
+                        <g class="vc-heads" style="stroke: var(--void-gold-soft, #d8c08a)" stroke-width="30">
+                            <path class="vc-edge" data-seg="0" pathLength="1" d="M556 630L430 326"/>
+                            <path class="vc-edge" data-seg="0" pathLength="1" d="M553 630L675 326"/>
+                            <path class="vc-edge" data-seg="1" pathLength="1" d="M686.3 377.6A125 125 0 1 1 624.3 520.4"/>
+                            <path class="vc-edge" data-seg="2" pathLength="1" d="M948.3 646V328"/>
+                            <path class="vc-edge" data-seg="3" pathLength="1" d="M1036.5 363.5H1089A124 124 0 0 1 1089 611H1036.5V356"/>
+                        </g>
+                        <g class="vc-heads" stroke="#fff7e8" stroke-width="11">
+                            <path class="vc-core" data-seg="0" pathLength="1" d="M556 630L430 326"/>
+                            <path class="vc-core" data-seg="0" pathLength="1" d="M553 630L675 326"/>
+                            <path class="vc-core" data-seg="1" pathLength="1" d="M686.3 377.6A125 125 0 1 1 624.3 520.4"/>
+                            <path class="vc-core" data-seg="2" pathLength="1" d="M948.3 646V328"/>
+                            <path class="vc-core" data-seg="3" pathLength="1" d="M1036.5 363.5H1089A124 124 0 0 1 1089 611H1036.5V356"/>
+                        </g>
+                    </g>
+                </g>
             </svg>
         </span>
         <span class="cart-fab-badge" id="cartCount">0</span>
@@ -24321,8 +24406,24 @@
 
             if (event.key === 'Escape' && galleryPreviewBackdrop && galleryPreviewBackdrop.classList.contains('open')) {
                 closeGalleryPreview();
+                return;
+            }
+
+            if (event.key === 'Escape' && cartPopup && cartPopup.classList.contains('open')) {
+                closeCartPopup();
             }
         });
+
+        // The cart drawer also closes on a press anywhere outside it and its
+        // trigger. pointerdown, not click: removing an item re-renders the
+        // list, so by click time the pressed row is no longer in the drawer.
+        document.addEventListener('pointerdown', (event) => {
+            if (!cartPopup || !cartPopup.classList.contains('open')) return;
+            const target = event.target;
+            if (!(target instanceof Node)) return;
+            if (cartPopup.contains(target) || (cartFab && cartFab.contains(target))) return;
+            closeCartPopup();
+        }, true);
 
         if (cartItemsElement) {
             cartItemsElement.addEventListener('click', (event) => {
@@ -24357,6 +24458,229 @@
 
         applyTranslations();
         updateCartUI();
+    </script>
+
+    <script>
+        // ── VOID cart icon: white at rest, gold sweep on hover, ignition on open ──
+        // The icon state follows #cartPopup's real `open` class (MutationObserver),
+        // so every close path (✕, Escape, backdrop, the toggle itself, anything
+        // calling closeCartPopup) ends on the original white cart. Calm mode is
+        // the site's html.reduce-motion class: plain white/gold state changes.
+        (() => {
+            const fab = document.getElementById('cartFab');
+            const pop = document.getElementById('cartPopup');
+            const svg = fab && fab.querySelector('.void-cart svg');
+            if (!svg || !pop) return;
+
+            const q = (s) => svg.querySelector(s);
+            const qa = (s) => Array.prototype.slice.call(svg.querySelectorAll(s));
+            const el = {
+                gold: q('.vc-gold'), hover: q('.vc-hover'), wave: q('.vc-wave'),
+                feather: q('.vc-feather'), ring: q('.vc-ring'), beads: qa('.vc-bead'),
+                pin: q('.vc-pin'), glint: q('.vc-glint'), quiet: q('.vc-quiet'), lit: q('.vc-lit'),
+                segs: qa('.vc-seg'), edges: qa('.vc-edge'), cores: qa('.vc-core')
+            };
+
+            // Handle tip (far-left), the sweep's origin; radius that covers the whole cart.
+            const TIP_X = 262, TIP_Y = 231, R_MAX = 1060;
+            const HOVER_MS = 700, LEAVE_MS = 250, RESET_MS = 220, QUIET_MS = 320;
+            // Ignition windows (ms) for V → O → I → D, one continuous 400ms gesture.
+            const SEG = [[0, 130], [105, 255], [240, 305], [290, 400]];
+            const IGNITE_END = 400, HEAD_FADE = 110, HEAD = 0.18;
+
+            const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+            const easeOut = (u) => 1 - Math.pow(1 - u, 3);
+            const easeInOut = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+            const sine = (u) => 0.5 - Math.cos(Math.PI * u) / 2;
+            const calm = () => document.documentElement.classList.contains('reduce-motion');
+            const isOpen = () => pop.classList.contains('open');
+            const set = (node, attrs) => { for (const k in attrs) node.setAttribute(k, attrs[k]); };
+
+            const s = {
+                mode: 'idle',      // idle | hover | leave | open | reset
+                hp: 0,             // hover sweep time (ms, 0..HOVER_MS)
+                hOp: 0,            // hover layer opacity
+                qOp: 0, q0: 0,     // quiet antique-gold layer (open state)
+                igT: -1,           // ignition clock (ms), -1 = not lit
+                gOp: 1,            // whole gold stack, faded out on close
+                t0: 0, from: 0,
+                pointerInside: false,
+                hoverArmed: true,
+                focusArmed: true
+            };
+
+            function renderHover() {
+                const t = s.hp;
+                const pinT = clamp(t / 70);
+                set(el.pin, { r: (26 * easeOut(pinT)).toFixed(2), opacity: (t < 90 ? 1 : clamp(1 - (t - 90) / 110)).toFixed(3) });
+
+                const u = clamp((t - 40) / 600);
+                const R = R_MAX * easeInOut(u);
+                const edgeOp = u > 0 && u < 1 ? Math.min(1, u * 14) * (1 - clamp((u - 0.86) / 0.14)) : 0;
+                set(el.wave, { r: R.toFixed(1) });
+                set(el.ring, { r: Math.max(0, R - 7).toFixed(1), opacity: (0.95 * edgeOp).toFixed(3) });
+                set(el.feather, { r: (R + 9).toFixed(1), opacity: (0.32 * edgeOp).toFixed(3) });
+
+                // Two beads gather along the moving edge, then melt into it.
+                const b = (t - 220) / 340;
+                const beadOn = b > 0 && b < 1;
+                const angles = [[12, 25], [44, 31]];
+                el.beads.forEach((bead, i) => {
+                    if (!beadOn) { set(bead, { opacity: 0, r: 0 }); return; }
+                    const a = (angles[i][0] + (angles[i][1] - angles[i][0]) * easeInOut(b)) * Math.PI / 180;
+                    const life = Math.sin(Math.PI * b);
+                    set(bead, {
+                        cx: (TIP_X + (R - 3) * Math.cos(a)).toFixed(1),
+                        cy: (TIP_Y + (R - 3) * Math.sin(a)).toFixed(1),
+                        r: (12 + 6 * life).toFixed(2),
+                        opacity: Math.pow(life, 1.2).toFixed(3)
+                    });
+                });
+
+                // One glint at the lower-right edge (the D's bow), then hold gold.
+                const g = (t - 560) / 140;
+                const gl = g > 0 && g < 1 ? Math.sin(Math.PI * g) : 0;
+                set(el.glint, { r: (88 * gl).toFixed(2), opacity: gl.toFixed(3) });
+                set(el.hover, { opacity: s.hOp.toFixed(3) });
+            }
+
+            function renderLit() {
+                const t = s.igT;
+                if (t < 0) { set(el.lit, { opacity: 0 }); return; }
+                set(el.lit, { opacity: 1 });
+                const prog = SEG.map(([a, b]) => clamp((t - a) / (b - a)));
+                const headOp = SEG.map(([, b], i) => (prog[i] <= 0 ? 0 : prog[i] < 1 ? 1 : clamp(1 - (t - b) / HEAD_FADE)));
+                el.segs.forEach((p) => {
+                    const k = +p.getAttribute('data-seg');
+                    const v = sine(prog[k]);
+                    set(p, { 'stroke-dasharray': '1 2', 'stroke-dashoffset': (1 - v).toFixed(4), opacity: v > 0 ? 1 : 0 });
+                });
+                [el.edges, el.cores].forEach((list) => list.forEach((p) => {
+                    const k = +p.getAttribute('data-seg');
+                    const v = sine(prog[k]);
+                    set(p, { 'stroke-dasharray': HEAD + ' 2', 'stroke-dashoffset': (HEAD - v).toFixed(4), opacity: headOp[k].toFixed(3) });
+                }));
+            }
+
+            function render() {
+                renderHover();
+                set(el.quiet, { opacity: s.qOp.toFixed(3) });
+                renderLit();
+                set(el.gold, { opacity: s.gOp.toFixed(3) });
+            }
+
+            function clearAll() {
+                s.hp = 0; s.hOp = 0; s.qOp = 0; s.igT = -1; s.gOp = 1;
+            }
+
+            let raf = 0, last = 0;
+            function kick() {
+                if (raf) return;
+                last = performance.now();
+                raf = requestAnimationFrame(tick);
+            }
+            function tick(now) {
+                raf = 0;
+                const dt = Math.min(120, Math.max(0, now - last));
+                last = now;
+                const el2 = now - s.t0;
+                let busy = false;
+
+                if (s.mode === 'hover') {
+                    s.hp = Math.min(HOVER_MS, s.hp + dt);
+                    s.hOp = Math.min(1, s.hOp + dt / 120);
+                    busy = s.hp < HOVER_MS || s.hOp < 1;
+                } else if (s.mode === 'leave') {
+                    s.hOp = s.from * (1 - easeOut(clamp(el2 / LEAVE_MS)));
+                    if (el2 >= LEAVE_MS) { clearAll(); s.mode = 'idle'; } else busy = true;
+                } else if (s.mode === 'open') {
+                    s.qOp = s.q0 + (1 - s.q0) * easeOut(clamp(el2 / QUIET_MS));
+                    s.igT = el2;
+                    busy = el2 < IGNITE_END + HEAD_FADE || s.qOp < 1;
+                } else if (s.mode === 'reset') {
+                    s.gOp = 1 - easeInOut(clamp(el2 / RESET_MS));
+                    if (el2 >= RESET_MS) { clearAll(); s.mode = 'idle'; } else busy = true;
+                }
+                render();
+                if (busy) raf = requestAnimationFrame(tick);
+            }
+
+            function startHover() {
+                if (isOpen() || s.mode === 'open' || s.mode === 'reset' || s.mode === 'hover') return;
+                if (calm()) { s.mode = 'hover'; s.hp = HOVER_MS; s.hOp = 1; s.gOp = 1; render(); return; }
+                if (s.mode === 'idle') { s.hp = 0; s.hOp = 1; }
+                // From 'leave': pick the sweep up where it is and bring the gold back.
+                s.gOp = 1;
+                s.mode = 'hover';
+                kick();
+            }
+
+            function endHover() {
+                if (s.mode !== 'hover' || isOpen()) return;
+                if (calm()) { clearAll(); s.mode = 'idle'; render(); return; }
+                s.mode = 'leave'; s.from = s.hOp; s.t0 = performance.now();
+                kick();
+            }
+
+            function ignite() {
+                // Ignites from the current appearance: the hover sweep freezes
+                // where it is and the quiet antique gold rises over it.
+                s.gOp = 1;
+                if (calm()) { s.mode = 'open'; s.qOp = 1; s.igT = IGNITE_END + HEAD_FADE; render(); return; }
+                s.mode = 'open'; s.q0 = s.qOp; s.igT = 0; s.t0 = performance.now();
+                kick();
+            }
+
+            function reset() {
+                // Closed: cancel anything unfinished, fade the whole icon back to
+                // white, and stay white until hover/focus are deliberately re-armed.
+                s.hoverArmed = !s.pointerInside;
+                s.focusArmed = false;
+                if (calm() || (s.mode === 'idle' && s.hOp === 0 && s.qOp === 0 && s.igT < 0)) {
+                    clearAll(); s.mode = 'idle'; render(); return;
+                }
+                s.mode = 'reset'; s.t0 = performance.now();
+                kick();
+            }
+
+            const finePointer = (e) => e.pointerType === 'mouse' || e.pointerType === 'pen';
+            fab.addEventListener('pointerenter', (e) => {
+                if (!finePointer(e)) return;
+                s.pointerInside = true;
+                if (s.hoverArmed) startHover();
+            });
+            fab.addEventListener('pointerleave', (e) => {
+                if (!finePointer(e)) return;
+                s.pointerInside = false;
+                s.hoverArmed = true;
+                if (!fab.matches(':focus-visible')) endHover();
+            });
+            fab.addEventListener('focus', () => {
+                let keyboard = false;
+                try { keyboard = fab.matches(':focus-visible'); } catch (err) {}
+                if (keyboard && s.focusArmed) startHover();
+            });
+            fab.addEventListener('blur', () => {
+                if (!s.pointerInside) endHover();
+            });
+            // A deliberate keyboard move re-arms the focus effect after a close.
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') s.focusArmed = true;
+            }, true);
+
+            let wasOpen = isOpen();
+            new MutationObserver(() => {
+                const open = isOpen();
+                if (open === wasOpen) return;
+                wasOpen = open;
+                if (open) ignite(); else reset();
+            }).observe(pop, { attributes: true, attributeFilter: ['class'] });
+
+            if (wasOpen) ignite(); else render();
+
+            // Debug/verification hook (read-only snapshot of the icon state).
+            window.voidCartIconState = () => ({ mode: s.mode, hp: s.hp, hOp: s.hOp, qOp: s.qOp, igT: s.igT, gOp: s.gOp, hoverArmed: s.hoverArmed, focusArmed: s.focusArmed });
+        })();
     </script>
 
     <script>
